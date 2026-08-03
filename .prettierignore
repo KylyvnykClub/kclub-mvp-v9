@@ -8,3 +8,6 @@ coverage/
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# Local-only session state (never committed).
+.state/
