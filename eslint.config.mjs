@@ -5,6 +5,8 @@ import reactHooks from "eslint-plugin-react-hooks";
 import security from "eslint-plugin-security";
 import tseslint from "typescript-eslint";
 
+import kclub from "./tools/eslint/module-boundaries.mjs";
+
 /**
  * Flat config.
  *
@@ -14,10 +16,7 @@ import tseslint from "typescript-eslint";
  * rules visible here instead of inherited from a wrapper - and docs/ux.md §8
  * commits to WCAG 2.1 AA, which is not a thing to inherit silently.
  *
- * The module-boundary rules that docs/architecture.md §2 depends on - no import
- * from another module's internals, no database call outside src/data, no React
- * or HTTP inside src/domain - arrive in T-0.7. They are a separate task because
- * they need the directories to exist first.
+ * Module-boundary rules (T-0.7) live in tools/eslint/module-boundaries.mjs.
  */
 export default tseslint.config(
   {
@@ -71,6 +70,16 @@ export default tseslint.config(
       // console.log in a server component ships to the platform log with no
       // structure and no redaction. docs/observability.md defines how to log.
       "no-console": ["error", { allow: ["warn", "error"] }],
+    },
+  },
+
+  // ── Module boundary rules (T-0.7, docs/architecture.md §2) ────────
+  {
+    plugins: { kclub },
+    rules: {
+      "kclub/no-cross-module-internals": "error",
+      "kclub/no-db-outside-data": "error",
+      "kclub/no-framework-in-domain": "error",
     },
   },
 
