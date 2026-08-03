@@ -1,5 +1,3 @@
-import compactMarkdownTable from "prettier-plugin-compact-markdown-table";
-
 /** @type {import("prettier").Config} */
 export default {
   // Match .gitattributes — avoids spurious CRLF diffs on Windows.
@@ -17,7 +15,9 @@ export default {
   // editor soft-wrapping them into a broken pipe layout.
   tableLayout: "compact",
 
-  plugins: [compactMarkdownTable],
+  // Named as a string, not imported: the package exports no default binding, and
+  // importing one fails the whole configuration before a single file is read.
+  plugins: ["prettier-plugin-compact-markdown-table"],
 
   overrides: [
     {
