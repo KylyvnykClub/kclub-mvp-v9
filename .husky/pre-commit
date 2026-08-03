@@ -1,0 +1,11 @@
+pnpm lint-staged
+
+# Secrets. The first line of defence is not pasting one (CONTRIBUTING.md), but
+# the first line of defence is a person, and this one is not.
+if command -v gitleaks >/dev/null 2>&1; then
+	gitleaks protect --staged --redact --no-banner
+else
+	echo "pre-commit: gitleaks is not installed - staged changes were NOT scanned." >&2
+	echo "            winget install gitleaks.gitleaks" >&2
+	echo "            Continuing, because a missing binary must not teach anyone --no-verify." >&2
+fi

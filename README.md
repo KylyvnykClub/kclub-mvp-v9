@@ -60,13 +60,30 @@ perfectly reasonable.
 
 ## Running it locally
 
-_(Not yet applicable — there is no application code. This section is filled in
-during phase 0; the target is under 30 minutes from a clean machine, and
-anything longer is a bug worth fixing. See
-[CONTRIBUTING.md](CONTRIBUTING.md#getting-set-up).)_
+**What works today.** Node.js 22 LTS and pnpm 10 through Corepack:
 
-Prerequisites will be: Node.js 22 LTS, pnpm 10, Docker (PostgreSQL, Redis,
-MinIO), and the Stripe CLI.
+```bash
+corepack enable
+pnpm install
+pnpm dev                          # http://localhost:3000
+pnpm verify                       # typecheck + lint + format
+```
+
+That is the whole of it, and the page it serves is a placeholder. There is no
+database, no authentication and no interface yet — the skeleton exists so that
+the checks, the hooks and the pipeline are in place before anything depends on
+them.
+
+**What does not work yet, and which task adds it:** the database and migrations
+(T-0.9), Docker services (T-0.17), locales (T-0.14), the design system (T-0.15).
+Until then `pnpm install` is the only setup step. The full prerequisite list —
+Docker for PostgreSQL, Redis and MinIO, plus the Stripe CLI — is in
+[CONTRIBUTING.md](CONTRIBUTING.md#getting-set-up), which describes the finished
+state rather than the current one.
+
+The target remains under 30 minutes from a clean machine; anything longer is a
+bug worth fixing. Current progress is in
+[docs/delivery/phase-0.md](docs/delivery/phase-0.md).
 
 ---
 

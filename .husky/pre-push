@@ -1,0 +1,22 @@
+# Refuse a direct push to main.
+#
+# CONTRIBUTING.md says nobody pushes directly to main, "and the protection rule
+# is what makes that true rather than a habit". That protection rule is not
+# available to us: branch rulesets on a private repository need GitHub Pro, and
+# the account is on the free plan - see docs/delivery/phase-0.md §3, T-0.1.
+#
+# This is the interim stand-in and it is weaker: it is bypassed by --no-verify
+# and it protects only the machines that ran `pnpm install`. It stops the
+# accident, not the decision. Delete it once server-side protection exists.
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+	case "$remote_ref" in
+	refs/heads/main)
+		echo "pre-push: direct push to main refused - open a pull request." >&2
+		echo "          (CONTRIBUTING.md, 'Branching'. Override: git push --no-verify)" >&2
+		exit 1
+		;;
+	esac
+done
+
+exit 0

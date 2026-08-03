@@ -66,6 +66,7 @@ jobs:
       # gets acted on. Keep the rules below in step with the trigger table in
       # docs/documentation.md §3 — this is the same list in a form CI can check.
       - name: Flag documents that should have changed
+        continue-on-error: true
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
@@ -91,7 +92,10 @@ jobs:
 
           if [ -n "$notes" ]; then
             printf 'Documentation likely needs updating in this pull request:\n\n' >> "$GITHUB_STEP_SUMMARY"
-            printf "$notes" >> "$GITHUB_STEP_SUMMARY"
+            # '%b' and not "$notes": the notes begin with "- ", which printf
+            # reads as an option and refuses. This branch had never run until
+            # the first pull request that actually tripped a trigger.
+            printf '%b' "$notes" >> "$GITHUB_STEP_SUMMARY"
             printf '\nSee docs/documentation.md §3. Advisory, not blocking.\n' >> "$GITHUB_STEP_SUMMARY"
           else
             echo 'No documentation triggers fired.' >> "$GITHUB_STEP_SUMMARY"

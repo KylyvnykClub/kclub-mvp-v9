@@ -1,0 +1,15 @@
+/* Intentionally almost empty. The design system - Tailwind 4, the token set in
+   docs/ux.md §6 and the shadcn/ui base - lands in T-0.15. Until then this file
+   exists so the import in layout.tsx is real rather than aspirational. */
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
