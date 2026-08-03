@@ -8,7 +8,7 @@
 
 2. **Brief summary** (don't force handoff engagement):
 
-   ```
+   ```text
    "Last session: [X]. [N] backlog items.
    [If handoffs exist: '1 active handoff: auth-system (Phase 2/3)']
    What would you like to work on?"
@@ -56,8 +56,6 @@ When user runs `/handoff --continue` or says "continue" and there's an active ha
 - **Handoffs**: Update `handoffs.json` progress after completing phases
 
 ---
-
-# CLAUDE.md
 
 Context contract for KCLUB. Read before writing anything in this repository.
 
