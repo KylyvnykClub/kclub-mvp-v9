@@ -22,6 +22,10 @@ blob-report/
 .env
 .env.local
 .env.*.local
+CREDENTIALS.md
+
+# Wrong package manager lockfile (project uses pnpm)
+package-lock.json
 
 # Infrastructure. The lock file IS committed; state and variable files are not.
 .terraform/

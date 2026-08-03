@@ -33,15 +33,15 @@ for spending two to three weeks before the first requirement is implemented.
 
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
-|T-0.1|Git repository initialised, pushed to GitHub, `main` protected, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems)|—|—|0.5d|partial — `main` unprotected, see §3|
-|T-0.2|Twilio account and **A2P 10DLC registration submitted**; brand and campaign filed|—|—|0.5d|open|
-|T-0.3|Remaining vendor accounts: Vercel, Neon, Upstash, Stripe, Inngest, Sentry, Axiom, Resend, Cloudflare, Better Stack, 1Password|—|—|1d|open|
+|T-0.1|Git repository initialised, pushed to GitHub, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems)|—|—|0.5d|partial — `main` unprotected, accepted gap (see §3)|
+|T-0.2|Twilio Verify API configured in dev mode (codes logged to console, no SMS sent). A2P 10DLC deferred to pre-launch checklist|—|—|0.25d|done — account exists from v4, dev mode active|
+|T-0.3|Remaining vendor accounts: Inngest, Sentry, Axiom, Resend, Better Stack. Already provisioned from v4 or earlier: Vercel, Neon (free plan), Upstash, Stripe (test mode), Twilio, Cloudflare|—|—|0.5d|open|
 |T-0.4|Document owners assigned in every header, [documentation.md §2](../documentation.md#2-ownership) and `.github/CODEOWNERS`; `check-docs.py --strict` reports zero warnings|—|—|0.5d|open|
-|T-0.5|The three blocking client decisions closed and recorded (see §3)|—|T-0.3|1d + client|open|
+|T-0.5|The three blocking client decisions closed and recorded (see §3)|—|—|1d + client|open|
 |T-0.6|Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack|—|T-0.1|1d|done 2026-08-03 — see §3 on gitleaks|
 |T-0.7|Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain`|—|T-0.6|0.5d|open|
 |T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|open|
-|T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.3, T-0.8|1d|open|
+|T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.8|1d|open|
 |T-0.10|Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source|—|T-0.9|1.5d|open|
 |T-0.11|`platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags|—|T-0.10|1.5d|open|
 |T-0.12|`audit` module skeleton, append-only: the application's database role has no `UPDATE` or `DELETE` grant on `audit_log`, proved by a test|—|T-0.10|0.5d|open|
@@ -55,47 +55,48 @@ for spending two to three weeks before the first requirement is implemented.
 |T-0.20|FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green|—|T-0.5|0.5d|open|
 |T-0.21|`phase-1.md` written|—|T-0.5, T-0.20|0.5d|open|
 
-**Total: ~19 focused days.** [requirements.md §6.1](../requirements.md#61-delivery-plan)
+**Total: ~18 focused days.** [requirements.md §6.1](../requirements.md#61-delivery-plan)
 budgets two weeks. The difference is T-0.13, which moved here from where it would
 otherwise have happened — spread across phases 1, 2 and 5, at several times the
 cost and after the routes it constrains already existed. The overrun is a
 deliberate purchase, not a slip, and it is the one item in this file worth
 defending against pressure to start features sooner.
 
+Vendor accounts carried from v4 (Stripe, Twilio, Upstash, Vercel, Cloudflare)
+and the early Neon free-plan provisioning save ~1 day against the original
+estimate.
+
 ---
 
 ## 3. Tasks that need explaining
 
-**T-0.1 — `main` cannot be protected on the current plan.** The repository is
-private and the account is on the GitHub free plan, where branch rulesets and
-branch protection are unavailable — the API answers `403 Upgrade to GitHub Pro or
-make this repository public`. Making it public is not an option: `docs/` contains
-the security design and [legal-alignment.md](../legal-alignment.md), which records
-where executed legal documents disagree with the product.
+**T-0.1 — `main` is not protected. Accepted gap.** The repository is private on
+the GitHub free plan, where branch rulesets and branch protection are unavailable.
+Making it public is not an option: `docs/` contains the security design and
+[legal-alignment.md](../legal-alignment.md).
 
-This is not only about direct pushes. **Required status checks live in the same
-feature**, so without it T-0.16 can build a full CI pipeline that reports results
-and blocks nothing. For a project whose stated substitute for a second reviewer is
-automation, a gate that cannot block is the wrong shape of gate.
+**Controls that compensate:**
 
-Interim measure in place: `.husky/pre-push` refuses a push to `main`. Since
-T-0.6 it is committed and therefore shared, which makes it stronger than the
-uncommitted hook it replaced — but it still runs only where `pnpm install` has
-run, and `--no-verify` still passes straight through it. It stops the accident,
-not the decision.
+- `.husky/pre-push` refuses a push to `main` (committed since T-0.6, shared
+  across clones). It stops the accident, not the decision — `--no-verify` passes
+  through.
+- CI pipeline (T-0.16) runs all gates and reports results. It advises rather than
+  blocks; a merge that breaks a gate is visible but not prevented.
+- Solo development with AI review (`/code-review`, `/reflect`) substitutes for
+  the second reviewer that branch protection would otherwise gate on.
 
-**Decision needed before T-0.16:** GitHub Pro (~$4/month) against the ~$380/month
-platform budget in [technology.md §6](../technology.md#6-infrastructure-and-hosting),
-or accept that CI advises rather than blocks and record that as an accepted gap
-with the controls that compensate.
+This is revisited if the team grows beyond one or if GitHub offers protection on
+free private repositories.
 
-**T-0.2 — A2P 10DLC is the critical path, not the code.** US carrier registration
-takes one to three weeks and can be rejected. Until it clears, no SMS reaches a US
-number, and [requirements.md §7](../requirements.md#7-assumptions) already records
-that this blocks sign-up entirely. It is filed on day one, before anything depends
-on it, and its status is checked at every sprint boundary. If it is rejected, the
-whole of phase 1 stalls and the client needs to know that in week one rather than
-week five.
+**T-0.2 — Twilio exists; A2P 10DLC deferred.** The Twilio account and Verify
+service are carried from v4. During development, SMS codes are logged to the
+console (`AUTH_DEV_PHONE_BYPASS_ENABLED=true`), so no real SMS is sent and no
+carrier registration is required.
+
+A2P 10DLC registration (1–3 weeks, can be rejected) moves to the **pre-launch
+checklist**: it must be approved before the first real US phone number receives an
+SMS, but it does not block any development or staging work. The risk entry in §4
+is updated accordingly.
 
 **T-0.5 — three decisions that belong to the client.** All three are already
 recorded as open; none can be answered by engineering:
@@ -190,7 +191,7 @@ decision for the client, and it will probably move work earlier rather than late
 
 |Risk|Signal|Response|
 |-|-|-|
-|A2P 10DLC registration rejected or slow|No approval by the end of sprint 2|Escalate to the client immediately; phase 1 sign-up cannot be demonstrated without it. Consider a non-US test number for development only|
+|A2P 10DLC registration rejected or slow (pre-launch)|No approval two weeks before launch|Escalate to the client. Dev and staging use console-logged codes and are not affected; only production sign-up is blocked|
 |A blocking client decision in T-0.5 does not arrive|No answer by the phase gate|Phase 1 does not start. Do not begin identity work against an unresolved directory constraint — that is the most expensive possible rework|
 |Constraint suites are written to pass rather than to catch|They have never been seen to fail|Each suite ships with a deliberately broken case, run once, in the same commit|
 |CI exceeds the 15-minute budget on an empty project|Pipeline over 10 minutes at T-0.16|Fix now. It only grows, and past twenty minutes changes get batched, which produces exactly the large unreviewable diffs the process avoids|
@@ -223,8 +224,8 @@ The §6.1 criterion, decomposed into checks that can be run:
 - [ ] Sentry, traces and logs show a request end to end from staging, correlated
       by one id
 - [ ] `check-docs.py --strict` and `check-plan.py --strict` both pass
-- [ ] A2P 10DLC registration is approved, or its status is known and the client
-      has been told
+- [ ] Twilio Verify dev mode works: a console-logged code completes a test
+      sign-in on staging
 - [ ] The three T-0.5 decisions are recorded, each in a decision record or in the
       document it changes
 - [ ] `phase-1.md` exists
