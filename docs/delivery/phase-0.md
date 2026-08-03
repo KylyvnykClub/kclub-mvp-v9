@@ -31,29 +31,29 @@ for spending two to three weeks before the first requirement is implemented.
 
 ## 2. Tasks
 
-|Task|Delivers|FR|Depends on|Est|
-|-|-|-|-|-|
-|T-0.1|Git repository initialised, pushed to GitHub, `main` protected, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems)|—|—|0.5d|
-|T-0.2|Twilio account and **A2P 10DLC registration submitted**; brand and campaign filed|—|—|0.5d|
-|T-0.3|Remaining vendor accounts: Vercel, Neon, Upstash, Stripe, Inngest, Sentry, Axiom, Resend, Cloudflare, Better Stack, 1Password|—|—|1d|
-|T-0.4|Document owners assigned in every header, [documentation.md §2](../documentation.md#2-ownership) and `.github/CODEOWNERS`; `check-docs.py --strict` reports zero warnings|—|—|0.5d|
-|T-0.5|The three blocking client decisions closed and recorded (see §3)|—|T-0.3|1d + client|
-|T-0.6|Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack|—|T-0.1|1d|
-|T-0.7|Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain`|—|T-0.6|0.5d|
-|T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|
-|T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.3, T-0.8|1d|
-|T-0.10|Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source|—|T-0.9|1.5d|
-|T-0.11|`platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags|—|T-0.10|1.5d|
-|T-0.12|`audit` module skeleton, append-only: the application's database role has no `UPDATE` or `DELETE` grant on `audit_log`, proved by a test|—|T-0.10|0.5d|
-|T-0.13|**The four constraint suites**, against an empty route table (see §3)|—|T-0.11, T-0.12|2d|
-|T-0.14|i18n scaffolding: `next-intl`, locale-prefixed routes, `messages/{en,ru,uk}.json`, missing-key check in CI, ICU plural setup for `ru`/`uk`|—|T-0.6|1d|
-|T-0.15|Design tokens from [ux.md §6](../ux.md#6-design-system): Tailwind 4 custom properties, light and dark themes, shadcn/ui base installed|—|T-0.6|1d|
-|T-0.16|CI pipeline with every blocking gate in [testing.md §6](../testing.md#6-ci-gates) wired on the skeleton, first blocking result under 10 minutes|—|T-0.10, T-0.13, T-0.14|1.5d|
-|T-0.17|Environments: Terraform for Neon, Upstash, Cloudflare and Vercel; preview per pull request with a Neon branch; staging on merge to `main`; seed script|—|T-0.9, T-0.16|1.5d|
-|T-0.18|Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety))|—|T-0.17|1d|
-|T-0.19|Process documents corrected to the real team shape (see §3)|—|T-0.4|0.5d|
-|T-0.20|FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green|—|T-0.5|0.5d|
-|T-0.21|`phase-1.md` written|—|T-0.5, T-0.20|0.5d|
+|Task|Delivers|FR|Depends on|Est|Status|
+|-|-|-|-|-|-|
+|T-0.1|Git repository initialised, pushed to GitHub, `main` protected, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems)|—|—|0.5d|partial — `main` unprotected, see §3|
+|T-0.2|Twilio account and **A2P 10DLC registration submitted**; brand and campaign filed|—|—|0.5d|open|
+|T-0.3|Remaining vendor accounts: Vercel, Neon, Upstash, Stripe, Inngest, Sentry, Axiom, Resend, Cloudflare, Better Stack, 1Password|—|—|1d|open|
+|T-0.4|Document owners assigned in every header, [documentation.md §2](../documentation.md#2-ownership) and `.github/CODEOWNERS`; `check-docs.py --strict` reports zero warnings|—|—|0.5d|open|
+|T-0.5|The three blocking client decisions closed and recorded (see §3)|—|T-0.3|1d + client|open|
+|T-0.6|Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack|—|T-0.1|1d|done 2026-08-03 — see §3 on gitleaks|
+|T-0.7|Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain`|—|T-0.6|0.5d|open|
+|T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|open|
+|T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.3, T-0.8|1d|open|
+|T-0.10|Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source|—|T-0.9|1.5d|open|
+|T-0.11|`platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags|—|T-0.10|1.5d|open|
+|T-0.12|`audit` module skeleton, append-only: the application's database role has no `UPDATE` or `DELETE` grant on `audit_log`, proved by a test|—|T-0.10|0.5d|open|
+|T-0.13|**The four constraint suites**, against an empty route table (see §3)|—|T-0.11, T-0.12|2d|open|
+|T-0.14|i18n scaffolding: `next-intl`, locale-prefixed routes, `messages/{en,ru,uk}.json`, missing-key check in CI, ICU plural setup for `ru`/`uk`|—|T-0.6|1d|open|
+|T-0.15|Design tokens from [ux.md §6](../ux.md#6-design-system): Tailwind 4 custom properties, light and dark themes, shadcn/ui base installed|—|T-0.6|1d|open|
+|T-0.16|CI pipeline with every blocking gate in [testing.md §6](../testing.md#6-ci-gates) wired on the skeleton, first blocking result under 10 minutes|—|T-0.10, T-0.13, T-0.14|1.5d|open|
+|T-0.17|Environments: Terraform for Neon, Upstash, Cloudflare and Vercel; preview per pull request with a Neon branch; staging on merge to `main`; seed script|—|T-0.9, T-0.16|1.5d|open|
+|T-0.18|Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety))|—|T-0.17|1d|open|
+|T-0.19|Process documents corrected to the real team shape (see §3)|—|T-0.4|0.5d|open|
+|T-0.20|FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green|—|T-0.5|0.5d|open|
+|T-0.21|`phase-1.md` written|—|T-0.5, T-0.20|0.5d|open|
 
 **Total: ~19 focused days.** [requirements.md §6.1](../requirements.md#61-delivery-plan)
 budgets two weeks. The difference is T-0.13, which moved here from where it would
@@ -78,9 +78,11 @@ feature**, so without it T-0.16 can build a full CI pipeline that reports result
 and blocks nothing. For a project whose stated substitute for a second reviewer is
 automation, a gate that cannot block is the wrong shape of gate.
 
-Interim measure in place: a local `.git/hooks/pre-push` that refuses a push to
-`main`. It is honest about being weaker — uncommitted, unshared, and bypassed by
-`--no-verify`. It stops the accident, not the decision.
+Interim measure in place: `.husky/pre-push` refuses a push to `main`. Since
+T-0.6 it is committed and therefore shared, which makes it stronger than the
+uncommitted hook it replaced — but it still runs only where `pnpm install` has
+run, and `--no-verify` still passes straight through it. It stops the accident,
+not the decision.
 
 **Decision needed before T-0.16:** GitHub Pro (~$4/month) against the ~$380/month
 platform budget in [technology.md §6](../technology.md#6-infrastructure-and-hosting),
@@ -133,7 +135,26 @@ they are what makes fast AI-assisted feature work safe rather than merely fast.
 Each suite must be proved to fail — write a deliberately leaking route, watch it
 go red, delete it. A guard that has never failed is not known to work.
 
-**T-0.6 — the formatter does not currently run.** `prettier.config.mjs` imports
+**T-0.6 — two gaps left open, deliberately.**
+
+_`gitleaks` is not installed locally._ It is not in winget, and the pre-commit
+hook therefore prints a loud warning and continues rather than blocking. Blocking
+every commit on a missing binary is how people learn `--no-verify`, which costs
+more than the scan is worth. The real gate is the CI one in T-0.16, where the
+GitHub action supplies the binary. Until then, staged changes are not scanned on
+this machine.
+
+_Node is 24 locally, 22 in CI and on Vercel._ `.nvmrc` and
+[technology.md §9](../technology.md#9-versions-and-upgrade-policy) both say the
+current LTS, which is 22. Nothing has broken, and `engines` is set to `>=22` so
+neither version is refused — but "works on my machine" is exactly the class of
+defect a pinned runtime exists to prevent, and the divergence should close before
+anything native enters the dependency tree.
+
+_Tailwind and shadcn/ui are not here._ They are T-0.15, so the placeholder page
+is deliberately unstyled. Anything built now would be deleted then.
+
+**T-0.6 — the formatter did not run at all until PR #1.** `prettier.config.mjs` imports
 `prettier-plugin-compact-markdown-table` as a default export, which that package
 does not provide, so `pnpm format:check` fails on every file with a configuration
 error rather than a formatting one. The fix is one line — name the plugin as a
