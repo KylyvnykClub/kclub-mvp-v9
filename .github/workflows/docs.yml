@@ -46,8 +46,11 @@ jobs:
       - name: Check Prettier formatting
         run: pnpm format:check
 
+      # .claude/ holds vendored agent and skill definitions we do not author and
+      # would lose on the next update. Linting someone else's markdown produces
+      # failures nobody is allowed to fix.
       - name: Lint markdown formatting
-        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude"
 
   triggers:
     name: Documentation update triggers
