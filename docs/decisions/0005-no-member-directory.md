@@ -62,13 +62,13 @@ that lists everyone is a directory with a login.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Opt-in member directory | The failure mode is social, not technical: once a directory exists, not being in it becomes a signal, and the club's promise is quietly inverted. Also, an opt-in list is still a list to be leaked |
-| Directory visible only to VIP members | Makes the club's core promise a paid-tier exception. If the answer to "do you publish members" becomes "it depends", the answer is yes |
-| Member-to-member messaging without a directory | Requires a way to address a member, which is a directory with extra steps. Referral-to-company covers the legitimate use case |
-| Enforce by code review and policy only | This is the option that fails. It works until the sprint where it does not, and nobody notices which sprint that was |
-| Row-level security in the database | A real enforcement layer, but it lives behind a service role that server-side code holds anyway, and it is much harder to test and review than a function that does not exist |
+|Option|Why not|
+|-|-|
+|Opt-in member directory|The failure mode is social, not technical: once a directory exists, not being in it becomes a signal, and the club's promise is quietly inverted. Also, an opt-in list is still a list to be leaked|
+|Directory visible only to VIP members|Makes the club's core promise a paid-tier exception. If the answer to "do you publish members" becomes "it depends", the answer is yes|
+|Member-to-member messaging without a directory|Requires a way to address a member, which is a directory with extra steps. Referral-to-company covers the legitimate use case|
+|Enforce by code review and policy only|This is the option that fails. It works until the sprint where it does not, and nobody notices which sprint that was|
+|Row-level security in the database|A real enforcement layer, but it lives behind a service role that server-side code holds anyway, and it is much harder to test and review than a function that does not exist|
 
 ## Consequences
 

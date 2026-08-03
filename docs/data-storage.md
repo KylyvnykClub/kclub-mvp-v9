@@ -86,28 +86,28 @@ account inherit staff scope.
    └────────────┘   └───────────┘
 ```
 
-| Entity                                | Represents                                                 | Key relationships                     | Approximate volume          |
-| ------------------------------------- | ---------------------------------------------------------- | ------------------------------------- | --------------------------- |
-| `member`                              | A verified person                                          | 1:1 card, 1:N sessions, 1:N companies | 1,000 → 25,000              |
-| `member_session`                      | An active sign-in                                          | N:1 member                            | 3,000 → 80,000 (rolling)    |
-| `trusted_device`                      | A device that has already passed an SMS challenge          | N:1 member                            | 1,500 → 40,000              |
-| `phone_verification`                  | One SMS code attempt; holds the Twilio SID, never the code | N:1 member (nullable)                 | 1,500 → 60,000/year, pruned |
-| `membership_card`                     | Proof of membership, with a QR token                       | 1:1 member                            | 1,000 → 25,000              |
-| `legal_document` / `legal_acceptance` | Versioned terms and who accepted which version             | N:1 member                            | 5 docs → 25,000 acceptances |
-| `company`                             | A partner business                                         | N:1 member (owner), category, city    | 50 → 2,000                  |
-| `company_translation`                 | Localised name/description/discount text                   | N:1 company                           | 100 → 4,000                 |
-| `category`, `country`, `city`         | Reference data                                             | —                                     | ~40 / ~200 / ~5,000         |
-| `moderation_decision`                 | One approve/reject, permanently                            | N:1 company or referral               | 100 → 5,000                 |
-| `plan`, `price`                       | What we sell and for how much, with history                | 1:N                                   | 3 plans, ~10 prices         |
-| `subscription`                        | A Stripe subscription, projected                           | N:1 plan; subject = member or company | 100 → 3,000                 |
-| `entitlement`                         | What a subscription unlocks in the product                 | N:1 subscription                      | 100 → 3,000                 |
-| `payment`                             | A settled Stripe invoice                                   | N:1 subscription                      | 300 → 30,000/year           |
-| `stripe_event`                        | Every webhook received, by id                              | —                                     | 2,000 → 120,000/year        |
-| `referral`                            | A client introduction between two companies                | N:2 company                           | 0 → 36,000/year             |
-| `staff_user`                          | An employee of the club                                    | 1:N audit entries                     | 4 → 12                      |
-| `audit_log`                           | What a staff user or the system changed                    | N:1 actor                             | 2,000 → 150,000/year        |
-| `outbox`                              | Committed intent to do something outside the transaction   | —                                     | drained continuously        |
-| `notification_log`                    | What we sent, to whom, in which language                   | N:1 member                            | 3,000 → 200,000/year        |
+|Entity|Represents|Key relationships|Approximate volume|
+|-|-|-|-|
+|`member`|A verified person|1:1 card, 1:N sessions, 1:N companies|1,000 → 25,000|
+|`member_session`|An active sign-in|N:1 member|3,000 → 80,000 (rolling)|
+|`trusted_device`|A device that has already passed an SMS challenge|N:1 member|1,500 → 40,000|
+|`phone_verification`|One SMS code attempt; holds the Twilio SID, never the code|N:1 member (nullable)|1,500 → 60,000/year, pruned|
+|`membership_card`|Proof of membership, with a QR token|1:1 member|1,000 → 25,000|
+|`legal_document` / `legal_acceptance`|Versioned terms and who accepted which version|N:1 member|5 docs → 25,000 acceptances|
+|`company`|A partner business|N:1 member (owner), category, city|50 → 2,000|
+|`company_translation`|Localised name/description/discount text|N:1 company|100 → 4,000|
+|`category`, `country`, `city`|Reference data|—|~40 / ~200 / ~5,000|
+|`moderation_decision`|One approve/reject, permanently|N:1 company or referral|100 → 5,000|
+|`plan`, `price`|What we sell and for how much, with history|1:N|3 plans, ~10 prices|
+|`subscription`|A Stripe subscription, projected|N:1 plan; subject = member or company|100 → 3,000|
+|`entitlement`|What a subscription unlocks in the product|N:1 subscription|100 → 3,000|
+|`payment`|A settled Stripe invoice|N:1 subscription|300 → 30,000/year|
+|`stripe_event`|Every webhook received, by id|—|2,000 → 120,000/year|
+|`referral`|A client introduction between two companies|N:2 company|0 → 36,000/year|
+|`staff_user`|An employee of the club|1:N audit entries|4 → 12|
+|`audit_log`|What a staff user or the system changed|N:1 actor|2,000 → 150,000/year|
+|`outbox`|Committed intent to do something outside the transaction|—|drained continuously|
+|`notification_log`|What we sent, to whom, in which language|N:1 member|3,000 → 200,000/year|
 
 **Conventions applied to every table:** `id` is a UUIDv7 (time-ordered, so
 b-tree inserts stay local and an id does not leak a sequence count);
@@ -120,14 +120,14 @@ adding a value to a native enum in a zero-downtime migration is awkward.
 
 ## 2. Storage choices
 
-| Store                                  | Holds                                                                                                       | Source of truth?                               | Why this store                                                                                                                                                                                           |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primary database (PostgreSQL 17, Neon) | Everything above                                                                                            | Yes, for everything except subscriptions       | The domain is relational and the money is transactional. It also absorbs three jobs — search, queue outbox, and JSON diffs in the audit log — that would otherwise each be a separate service to operate |
-| Cache (Upstash Redis)                  | Rate-limit and quota counters, SMS send counters, catalogue facet counts, verification-page lookup counters | No                                             | Needs atomic counters with expiry at the edge of the request, which PostgreSQL can do but not cheaply at every request                                                                                   |
-| Object storage (Cloudflare R2)         | Partner logos and cover images                                                                              | Yes, for the bytes; the key lives in `company` | Images do not belong in a database, and R2 charges nothing for egress                                                                                                                                    |
-| Search index                           | —                                                                                                           | —                                              | Not applicable — search is a `tsvector` column inside the primary database, see [decisions/0006-postgres-full-text-search.md](decisions/0006-postgres-full-text-search.md)                               |
-| Stripe                                 | Subscriptions, invoices, customers, cards                                                                   | **Yes** — ours is a projection                 | We are legally and practically better off not being the record of what someone was charged                                                                                                               |
-| Twilio Verify                          | In-flight verification codes                                                                                | Yes, while in flight                           | We deliberately never store a code, so a database compromise cannot approve a verification                                                                                                               |
+|Store|Holds|Source of truth?|Why this store|
+|-|-|-|-|
+|Primary database (PostgreSQL 17, Neon)|Everything above|Yes, for everything except subscriptions|The domain is relational and the money is transactional. It also absorbs three jobs — search, queue outbox, and JSON diffs in the audit log — that would otherwise each be a separate service to operate|
+|Cache (Upstash Redis)|Rate-limit and quota counters, SMS send counters, catalogue facet counts, verification-page lookup counters|No|Needs atomic counters with expiry at the edge of the request, which PostgreSQL can do but not cheaply at every request|
+|Object storage (Cloudflare R2)|Partner logos and cover images|Yes, for the bytes; the key lives in `company`|Images do not belong in a database, and R2 charges nothing for egress|
+|Search index|—|—|Not applicable — search is a `tsvector` column inside the primary database, see [decisions/0006-postgres-full-text-search.md](decisions/0006-postgres-full-text-search.md)|
+|Stripe|Subscriptions, invoices, customers, cards|**Yes** — ours is a projection|We are legally and practically better off not being the record of what someone was charged|
+|Twilio Verify|In-flight verification codes|Yes, while in flight|We deliberately never store a code, so a database compromise cannot approve a verification|
 
 **If a non-authoritative store is lost.** Redis: nothing breaks. Counters reset,
 which makes rate limits temporarily more permissive for one window; the durable
@@ -141,15 +141,15 @@ mode over all subscriptions takes minutes at 3,000 rows.
 
 ## 3. Schema and migrations
 
-| Aspect                                | Approach                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Migration tool                        | `drizzle-kit generate` produces SQL; the SQL is reviewed and committed, never generated at deploy time                                                                                                                                                                                                                                                                                                                                       |
-| Where migrations live                 | `db/migrations/NNNN_description.sql`, immutable once merged                                                                                                                                                                                                                                                                                                                                                                                  |
-| Applied when                          | As an explicit CI step **before** the new application version receives traffic, against the same database the old version is still using                                                                                                                                                                                                                                                                                                     |
-| Reversible?                           | Every migration ships with a `down.sql`, and CI proves it by applying up → down → up on a fresh branch database. Reversibility is not assumed; it is tested                                                                                                                                                                                                                                                                                  |
-| Zero-downtime rule                    | Expand, migrate, contract, across three releases. Release 1 adds the new column as nullable and starts writing both. Release 2 backfills and switches reads. Release 3 drops the old column. A pull request that adds a `NOT NULL` column without a default, renames a column, or drops one still referenced by the previous release fails review — the previous version of the application is still serving traffic during a rolling deploy |
-| Large-table changes                   | `CREATE INDEX CONCURRENTLY`; backfills in batches of 1,000 rows with a pause between batches, run as an Inngest job rather than inside a migration; `lock_timeout = 3s` and `statement_timeout = 30s` set for every migration session so a migration fails fast instead of blocking the site                                                                                                                                                 |
-| Who may run a migration in production | Nobody by hand. Only the deployment pipeline, using a role that can `CREATE`/`ALTER` but cannot read `member.phone_e164` (see §9)                                                                                                                                                                                                                                                                                                            |
+|Aspect|Approach|
+|-|-|
+|Migration tool|`drizzle-kit generate` produces SQL; the SQL is reviewed and committed, never generated at deploy time|
+|Where migrations live|`db/migrations/NNNN_description.sql`, immutable once merged|
+|Applied when|As an explicit CI step **before** the new application version receives traffic, against the same database the old version is still using|
+|Reversible?|Every migration ships with a `down.sql`, and CI proves it by applying up → down → up on a fresh branch database. Reversibility is not assumed; it is tested|
+|Zero-downtime rule|Expand, migrate, contract, across three releases. Release 1 adds the new column as nullable and starts writing both. Release 2 backfills and switches reads. Release 3 drops the old column. A pull request that adds a `NOT NULL` column without a default, renames a column, or drops one still referenced by the previous release fails review — the previous version of the application is still serving traffic during a rolling deploy|
+|Large-table changes|`CREATE INDEX CONCURRENTLY`; backfills in batches of 1,000 rows with a pause between batches, run as an Inngest job rather than inside a migration; `lock_timeout = 3s` and `statement_timeout = 30s` set for every migration session so a migration fails fast instead of blocking the site|
+|Who may run a migration in production|Nobody by hand. Only the deployment pipeline, using a role that can `CREATE`/`ALTER` but cannot read `member.phone_e164` (see §9)|
 
 **Seed and reference data.** Categories, countries and cities are seeded from a
 checked-in dataset (ISO 3166 for countries; a curated city list per country) and
@@ -167,22 +167,22 @@ string.
 Data we no longer hold cannot leak and cannot be demanded. Retention here is a
 security control first and a cost control second.
 
-| Data                                                                       | Retention period                                                         | Deletion method                                                                                                                                                          | Driven by                                                                                                 |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Member account, active                                                     | While the account exists                                                 | —                                                                                                                                                                        | —                                                                                                         |
-| Member account, after deletion request                                     | 30 days, then irreversible                                               | Anonymise: phone number, password hash, display name and sessions destroyed; the member row survives with `deleted_at` set so financial records keep a valid foreign key | GDPR Art. 17, balanced against tax record-keeping                                                         |
-| Pending (never verified) registration                                      | 24 hours                                                                 | Hard delete                                                                                                                                                              | Minimisation — an unverified number is not a member                                                       |
-| `phone_verification` rows                                                  | 90 days                                                                  | Hard delete                                                                                                                                                              | Abuse investigation window                                                                                |
-| `member_session`                                                           | 30 days idle, 90 days absolute                                           | Hard delete                                                                                                                                                              | Session policy in [security.md §2](security.md#2-authentication-and-authorization)                        |
-| Membership card                                                            | Life of the member; revoked cards retained 24 months                     | Retain revoked record, destroy the QR token immediately on revocation                                                                                                    | Fraud investigation                                                                                       |
-| Company, unpublished by owner                                              | 12 months                                                                | Anonymise owner link, retain the moderation history                                                                                                                      | Moderation integrity                                                                                      |
-| Referral **client contact details**                                        | Until accepted, declined, expired (14 days), or rejected — then 24 hours | Hard delete of the encrypted contact column; the referral shell is retained                                                                                              | Minimisation; the client is not our user ([decisions/0009](decisions/0009-referral-data-minimisation.md)) |
-| Referral shell (who referred whom, when, outcome)                          | 24 months                                                                | Hard delete                                                                                                                                                              | Abuse and dispute handling                                                                                |
-| Payment and invoice records                                                | 7 years                                                                  | Retained; never deleted by a user request                                                                                                                                | Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure                 |
-| Audit log                                                                  | 7 years                                                                  | Never deleted from the application                                                                                                                                       | [security.md §7](security.md#7-auditing-and-access-control)                                               |
-| Application logs                                                           | 30 days                                                                  | Automatic expiry in Axiom                                                                                                                                                | Cost and minimisation                                                                                     |
-| Notification log (recipient, template, language, outcome — never the body) | 12 months                                                                | Hard delete                                                                                                                                                              | Deliverability debugging                                                                                  |
-| Database backups                                                           | 30 days point-in-time, 12 monthly snapshots                              | Automatic expiry                                                                                                                                                         | Recovery window                                                                                           |
+|Data|Retention period|Deletion method|Driven by|
+|-|-|-|-|
+|Member account, active|While the account exists|—|—|
+|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, password hash, display name and sessions destroyed; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
+|Pending (never verified) registration|24 hours|Hard delete|Minimisation — an unverified number is not a member|
+|`phone_verification` rows|90 days|Hard delete|Abuse investigation window|
+|`member_session`|30 days idle, 90 days absolute|Hard delete|Session policy in [security.md §2](security.md#2-authentication-and-authorization)|
+|Membership card|Life of the member; revoked cards retained 24 months|Retain revoked record, destroy the QR token immediately on revocation|Fraud investigation|
+|Company, unpublished by owner|12 months|Anonymise owner link, retain the moderation history|Moderation integrity|
+|Referral **client contact details**|Until accepted, declined, expired (14 days), or rejected — then 24 hours|Hard delete of the encrypted contact column; the referral shell is retained|Minimisation; the client is not our user ([decisions/0009](decisions/0009-referral-data-minimisation.md))|
+|Referral shell (who referred whom, when, outcome)|24 months|Hard delete|Abuse and dispute handling|
+|Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
+|Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
+|Application logs|30 days|Automatic expiry in Axiom|Cost and minimisation|
+|Notification log (recipient, template, language, outcome — never the body)|12 months|Hard delete|Deliverability debugging|
+|Database backups|30 days point-in-time, 12 monthly snapshots|Automatic expiry|Recovery window|
 
 **Soft vs. hard delete.** Soft delete (`deleted_at`) is used only where a
 foreign key must survive: members with payment history, and companies with
@@ -223,13 +223,13 @@ revenue reporting and cohort counts and insufficient to identify a person.
 
 ## 5. Backup and recovery
 
-| Store                   | Method                                      | Frequency         | Retained             | Location                                                                                     | Encrypted                                                             |
-| ----------------------- | ------------------------------------------- | ----------------- | -------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| PostgreSQL (Neon)       | Continuous WAL, point-in-time restore       | Continuous        | 30 days              | `us-east-1`                                                                                  | Yes, AES-256 at rest                                                  |
-| PostgreSQL logical dump | `pg_dump` to R2, written by a scheduled job | Nightly 03:15 UTC | 12 monthly, 30 daily | Cloudflare R2, `eu-central-1`, **separate account and separate credentials from production** | Yes, and additionally age-encrypted with a key held only in 1Password |
-| Cloudflare R2 (images)  | Object versioning                           | Continuous        | 30 days              | Same bucket                                                                                  | Yes                                                                   |
-| Stripe                  | Vendor-managed; not ours to back up         | —                 | —                    | —                                                                                            | —                                                                     |
-| Secrets                 | 1Password vault with its own recovery       | Continuous        | —                    | —                                                                                            | Yes                                                                   |
+|Store|Method|Frequency|Retained|Location|Encrypted|
+|-|-|-|-|-|-|
+|PostgreSQL (Neon)|Continuous WAL, point-in-time restore|Continuous|30 days|`us-east-1`|Yes, AES-256 at rest|
+|PostgreSQL logical dump|`pg_dump` to R2, written by a scheduled job|Nightly 03:15 UTC|12 monthly, 30 daily|Cloudflare R2, `eu-central-1`, **separate account and separate credentials from production**|Yes, and additionally age-encrypted with a key held only in 1Password|
+|Cloudflare R2 (images)|Object versioning|Continuous|30 days|Same bucket|Yes|
+|Stripe|Vendor-managed; not ours to back up|—|—|—|—|
+|Secrets|1Password vault with its own recovery|Continuous|—|—|Yes|
 
 The second row is the one that matters. Neon's own point-in-time recovery
 protects against our mistakes; it does not protect against our Neon account
@@ -270,15 +270,15 @@ hypothesis.
 
 ## 6. Consistency and transactions
 
-| Operation                                                             | Guarantee needed                                            | How it is achieved                                                                                                                                                       |
-| --------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Verify phone → activate member → issue card → record legal acceptance | Strong, all-or-nothing                                      | One database transaction. A verified member without a card is a support ticket; a retryable failure is not                                                               |
-| Record a Stripe event → project entitlement                           | Exactly-once effect                                         | `stripe_event.id` is the primary key, so a duplicate delivery fails the insert; projection is idempotent and is a fold over the current subscription object, not a delta |
-| Approve a company → publish it                                        | Strong within the database; eventual with respect to Stripe | Publication requires `approved ∧ listing_active`; both are local columns updated in transactions                                                                         |
-| Create a referral → decrement quota                                   | Strong                                                      | Quota is enforced by a durable `COUNT` inside the same transaction, with a partial index supporting it; Redis is a fast pre-check only, never the authority              |
-| Send a notification after a domain change                             | At-least-once, never before the change commits              | Outbox: the notification row commits with the domain change; a dispatcher delivers it afterwards                                                                         |
-| Change a price                                                        | Strong locally, then propagated                             | New `price` row with `effective_from`; the Stripe Price object is created by the same job, and the local row is not marked active until Stripe confirms                  |
-| Read your own write after a mutation                                  | Strong                                                      | All reads go to the primary. When a read replica is added, member-area reads that follow a mutation in the same request stay pinned to the primary                       |
+|Operation|Guarantee needed|How it is achieved|
+|-|-|-|
+|Verify phone → activate member → issue card → record legal acceptance|Strong, all-or-nothing|One database transaction. A verified member without a card is a support ticket; a retryable failure is not|
+|Record a Stripe event → project entitlement|Exactly-once effect|`stripe_event.id` is the primary key, so a duplicate delivery fails the insert; projection is idempotent and is a fold over the current subscription object, not a delta|
+|Approve a company → publish it|Strong within the database; eventual with respect to Stripe|Publication requires `approved ∧ listing_active`; both are local columns updated in transactions|
+|Create a referral → decrement quota|Strong|Quota is enforced by a durable `COUNT` inside the same transaction, with a partial index supporting it; Redis is a fast pre-check only, never the authority|
+|Send a notification after a domain change|At-least-once, never before the change commits|Outbox: the notification row commits with the domain change; a dispatcher delivers it afterwards|
+|Change a price|Strong locally, then propagated|New `price` row with `effective_from`; the Stripe Price object is created by the same job, and the local row is not marked active until Stripe confirms|
+|Read your own write after a mutation|Strong|All reads go to the primary. When a read replica is added, member-area reads that follow a mutation in the same request stay pinned to the primary|
 
 **Cross-store writes.** Three exist, and each uses the outbox rather than a
 best-effort call inside a transaction:
@@ -310,16 +310,16 @@ claiming an outbox batch — `SELECT … FOR UPDATE SKIP LOCKED` is used.
 
 ## 7. Caching
 
-| Cached                                                          | Where                                       | TTL                                   | Invalidated by                            | Staleness tolerated                                 |
-| --------------------------------------------------------------- | ------------------------------------------- | ------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| Marketing pages, legal pages                                    | CDN (Vercel)                                | 1 hour, `stale-while-revalidate` 24 h | Deploy                                    | Yes — content changes with a release                |
-| Curated showcase (top/featured partners)                        | CDN, ISR                                    | 5 minutes                             | Tag revalidation when staff change a rank | Yes, up to 5 minutes                                |
-| Static assets, fonts, images                                    | CDN                                         | 1 year, immutable, content-hashed     | New hash                                  | Yes                                                 |
-| Catalogue facet counts (how many partners per category/country) | Redis                                       | 5 minutes                             | Company publish/unpublish                 | Yes                                                 |
-| Reference data (categories, countries, cities)                  | In-process LRU                              | 10 minutes                            | Deploy or explicit bust on edit           | Yes                                                 |
-| Card verification result                                        | **Not cached**                              | —                                     | —                                         | No. A revoked card must read as revoked immediately |
-| Any member-specific response                                    | **Not cached anywhere shared**              | —                                     | —                                         | No                                                  |
-| Entitlements                                                    | In-request memo only, never across requests | request                               | —                                         | No                                                  |
+|Cached|Where|TTL|Invalidated by|Staleness tolerated|
+|-|-|-|-|-|
+|Marketing pages, legal pages|CDN (Vercel)|1 hour, `stale-while-revalidate` 24 h|Deploy|Yes — content changes with a release|
+|Curated showcase (top/featured partners)|CDN, ISR|5 minutes|Tag revalidation when staff change a rank|Yes, up to 5 minutes|
+|Static assets, fonts, images|CDN|1 year, immutable, content-hashed|New hash|Yes|
+|Catalogue facet counts (how many partners per category/country)|Redis|5 minutes|Company publish/unpublish|Yes|
+|Reference data (categories, countries, cities)|In-process LRU|10 minutes|Deploy or explicit bust on edit|Yes|
+|Card verification result|**Not cached**|—|—|No. A revoked card must read as revoked immediately|
+|Any member-specific response|**Not cached anywhere shared**|—|—|No|
+|Entitlements|In-request memo only, never across requests|request|—|No|
 
 Member-area responses are served with `Cache-Control: private, no-store` and
 `Vary: Cookie`. The failure mode being designed out is one member's page being
@@ -336,27 +336,27 @@ volume in [requirements.md §5.3](requirements.md#53-scalability).
 
 ## 8. Performance and scaling
 
-| Aspect                  | Approach                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Indexing strategy       | Index every foreign key and every column used in a `WHERE` on a hot path. Named specifically: unique on `member.phone_e164`; unique on `membership_card.verify_token_hash`; composite on `company (status, category_id, country_code, city_id)` for the catalogue filter; GIN on `company.search_vector`; GIN `pg_trgm` on `company.name` for prefix search; partial index on `referral (sender_company_id, created_at) WHERE created_at > now() - interval '24 hours'` for the quota check; composite on `audit_log (actor_id, created_at DESC)`; index on `outbox (created_at) WHERE processed_at IS NULL` |
-| Known expensive queries | The finance dashboard's revenue-by-country aggregation (FR-082) — scans `payment` for a month and joins `member`; capped by a materialised daily rollup refreshed hourly. The catalogue's combined filter + full-text query — kept under 400 ms by the composite index plus the GIN index, verified in CI against a 10,000-row fixture with `EXPLAIN` assertions                                                                                                                                                                                                                                             |
-| Slow query monitoring   | `pg_stat_statements` sampled hourly into a dashboard; any statement whose mean exceeds 200 ms raises a warning; Neon's own slow-query log at 500 ms. See [observability.md](observability.md)                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Connection pooling      | Neon's pooled endpoint (PgBouncer, transaction mode) is the only endpoint the application uses; the direct endpoint is reserved for migrations. Serverless functions must never hold a session-mode connection, and prepared statements are disabled accordingly                                                                                                                                                                                                                                                                                                                                             |
-| Archiving of old rows   | `audit_log`, `payment` and `notification_log` are partitioned by month once any exceeds 5 million rows; partitions older than the retention period are detached and dropped rather than deleted row by row                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Scaling plan            | Vertical first (Neon autoscaling compute, currently 1–4 CU) → read replica for the staff console and marketing → partition the three growth tables by month → only then consider anything else. Sharding is not in this plan and should not be added to it without a decision record explaining what changed                                                                                                                                                                                                                                                                                                 |
+|Aspect|Approach|
+|-|-|
+|Indexing strategy|Index every foreign key and every column used in a `WHERE` on a hot path. Named specifically: unique on `member.phone_e164`; unique on `membership_card.verify_token_hash`; composite on `company (status, category_id, country_code, city_id)` for the catalogue filter; GIN on `company.search_vector`; GIN `pg_trgm` on `company.name` for prefix search; partial index on `referral (sender_company_id, created_at) WHERE created_at > now() - interval '24 hours'` for the quota check; composite on `audit_log (actor_id, created_at DESC)`; index on `outbox (created_at) WHERE processed_at IS NULL`|
+|Known expensive queries|The finance dashboard's revenue-by-country aggregation (FR-082) — scans `payment` for a month and joins `member`; capped by a materialised daily rollup refreshed hourly. The catalogue's combined filter + full-text query — kept under 400 ms by the composite index plus the GIN index, verified in CI against a 10,000-row fixture with `EXPLAIN` assertions|
+|Slow query monitoring|`pg_stat_statements` sampled hourly into a dashboard; any statement whose mean exceeds 200 ms raises a warning; Neon's own slow-query log at 500 ms. See [observability.md](observability.md)|
+|Connection pooling|Neon's pooled endpoint (PgBouncer, transaction mode) is the only endpoint the application uses; the direct endpoint is reserved for migrations. Serverless functions must never hold a session-mode connection, and prepared statements are disabled accordingly|
+|Archiving of old rows|`audit_log`, `payment` and `notification_log` are partitioned by month once any exceeds 5 million rows; partitions older than the retention period are detached and dropped rather than deleted row by row|
+|Scaling plan|Vertical first (Neon autoscaling compute, currently 1–4 CU) → read replica for the staff console and marketing → partition the three growth tables by month → only then consider anything else. Sharding is not in this plan and should not be added to it without a decision record explaining what changed|
 
 ---
 
 ## 9. Data access
 
-| Consumer           | Access                                                                                                                                                                                                        | Restrictions                                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Application        | Pooled endpoint, role `app_rw`                                                                                                                                                                                | `SELECT`/`INSERT`/`UPDATE` on domain tables; `INSERT` only on `audit_log` — no `UPDATE`, no `DELETE` grant, so the application literally cannot rewrite its own audit trail; no `DDL` |
-| Migration pipeline | Direct endpoint, role `app_migrate`                                                                                                                                                                           | `DDL` only, used exclusively by CI, credentials not present in the runtime environment                                                                                                |
-| Developers         | **No standing access to production.** Read-only access is granted for a named incident, time-boxed to 4 hours, through a Neon role that masks `member.phone_e164` and `referral.client_contact` behind a view | Granted by the owner, announced in the incident channel, logged, and expiring automatically. Every session is recorded in the audit log by hand as part of the runbook                |
-| Analytics / BI     | None. The staff console is the only reporting surface                                                                                                                                                         | If a BI tool is ever added it connects to a read replica with a masked view, never to the primary                                                                                     |
-| Support tooling    | The staff console only, under the role model in [security.md §2](security.md#2-authentication-and-authorization)                                                                                              | Support staff see what the console shows them and nothing more; the console is the audit boundary                                                                                     |
-| Backups            | Written by a job role with `pg_dump` rights, read by nobody routinely                                                                                                                                         | Restoring a dump requires the 1Password age key, held by the owner and the tech lead                                                                                                  |
+|Consumer|Access|Restrictions|
+|-|-|-|
+|Application|Pooled endpoint, role `app_rw`|`SELECT`/`INSERT`/`UPDATE` on domain tables; `INSERT` only on `audit_log` — no `UPDATE`, no `DELETE` grant, so the application literally cannot rewrite its own audit trail; no `DDL`|
+|Migration pipeline|Direct endpoint, role `app_migrate`|`DDL` only, used exclusively by CI, credentials not present in the runtime environment|
+|Developers|**No standing access to production.** Read-only access is granted for a named incident, time-boxed to 4 hours, through a Neon role that masks `member.phone_e164` and `referral.client_contact` behind a view|Granted by the owner, announced in the incident channel, logged, and expiring automatically. Every session is recorded in the audit log by hand as part of the runbook|
+|Analytics / BI|None. The staff console is the only reporting surface|If a BI tool is ever added it connects to a read replica with a masked view, never to the primary|
+|Support tooling|The staff console only, under the role model in [security.md §2](security.md#2-authentication-and-authorization)|Support staff see what the console shows them and nothing more; the console is the audit boundary|
+|Backups|Written by a job role with `pg_dump` rights, read by nobody routinely|Restoring a dump requires the 1Password age key, held by the owner and the tech lead|
 
 **Production data in non-production environments: forbidden.** No exception, no
 "masked copy for debugging". Preview and staging are seeded with generated data

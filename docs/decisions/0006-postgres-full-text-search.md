@@ -59,14 +59,14 @@ reconsider will be made from data rather than from a hunch.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Elasticsearch / OpenSearch | The most capable and the most expensive to operate. A cluster to run, secure, back up and upgrade for 15,000 rows is disproportionate by roughly three orders of magnitude |
-| Algolia | Excellent product, near-zero operations. Rejected on two grounds: catalogue content would be replicated to a third party and its search API keys are exposed to the browser by design, which conflicts with a catalogue that is authenticated-only; and pricing is per search operation, which grows with exactly the behaviour we want to encourage |
-| Typesense / Meilisearch (self-hosted) | Cheaper than Elasticsearch and genuinely good at typo tolerance. Still a second stateful service with its own backup, sync and failure story |
-| Typesense Cloud / Meilisearch Cloud | Removes the operations but keeps the sync path and adds a sub-processor, for features we do not yet know we need |
-| Plain `ILIKE` matching only | Would work at 50 rows and degrade badly by 2,000; no ranking at all, so the most relevant partner is wherever the index put it. It remains the documented fallback when the search vector is unavailable |
-| `pgvector` semantic search | Interesting for "find me a lawyer who handles immigration" phrased naturally. Premature: it needs embeddings, an embedding vendor, and a much larger catalogue before ranking quality beats keyword matching |
+|Option|Why not|
+|-|-|
+|Elasticsearch / OpenSearch|The most capable and the most expensive to operate. A cluster to run, secure, back up and upgrade for 15,000 rows is disproportionate by roughly three orders of magnitude|
+|Algolia|Excellent product, near-zero operations. Rejected on two grounds: catalogue content would be replicated to a third party and its search API keys are exposed to the browser by design, which conflicts with a catalogue that is authenticated-only; and pricing is per search operation, which grows with exactly the behaviour we want to encourage|
+|Typesense / Meilisearch (self-hosted)|Cheaper than Elasticsearch and genuinely good at typo tolerance. Still a second stateful service with its own backup, sync and failure story|
+|Typesense Cloud / Meilisearch Cloud|Removes the operations but keeps the sync path and adds a sub-processor, for features we do not yet know we need|
+|Plain `ILIKE` matching only|Would work at 50 rows and degrade badly by 2,000; no ranking at all, so the most relevant partner is wherever the index put it. It remains the documented fallback when the search vector is unavailable|
+|`pgvector` semantic search|Interesting for "find me a lawyer who handles immigration" phrased naturally. Premature: it needs embeddings, an embedding vendor, and a much larger catalogue before ranking quality beats keyword matching|
 
 ## Consequences
 

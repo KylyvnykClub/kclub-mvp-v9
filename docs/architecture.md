@@ -66,21 +66,21 @@ importing from `modules/*/internal/**` outside the owning module, and forbids
 any database call outside `src/data`. Without enforcement, a modular monolith
 becomes a monolith within one sprint.
 
-| Component | Responsibility | Owns | Depends on |
-| --- | --- | --- | --- |
-| `web/marketing` | Renders the public, indexable site and the curated partner showcase | Nothing | `catalogue` (read-only, published entries only) |
-| `web/member` | Renders the authenticated member area and its interactions | Nothing | `identity`, `membership`, `catalogue`, `billing`, `referrals` |
-| `web/admin` | Renders the staff console | Nothing | Every module, through explicitly authorised use cases |
-| `web/verify` | Serves the public card verification page | Nothing | `membership` (one narrow read) |
-| `identity` | Establishes and proves who a member or staff user is | Members, staff users, credentials, sessions, verification attempts, devices | Twilio Verify, `audit` |
-| `membership` | Issues, displays, revokes and reissues membership cards, and holds the member's tier | Cards, QR tokens, tier state | `identity`, `billing` (tier), `audit` |
-| `catalogue` | Holds partner companies and answers searches over the published ones | Companies, categories, countries, cities, showcase ranks, search index | `billing` (publication depends on an active listing), `moderation` |
-| `moderation` | Runs the review queues and records every decision | Submissions, review decisions, rejection reasons | `catalogue`, `referrals`, `audit` |
-| `billing` | Translates Stripe's world into the club's entitlements | Subscriptions, plans and prices, payments, processed Stripe events | Stripe, `audit`, outbox |
-| `referrals` | Carries a client introduction from one partner to another, under quota and consent | Referrals, consent attestations, quota counters | `catalogue`, `moderation`, `billing` (VIP check), `audit` |
-| `notifications` | Delivers a message in the recipient's language over the right channel | Templates, delivery log | Resend, Twilio Messaging |
-| `audit` | Records what a staff user or the system did, permanently | Audit log | Nothing (deliberately — it must not be able to fail because of another module) |
-| `platform` | Cross-cutting machinery: authorization, rate limiting, outbox, feature flags, i18n | Outbox table, flags | Upstash, Inngest |
+|Component|Responsibility|Owns|Depends on|
+|-|-|-|-|
+|`web/marketing`|Renders the public, indexable site and the curated partner showcase|Nothing|`catalogue` (read-only, published entries only)|
+|`web/member`|Renders the authenticated member area and its interactions|Nothing|`identity`, `membership`, `catalogue`, `billing`, `referrals`|
+|`web/admin`|Renders the staff console|Nothing|Every module, through explicitly authorised use cases|
+|`web/verify`|Serves the public card verification page|Nothing|`membership` (one narrow read)|
+|`identity`|Establishes and proves who a member or staff user is|Members, staff users, credentials, sessions, verification attempts, devices|Twilio Verify, `audit`|
+|`membership`|Issues, displays, revokes and reissues membership cards, and holds the member's tier|Cards, QR tokens, tier state|`identity`, `billing` (tier), `audit`|
+|`catalogue`|Holds partner companies and answers searches over the published ones|Companies, categories, countries, cities, showcase ranks, search index|`billing` (publication depends on an active listing), `moderation`|
+|`moderation`|Runs the review queues and records every decision|Submissions, review decisions, rejection reasons|`catalogue`, `referrals`, `audit`|
+|`billing`|Translates Stripe's world into the club's entitlements|Subscriptions, plans and prices, payments, processed Stripe events|Stripe, `audit`, outbox|
+|`referrals`|Carries a client introduction from one partner to another, under quota and consent|Referrals, consent attestations, quota counters|`catalogue`, `moderation`, `billing` (VIP check), `audit`|
+|`notifications`|Delivers a message in the recipient's language over the right channel|Templates, delivery log|Resend, Twilio Messaging|
+|`audit`|Records what a staff user or the system did, permanently|Audit log|Nothing (deliberately — it must not be able to fail because of another module)|
+|`platform`|Cross-cutting machinery: authorization, rate limiting, outbox, feature flags, i18n|Outbox table, flags|Upstash, Inngest|
 
 ### Component diagram
 
@@ -306,23 +306,23 @@ hours, slower but correct; there is no path where quotas are skipped.
 Exactly one component is authoritative for each fact. Where a second copy
 exists, it is a projection that can be rebuilt, and it is marked as such.
 
-| Data | Created by | Stored in | Authoritative owner |
-| --- | --- | --- | --- |
-| Phone number, password hash, sessions | `identity` | PostgreSQL | `identity` |
-| Phone _verification_ attempt and outcome | Twilio Verify | Twilio (code), PostgreSQL (outcome only) | Twilio during the attempt; `identity` afterwards |
-| Membership card, serial, QR token | `membership` | PostgreSQL | `membership` |
-| Member tier (free / VIP) | `billing` projection | PostgreSQL, on the member row | `billing` — `membership` reads it, never writes it |
-| Company, discount, showcase rank | Partner owner and staff | PostgreSQL | `catalogue` |
-| Company publication state | `catalogue`, from moderation ∧ billing | PostgreSQL | `catalogue` |
-| Moderation decisions | `moderation` | PostgreSQL, append-only | `moderation` |
-| Subscription, invoice, payment | **Stripe** | Stripe (truth), PostgreSQL (projection) | **Stripe.** Ours is a cache that reconciles nightly and is never edited by hand |
-| Entitlements (what a subscription unlocks here) | `billing` | PostgreSQL | `billing` — this is ours, not Stripe's |
-| Plan prices | `staff_owner`, mirrored into Stripe Price objects | PostgreSQL + Stripe | PostgreSQL for what we charge; Stripe for what was charged |
-| Referral and consent attestation | `referrals` | PostgreSQL (contact details encrypted) | `referrals` |
-| Audit log | Every module | PostgreSQL, append-only, no `UPDATE`/`DELETE` grant | `audit` |
-| Rate-limit counters | `platform` | Redis | Redis. Loss degrades throughput, never correctness |
-| Partner images | Partner owner | Cloudflare R2 | `catalogue` holds the key; R2 holds the bytes |
-| Interface translations | Engineering | Repository (`messages/*.json`) | Git |
+|Data|Created by|Stored in|Authoritative owner|
+|-|-|-|-|
+|Phone number, password hash, sessions|`identity`|PostgreSQL|`identity`|
+|Phone _verification_ attempt and outcome|Twilio Verify|Twilio (code), PostgreSQL (outcome only)|Twilio during the attempt; `identity` afterwards|
+|Membership card, serial, QR token|`membership`|PostgreSQL|`membership`|
+|Member tier (free / VIP)|`billing` projection|PostgreSQL, on the member row|`billing` — `membership` reads it, never writes it|
+|Company, discount, showcase rank|Partner owner and staff|PostgreSQL|`catalogue`|
+|Company publication state|`catalogue`, from moderation ∧ billing|PostgreSQL|`catalogue`|
+|Moderation decisions|`moderation`|PostgreSQL, append-only|`moderation`|
+|Subscription, invoice, payment|**Stripe**|Stripe (truth), PostgreSQL (projection)|**Stripe.** Ours is a cache that reconciles nightly and is never edited by hand|
+|Entitlements (what a subscription unlocks here)|`billing`|PostgreSQL|`billing` — this is ours, not Stripe's|
+|Plan prices|`staff_owner`, mirrored into Stripe Price objects|PostgreSQL + Stripe|PostgreSQL for what we charge; Stripe for what was charged|
+|Referral and consent attestation|`referrals`|PostgreSQL (contact details encrypted)|`referrals`|
+|Audit log|Every module|PostgreSQL, append-only, no `UPDATE`/`DELETE` grant|`audit`|
+|Rate-limit counters|`platform`|Redis|Redis. Loss degrades throughput, never correctness|
+|Partner images|Partner owner|Cloudflare R2|`catalogue` holds the key; R2 holds the bytes|
+|Interface translations|Engineering|Repository (`messages/*.json`)|Git|
 
 **The one deliberate duplication** is subscription state. Stripe is the system
 of record; we keep a local projection because every page in the member area
@@ -337,21 +337,21 @@ Storage details are in [data-storage.md](data-storage.md).
 
 ## 5. Cross-cutting concerns
 
-| Concern | Approach | Detail in |
-| --- | --- | --- |
-| Authentication / authorization | Session cookie resolved once per request into an `Actor`; every domain use case opens with `assertCan(actor, action, subject)` and throws otherwise. Route placement and hidden UI are never the control | [security.md](security.md) |
-| Tenancy of data access | All member-scoped reads go through repository functions that take the actor and apply the ownership filter internally. There is no repository function that returns a list of members | [security.md §2](security.md#2-authentication-and-authorization) |
-| Error handling | Domain code throws typed errors (`NotFound`, `Forbidden`, `Conflict`, `RateLimited`, `Validation`, `ExternalUnavailable`). One boundary handler maps them to HTTP status, a user-facing message in the right language, and a Sentry event. Internal detail never reaches the client | — |
-| Idempotency | Externally triggered writes carry a key: Stripe event id, Twilio SID, or a client-generated key on retryable actions. The key is a primary key, so the database enforces it rather than the code | [integration.md §5](integration.md#5-error-handling-and-retries) |
-| Transactional messaging | The outbox pattern: domain writes and the intent to notify or enqueue commit in the same transaction; a dispatcher picks them up. No side effect is fired inside a transaction that may still roll back | [data-storage.md §6](data-storage.md#6-consistency-and-transactions) |
-| Logging and tracing | Structured JSON, one `correlation_id` per request propagated into jobs, OpenTelemetry spans across HTTP, database and outbound calls | [observability.md](observability.md) |
-| Configuration | Environment variables validated by a Zod schema at boot; the process refuses to start if one is missing or malformed. Business configuration (prices, quotas, prohibited categories) lives in the database and is editable by staff | — |
-| Feature flags | Simple database-backed flags evaluated on the server, used as kill switches for referrals, sign-up and SMS sending | [reliability.md §5](reliability.md#5-graceful-degradation) |
-| Caching | Static and marketing content at the CDN; catalogue facet counts in Redis with a 5-minute TTL; nothing member-specific is cached anywhere shared | [data-storage.md §7](data-storage.md#7-caching) |
-| Rate limiting | Sliding window in Redis, applied at the edge for coarse limits and in the domain for business limits (SMS, referrals) | [integration.md §6](integration.md#6-rate-limits-and-quotas) |
-| Internationalisation | Locale in the URL segment; server-rendered messages; every user-facing string, email and SMS resolved from a catalogue with a CI check for missing keys | [ux.md §9](ux.md#9-content-and-tone) |
-| Time | Everything stored in UTC as `timestamptz`. Billing periods come from Stripe. Display converts to the viewer's timezone; no business rule depends on local midnight | — |
-| Money | Integer minor units plus an ISO-4217 currency code. No floating point touches an amount, anywhere | — |
+|Concern|Approach|Detail in|
+|-|-|-|
+|Authentication / authorization|Session cookie resolved once per request into an `Actor`; every domain use case opens with `assertCan(actor, action, subject)` and throws otherwise. Route placement and hidden UI are never the control|[security.md](security.md)|
+|Tenancy of data access|All member-scoped reads go through repository functions that take the actor and apply the ownership filter internally. There is no repository function that returns a list of members|[security.md §2](security.md#2-authentication-and-authorization)|
+|Error handling|Domain code throws typed errors (`NotFound`, `Forbidden`, `Conflict`, `RateLimited`, `Validation`, `ExternalUnavailable`). One boundary handler maps them to HTTP status, a user-facing message in the right language, and a Sentry event. Internal detail never reaches the client|—|
+|Idempotency|Externally triggered writes carry a key: Stripe event id, Twilio SID, or a client-generated key on retryable actions. The key is a primary key, so the database enforces it rather than the code|[integration.md §5](integration.md#5-error-handling-and-retries)|
+|Transactional messaging|The outbox pattern: domain writes and the intent to notify or enqueue commit in the same transaction; a dispatcher picks them up. No side effect is fired inside a transaction that may still roll back|[data-storage.md §6](data-storage.md#6-consistency-and-transactions)|
+|Logging and tracing|Structured JSON, one `correlation_id` per request propagated into jobs, OpenTelemetry spans across HTTP, database and outbound calls|[observability.md](observability.md)|
+|Configuration|Environment variables validated by a Zod schema at boot; the process refuses to start if one is missing or malformed. Business configuration (prices, quotas, prohibited categories) lives in the database and is editable by staff|—|
+|Feature flags|Simple database-backed flags evaluated on the server, used as kill switches for referrals, sign-up and SMS sending|[reliability.md §5](reliability.md#5-graceful-degradation)|
+|Caching|Static and marketing content at the CDN; catalogue facet counts in Redis with a 5-minute TTL; nothing member-specific is cached anywhere shared|[data-storage.md §7](data-storage.md#7-caching)|
+|Rate limiting|Sliding window in Redis, applied at the edge for coarse limits and in the domain for business limits (SMS, referrals)|[integration.md §6](integration.md#6-rate-limits-and-quotas)|
+|Internationalisation|Locale in the URL segment; server-rendered messages; every user-facing string, email and SMS resolved from a catalogue with a CI check for missing keys|[ux.md §9](ux.md#9-content-and-tone)|
+|Time|Everything stored in UTC as `timestamptz`. Billing periods come from Stripe. Display converts to the viewer's timezone; no business rule depends on local midnight|—|
+|Money|Integer minor units plus an ISO-4217 currency code. No floating point touches an amount, anywhere|—|
 
 ---
 
@@ -362,34 +362,34 @@ each, written when the decision is made and never rewritten afterwards. This
 section is only an index, so that a reader of the architecture can see what
 shaped it without leaving the page.
 
-| # | Decision | Status |
-| --- | --- | --- |
-| [0001](decisions/0001-nextjs-monolith-on-vercel.md) | One Next.js modular monolith on Vercel, rather than separate services | Accepted |
-| [0002](decisions/0002-postgresql-on-neon-with-drizzle.md) | PostgreSQL on Neon with Drizzle as the only datastore | Accepted |
-| [0003](decisions/0003-self-hosted-phone-authentication.md) | Self-hosted phone authentication, with SMS codes bought from Twilio Verify | Accepted |
-| [0004](decisions/0004-stripe-billing-as-system-of-record.md) | Stripe is the system of record for subscriptions; entitlements are projected from webhooks | Accepted |
-| [0005](decisions/0005-no-member-directory.md) | No member directory — enforced in the data-access layer, not by convention | Accepted |
-| [0006](decisions/0006-postgres-full-text-search.md) | PostgreSQL full-text search for the catalogue, no separate search engine | Accepted |
-| [0007](decisions/0007-staff-identities-separate.md) | Staff identities are separate from member identities | Accepted |
-| [0008](decisions/0008-durable-background-jobs-with-inngest.md) | Durable background jobs with Inngest, fed by a transactional outbox | Accepted |
-| [0009](decisions/0009-referral-data-minimisation.md) | Referrals capture consent and minimise, encrypt and expire client contact data | Accepted |
+|#|Decision|Status|
+|-|-|-|
+|[0001](decisions/0001-nextjs-monolith-on-vercel.md)|One Next.js modular monolith on Vercel, rather than separate services|Accepted|
+|[0002](decisions/0002-postgresql-on-neon-with-drizzle.md)|PostgreSQL on Neon with Drizzle as the only datastore|Accepted|
+|[0003](decisions/0003-self-hosted-phone-authentication.md)|Self-hosted phone authentication, with SMS codes bought from Twilio Verify|Accepted|
+|[0004](decisions/0004-stripe-billing-as-system-of-record.md)|Stripe is the system of record for subscriptions; entitlements are projected from webhooks|Accepted|
+|[0005](decisions/0005-no-member-directory.md)|No member directory — enforced in the data-access layer, not by convention|Accepted|
+|[0006](decisions/0006-postgres-full-text-search.md)|PostgreSQL full-text search for the catalogue, no separate search engine|Accepted|
+|[0007](decisions/0007-staff-identities-separate.md)|Staff identities are separate from member identities|Accepted|
+|[0008](decisions/0008-durable-background-jobs-with-inngest.md)|Durable background jobs with Inngest, fed by a transactional outbox|Accepted|
+|[0009](decisions/0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire client contact data|Accepted|
 
 ---
 
 ## 7. Known limitations and technical debt
 
-| Limitation | Impact | Trigger to address it |
-| --- | --- | --- |
-| Single region (`us-east-1`) for compute and data | EU and Asian members pay 100–250 ms extra on every dynamic request; a regional outage is a full outage | More than 25% of active members outside the Americas, or the availability target is missed twice by a regional event |
-| One PostgreSQL primary, no read replica at launch | A long analytical query in the staff console can affect member traffic; no read scaling headroom | Sustained database CPU above 60%, or the finance dashboard exceeding 2 s |
-| Entitlements are eventually consistent (seconds behind Stripe) | A member can briefly see "activating" after paying | Only if it produces support volume; the alternative — synchronous Stripe reads — is worse |
-| Phone-only identity with no second recovery channel | Every lost-phone case is manual support work, and support becomes an account-takeover vector | More than 5 recovery cases a week |
-| Human moderation on every submission and referral | Throughput is bounded by staff hours; a growth spike stalls in the queue | Queue age p90 exceeds 3 business days |
-| Search is PostgreSQL full-text with no synonyms or typo tolerance | "attorny" finds nothing; cross-language search is per-language, not unified | Catalogue over ~100,000 rows, or search-with-no-results above 15% |
-| No CDN caching of member-area responses | Every authenticated page view hits the database | Read traffic above ~200 rps sustained |
-| Staff console lives in the same deployment as the member area | A bad deploy takes down both; blast radius is the whole product | Never, probably — the isolation is not worth a second deployment at this size |
-| No formal disaster-recovery region | RTO depends on Neon's regional recovery | The club takes on a customer with a contractual RTO |
-| Referral contact data is encrypted with one application-held key | Key compromise exposes all pending referral contacts | Move to per-record envelope encryption with KMS if referral volume exceeds ~10,000/month |
+|Limitation|Impact|Trigger to address it|
+|-|-|-|
+|Single region (`us-east-1`) for compute and data|EU and Asian members pay 100–250 ms extra on every dynamic request; a regional outage is a full outage|More than 25% of active members outside the Americas, or the availability target is missed twice by a regional event|
+|One PostgreSQL primary, no read replica at launch|A long analytical query in the staff console can affect member traffic; no read scaling headroom|Sustained database CPU above 60%, or the finance dashboard exceeding 2 s|
+|Entitlements are eventually consistent (seconds behind Stripe)|A member can briefly see "activating" after paying|Only if it produces support volume; the alternative — synchronous Stripe reads — is worse|
+|Phone-only identity with no second recovery channel|Every lost-phone case is manual support work, and support becomes an account-takeover vector|More than 5 recovery cases a week|
+|Human moderation on every submission and referral|Throughput is bounded by staff hours; a growth spike stalls in the queue|Queue age p90 exceeds 3 business days|
+|Search is PostgreSQL full-text with no synonyms or typo tolerance|"attorny" finds nothing; cross-language search is per-language, not unified|Catalogue over ~100,000 rows, or search-with-no-results above 15%|
+|No CDN caching of member-area responses|Every authenticated page view hits the database|Read traffic above ~200 rps sustained|
+|Staff console lives in the same deployment as the member area|A bad deploy takes down both; blast radius is the whole product|Never, probably — the isolation is not worth a second deployment at this size|
+|No formal disaster-recovery region|RTO depends on Neon's regional recovery|The club takes on a customer with a contractual RTO|
+|Referral contact data is encrypted with one application-held key|Key compromise exposes all pending referral contacts|Move to per-record envelope encryption with KMS if referral volume exceeds ~10,000/month|
 
 ---
 

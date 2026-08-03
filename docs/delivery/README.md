@@ -71,13 +71,13 @@ badly cut.
 
 Each phase file carries one table with these columns:
 
-| Column | Means |
-| --- | --- |
-| Task | `T-<phase>.<n>`, stable once written. Referenced by branches and commits |
-| Delivers | What exists afterwards that did not before, in one line |
-| FR | The requirements this task satisfies **completely**, or `—` for infrastructure. Partial delivery of an FR is a badly cut task |
-| Depends on | Task ids that must be finished first |
-| Est | Days of focused work |
+|Column|Means|
+|-|-|
+|Task|`T-<phase>.<n>`, stable once written. Referenced by branches and commits|
+|Delivers|What exists afterwards that did not before, in one line|
+|FR|The requirements this task satisfies **completely**, or `—` for infrastructure. Partial delivery of an FR is a badly cut task|
+|Depends on|Task ids that must be finished first|
+|Est|Days of focused work|
 
 **An FR belongs to exactly one task.** If two tasks touch it, one of them owns it
 and the other says so in prose. This is what makes coverage checkable.
@@ -134,11 +134,11 @@ Stripe test clocks (phase 3) before the staff console (phase 5) is built, as
 
 ## 6. What is checked mechanically
 
-| Tool | Checks |
-| --- | --- |
-| [`tools/check-plan.py`](../../tools/check-plan.py) | Every FR is claimed by exactly one task; no task cites a non-existent FR; a phase's tasks stay inside its FR range in §6.1; task dependencies exist; once tests exist, every claimed FR is named by at least one test |
-| [`tools/check-docs.py`](../../tools/check-docs.py) | Broken links, missing owners, stale dates, remaining placeholders |
-| `.state/state.json` | Current phase, sprint and task — so a new session starts from a position rather than from 4,600 lines of documentation |
+|Tool|Checks|
+|-|-|
+|[`tools/check-plan.py`](../../tools/check-plan.py)|Every FR is claimed by exactly one task; no task cites a non-existent FR; a phase's tasks stay inside its FR range in §6.1; task dependencies exist; once tests exist, every claimed FR is named by at least one test|
+|[`tools/check-docs.py`](../../tools/check-docs.py)|Broken links, missing owners, stale dates, remaining placeholders|
+|`.state/state.json`|Current phase, sprint and task — so a new session starts from a position rather than from 4,600 lines of documentation|
 
 The traceability matrix is not written. It is computed, for the same reason the
 API schema is generated: a matrix maintained by hand is a matrix that is wrong.
@@ -147,16 +147,16 @@ API schema is generated: a matrix maintained by hand is a matrix that is wrong.
 
 ## 7. Phases
 
-| Phase | File | Status |
-| --- | --- | --- |
-| 0 — Foundations | [phase-0.md](phase-0.md) | In progress |
-| 1 — Identity and card | _(not yet written)_ | Blocked by open questions — see T-0.5 |
-| 2 — Catalogue and onboarding | _(not yet written)_ | — |
-| 3 — Billing | _(not yet written)_ | — |
-| 4 — Private beta | _(not yet written)_ | — |
-| 5 — Staff console | _(not yet written)_ | — |
-| 6 — Referrals | _(not yet written)_ | — |
-| 7 — Hardening and launch | _(not yet written)_ | — |
+|Phase|File|Status|
+|-|-|-|
+|0 — Foundations|[phase-0.md](phase-0.md)|In progress|
+|1 — Identity and card|_(not yet written)_|Blocked by open questions — see T-0.5|
+|2 — Catalogue and onboarding|_(not yet written)_|—|
+|3 — Billing|_(not yet written)_|—|
+|4 — Private beta|_(not yet written)_|—|
+|5 — Staff console|_(not yet written)_|—|
+|6 — Referrals|_(not yet written)_|—|
+|7 — Hardening and launch|_(not yet written)_|—|
 
 A phase file is written at the gate of the phase before it, not now. Writing all
 eight today would produce seven documents describing work whose shape will be

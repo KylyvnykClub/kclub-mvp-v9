@@ -60,15 +60,15 @@ prevents a convenient query from bypassing them.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Supabase (PostgreSQL + auth + storage + RLS) | The bundle's main value is auth, which we self-host anyway ([0003](0003-self-hosted-phone-authentication.md)). Row-level security as the primary authorization mechanism is hard to test, hard to review, and trivially bypassed by a service-role key that any server-side code can hold |
-| PlanetScale / MySQL | No native full-text ranking, weaker `jsonb`, no transactional DDL. The branching workflow is excellent, but Neon offers it on the engine we want |
-| MongoDB / DynamoDB | The domain is relational and the money is transactional. Modelling subscriptions and entitlements without transactions is how double-provisioning bugs are written |
-| Amazon RDS / Aurora | More operational surface (parameter groups, patching windows, VPC networking) for a database that will not exceed 60 GB. No branching, so preview environments become fixtures again |
-| PostgreSQL + Elasticsearch for search | See [0006](0006-postgres-full-text-search.md) |
-| PostgreSQL + a dedicated queue (SQS, RabbitMQ) | Breaks atomicity between the domain write and the enqueue unless an outbox is added anyway — at which point the outbox is doing the work and the broker is optional |
-| Prisma as the ORM | Heavier cold start, a query engine binary to ship, and generated SQL that is harder to reason about when tuning. Better developer experience for engineers who do not know SQL; that is not this team |
+|Option|Why not|
+|-|-|
+|Supabase (PostgreSQL + auth + storage + RLS)|The bundle's main value is auth, which we self-host anyway ([0003](0003-self-hosted-phone-authentication.md)). Row-level security as the primary authorization mechanism is hard to test, hard to review, and trivially bypassed by a service-role key that any server-side code can hold|
+|PlanetScale / MySQL|No native full-text ranking, weaker `jsonb`, no transactional DDL. The branching workflow is excellent, but Neon offers it on the engine we want|
+|MongoDB / DynamoDB|The domain is relational and the money is transactional. Modelling subscriptions and entitlements without transactions is how double-provisioning bugs are written|
+|Amazon RDS / Aurora|More operational surface (parameter groups, patching windows, VPC networking) for a database that will not exceed 60 GB. No branching, so preview environments become fixtures again|
+|PostgreSQL + Elasticsearch for search|See [0006](0006-postgres-full-text-search.md)|
+|PostgreSQL + a dedicated queue (SQS, RabbitMQ)|Breaks atomicity between the domain write and the enqueue unless an outbox is added anyway — at which point the outbox is doing the work and the broker is optional|
+|Prisma as the ORM|Heavier cold start, a query engine binary to ship, and generated SQL that is harder to reason about when tuning. Better developer experience for engineers who do not know SQL; that is not this team|
 
 ## Consequences
 

@@ -7,6 +7,7 @@
 1. **State is auto-loaded** via SessionStart hook (`.state/state.json` + `.state/handoffs.json`; legacy `.claude/...` still loads during migration)
 
 2. **Brief summary** (don't force handoff engagement):
+
    ```
    "Last session: [X]. [N] backlog items.
    [If handoffs exist: '1 active handoff: auth-system (Phase 2/3)']
@@ -31,6 +32,7 @@ When user runs `/handoff --continue` or says "continue" and there's an active ha
 4. **Capture insights** — what worked, what didn't, for future sessions
 
 **Principles:**
+
 - **Context first** — review prior learnings before acting
 - **No rushing** — thoroughness over speed
 - **Validate before marking complete** — concrete evidence must exist
@@ -39,12 +41,14 @@ When user runs `/handoff --continue` or says "continue" and there's an active ha
 **Parallel sessions:** Multiple handoffs = multiple sessions OK. Same handoff = one session only.
 
 ## Commands Available
+
 - `/commit` - Commit changes (clean, no AI mentions)
 - `/push` - Push + update local state + clean up completed handoffs
 - `/backlog` - Review and manage backlog items
 - `/handoff` - Create handoff (`--continue` to resume active one)
 
 ## Rules
+
 - Only USER sets `currentFocus` - never assume or change it
 - Add discoveries to backlog during `/push`, not randomly
 - Keep backlog clean - resolve items when addressed
@@ -96,20 +100,20 @@ compromise.
 
 Do not read all of `docs/` for every task. Read the rows that apply.
 
-| Working on | Read first |
-| --- | --- |
-| Anything at all | This file, then [docs/delivery/](docs/delivery/) for the current phase |
-| A new feature | The FR text in [requirements.md §4](docs/requirements.md#4-functional-requirements) — it is normative, including its numbers |
-| Where code goes | [architecture.md §2](docs/architecture.md#2-components) |
-| How a flow works end to end | [architecture.md §3](docs/architecture.md#3-key-flows) |
-| Naming anything | [glossary.md](docs/glossary.md) — one concept, one name, in three languages |
-| Screens, states, copy | [ux.md](docs/ux.md) |
-| Tables, columns, retention | [data-storage.md](docs/data-storage.md) |
-| Auth, permissions, PII | [security.md](docs/security.md) |
-| Stripe, Twilio, Resend, R2 | [integration.md](docs/integration.md) |
-| What to test and how | [testing.md](docs/testing.md) |
-| Alerts, SLOs, incidents | [reliability.md](docs/reliability.md), [observability.md](docs/observability.md) |
-| A choice that is hard to reverse | [decisions/](docs/decisions/) — read the relevant record, then write a new one |
+|Working on|Read first|
+|-|-|
+|Anything at all|This file, then [docs/delivery/](docs/delivery/) for the current phase|
+|A new feature|The FR text in [requirements.md §4](docs/requirements.md#4-functional-requirements) — it is normative, including its numbers|
+|Where code goes|[architecture.md §2](docs/architecture.md#2-components)|
+|How a flow works end to end|[architecture.md §3](docs/architecture.md#3-key-flows)|
+|Naming anything|[glossary.md](docs/glossary.md) — one concept, one name, in three languages|
+|Screens, states, copy|[ux.md](docs/ux.md)|
+|Tables, columns, retention|[data-storage.md](docs/data-storage.md)|
+|Auth, permissions, PII|[security.md](docs/security.md)|
+|Stripe, Twilio, Resend, R2|[integration.md](docs/integration.md)|
+|What to test and how|[testing.md](docs/testing.md)|
+|Alerts, SLOs, incidents|[reliability.md](docs/reliability.md), [observability.md](docs/observability.md)|
+|A choice that is hard to reverse|[decisions/](docs/decisions/) — read the relevant record, then write a new one|
 
 ---
 
@@ -171,14 +175,14 @@ Enforced by lint, not by good intentions:
 
 The glossary is short and worth reading once. The mistakes that recur:
 
-| Never | Use | Why |
-| --- | --- | --- |
-| `User` (in domain code) | `Member` | "User" appears only where `better-auth` forces it, mapped at the boundary |
-| "Directory" | "Catalogue" | A directory implies listing people, which is the thing this product does not do |
-| "Lead" | "Client referral" | Frames a person as a commodity; the feature's defensibility rests on it being an introduction |
-| "Invite" | — | There is no invitation mechanic. Anything named `invite` is a misunderstanding of the model |
-| `Partner` as a type | `Company` | A company exists before it is a partner. The interface says partner, the code says `Company` |
-| "Customer" for a member | `Member` | `Customer` means a Stripe Customer object and nothing else |
+|Never|Use|Why|
+|-|-|-|
+|`User` (in domain code)|`Member`|"User" appears only where `better-auth` forces it, mapped at the boundary|
+|"Directory"|"Catalogue"|A directory implies listing people, which is the thing this product does not do|
+|"Lead"|"Client referral"|Frames a person as a commodity; the feature's defensibility rests on it being an introduction|
+|"Invite"|—|There is no invitation mechanic. Anything named `invite` is a misunderstanding of the model|
+|`Partner` as a type|`Company`|A company exists before it is a partner. The interface says partner, the code says `Company`|
+|"Customer" for a member|`Member`|`Customer` means a Stripe Customer object and nothing else|
 
 Introducing a domain concept without a glossary row is how drift starts. New
 term → new row, same commit.
@@ -210,7 +214,7 @@ complete corrupts the plan.
 
 - Branch `feat/FR-021-card-qr`, `fix/…`, `chore/…`, `docs/…`. Reference the FR.
 - Conventional Commits with a module scope: `feat(billing): project entitlement
-  from subscription.updated`.
+from subscription.updated`.
 - Keep a change under ~400 lines. Bigger is two changes that were not separated
   in time.
 - Never commit a secret. Never paste one into a prompt either.
