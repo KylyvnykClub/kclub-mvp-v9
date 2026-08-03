@@ -1,0 +1,95 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    name: Links, owners and formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Blocking: a broken link or a reference to a section that no longer
+      # exists is the most common symptom of a document drifting from reality,
+      # and it is unambiguous enough to fail a build over.
+      - name: Check links and anchors
+        run: python tools/check-docs.py
+
+      # Advisory: unowned documents and stale dates are reported, not enforced,
+      # until owners are assigned at kick-off.
+      - name: Report warnings
+        if: always()
+        continue-on-error: true
+        run: python tools/check-docs.py --strict
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install formatting tools
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Prettier formatting
+        run: pnpm format:check
+
+      - name: Lint markdown formatting
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
+
+  triggers:
+    name: Documentation update triggers
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Advisory by design. A gate that stops a merge over documentation gets
+      # routed around within a month; a comment naming the exact file usually
+      # gets acted on. Keep the rules below in step with the trigger table in
+      # docs/documentation.md §3 — this is the same list in a form CI can check.
+      - name: Flag documents that should have changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE" "$HEAD")"
+          notes=""
+
+          flag() { # flag <code-path-regex> <doc-path> <reason>
+            if echo "$changed" | grep -qE "$1" && ! echo "$changed" | grep -qF "$2"; then
+              notes="${notes}- \`$2\` — $3\n"
+            fi
+          }
+
+          flag '^db/migrations/'            docs/data-storage.md   'the schema changed'
+          flag '^src/modules/billing/'      docs/integration.md    'billing touches the Stripe contract'
+          flag '^src/modules/identity/'     docs/security.md       'authentication changed'
+          flag '^src/modules/[^/]+/policy'  docs/security.md       'an authorization rule changed'
+          flag '^src/app/'                  docs/ux.md             'a screen or flow changed'
+          flag '^package.json'              docs/technology.md     'a dependency or runtime changed'
+          flag '^\.github/workflows/ci'     docs/testing.md        'a CI gate changed'
+          flag '^src/lib/observability/'    docs/observability.md  'a signal or alert changed'
+
+          if [ -n "$notes" ]; then
+            printf 'Documentation likely needs updating in this pull request:\n\n' >> "$GITHUB_STEP_SUMMARY"
+            printf "$notes" >> "$GITHUB_STEP_SUMMARY"
+            printf '\nSee docs/documentation.md §3. Advisory, not blocking.\n' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No documentation triggers fired.' >> "$GITHUB_STEP_SUMMARY"
+          fi

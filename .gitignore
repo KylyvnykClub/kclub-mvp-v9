@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Secrets and environment. Only .env.example is committed, and it is generated
+# from src/env.ts — see docs/technology.md and CONTRIBUTING.md.
+.env
+.env.local
+.env.*.local
+
+# Infrastructure. The lock file IS committed; state and variable files are not.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Vercel
+.vercel/
+
+# Tooling artefacts
+__pycache__/
+*.py[cod]
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Operating system and editors. .vscode/ is committed deliberately — shared
+# editor settings are part of the 30-minute setup target.
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

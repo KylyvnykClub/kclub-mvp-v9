@@ -1,0 +1,49 @@
+# Code owners
+#
+# GitHub adds the listed owner as a reviewer on any pull request touching a
+# matching path. This file, the `Owner:` header inside each document, and the
+# table in docs/documentation.md §2 must be kept in step — three places is two
+# too many, but it is what the tooling requires.
+#
+# STATUS 2026-08-02: the team is not yet formed, so every rule below is
+# commented out. Uncommenting them with real GitHub handles is a kick-off task,
+# tracked alongside filling in the `Owner:` headers. `tools/check-docs.py` warns
+# on every unowned document until then, deliberately.
+#
+# Replace @tech-lead, @client, @backend, @frontend, @designer and @qa with real
+# handles. Do not use a team handle: teams do not notice that a document is
+# stale; people do.
+
+# --- Documentation -----------------------------------------------------------
+
+# /README.md                     @tech-lead
+# /CONTRIBUTING.md               @tech-lead
+# /docs/brief.md                 @client
+# /docs/requirements.md          @client
+# /docs/architecture.md          @tech-lead
+# /docs/technology.md            @tech-lead
+# /docs/decisions/               @tech-lead
+# /docs/data-storage.md          @backend
+# /docs/ux.md                    @frontend @designer
+# /docs/glossary.md              @frontend
+# /docs/security.md              @tech-lead @client
+# /docs/reliability.md           @tech-lead
+# /docs/observability.md         @tech-lead
+# /docs/integration.md           @backend
+# /docs/testing.md               @qa
+# /docs/documentation.md         @tech-lead
+# /docs/runbooks/                @tech-lead
+
+# --- Code (paths exist from phase 0 onward) ----------------------------------
+#
+# The three directories below carry the two-reviewer rule in
+# CONTRIBUTING.md — "Pull requests". Listing two owners is what makes that
+# automatic rather than remembered.
+
+# /src/modules/billing/          @tech-lead @backend
+# /src/modules/identity/         @tech-lead @backend
+# /src/modules/audit/            @tech-lead @backend
+# /src/modules/referrals/        @tech-lead @client
+# /db/migrations/                @backend @tech-lead
+# /.github/                      @tech-lead
+# /tools/                        @tech-lead

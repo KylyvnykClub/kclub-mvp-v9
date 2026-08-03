@@ -1,0 +1,10 @@
+# Dependencies and build output (when the app exists).
+node_modules/
+.next/
+dist/
+coverage/
+
+# Lockfiles are generated, not formatted.
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

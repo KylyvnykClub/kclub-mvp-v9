@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    // Prose is one sentence per line (docs/documentation.md §4) — no wrap needed.
+    // Word wrap breaks pipe tables: long rows fold visually and | no longer align.
+    "editor.wordWrap": "off",
+    "editor.rulers": [80]
+  }
+}

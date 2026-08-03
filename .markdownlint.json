@@ -1,0 +1,21 @@
+{
+  "//": "Pinned so linting is identical for everyone, rather than depending on each editor's defaults.",
+
+  "MD013": false,
+  "//MD013": "No line-length limit: tables and links exceed any sensible column count.",
+
+  "MD036": false,
+  "//MD036": "The documents deliberately use bold labels (**Decision:**, **Rationale:**) as field names, not as headings.",
+
+  "MD049": { "style": "underscore" },
+  "//MD049": "Italics use _underscores_, matching the _(fill in)_ placeholder convention.",
+
+  "MD050": { "style": "asterisk" },
+  "//MD050": "Bold uses **asterisks**, so the two never look alike in a diff.",
+
+  "MD029": false,
+  "//MD029": "The onboarding path in documentation.md numbers 1-11 continuously across grouped stages; that continuity is the point.",
+
+  "MD024": { "siblings_only": true },
+  "//MD024": "Repeated sub-headings under different sections are fine."
+}
