@@ -43,28 +43,28 @@ that the folder cannot be trusted.
 
 ## Status lifecycle
 
-| Status | Meaning |
-| --- | --- |
-| Proposed | Under discussion, not yet binding |
-| Accepted | In force |
-| Superseded by NNNN | Replaced — the newer record explains why |
-| Deprecated | No longer relevant, not replaced (e.g. the component is gone) |
+|Status|Meaning|
+|-|-|
+|Proposed|Under discussion, not yet binding|
+|Accepted|In force|
+|Superseded by NNNN|Replaced — the newer record explains why|
+|Deprecated|No longer relevant, not replaced (e.g. the component is gone)|
 
 ---
 
 ## Index
 
-| # | Title | Status | Date |
-| --- | --- | --- | --- |
-| [0001](0001-nextjs-monolith-on-vercel.md) | Build KCLUB as one Next.js modular monolith on Vercel | Accepted | 2026-08-02 |
-| [0002](0002-postgresql-on-neon-with-drizzle.md) | Use PostgreSQL on Neon, with Drizzle, as the only datastore | Accepted | 2026-08-02 |
-| [0003](0003-self-hosted-phone-authentication.md) | Self-host authentication, buying only SMS code delivery from Twilio Verify | Accepted | 2026-08-02 |
-| [0004](0004-stripe-billing-as-system-of-record.md) | Make Stripe the system of record for subscriptions and project entitlements from webhooks | Accepted | 2026-08-02 |
-| [0005](0005-no-member-directory.md) | There is no member directory, and the data layer makes one impossible | Accepted | 2026-08-02 |
-| [0006](0006-postgres-full-text-search.md) | Use PostgreSQL full-text search for the catalogue, with no separate search engine | Accepted | 2026-08-02 |
-| [0007](0007-staff-identities-separate.md) | Keep staff identities entirely separate from member identities | Accepted | 2026-08-02 |
-| [0008](0008-durable-background-jobs-with-inngest.md) | Run background work on Inngest, fed by a transactional outbox in PostgreSQL | Accepted | 2026-08-02 |
-| [0009](0009-referral-data-minimisation.md) | Referrals capture consent and minimise, encrypt and expire the client's contact data | Accepted | 2026-08-02 |
+|#|Title|Status|Date|
+|-|-|-|-|
+|[0001](0001-nextjs-monolith-on-vercel.md)|Build KCLUB as one Next.js modular monolith on Vercel|Accepted|2026-08-02|
+|[0002](0002-postgresql-on-neon-with-drizzle.md)|Use PostgreSQL on Neon, with Drizzle, as the only datastore|Accepted|2026-08-02|
+|[0003](0003-self-hosted-phone-authentication.md)|Self-host authentication, buying only SMS code delivery from Twilio Verify|Accepted|2026-08-02|
+|[0004](0004-stripe-billing-as-system-of-record.md)|Make Stripe the system of record for subscriptions and project entitlements from webhooks|Accepted|2026-08-02|
+|[0005](0005-no-member-directory.md)|There is no member directory, and the data layer makes one impossible|Accepted|2026-08-02|
+|[0006](0006-postgres-full-text-search.md)|Use PostgreSQL full-text search for the catalogue, with no separate search engine|Accepted|2026-08-02|
+|[0007](0007-staff-identities-separate.md)|Keep staff identities entirely separate from member identities|Accepted|2026-08-02|
+|[0008](0008-durable-background-jobs-with-inngest.md)|Run background work on Inngest, fed by a transactional outbox in PostgreSQL|Accepted|2026-08-02|
+|[0009](0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire the client's contact data|Accepted|2026-08-02|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

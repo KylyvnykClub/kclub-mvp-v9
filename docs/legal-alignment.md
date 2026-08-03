@@ -40,22 +40,22 @@ something the pack has not authorised.
 Each of these is now a fact. Where a row closes an open question, the source
 document is updated in the same change.
 
-| #    | Fact                                                                                                                                                                                                                                                  | Source                                                     | Effect on the design                                                                                                                                                                                                                                  |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L-01 | Operator is **Kylyvnyk Consulting LLC**, a Florida LLC, at 6 Pauline Pl, Palm Coast, FL 32164-7535, US                                                                                                                                                | All nine                                                   | Closes the first open question in [brief.md](brief.md#open-questions). Stripe account is US/Florida; sales-tax nexus is Florida; the club is merchant of record, as assumed in [decisions/0004](decisions/0004-stripe-billing-as-system-of-record.md) |
-| L-02 | Governing law is **Florida**, disputes go to **binding individual arbitration**, with a **class-action waiver**                                                                                                                                       | Terms §28–30                                               | Recorded in [requirements.md §5.5](requirements.md#55-compliance-and-legal). Arbitration and the waiver need an explicit, separately-acknowledged checkbox at registration to be enforceable in the US — a product requirement, not just a legal one  |
-| L-03 | **The English version prevails** over every translation                                                                                                                                                                                               | All nine, final section                                    | Confirms [ux.md §9](ux.md#9-content-and-tone): English is the source locale. The legal pages must carry this notice in the Russian and Ukrainian renderings                                                                                           |
-| L-04 | Minimum age is **18**, or the age of majority where the user lives                                                                                                                                                                                    | Terms §9.1, Club Rules §2, Privacy §20                     | Attestation at registration, recorded with the accepted document versions                                                                                                                                                                             |
-| L-05 | **Refunds are not given** as a rule. Discretionary consideration only for: double charge, platform technical error, unauthorised charge, mistaken payment, or where law requires it                                                                   | Refund Policy §6, Terms §13                                | Closes the refunds open question. No self-serve refund; staff issue them in Stripe. Dissatisfaction, non-use, no clients, rejected business profile and removed profile are all explicitly **not** grounds                                            |
-| L-06 | Prohibited activity is enumerated: gambling, cryptocurrency projects and tokens, unlicensed financial services, high-risk investment offers, weapons, adult material, IP infringement, fraud, spam, scraping, bots, multiple accounts to evade limits | Terms §15, Club Rules §11                                  | Closes the prohibited-categories open question. This list becomes the moderation reject-reason enum and the category blocklist in FR-041                                                                                                              |
-| L-07 | Business profile statuses are **UNDER REVIEW, PUBLISHED, HIDDEN, SUSPENDED, REMOVED**                                                                                                                                                                 | Partner Rules §6                                           | The state machine in [architecture.md §3.3](architecture.md#33-partner-onboarding-to-publication) gains `suspended` and `removed`. See D-07 for the internal contradiction                                                                            |
-| L-08 | Deleting an account **does not** cancel a subscription                                                                                                                                                                                                | Terms §12                                                  | A product requirement with real support consequences: the deletion flow must show the active subscription and require an explicit choice. Silently continuing to bill a deleted account is a chargeback and a complaint                               |
-| L-09 | Price changes apply only to new payments; the paid period is never repriced                                                                                                                                                                           | Terms §10, Refund §9                                       | Confirms FR-059 exactly as designed                                                                                                                                                                                                                   |
-| L-10 | Liability is capped at fees paid in the **preceding three calendar months**                                                                                                                                                                           | Terms §23, Club Rules §15, Partner Rules §15, BI Rules §10 | No engineering effect. Recorded because it sets what a defect can cost, which is what the reliability targets are ultimately protecting                                                                                                               |
-| L-11 | The partner **must honour** a published special condition to a member holding a valid card who meets the stated terms, and may not refuse arbitrarily                                                                                                 | Terms §8, Partner Rules §7                                 | Stronger than the brief implied. The offer's restrictions (validity, territory, booking, minimum order) must be structured fields, not free text, because the partner is bound by what is published                                                   |
-| L-12 | Partners may be legal entities, sole traders, self-employed persons, licensed professionals, consultants, non-profits, and public bodies                                                                                                              | Partner Rules §2                                           | The onboarding form cannot assume a registered company. "Legal name" and "registration number" must be optional per partner type                                                                                                                      |
-| L-13 | Chargebacks may trigger suspension of membership, Business Introductions and other functions                                                                                                                                                          | Refund §8                                                  | Changes the design's `charge.dispute.created` handling from "flag for review, do not withdraw access" to "flag, and allow staff to suspend". Automatic suspension is still not recommended — see D-05                                                 |
-| L-14 | Electronic notices are accepted as legally sufficient                                                                                                                                                                                                 | Terms §26, Contact §11                                     | Justifies in-product notification as the authoritative channel, with email and SMS as delivery                                                                                                                                                        |
+|#|Fact|Source|Effect on the design|
+|-|-|-|-|
+|L-01|Operator is **Kylyvnyk Consulting LLC**, a Florida LLC, at 6 Pauline Pl, Palm Coast, FL 32164-7535, US|All nine|Closes the first open question in [brief.md](brief.md#open-questions). Stripe account is US/Florida; sales-tax nexus is Florida; the club is merchant of record, as assumed in [decisions/0004](decisions/0004-stripe-billing-as-system-of-record.md)|
+|L-02|Governing law is **Florida**, disputes go to **binding individual arbitration**, with a **class-action waiver**|Terms §28–30|Recorded in [requirements.md §5.5](requirements.md#55-compliance-and-legal). Arbitration and the waiver need an explicit, separately-acknowledged checkbox at registration to be enforceable in the US — a product requirement, not just a legal one|
+|L-03|**The English version prevails** over every translation|All nine, final section|Confirms [ux.md §9](ux.md#9-content-and-tone): English is the source locale. The legal pages must carry this notice in the Russian and Ukrainian renderings|
+|L-04|Minimum age is **18**, or the age of majority where the user lives|Terms §9.1, Club Rules §2, Privacy §20|Attestation at registration, recorded with the accepted document versions|
+|L-05|**Refunds are not given** as a rule. Discretionary consideration only for: double charge, platform technical error, unauthorised charge, mistaken payment, or where law requires it|Refund Policy §6, Terms §13|Closes the refunds open question. No self-serve refund; staff issue them in Stripe. Dissatisfaction, non-use, no clients, rejected business profile and removed profile are all explicitly **not** grounds|
+|L-06|Prohibited activity is enumerated: gambling, cryptocurrency projects and tokens, unlicensed financial services, high-risk investment offers, weapons, adult material, IP infringement, fraud, spam, scraping, bots, multiple accounts to evade limits|Terms §15, Club Rules §11|Closes the prohibited-categories open question. This list becomes the moderation reject-reason enum and the category blocklist in FR-041|
+|L-07|Business profile statuses are **UNDER REVIEW, PUBLISHED, HIDDEN, SUSPENDED, REMOVED**|Partner Rules §6|The state machine in [architecture.md §3.3](architecture.md#33-partner-onboarding-to-publication) gains `suspended` and `removed`. See D-07 for the internal contradiction|
+|L-08|Deleting an account **does not** cancel a subscription|Terms §12|A product requirement with real support consequences: the deletion flow must show the active subscription and require an explicit choice. Silently continuing to bill a deleted account is a chargeback and a complaint|
+|L-09|Price changes apply only to new payments; the paid period is never repriced|Terms §10, Refund §9|Confirms FR-059 exactly as designed|
+|L-10|Liability is capped at fees paid in the **preceding three calendar months**|Terms §23, Club Rules §15, Partner Rules §15, BI Rules §10|No engineering effect. Recorded because it sets what a defect can cost, which is what the reliability targets are ultimately protecting|
+|L-11|The partner **must honour** a published special condition to a member holding a valid card who meets the stated terms, and may not refuse arbitrarily|Terms §8, Partner Rules §7|Stronger than the brief implied. The offer's restrictions (validity, territory, booking, minimum order) must be structured fields, not free text, because the partner is bound by what is published|
+|L-12|Partners may be legal entities, sole traders, self-employed persons, licensed professionals, consultants, non-profits, and public bodies|Partner Rules §2|The onboarding form cannot assume a registered company. "Legal name" and "registration number" must be optional per partner type|
+|L-13|Chargebacks may trigger suspension of membership, Business Introductions and other functions|Refund §8|Changes the design's `charge.dispute.created` handling from "flag for review, do not withdraw access" to "flag, and allow staff to suspend". Automatic suspension is still not recommended — see D-05|
+|L-14|Electronic notices are accepted as legally sufficient|Terms §26, Contact §11|Justifies in-product notification as the authoritative channel, with email and SMS as delivery|
 
 ---
 
@@ -371,17 +371,17 @@ These are not conflicts with the design. They are errors in the documents
 themselves, found while reading them, and each is a five-minute fix that is
 embarrassing if a partner finds it first.
 
-| #    | Defect                                                                                                                                                                                 | Where                         |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| D-01 | Two different contact addresses across the pack                                                                                                                                        | Terms §37 vs. the other eight |
-| D-02 | Section 10 appears twice, with identical text                                                                                                                                          | Partner Rules                 |
-| D-03 | A section heading is truncated mid-word: "25. ФОРС-МАЖО"                                                                                                                               | Terms                         |
-| D-04 | Business profile statuses listed as three (UNDER REVIEW, PUBLISHED, HIDDEN) in one document and five (plus SUSPENDED, REMOVED) in another                                              | Terms §7 vs. Partner Rules §6 |
-| D-05 | Chargeback consequences are stated as platform rights with no stated process, so a member who wins a bank dispute may be silently suspended with no notice                             | Refund §8                     |
-| D-06 | The Partner Rules never mention the listing fee, its amount, or that publication requires an active paid subscription — the core commercial term of the partner relationship is absent | Partner Rules, throughout     |
-| D-07 | Effective date is 2026-07-01, already in the past, for a platform that does not yet exist. Members registering at launch will accept documents dated before the product existed        | All nine                      |
-| D-08 | The documents are Russian text under English titles, while each declares the English version authoritative — the authoritative version does not appear to exist yet                    | All nine                      |
-| D-09 | Every document is a `.doc` binary in a folder, with no version control, no diff and no way to prove which version a member accepted                                                    | [policy/](policy/)            |
+|#|Defect|Where|
+|-|-|-|
+|D-01|Two different contact addresses across the pack|Terms §37 vs. the other eight|
+|D-02|Section 10 appears twice, with identical text|Partner Rules|
+|D-03|A section heading is truncated mid-word: "25. ФОРС-МАЖО"|Terms|
+|D-04|Business profile statuses listed as three (UNDER REVIEW, PUBLISHED, HIDDEN) in one document and five (plus SUSPENDED, REMOVED) in another|Terms §7 vs. Partner Rules §6|
+|D-05|Chargeback consequences are stated as platform rights with no stated process, so a member who wins a bank dispute may be silently suspended with no notice|Refund §8|
+|D-06|The Partner Rules never mention the listing fee, its amount, or that publication requires an active paid subscription — the core commercial term of the partner relationship is absent|Partner Rules, throughout|
+|D-07|Effective date is 2026-07-01, already in the past, for a platform that does not yet exist. Members registering at launch will accept documents dated before the product existed|All nine|
+|D-08|The documents are Russian text under English titles, while each declares the English version authoritative — the authoritative version does not appear to exist yet|All nine|
+|D-09|Every document is a `.doc` binary in a folder, with no version control, no diff and no way to prove which version a member accepted|[policy/](policy/)|
 
 D-08 and D-09 are the two that matter operationally. FR-093 requires recording
 which version of each document a member accepted; that is only meaningful if the
@@ -399,22 +399,22 @@ Every row above needs an owner and a date. None is an engineering decision.
 The question each row resolves is in §2 (conflicts) or §3 (defects); this table
 tracks only ownership, deadline and status.
 
-| #         | Owner              | Needed by                   | Status                    |
-| --------- | ------------------ | --------------------------- | ------------------------- |
-| C-01      | Client             | Before phase 1 ends         | Open                      |
-| C-02      | Client + counsel   | Before phase 6              | Open                      |
-| C-03      | Client             | Before launch               | Open                      |
-| C-04      | Client + counsel   | Before phase 2              | Open                      |
-| C-05      | Client             | Before phase 2 ends         | Open                      |
-| C-06      | Client + counsel   | Before the first EU sign-up | Open                      |
-| C-07      | Client             | Before phase 2 ends         | Open                      |
-| C-08      | Client             | Before phase 3 ends         | Open — recommended yes    |
-| C-09      | Client             | Before phase 1 ends         | Open — recommended remove |
-| C-10      | Client             | Before launch               | Open                      |
-| C-11      | Client             | Before launch               | Open — recommended yes    |
-| C-12      | Client             | Before phase 6              | Open                      |
-| C-13      | Client             | No deadline                 | Open                      |
-| D-01…D-09 | Client + tech lead | Before launch               | Open                      |
+|#|Owner|Needed by|Status|
+|-|-|-|-|
+|C-01|Client|Before phase 1 ends|Open|
+|C-02|Client + counsel|Before phase 6|Open|
+|C-03|Client|Before launch|Open|
+|C-04|Client + counsel|Before phase 2|Open|
+|C-05|Client|Before phase 2 ends|Open|
+|C-06|Client + counsel|Before the first EU sign-up|Open|
+|C-07|Client|Before phase 2 ends|Open|
+|C-08|Client|Before phase 3 ends|Open — recommended yes|
+|C-09|Client|Before phase 1 ends|Open — recommended remove|
+|C-10|Client|Before launch|Open|
+|C-11|Client|Before launch|Open — recommended yes|
+|C-12|Client|Before phase 6|Open|
+|C-13|Client|No deadline|Open|
+|D-01…D-09|Client + tech lead|Before launch|Open|
 
 When a row closes, the answer goes into the document it belongs in —
 [requirements.md](requirements.md) for scope,

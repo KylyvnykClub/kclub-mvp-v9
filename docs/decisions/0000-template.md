@@ -29,9 +29,9 @@ _(fill in)_
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| _(fill in)_ | _(fill in)_ |
+|Option|Why not|
+|-|-|
+|_(fill in)_|_(fill in)_|
 
 > An empty table means the decision was not really made. If there was genuinely
 > only one option, say what made it the only one.

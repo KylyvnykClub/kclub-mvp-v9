@@ -68,14 +68,14 @@ own environment rather than against a mock of our beliefs about Stripe.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Grant access on the checkout redirect | A redirect is not a payment. Loses money to anyone who visits the success URL directly; also fails honestly when the user closes the tab after paying |
-| Trust webhook payload fields without re-fetching | Cheaper, and mostly fine. Rejected because anything granting access should depend on Stripe's current view, not on a message we received — the difference matters exactly when something has gone wrong |
-| Poll Stripe on every request instead of projecting | Correct but slow, and makes every page render depend on a third party's uptime. Would put a 200 ms external call on the critical path of the catalogue |
-| Keep subscriptions only in Stripe, no local copy | Every page needs to know the viewer's tier. Also makes the staff console's finance screens impossible without paging the Stripe API live |
-| Paddle or Lemon Squeezy (merchant of record) | Would remove the global VAT/sales-tax burden entirely — a real benefit for an international club. Rejected because fees are roughly 2 points higher, the subscription API is materially weaker, and there is no test-clock equivalent, so the lifecycle could not be verified in CI. Revisit below |
-| Build our own recurring-billing engine on card tokens | Nobody sensible does this. Would raise us from PCI SAQ-A to a far larger compliance burden |
+|Option|Why not|
+|-|-|
+|Grant access on the checkout redirect|A redirect is not a payment. Loses money to anyone who visits the success URL directly; also fails honestly when the user closes the tab after paying|
+|Trust webhook payload fields without re-fetching|Cheaper, and mostly fine. Rejected because anything granting access should depend on Stripe's current view, not on a message we received — the difference matters exactly when something has gone wrong|
+|Poll Stripe on every request instead of projecting|Correct but slow, and makes every page render depend on a third party's uptime. Would put a 200 ms external call on the critical path of the catalogue|
+|Keep subscriptions only in Stripe, no local copy|Every page needs to know the viewer's tier. Also makes the staff console's finance screens impossible without paging the Stripe API live|
+|Paddle or Lemon Squeezy (merchant of record)|Would remove the global VAT/sales-tax burden entirely — a real benefit for an international club. Rejected because fees are roughly 2 points higher, the subscription API is materially weaker, and there is no test-clock equivalent, so the lifecycle could not be verified in CI. Revisit below|
+|Build our own recurring-billing engine on card tokens|Nobody sensible does this. Would raise us from PCI SAQ-A to a far larger compliance burden|
 
 ## Consequences
 

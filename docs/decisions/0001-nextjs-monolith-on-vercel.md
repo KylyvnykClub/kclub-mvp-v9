@@ -55,13 +55,13 @@ modular monolith is a monolith within a sprint.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| React SPA + separate API service | Doubles the auth surface; forces every catalogue read through a public endpoint that must then be defended against enumeration; costs SEO on the marketing site, which is the acquisition channel; two deployments to keep in step for no capability we need |
-| Microservices split by domain (identity, billing, catalogue) | Replaces function calls with network calls and transactions with sagas, to buy independent scaling that 50 rps does not require. With three engineers it also means each service is owned by nobody in particular |
-| Next.js frontend + a separate NestJS/Fastify backend | The conventional "serious" split. It buys the ability to scale the API separately and to reuse it from a native client — neither of which exists in this project or its near roadmap. Revisit when a second first-party client appears |
-| Astro (marketing) + separate React app (member area) | Splits the codebase in two for marketing performance that Next.js already delivers, and duplicates the design system across two build setups |
-| Containers on AWS ECS or Fly.io instead of Vercel | Adds two to three weeks of infrastructure work at the start of a fifteen-week schedule, and a permanent operational surface, in exchange for portability we can obtain later at similar cost. The client explicitly preferred managed |
+|Option|Why not|
+|-|-|
+|React SPA + separate API service|Doubles the auth surface; forces every catalogue read through a public endpoint that must then be defended against enumeration; costs SEO on the marketing site, which is the acquisition channel; two deployments to keep in step for no capability we need|
+|Microservices split by domain (identity, billing, catalogue)|Replaces function calls with network calls and transactions with sagas, to buy independent scaling that 50 rps does not require. With three engineers it also means each service is owned by nobody in particular|
+|Next.js frontend + a separate NestJS/Fastify backend|The conventional "serious" split. It buys the ability to scale the API separately and to reuse it from a native client — neither of which exists in this project or its near roadmap. Revisit when a second first-party client appears|
+|Astro (marketing) + separate React app (member area)|Splits the codebase in two for marketing performance that Next.js already delivers, and duplicates the design system across two build setups|
+|Containers on AWS ECS or Fly.io instead of Vercel|Adds two to three weeks of infrastructure work at the start of a fifteen-week schedule, and a permanent operational surface, in exchange for portability we can obtain later at similar cost. The client explicitly preferred managed|
 
 ## Consequences
 

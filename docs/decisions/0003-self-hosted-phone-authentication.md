@@ -59,15 +59,15 @@ killed, only waited out.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Clerk | Excellent developer experience and would save two to three weeks. Puts the member table — the asset — in a third party; per-MAU pricing scales against a free tier; customising recovery and device-trust policy means working against the product rather than with it |
-| Auth0 / Okta | Enterprise-grade and priced accordingly. Phone-first passwordless-plus-password flows are awkward; heavy for a consumer product with one identity type |
-| Stytch | Strong phone-first primitives and closest to a fit. Same fundamental objection: member identity leaves our database |
-| Firebase Authentication | Would place member identity in Google's control, which sits badly beside a privacy promise, and pulls a second SDK and console into a stack that has neither |
-| Supabase Auth | Would make sense only if we adopted Supabase wholesale ([0002](0002-postgresql-on-neon-with-drizzle.md)) |
-| Fully hand-rolled, including SMS code generation | Saves a vendor and adds the obligation to store codes, implement attempt-limiting and expiry correctly, and detect SMS pumping ourselves. Storing codes is precisely the risk we are avoiding |
-| `better-auth` vs. Lucia vs. NextAuth/Auth.js | Lucia is deprecated as a library. Auth.js is built around OAuth providers and fits phone-plus-password awkwardly. `better-auth` has first-class phone-number, TOTP and session-management plugins and keeps all data in our schema |
+|Option|Why not|
+|-|-|
+|Clerk|Excellent developer experience and would save two to three weeks. Puts the member table — the asset — in a third party; per-MAU pricing scales against a free tier; customising recovery and device-trust policy means working against the product rather than with it|
+|Auth0 / Okta|Enterprise-grade and priced accordingly. Phone-first passwordless-plus-password flows are awkward; heavy for a consumer product with one identity type|
+|Stytch|Strong phone-first primitives and closest to a fit. Same fundamental objection: member identity leaves our database|
+|Firebase Authentication|Would place member identity in Google's control, which sits badly beside a privacy promise, and pulls a second SDK and console into a stack that has neither|
+|Supabase Auth|Would make sense only if we adopted Supabase wholesale ([0002](0002-postgresql-on-neon-with-drizzle.md))|
+|Fully hand-rolled, including SMS code generation|Saves a vendor and adds the obligation to store codes, implement attempt-limiting and expiry correctly, and detect SMS pumping ourselves. Storing codes is precisely the risk we are avoiding|
+|`better-auth` vs. Lucia vs. NextAuth/Auth.js|Lucia is deprecated as a library. Auth.js is built around OAuth providers and fits phone-plus-password awkwardly. `better-auth` has first-class phone-number, TOTP and session-management plugins and keeps all data in our schema|
 
 ## Consequences
 

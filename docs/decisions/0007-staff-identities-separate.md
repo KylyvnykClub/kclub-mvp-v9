@@ -62,13 +62,13 @@ area.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| One `user` table with a `role` column | The shortcut. Every account-mutation path becomes a potential escalation path, and one session policy must serve two populations with opposite needs |
-| One table with a separate `staff_profile` extension | Better, but the shared credential and session rows are exactly the parts whose separation provides the benefit |
-| Separate tables with a foreign key linking a staff user to their member account | Convenient — "see my own card from the console" — and it reintroduces the traversal that the separation exists to prevent. The convenience is worth less than the property |
-| One table plus row-level security | Puts the boundary in a place that is hard to test and easy to bypass with the role the application already holds |
-| Delegating staff auth to an external identity provider (Google Workspace SSO) | Genuinely attractive for staff specifically, and a plausible future step. Deferred because it adds a vendor and an OAuth flow for four people, and mandatory TOTP already gets most of the benefit |
+|Option|Why not|
+|-|-|
+|One `user` table with a `role` column|The shortcut. Every account-mutation path becomes a potential escalation path, and one session policy must serve two populations with opposite needs|
+|One table with a separate `staff_profile` extension|Better, but the shared credential and session rows are exactly the parts whose separation provides the benefit|
+|Separate tables with a foreign key linking a staff user to their member account|Convenient — "see my own card from the console" — and it reintroduces the traversal that the separation exists to prevent. The convenience is worth less than the property|
+|One table plus row-level security|Puts the boundary in a place that is hard to test and easy to bypass with the role the application already holds|
+|Delegating staff auth to an external identity provider (Google Workspace SSO)|Genuinely attractive for staff specifically, and a plausible future step. Deferred because it adds a vendor and an OAuth flow for four people, and mandatory TOTP already gets most of the benefit|
 
 ## Consequences
 

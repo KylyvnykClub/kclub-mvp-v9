@@ -77,41 +77,41 @@ says at the top when it should be written and who owns it.
 
 **Before the first line of code**
 
-| File | Answers the question |
-| --- | --- |
-| [docs/brief.md](docs/brief.md) | What problem, for whom, and what are we not doing? |
-| [docs/decisions/](docs/decisions/) | Why is anything the way it is? |
-| [CLAUDE.md](CLAUDE.md) | What must be known before touching this repository, and where does each answer live? |
+|File|Answers the question|
+|-|-|
+|[docs/brief.md](docs/brief.md)|What problem, for whom, and what are we not doing?|
+|[docs/decisions/](docs/decisions/)|Why is anything the way it is?|
+|[CLAUDE.md](CLAUDE.md)|What must be known before touching this repository, and where does each answer live?|
 
 **Once the work outlives a prototype**
 
-| File | Answers the question |
-| --- | --- |
-| [docs/requirements.md](docs/requirements.md) | What must it do, and when is it done? |
-| [docs/delivery/](docs/delivery/) | What is being built now, in what order, and what closes a phase? |
-| [docs/technology.md](docs/technology.md) | Which technologies, and why these? |
-| [docs/architecture.md](docs/architecture.md) | How is the system structured? |
-| [docs/ux.md](docs/ux.md) | What does the user see, and what happens when it fails? |
-| [docs/glossary.md](docs/glossary.md) | What do we call things — in code, in the UI, in the database, in three languages? |
-| [docs/data-storage.md](docs/data-storage.md) | Where does data live, and how is it kept safe? |
-| [docs/testing.md](docs/testing.md) | How do we know a change is safe to ship? |
-| [docs/legal-alignment.md](docs/legal-alignment.md) | Where do the executed legal documents and this design disagree, and who decides? |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How does work get merged and released? |
+|File|Answers the question|
+|-|-|
+|[docs/requirements.md](docs/requirements.md)|What must it do, and when is it done?|
+|[docs/delivery/](docs/delivery/)|What is being built now, in what order, and what closes a phase?|
+|[docs/technology.md](docs/technology.md)|Which technologies, and why these?|
+|[docs/architecture.md](docs/architecture.md)|How is the system structured?|
+|[docs/ux.md](docs/ux.md)|What does the user see, and what happens when it fails?|
+|[docs/glossary.md](docs/glossary.md)|What do we call things — in code, in the UI, in the database, in three languages?|
+|[docs/data-storage.md](docs/data-storage.md)|Where does data live, and how is it kept safe?|
+|[docs/testing.md](docs/testing.md)|How do we know a change is safe to ship?|
+|[docs/legal-alignment.md](docs/legal-alignment.md)|Where do the executed legal documents and this design disagree, and who decides?|
+|[CONTRIBUTING.md](CONTRIBUTING.md)|How does work get merged and released?|
 
 **Before the first production deploy**
 
-| File | Answers the question |
-| --- | --- |
-| [docs/security.md](docs/security.md) | What are we protecting, from whom, and how? |
-| [docs/reliability.md](docs/reliability.md) | What happens when something breaks? |
-| [docs/observability.md](docs/observability.md) | How do we know the system is healthy? |
-| [docs/integration.md](docs/integration.md) | What do we talk to, and what is the contract? |
+|File|Answers the question|
+|-|-|
+|[docs/security.md](docs/security.md)|What are we protecting, from whom, and how?|
+|[docs/reliability.md](docs/reliability.md)|What happens when something breaks?|
+|[docs/observability.md](docs/observability.md)|How do we know the system is healthy?|
+|[docs/integration.md](docs/integration.md)|What do we talk to, and what is the contract?|
 
 **When more than one person maintains the documentation**
 
-| File | Answers the question |
-| --- | --- |
-| [docs/documentation.md](docs/documentation.md) | How do we keep all of the above true? |
+|File|Answers the question|
+|-|-|
+|[docs/documentation.md](docs/documentation.md)|How do we keep all of the above true?|
 
 **New here?** The reading order is in
 [docs/documentation.md §7](docs/documentation.md#7-onboarding-path). If you read
@@ -178,12 +178,12 @@ python tools/check-docs.py          # broken links, missing owners, stale dates
 python tools/check-docs.py --strict # fail on warnings too — use in CI
 ```
 
-| Mechanism | What it does |
-| --- | --- |
-| [tools/check-docs.py](tools/check-docs.py) | Fails on broken links and references to sections that no longer exist |
-| [.github/workflows/docs.yml](.github/workflows/docs.yml) | Flags a pull request that changes code owning a document without touching it |
-| [.github/CODEOWNERS](.github/CODEOWNERS) | Adds a document's owner as a reviewer automatically |
-| [.markdownlint.json](.markdownlint.json) | Pins the formatting rules so linting does not depend on each editor |
+|Mechanism|What it does|
+|-|-|
+|[tools/check-docs.py](tools/check-docs.py)|Fails on broken links and references to sections that no longer exist|
+|[.github/workflows/docs.yml](.github/workflows/docs.yml)|Flags a pull request that changes code owning a document without touching it|
+|[.github/CODEOWNERS](.github/CODEOWNERS)|Adds a document's owner as a reviewer automatically|
+|[.markdownlint.json](.markdownlint.json)|Pins the formatting rules so linting does not depend on each editor|
 
 The trigger table in
 [docs/documentation.md §3](docs/documentation.md#3-update-triggers) lists which

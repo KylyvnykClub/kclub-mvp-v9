@@ -117,12 +117,12 @@ categories. The pack also opened a larger set of its own, which are tracked in
 [legal-alignment.md](legal-alignment.md); two of those (closed chats, and
 whether the club accepts EU members at all) are bigger than anything below.
 
-| Question | Owner | Needed by |
-| --- | --- | --- |
-| Is the club's operator prepared to be the data controller for EU members' personal data? The legal pack addresses CCPA/CPRA only and has no GDPR section at all — see [legal-alignment.md](legal-alignment.md#c-06-gdpr-is-absent-from-the-legal-pack) | Client + counsel | Before the first EU sign-up |
-| Account recovery when a member loses their phone number: what identity proof does support accept? Phone-only sign-in has no other recovery path. | Client + tech lead | Before public launch |
-| Who owns day-two operations — the client's team or a retained engineer? Determines the on-call model in [reliability.md §7](reliability.md#7-incident-process). | Client | Before public launch |
-| Does becoming a partner require a VIP subscription in addition to the listing fee? The Club Rules imply it; the brief does not. It doubles the cost of being a partner — see [legal-alignment.md](legal-alignment.md#c-05-vip-appears-to-be-a-prerequisite-for-submitting-a-business-profile) | Client | Before partner onboarding opens |
+|Question|Owner|Needed by|
+|-|-|-|
+|Is the club's operator prepared to be the data controller for EU members' personal data? The legal pack addresses CCPA/CPRA only and has no GDPR section at all — see [legal-alignment.md](legal-alignment.md#c-06-gdpr-is-absent-from-the-legal-pack)|Client + counsel|Before the first EU sign-up|
+|Account recovery when a member loses their phone number: what identity proof does support accept? Phone-only sign-in has no other recovery path.|Client + tech lead|Before public launch|
+|Who owns day-two operations — the client's team or a retained engineer? Determines the on-call model in [reliability.md §7](reliability.md#7-incident-process).|Client|Before public launch|
+|Does becoming a partner require a VIP subscription in addition to the listing fee? The Club Rules imply it; the brief does not. It doubles the cost of being a partner — see [legal-alignment.md](legal-alignment.md#c-05-vip-appears-to-be-a-prerequisite-for-submitting-a-business-profile)|Client|Before partner onboarding opens|
 
 ---
 

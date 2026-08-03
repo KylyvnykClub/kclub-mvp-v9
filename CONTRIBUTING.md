@@ -212,14 +212,14 @@ notices it.
 
 ## Reporting problems
 
-| Type | Where | Who responds |
-| --- | --- | --- |
-| Bug | GitHub issue, `bug` label, with severity per [docs/testing.md §9](docs/testing.md#9-regression-policy) | Tech lead triages within one working day |
-| Production incident | `#incident` in team chat, and declare it — false alarms are free | Tech lead ([docs/reliability.md §7](docs/reliability.md#7-incident-process)) |
-| Feature request | GitHub issue, `feature` label | Client decides; scope lives in [docs/requirements.md](docs/requirements.md) |
-| Security vulnerability | `security@kclub.com` — **not** a public issue ([docs/security.md §9](docs/security.md#9-incident-response)) | Owner and tech lead, acknowledged within 3 working days |
-| Privacy or data-subject request | `privacy@kclub.com` | Owner ([docs/security.md §8](docs/security.md#8-compliance)) |
-| Documentation gap | GitHub issue, `docs` label | The document's owner ([docs/documentation.md §2](docs/documentation.md#2-ownership)) |
+|Type|Where|Who responds|
+|-|-|-|
+|Bug|GitHub issue, `bug` label, with severity per [docs/testing.md §9](docs/testing.md#9-regression-policy)|Tech lead triages within one working day|
+|Production incident|`#incident` in team chat, and declare it — false alarms are free|Tech lead ([docs/reliability.md §7](docs/reliability.md#7-incident-process))|
+|Feature request|GitHub issue, `feature` label|Client decides; scope lives in [docs/requirements.md](docs/requirements.md)|
+|Security vulnerability|`security@kclub.com` — **not** a public issue ([docs/security.md §9](docs/security.md#9-incident-response))|Owner and tech lead, acknowledged within 3 working days|
+|Privacy or data-subject request|`privacy@kclub.com`|Owner ([docs/security.md §8](docs/security.md#8-compliance))|
+|Documentation gap|GitHub issue, `docs` label|The document's owner ([docs/documentation.md §2](docs/documentation.md#2-ownership))|
 
 A documentation gap is a real defect. If you had to ask a question that `docs/`
 should have answered, the fix is to update the document — not just to get your

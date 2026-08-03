@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       # Blocking: a broken link or a reference to a section that no longer
       # exists is the most common symptom of a document drifting from reality,
@@ -35,7 +35,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Enable Corepack
         run: corepack enable
@@ -46,8 +46,11 @@ jobs:
       - name: Check Prettier formatting
         run: pnpm format:check
 
+      # .claude/ holds vendored agent and skill definitions we do not author and
+      # would lose on the next update. Linting someone else's markdown produces
+      # failures nobody is allowed to fix.
       - name: Lint markdown formatting
-        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules"
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude"
 
   triggers:
     name: Documentation update triggers

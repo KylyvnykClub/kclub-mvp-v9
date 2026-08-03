@@ -85,14 +85,14 @@ posture.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Collect full contact details and store them indefinitely | The naive design. No lawful basis on record, unbounded retention of third-party personal data, and a feature that reads as lead broking |
-| No client data at all — introduce the two businesses only | Genuinely safer, and it removes the feature's value. "I have a client for you" without any way to reach them is a message, not a referral. Retained as the fallback if the compliance position ever becomes untenable |
-| Send the client a confirmation and get consent directly | The correct answer in principle. Rejected because it means messaging a stranger who has not heard of us in order to ask permission to hold their data — which is itself a processing act, and a worse first impression than the introduction it protects |
-| Verify consent rather than attest it | There is no mechanism to verify it without contacting the client, which is the option above |
-| Deliver immediately without moderation | Faster and removes the human bottleneck. Rejected because moderation is what stops the feature becoming a spam channel in its first month, and because the moderation record is part of the accountability trail |
-| Let the recipient see contact details on delivery rather than on acceptance | One less click. Means every referral, including unwanted ones, discloses a stranger's details to a business that may ignore it |
+|Option|Why not|
+|-|-|
+|Collect full contact details and store them indefinitely|The naive design. No lawful basis on record, unbounded retention of third-party personal data, and a feature that reads as lead broking|
+|No client data at all — introduce the two businesses only|Genuinely safer, and it removes the feature's value. "I have a client for you" without any way to reach them is a message, not a referral. Retained as the fallback if the compliance position ever becomes untenable|
+|Send the client a confirmation and get consent directly|The correct answer in principle. Rejected because it means messaging a stranger who has not heard of us in order to ask permission to hold their data — which is itself a processing act, and a worse first impression than the introduction it protects|
+|Verify consent rather than attest it|There is no mechanism to verify it without contacting the client, which is the option above|
+|Deliver immediately without moderation|Faster and removes the human bottleneck. Rejected because moderation is what stops the feature becoming a spam channel in its first month, and because the moderation record is part of the accountability trail|
+|Let the recipient see contact details on delivery rather than on acceptance|One less click. Means every referral, including unwanted ones, discloses a stranger's details to a business that may ignore it|
 
 ## Consequences
 

@@ -20,40 +20,40 @@ for spending two to three weeks before the first requirement is implemented.
 
 ## 1. Entry criteria
 
-| Condition | State |
-| --- | --- |
-| The documentation set exists and is internally consistent | Met — 14 documents, 10 decision records, `check-docs.py` green |
-| The delivery process is agreed | Met — [README.md](README.md) |
-| The context contract for AI-assisted work exists | Met — [CLAUDE.md](../../CLAUDE.md) |
-| The client is available for decisions during the phase | _(confirm)_ — three questions in T-0.5 need them |
+|Condition|State|
+|-|-|
+|The documentation set exists and is internally consistent|Met — 14 documents, 10 decision records, `check-docs.py` green|
+|The delivery process is agreed|Met — [README.md](README.md)|
+|The context contract for AI-assisted work exists|Met — [CLAUDE.md](../../CLAUDE.md)|
+|The client is available for decisions during the phase|_(confirm)_ — three questions in T-0.5 need them|
 
 ---
 
 ## 2. Tasks
 
-| Task | Delivers | FR | Depends on | Est |
-| --- | --- | --- | --- | --- |
-| T-0.1 | Git repository initialised, pushed to GitHub, `main` protected, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems) | — | — | 0.5d |
-| T-0.2 | Twilio account and **A2P 10DLC registration submitted**; brand and campaign filed | — | — | 0.5d |
-| T-0.3 | Remaining vendor accounts: Vercel, Neon, Upstash, Stripe, Inngest, Sentry, Axiom, Resend, Cloudflare, Better Stack, 1Password | — | — | 1d |
-| T-0.4 | Document owners assigned in every header, [documentation.md §2](../documentation.md#2-ownership) and `.github/CODEOWNERS`; `check-docs.py --strict` reports zero warnings | — | — | 0.5d |
-| T-0.5 | The three blocking client decisions closed and recorded (see §3) | — | T-0.3 | 1d + client |
-| T-0.6 | Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack | — | T-0.1 | 1d |
-| T-0.7 | Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain` | — | T-0.6 | 0.5d |
-| T-0.8 | `src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it | — | T-0.6 | 0.5d |
-| T-0.9 | Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check | — | T-0.3, T-0.8 | 1d |
-| T-0.10 | Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source | — | T-0.9 | 1.5d |
-| T-0.11 | `platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags | — | T-0.10 | 1.5d |
-| T-0.12 | `audit` module skeleton, append-only: the application's database role has no `UPDATE` or `DELETE` grant on `audit_log`, proved by a test | — | T-0.10 | 0.5d |
-| T-0.13 | **The four constraint suites**, against an empty route table (see §3) | — | T-0.11, T-0.12 | 2d |
-| T-0.14 | i18n scaffolding: `next-intl`, locale-prefixed routes, `messages/{en,ru,uk}.json`, missing-key check in CI, ICU plural setup for `ru`/`uk` | — | T-0.6 | 1d |
-| T-0.15 | Design tokens from [ux.md §6](../ux.md#6-design-system): Tailwind 4 custom properties, light and dark themes, shadcn/ui base installed | — | T-0.6 | 1d |
-| T-0.16 | CI pipeline with every blocking gate in [testing.md §6](../testing.md#6-ci-gates) wired on the skeleton, first blocking result under 10 minutes | — | T-0.10, T-0.13, T-0.14 | 1.5d |
-| T-0.17 | Environments: Terraform for Neon, Upstash, Cloudflare and Vercel; preview per pull request with a Neon branch; staging on merge to `main`; seed script | — | T-0.9, T-0.16 | 1.5d |
-| T-0.18 | Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety)) | — | T-0.17 | 1d |
-| T-0.19 | Process documents corrected to the real team shape (see §3) | — | T-0.4 | 0.5d |
-| T-0.20 | FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green | — | T-0.5 | 0.5d |
-| T-0.21 | `phase-1.md` written | — | T-0.5, T-0.20 | 0.5d |
+|Task|Delivers|FR|Depends on|Est|
+|-|-|-|-|-|
+|T-0.1|Git repository initialised, pushed to GitHub, `main` protected, `.gitignore`, `.nvmrc`, issue labels from [CONTRIBUTING.md](../../CONTRIBUTING.md#reporting-problems)|—|—|0.5d|
+|T-0.2|Twilio account and **A2P 10DLC registration submitted**; brand and campaign filed|—|—|0.5d|
+|T-0.3|Remaining vendor accounts: Vercel, Neon, Upstash, Stripe, Inngest, Sentry, Axiom, Resend, Cloudflare, Better Stack, 1Password|—|—|1d|
+|T-0.4|Document owners assigned in every header, [documentation.md §2](../documentation.md#2-ownership) and `.github/CODEOWNERS`; `check-docs.py --strict` reports zero warnings|—|—|0.5d|
+|T-0.5|The three blocking client decisions closed and recorded (see §3)|—|T-0.3|1d + client|
+|T-0.6|Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack|—|T-0.1|1d|
+|T-0.7|Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain`|—|T-0.6|0.5d|
+|T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|
+|T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.3, T-0.8|1d|
+|T-0.10|Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source|—|T-0.9|1.5d|
+|T-0.11|`platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags|—|T-0.10|1.5d|
+|T-0.12|`audit` module skeleton, append-only: the application's database role has no `UPDATE` or `DELETE` grant on `audit_log`, proved by a test|—|T-0.10|0.5d|
+|T-0.13|**The four constraint suites**, against an empty route table (see §3)|—|T-0.11, T-0.12|2d|
+|T-0.14|i18n scaffolding: `next-intl`, locale-prefixed routes, `messages/{en,ru,uk}.json`, missing-key check in CI, ICU plural setup for `ru`/`uk`|—|T-0.6|1d|
+|T-0.15|Design tokens from [ux.md §6](../ux.md#6-design-system): Tailwind 4 custom properties, light and dark themes, shadcn/ui base installed|—|T-0.6|1d|
+|T-0.16|CI pipeline with every blocking gate in [testing.md §6](../testing.md#6-ci-gates) wired on the skeleton, first blocking result under 10 minutes|—|T-0.10, T-0.13, T-0.14|1.5d|
+|T-0.17|Environments: Terraform for Neon, Upstash, Cloudflare and Vercel; preview per pull request with a Neon branch; staging on merge to `main`; seed script|—|T-0.9, T-0.16|1.5d|
+|T-0.18|Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety))|—|T-0.17|1d|
+|T-0.19|Process documents corrected to the real team shape (see §3)|—|T-0.4|0.5d|
+|T-0.20|FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green|—|T-0.5|0.5d|
+|T-0.21|`phase-1.md` written|—|T-0.5, T-0.20|0.5d|
 
 **Total: ~19 focused days.** [requirements.md §6.1](../requirements.md#61-delivery-plan)
 budgets two weeks. The difference is T-0.13, which moved here from where it would
@@ -98,11 +98,11 @@ week five.
 **T-0.5 — three decisions that belong to the client.** All three are already
 recorded as open; none can be answered by engineering:
 
-| Question | Source | Blocks |
-| --- | --- | --- |
-| Closed chats versus the no-directory constraint — does the club promise a feature that [ADR 0005](../decisions/0005-no-member-directory.md) forbids? | [legal-alignment.md §4](../legal-alignment.md#4-decision-log) | Phase 1 |
-| Does the club accept EU members, and who is the Art. 27 representative? | [requirements.md §9](../requirements.md#9-open-questions) | The first EU sign-up, and the phase 7 compliance work |
-| Are the nine legal documents converted to versioned MDX before launch? FR-093 records which version a member accepted, which means nothing unless a version is immutable | [requirements.md §9](../requirements.md#9-open-questions) | Phase 1 registration flow |
+|Question|Source|Blocks|
+|-|-|-|
+|Closed chats versus the no-directory constraint — does the club promise a feature that [ADR 0005](../decisions/0005-no-member-directory.md) forbids?|[legal-alignment.md §4](../legal-alignment.md#4-decision-log)|Phase 1|
+|Does the club accept EU members, and who is the Art. 27 representative?|[requirements.md §9](../requirements.md#9-open-questions)|The first EU sign-up, and the phase 7 compliance work|
+|Are the nine legal documents converted to versioned MDX before launch? FR-093 records which version a member accepted, which means nothing unless a version is immutable|[requirements.md §9](../requirements.md#9-open-questions)|Phase 1 registration flow|
 
 The first is not a small question. If the answer is "yes, closed chats are
 promised", the product's central constraint is in conflict with an executed
@@ -167,14 +167,14 @@ decision for the client, and it will probably move work earlier rather than late
 
 ## 4. Risks
 
-| Risk | Signal | Response |
-| --- | --- | --- |
-| A2P 10DLC registration rejected or slow | No approval by the end of sprint 2 | Escalate to the client immediately; phase 1 sign-up cannot be demonstrated without it. Consider a non-US test number for development only |
-| A blocking client decision in T-0.5 does not arrive | No answer by the phase gate | Phase 1 does not start. Do not begin identity work against an unresolved directory constraint — that is the most expensive possible rework |
-| Constraint suites are written to pass rather than to catch | They have never been seen to fail | Each suite ships with a deliberately broken case, run once, in the same commit |
-| CI exceeds the 15-minute budget on an empty project | Pipeline over 10 minutes at T-0.16 | Fix now. It only grows, and past twenty minutes changes get batched, which produces exactly the large unreviewable diffs the process avoids |
-| Terraform state and console clicks diverge | Any infrastructure change made in a vendor console | Everything except Stripe product objects goes through Terraform from the first day, per [technology.md §6](../technology.md#6-infrastructure-and-hosting) |
-| The phase expands into features | A task appears here with an FR number | Move it to phase 1. Phase 0 delivers no requirement |
+|Risk|Signal|Response|
+|-|-|-|
+|A2P 10DLC registration rejected or slow|No approval by the end of sprint 2|Escalate to the client immediately; phase 1 sign-up cannot be demonstrated without it. Consider a non-US test number for development only|
+|A blocking client decision in T-0.5 does not arrive|No answer by the phase gate|Phase 1 does not start. Do not begin identity work against an unresolved directory constraint — that is the most expensive possible rework|
+|Constraint suites are written to pass rather than to catch|They have never been seen to fail|Each suite ships with a deliberately broken case, run once, in the same commit|
+|CI exceeds the 15-minute budget on an empty project|Pipeline over 10 minutes at T-0.16|Fix now. It only grows, and past twenty minutes changes get batched, which produces exactly the large unreviewable diffs the process avoids|
+|Terraform state and console clicks diverge|Any infrastructure change made in a vendor console|Everything except Stripe product objects goes through Terraform from the first day, per [technology.md §6](../technology.md#6-infrastructure-and-hosting)|
+|The phase expands into features|A task appears here with an FR number|Move it to phase 1. Phase 0 delivers no requirement|
 
 ---
 

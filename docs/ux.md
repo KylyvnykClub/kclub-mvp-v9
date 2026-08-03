@@ -48,77 +48,77 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 
 **Public (`kclub.com`)**
 
-| Screen | User goal | Access | Notes |
-| --- | --- | --- | --- |
-| Home | Decide whether this club is real and worth joining | public | Hero, how it works, curated showcase, testimonials, FAQ, join |
-| How it works | Understand membership vs. partnership | public | Explicit "this is not MLM" statement |
-| For partners | Decide whether to apply | public | Pricing, what a listing gets, the application steps |
-| Partner showcase | See that the catalogue is not empty | public | Curated subset only — never the full catalogue |
-| FAQ | Answer the objection before it is raised | public | Includes "why phone only" and "what do you show about me" |
-| Legal ×5 | Read Terms, Privacy, Club Rules, Partner Rules, Refunds | public | Versioned; the version accepted is recorded |
-| Contact / Business tier enquiry | Reach a human | public | The "contact us" path for the deferred Business plan |
-| Card verification (`card.kclub.com/v/<token>`) | Confirm a card in front of them is real | public | Minimal disclosure by design (FR-023) |
+|Screen|User goal|Access|Notes|
+|-|-|-|-|
+|Home|Decide whether this club is real and worth joining|public|Hero, how it works, curated showcase, testimonials, FAQ, join|
+|How it works|Understand membership vs. partnership|public|Explicit "this is not MLM" statement|
+|For partners|Decide whether to apply|public|Pricing, what a listing gets, the application steps|
+|Partner showcase|See that the catalogue is not empty|public|Curated subset only — never the full catalogue|
+|FAQ|Answer the objection before it is raised|public|Includes "why phone only" and "what do you show about me"|
+|Legal ×5|Read Terms, Privacy, Club Rules, Partner Rules, Refunds|public|Versioned; the version accepted is recorded|
+|Contact / Business tier enquiry|Reach a human|public|The "contact us" path for the deferred Business plan|
+|Card verification (`card.kclub.com/v/<token>`)|Confirm a card in front of them is real|public|Minimal disclosure by design (FR-023)|
 
 **Authentication**
 
-| Screen | User goal | Access | Notes |
-| --- | --- | --- | --- |
-| Register — phone + password | Start membership | public | Consent wording for SMS shown verbatim, and stored |
-| Register — enter code | Prove the number | public | Resend with visible countdown; attempts remaining |
-| Register — profile | Finish in one screen | authenticated, unverified profile | Name, language, country. Three fields, no more |
-| Sign in | Return | public | |
-| Sign in — device challenge | Prove an unrecognised device | public | Appears only when the device is unknown |
-| Forgot password | Recover | public | Code to the number, then a new password |
-| Blocked / suspended | Understand and appeal | authenticated | Says what happened and how to contact support |
+|Screen|User goal|Access|Notes|
+|-|-|-|-|
+|Register — phone + password|Start membership|public|Consent wording for SMS shown verbatim, and stored|
+|Register — enter code|Prove the number|public|Resend with visible countdown; attempts remaining|
+|Register — profile|Finish in one screen|authenticated, unverified profile|Name, language, country. Three fields, no more|
+|Sign in|Return|public||
+|Sign in — device challenge|Prove an unrecognised device|public|Appears only when the device is unknown|
+|Forgot password|Recover|public|Code to the number, then a new password|
+|Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
 **Member area (`kclub.com/app`)**
 
-| Screen | User goal | Access | Notes |
-| --- | --- | --- | --- |
-| My card | Show membership | member | Default landing. Large QR, tier, serial, name-visibility toggle |
-| Catalogue | Find a trusted business | member | Search, category/country/city filters, results |
-| Partner detail | Decide to contact them, and see the discount | member | Discount terms are the most prominent element |
-| VIP upgrade | Understand and buy VIP | member | Honest about what VIP does and does not add |
-| My subscription | Manage or cancel | member | Renewal date, price, link to the Stripe portal |
-| My companies | See status of businesses I submitted | member | One card per company with its state and next action |
-| Submit a company — 4 steps | Apply to the catalogue | member | Draft saved per step; progress always visible |
-| Company under review | Know where it is | partner_owner | Shows submission time and expected decision window |
-| Company rejected | Understand why and fix it | partner_owner | Reason shown in full; resubmit from the same data |
-| Company — pay for listing | Publish | partner_owner | Only appears after approval |
-| Edit company | Keep it accurate | partner_owner | Warns which edits return it to review |
-| Referrals — sent | Track introductions I made | member_vip | Status per referral |
-| Referrals — received | Act on incoming introductions | partner_owner | Accept/decline; contact revealed only on accept |
-| Send a referral | Introduce a client | member_vip | Consent attestation, quota shown before submitting |
-| Settings — profile | Change name, language, country | member | |
-| Settings — security | Sessions, password, phone number | member | Active sessions with device and last-used |
-| Settings — delete account | Leave | member | Explains what is deleted, what is kept and why |
+|Screen|User goal|Access|Notes|
+|-|-|-|-|
+|My card|Show membership|member|Default landing. Large QR, tier, serial, name-visibility toggle|
+|Catalogue|Find a trusted business|member|Search, category/country/city filters, results|
+|Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element|
+|VIP upgrade|Understand and buy VIP|member|Honest about what VIP does and does not add|
+|My subscription|Manage or cancel|member|Renewal date, price, link to the Stripe portal|
+|My companies|See status of businesses I submitted|member|One card per company with its state and next action|
+|Submit a company — 4 steps|Apply to the catalogue|member|Draft saved per step; progress always visible|
+|Company under review|Know where it is|partner_owner|Shows submission time and expected decision window|
+|Company rejected|Understand why and fix it|partner_owner|Reason shown in full; resubmit from the same data|
+|Company — pay for listing|Publish|partner_owner|Only appears after approval|
+|Edit company|Keep it accurate|partner_owner|Warns which edits return it to review|
+|Referrals — sent|Track introductions I made|member_vip|Status per referral|
+|Referrals — received|Act on incoming introductions|partner_owner|Accept/decline; contact revealed only on accept|
+|Send a referral|Introduce a client|member_vip|Consent attestation, quota shown before submitting|
+|Settings — profile|Change name, language, country|member||
+|Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
+|Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
 
 **Staff console (`admin.kclub.com`)**
 
-| Screen | User goal | Access | Notes |
-| --- | --- | --- | --- |
-| Sign in + TOTP | Get in securely | staff | Two steps, always |
-| Dashboard | See what needs attention today | staff_support+ | Counts and queue ages, not vanity metrics |
-| Finance | See the money | staff_admin+ | MRR, active subs by type, renewals due, recent payments, revenue by country + world map |
-| Members | Find and act on a member | staff_support+ | Search by phone, serial or name. Every open is audited |
-| Member detail | Handle a support case | staff_support+ | Card, subscriptions, history, blocked state |
-| Cards | Revoke or reissue | staff_admin+ | Reason mandatory |
-| Moderation — companies | Clear the queue | staff_moderator+ | Oldest first, age badge, approve/reject with reason |
-| Moderation — referrals | Clear the queue | staff_moderator+ | Client contact visible only during review, and audited |
-| Companies | Manage the catalogue | staff_admin+ | Publish, hide, edit, discount, showcase rank |
-| Reference data | Keep categories and places tidy | staff_moderator+ | Blocks deletion of anything referenced |
-| Pricing | Change what we charge | staff_owner | Two-step confirmation; never reprices existing subscriptions |
-| Staff | Manage the team | staff_owner | Create, disable, change role |
-| Audit log | Investigate | staff_owner | Filter by actor, target, date |
+|Screen|User goal|Access|Notes|
+|-|-|-|-|
+|Sign in + TOTP|Get in securely|staff|Two steps, always|
+|Dashboard|See what needs attention today|staff_support+|Counts and queue ages, not vanity metrics|
+|Finance|See the money|staff_admin+|MRR, active subs by type, renewals due, recent payments, revenue by country + world map|
+|Members|Find and act on a member|staff_support+|Search by phone, serial or name. Every open is audited|
+|Member detail|Handle a support case|staff_support+|Card, subscriptions, history, blocked state|
+|Cards|Revoke or reissue|staff_admin+|Reason mandatory|
+|Moderation — companies|Clear the queue|staff_moderator+|Oldest first, age badge, approve/reject with reason|
+|Moderation — referrals|Clear the queue|staff_moderator+|Client contact visible only during review, and audited|
+|Companies|Manage the catalogue|staff_admin+|Publish, hide, edit, discount, showcase rank|
+|Reference data|Keep categories and places tidy|staff_moderator+|Blocks deletion of anything referenced|
+|Pricing|Change what we charge|staff_owner|Two-step confirmation; never reprices existing subscriptions|
+|Staff|Manage the team|staff_owner|Create, disable, change role|
+|Audit log|Investigate|staff_owner|Filter by actor, target, date|
 
 **System states, which are screens too**
 
-| Screen | User goal | Access | Notes |
-| --- | --- | --- | --- |
-| Maintenance | Know it is us, not them | public | Localised; served by middleware during a restore |
-| 404 / 403 | Get back somewhere useful | any | 403 never reveals that the object exists |
-| Payment processing | Wait honestly after checkout | member | "Activating — this usually takes a few seconds" and it polls |
-| Offline | Understand nothing is lost | member | PWA shell only; the card is cached and readable offline |
+|Screen|User goal|Access|Notes|
+|-|-|-|-|
+|Maintenance|Know it is us, not them|public|Localised; served by middleware during a restore|
+|404 / 403|Get back somewhere useful|any|403 never reveals that the object exists|
+|Payment processing|Wait honestly after checkout|member|"Activating — this usually takes a few seconds" and it polls|
+|Offline|Understand nothing is lost|member|PWA shell only; the card is cached and readable offline|
 
 ---
 
@@ -259,14 +259,14 @@ time.
 Every screen that loads data defines all six. This table is the standard; a
 screen deviating from it needs a reason in review.
 
-| State | Standard treatment |
-| --- | --- |
-| **Loading** | Content-shaped skeletons that match the final layout, so nothing shifts when data arrives. Nothing appears for the first 200 ms — a flash of skeleton on a fast connection reads as slower than no skeleton at all. Beyond 5 seconds the skeleton is replaced by "this is taking longer than usual" with a retry |
-| **Empty** | Always explains and always offers the next action. "No partners in Lisbon yet — try a nearby city, or tell us about a business you trust" and a button. The word "None" alone never appears; an empty state is the cheapest place to grow the catalogue |
-| **Error** | A plain sentence saying what failed and what to do, one retry control, and a reference code (the correlation id) that support can look up. Never a stack trace, never a raw status code, never an internal identifier the user cannot use |
-| **Partial / degraded** | The page renders what it has and marks the rest. Catalogue without facet counts still lists partners; a card whose tier cannot be confirmed shows the card with "tier updating". See [reliability.md §5](reliability.md#5-graceful-degradation) |
-| **No permission** | Hidden entirely where its existence is itself information (a member's company, a referral, any staff route). Visible-but-disabled with a reason only where the user could plausibly gain the right — "Referrals are a VIP feature" with an upgrade link. The distinction is the rule: never confirm the existence of something the viewer may not see |
-| **Offline** | The card works. It is cached by the service worker and readable with no connection, because that is exactly when it is needed — at a counter, in a basement restaurant. Everything else shows an offline banner and retries when connectivity returns |
+|State|Standard treatment|
+|-|-|
+|**Loading**|Content-shaped skeletons that match the final layout, so nothing shifts when data arrives. Nothing appears for the first 200 ms — a flash of skeleton on a fast connection reads as slower than no skeleton at all. Beyond 5 seconds the skeleton is replaced by "this is taking longer than usual" with a retry|
+|**Empty**|Always explains and always offers the next action. "No partners in Lisbon yet — try a nearby city, or tell us about a business you trust" and a button. The word "None" alone never appears; an empty state is the cheapest place to grow the catalogue|
+|**Error**|A plain sentence saying what failed and what to do, one retry control, and a reference code (the correlation id) that support can look up. Never a stack trace, never a raw status code, never an internal identifier the user cannot use|
+|**Partial / degraded**|The page renders what it has and marks the rest. Catalogue without facet counts still lists partners; a card whose tier cannot be confirmed shows the card with "tier updating". See [reliability.md §5](reliability.md#5-graceful-degradation)|
+|**No permission**|Hidden entirely where its existence is itself information (a member's company, a referral, any staff route). Visible-but-disabled with a reason only where the user could plausibly gain the right — "Referrals are a VIP feature" with an upgrade link. The distinction is the rule: never confirm the existence of something the viewer may not see|
+|**Offline**|The card works. It is cached by the service worker and readable with no connection, because that is exactly when it is needed — at a counter, in a basement restaurant. Everything else shows an offline banner and retries when connectivity returns|
 
 **Error message rules.** Say what happened, why, and what to do next, in that
 order, in the user's language. Never blame the user. Never expose a stack trace,
@@ -279,23 +279,23 @@ re-announced to screen readers on submit.
 
 ## 6. Design system
 
-| Aspect | Choice |
-| --- | --- |
-| Component library | Adopt shadcn/ui (Radix primitives), copied into the repository and owned. Accessible keyboard and ARIA behaviour comes from Radix; the visual identity is entirely ours |
-| Design tool and file | Figma — _(link to be added when the file exists)_ |
-| Token source of truth | The codebase: `src/styles/tokens.css` as CSS custom properties. Figma variables mirror it. When they disagree, the code wins and Figma is corrected — one direction, decided now |
-| Icon set | Lucide, 1.5 px stroke, 20/24 px sizes only |
-| Illustration / imagery | Photography for partner covers, supplied by partners and re-encoded on upload. No stock illustration, no 3D renders — real businesses photograph better than any illustration style at this price point |
+|Aspect|Choice|
+|-|-|
+|Component library|Adopt shadcn/ui (Radix primitives), copied into the repository and owned. Accessible keyboard and ARIA behaviour comes from Radix; the visual identity is entirely ours|
+|Design tool and file|Figma — _(link to be added when the file exists)_|
+|Token source of truth|The codebase: `src/styles/tokens.css` as CSS custom properties. Figma variables mirror it. When they disagree, the code wins and Figma is corrected — one direction, decided now|
+|Icon set|Lucide, 1.5 px stroke, 20/24 px sizes only|
+|Illustration / imagery|Photography for partner covers, supplied by partners and re-encoded on upload. No stock illustration, no 3D renders — real businesses photograph better than any illustration style at this price point|
 
 ### Tokens
 
-| Token group | Definition |
-| --- | --- |
-| Colour | Semantic names only: `surface`, `surface-raised`, `surface-sunken`, `border`, `text`, `text-muted`, `accent`, `accent-contrast`, `success`, `warning`, `danger`, `info`. Never `gold-500` in a component. The brand accent is a warm metallic gold used sparingly — the card, primary actions, and nothing else. Two full palettes, light and dark, both AA against their surfaces |
-| Typography | Two families: a high-contrast serif for headings (club, editorial) and a neutral sans for interface text. Scale 12/14/16/18/24/32/48, 1.5 line height for body, 1.15 for headings. Weights 400/500/700 only. Self-hosted, subsetted per locale — Cyrillic and Ukrainian glyph coverage is a requirement, not an afterthought |
-| Spacing | 4 px base; scale 4/8/12/16/24/32/48/64. Nothing between steps |
-| Radius / elevation | Radius 8 px default, 16 px for cards, 999 px for pills. Three elevation levels, from shadow tokens; no ad-hoc shadows |
-| Motion | 150 ms for state changes, 250 ms for entrances, `cubic-bezier(0.2, 0, 0, 1)`. The card issue animation is the only motion over 300 ms in the product. Everything is disabled under `prefers-reduced-motion: reduce` — not shortened, disabled |
+|Token group|Definition|
+|-|-|
+|Colour|Semantic names only: `surface`, `surface-raised`, `surface-sunken`, `border`, `text`, `text-muted`, `accent`, `accent-contrast`, `success`, `warning`, `danger`, `info`. Never `gold-500` in a component. The brand accent is a warm metallic gold used sparingly — the card, primary actions, and nothing else. Two full palettes, light and dark, both AA against their surfaces|
+|Typography|Two families: a high-contrast serif for headings (club, editorial) and a neutral sans for interface text. Scale 12/14/16/18/24/32/48, 1.5 line height for body, 1.15 for headings. Weights 400/500/700 only. Self-hosted, subsetted per locale — Cyrillic and Ukrainian glyph coverage is a requirement, not an afterthought|
+|Spacing|4 px base; scale 4/8/12/16/24/32/48/64. Nothing between steps|
+|Radius / elevation|Radius 8 px default, 16 px for cards, 999 px for pills. Three elevation levels, from shadow tokens; no ad-hoc shadows|
+|Motion|150 ms for state changes, 250 ms for entrances, `cubic-bezier(0.2, 0, 0, 1)`. The card issue animation is the only motion over 300 ms in the product. Everything is disabled under `prefers-reduced-motion: reduce` — not shortened, disabled|
 
 **Dark mode:** supported and first-class — a gold-on-dark club card is the
 product's strongest visual moment. The theme follows the operating system by
@@ -308,12 +308,12 @@ failing token.
 
 ## 7. Responsive and platform support
 
-| Breakpoint | Width | Layout |
-| --- | --- | --- |
-| `sm` (default) | < 640 px | Single column, bottom navigation, full-width cards. The design target is 390 px |
-| `md` | 640–1023 px | Two-column catalogue grid, bottom navigation retained |
-| `lg` | 1024–1439 px | Top navigation, three-column catalogue, card centred at a fixed maximum width |
-| `xl` | ≥ 1440 px | Content capped at 1280 px. The staff console is the only screen that uses the extra width, for tables |
+|Breakpoint|Width|Layout|
+|-|-|-|
+|`sm` (default)|< 640 px|Single column, bottom navigation, full-width cards. The design target is 390 px|
+|`md`|640–1023 px|Two-column catalogue grid, bottom navigation retained|
+|`lg`|1024–1439 px|Top navigation, three-column catalogue, card centred at a fixed maximum width|
+|`xl`|≥ 1440 px|Content capped at 1280 px. The staff console is the only screen that uses the extra width, for tables|
 
 **Primary target:** mobile. The card is shown from a phone, the catalogue is
 searched from a phone, and the QR is scanned from a phone. Desktop is the same
@@ -339,16 +339,16 @@ subtitle. Horizontal scrolling inside a table is not used — it hides data.
 Target: **WCAG 2.1 Level AA**, treated as a launch requirement per
 [requirements.md §5.4](requirements.md#54-usability-and-accessibility).
 
-| Requirement | Approach | Verified by |
-| --- | --- | --- |
-| Keyboard navigation | Every flow in §3 completable with the keyboard alone, including the four-step submission, the moderation queue and the QR screen. Radix primitives supply correct roving focus and escape handling | Playwright keyboard-only run of the four flows in §3, on every pull request |
-| Focus visibility and order | A 2 px accent outline with a 2 px offset on every interactive element, visible in both themes. DOM order matches visual order; focus is trapped in modals and restored to the trigger on close | Manual audit per release; axe rules in CI |
-| Colour contrast | 4.5:1 for body text, 3:1 for large text and interface borders, in **both** themes. The gold accent fails on light surfaces at small sizes and is therefore never used for small text — a constraint recorded in the tokens themselves | Automated contrast check over the token matrix in CI; the check is on tokens, not screenshots |
-| Screen reader support | Semantic HTML first, ARIA only where semantics run out. Live regions announce moderation outcomes, quota changes and payment status. The QR image carries a text alternative giving the card serial, so a blind member can read their serial aloud | Manual pass with VoiceOver (iOS/macOS) and NVDA (Windows) before each release |
-| Form labels and errors | Every input has a visible persistent label — never a placeholder as a label. Errors are tied with `aria-describedby`, announced on submit, and listed in a summary at the top of long forms | axe in CI; manual pass |
-| Motion sensitivity | `prefers-reduced-motion: reduce` disables all non-essential animation, including the card issue animation | Manual pass |
-| Language | `lang` is set correctly per locale, including on mixed-language content such as a partner's own name in a page rendered in another language | axe in CI |
-| Text scaling | Layout survives 200% zoom and a 200% browser font size without loss of content or function | Manual pass at 200% |
+|Requirement|Approach|Verified by|
+|-|-|-|
+|Keyboard navigation|Every flow in §3 completable with the keyboard alone, including the four-step submission, the moderation queue and the QR screen. Radix primitives supply correct roving focus and escape handling|Playwright keyboard-only run of the four flows in §3, on every pull request|
+|Focus visibility and order|A 2 px accent outline with a 2 px offset on every interactive element, visible in both themes. DOM order matches visual order; focus is trapped in modals and restored to the trigger on close|Manual audit per release; axe rules in CI|
+|Colour contrast|4.5:1 for body text, 3:1 for large text and interface borders, in **both** themes. The gold accent fails on light surfaces at small sizes and is therefore never used for small text — a constraint recorded in the tokens themselves|Automated contrast check over the token matrix in CI; the check is on tokens, not screenshots|
+|Screen reader support|Semantic HTML first, ARIA only where semantics run out. Live regions announce moderation outcomes, quota changes and payment status. The QR image carries a text alternative giving the card serial, so a blind member can read their serial aloud|Manual pass with VoiceOver (iOS/macOS) and NVDA (Windows) before each release|
+|Form labels and errors|Every input has a visible persistent label — never a placeholder as a label. Errors are tied with `aria-describedby`, announced on submit, and listed in a summary at the top of long forms|axe in CI; manual pass|
+|Motion sensitivity|`prefers-reduced-motion: reduce` disables all non-essential animation, including the card issue animation|Manual pass|
+|Language|`lang` is set correctly per locale, including on mixed-language content such as a partner's own name in a page rendered in another language|axe in CI|
+|Text scaling|Layout survives 200% zoom and a 200% browser font size without loss of content or function|Manual pass at 200%|
 
 Testing cadence: [testing.md §7](testing.md#7-manual-and-specialist-testing)
 
@@ -401,17 +401,17 @@ shipped unreviewed.
 
 ## 10. Performance as experienced
 
-| Metric | Target |
-| --- | --- |
-| Largest Contentful Paint (marketing, mobile p75) | < 2.0 s |
-| Largest Contentful Paint (member area, p75) | < 2.5 s |
-| Interaction to Next Paint (p75) | < 200 ms |
-| Cumulative Layout Shift | < 0.1 |
-| Time to Interactive on the card screen | < 2.0 s |
-| Card verification page, full render on 3G | < 1.5 s |
-| Initial JavaScript bundle (marketing route) | < 90 KB gzipped |
-| Initial JavaScript bundle (member route) | < 160 KB gzipped |
-| Total page weight, catalogue first view | < 500 KB including images |
+|Metric|Target|
+|-|-|
+|Largest Contentful Paint (marketing, mobile p75)|< 2.0 s|
+|Largest Contentful Paint (member area, p75)|< 2.5 s|
+|Interaction to Next Paint (p75)|< 200 ms|
+|Cumulative Layout Shift|< 0.1|
+|Time to Interactive on the card screen|< 2.0 s|
+|Card verification page, full render on 3G|< 1.5 s|
+|Initial JavaScript bundle (marketing route)|< 90 KB gzipped|
+|Initial JavaScript bundle (member route)|< 160 KB gzipped|
+|Total page weight, catalogue first view|< 500 KB including images|
 
 **The three things on the critical path**, in the order they will cause a
 problem: partner images in the catalogue (fixed by `next/image`, AVIF/WebP,

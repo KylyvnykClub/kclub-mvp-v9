@@ -66,14 +66,14 @@ canary — where those properties do not matter.
 
 ## Alternatives considered
 
-| Option | Why not |
-| --- | --- |
-| Vercel Cron + our own dispatcher only | No retries, no step semantics, no replay, no dead-letter queue. Everything Inngest gives would have to be built, and the parts that look easy (backoff, poison-message handling, idempotent resumption) are the parts that are subtly wrong for a year |
-| BullMQ / pg-boss with a worker process | pg-boss is genuinely attractive — it removes a vendor and lives in the database we already have. Rejected because it needs a long-running process, which means a second deployment target (a container somewhere) purely to host it, and that is a bigger operational addition than the vendor it removes |
-| Trigger.dev | Very close to Inngest in capability and a reasonable alternative. Chosen against on maturity of the serverless-callback model and on pricing at our volume; not a strong preference, and the outbox is what makes the choice cheap to reverse |
-| AWS SQS + Lambda | Introduces an entire second cloud account, IAM, and deployment pipeline into a stack that deliberately has none |
-| Do the work synchronously in the request | Fails immediately for anything scheduled, and for webhook handling it is the specific mistake that causes double-provisioning: a slow handler makes Stripe retry ([0004](0004-stripe-billing-as-system-of-record.md)) |
-| Enqueue directly to Inngest without an outbox | Simpler by one table, and loses atomicity with the domain write. This is the whole point of the decision |
+|Option|Why not|
+|-|-|
+|Vercel Cron + our own dispatcher only|No retries, no step semantics, no replay, no dead-letter queue. Everything Inngest gives would have to be built, and the parts that look easy (backoff, poison-message handling, idempotent resumption) are the parts that are subtly wrong for a year|
+|BullMQ / pg-boss with a worker process|pg-boss is genuinely attractive — it removes a vendor and lives in the database we already have. Rejected because it needs a long-running process, which means a second deployment target (a container somewhere) purely to host it, and that is a bigger operational addition than the vendor it removes|
+|Trigger.dev|Very close to Inngest in capability and a reasonable alternative. Chosen against on maturity of the serverless-callback model and on pricing at our volume; not a strong preference, and the outbox is what makes the choice cheap to reverse|
+|AWS SQS + Lambda|Introduces an entire second cloud account, IAM, and deployment pipeline into a stack that deliberately has none|
+|Do the work synchronously in the request|Fails immediately for anything scheduled, and for webhook handling it is the specific mistake that causes double-provisioning: a slow handler makes Stripe retry ([0004](0004-stripe-billing-as-system-of-record.md))|
+|Enqueue directly to Inngest without an outbox|Simpler by one table, and loses atomicity with the domain write. This is the whole point of the decision|
 
 ## Consequences
 
