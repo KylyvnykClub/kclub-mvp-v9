@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** _(fill in)_
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-03
 > **Write when:** while the stack is being chosen — not after, when it has been
 > chosen by default by whoever wrote first.
 
@@ -235,7 +235,7 @@ job in FR-058 and the load test against synthetic data at 10× volume.
 |-|-|-|
 |Package manager|pnpm 10, version pinned via `packageManager` in `package.json`|Corepack enforces it; a mismatched lockfile fails CI|
 |Build tool / bundler|Next.js (Turbopack in development, webpack for production builds)||
-|Linter|ESLint 9 flat config, `@typescript-eslint`, `eslint-plugin-security`, plus a custom rule forbidding `db.` calls outside `src/data`|The custom rule is what keeps authorization from being bypassed by a convenient query|
+|Linter|ESLint 9 flat config, `typescript-eslint` (type-checked rules), `eslint-plugin-security`, `@next/eslint-plugin-next`, `eslint-plugin-jsx-a11y`, `eslint-plugin-react-hooks`, plus a custom rule forbidding `db.` calls outside `src/data`|The custom rule is what keeps authorization from being bypassed by a convenient query. The plugins are wired individually rather than through `eslint-config-next`, which loads `@rushstack/eslint-patch` and fails under flat config; taking them directly also keeps the accessibility rules visible instead of inherited|
 |Formatter|Prettier 3 with the Tailwind class-sorting plugin|Formatting is never a review comment|
 |Type checking|`tsc --noEmit` in CI; `strict` plus `noUncheckedIndexedAccess`||
 |Test runner|Vitest (unit, integration), Playwright (end-to-end)|See [testing.md](testing.md)|
