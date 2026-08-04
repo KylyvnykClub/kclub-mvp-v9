@@ -7,7 +7,7 @@ export default defineConfig({
   },
   test: {
     name: "unit",
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "tests/constraints/**/*.test.ts"],
     exclude: ["src/**/*.integration.test.ts"],
     testTimeout: 5_000,
     coverage: {
