@@ -1,0 +1,30 @@
+{
+  "home": {
+    "title": "KCLUB",
+    "subtitle": "Фаза 0. Пока ничего не построено."
+  },
+  "common": {
+    "partners": "{count, plural, =0 {нет партнёров} one {# партнёр} few {# партнёра} many {# партнёров} other {# партнёров}}",
+    "members": "{count, plural, =0 {нет участников} one {# участник} few {# участника} many {# участников} other {# участников}}",
+    "days": "{count, plural, =0 {нет дней} one {# день} few {# дня} many {# дней} other {# дней}}",
+    "loading": "Загрузка…",
+    "error": "Что-то пошло не так",
+    "notFound": "Страница не найдена",
+    "back": "Назад"
+  },
+  "auth": {
+    "signIn": "Войти",
+    "signOut": "Выйти",
+    "phoneLabel": "Номер телефона",
+    "codeLabel": "Код подтверждения",
+    "sendCode": "Отправить код",
+    "verifyCode": "Подтвердить",
+    "codeSent": "Код отправлен на {phone}",
+    "codeExpired": "Код истёк. Запросите новый.",
+    "tooManyAttempts": "Слишком много попыток. Попробуйте снова через {minutes, plural, one {# минуту} few {# минуты} many {# минут} other {# минут}}."
+  },
+  "metadata": {
+    "title": "KCLUB",
+    "description": "Закрытый международный бизнес-клуб."
+  }
+}

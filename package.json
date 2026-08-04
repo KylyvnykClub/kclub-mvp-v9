@@ -21,17 +21,19 @@
     "db:studio": "drizzle-kit studio",
     "db:updownup": "tsx tools/db-updownup.ts",
     "env:example": "tsx tools/gen-env-example.ts",
+    "i18n:check": "tsx tools/check-i18n-keys.ts",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:unit",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit",
     "prepare": "husky"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^0.45.2",
     "next": "^15.5.0",
+    "next-intl": "^4.13.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "zod": "^4.4.3"
@@ -54,6 +56,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-security": "^3.0.1",
     "husky": "^9.1.7",
+    "intl-messageformat": "^11.2.13",
     "lint-staged": "^15.3.0",
     "pg": "^8.22.0",
     "prettier": "^3.6.2",
