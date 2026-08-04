@@ -18,6 +18,14 @@ export {
 export type { Action, Subject } from "./authorization.js";
 export { can, assertCan } from "./authorization.js";
 
+export type { RouteEntry } from "./route-registry.js";
+export {
+  registerRoute,
+  getRegisteredRoutes,
+  getMutatingStaffRoutes,
+  clearRegistry,
+} from "./route-registry.js";
+
 export {
   DomainError,
   NotFound,
