@@ -1,0 +1,16 @@
+# KCLUB Infrastructure — Terraform Variables Example
+# Copy to terraform.tfvars and fill in real values.
+# This file is committed; terraform.tfvars is gitignored.
+
+vercel_api_token     = ""
+vercel_team_id       = null
+neon_api_key         = ""
+upstash_email        = ""
+upstash_api_key      = ""
+cloudflare_api_token = ""
+cloudflare_account_id = ""
+cloudflare_zone_id   = ""
+project_name         = "kclub-mvp"
+neon_region          = "aws-us-east-1"
+primary_domain       = "kclub.com"
+environment          = "production"

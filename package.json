@@ -18,6 +18,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
+    "db:seed": "tsx tools/seed.ts",
     "db:studio": "drizzle-kit studio",
     "db:updownup": "tsx tools/db-updownup.ts",
     "env:example": "tsx tools/gen-env-example.ts",
