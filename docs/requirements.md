@@ -398,7 +398,5 @@ EU sign-up respectively.
 |Question|Owner|Needed by|
 |-|-|-|
 |What identity proof does support accept to restore an account when the phone number is gone?|Client|Before public launch|
-|Does the club operator accept being the GDPR data controller, and who is the Art. 27 EU representative?|Client|Before the first EU member|
 |Who is on call after launch, and under what arrangement?|Client|Before public launch|
 |Do offer restrictions (validity, territory, booking required, minimum order) become structured fields? Partner Rules §7 binds the partner to what is published, so free text is a dispute waiting to happen|Client + tech lead|Before phase 2 ends|
-|Are the nine legal documents converted to versioned MDX in the repository before launch? FR-093 records which version a member accepted, which only means something if a version is immutable|Client + tech lead|Before phase 1 ends|

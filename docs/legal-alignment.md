@@ -401,12 +401,10 @@ tracks only ownership, deadline and status.
 
 |#|Owner|Needed by|Status|
 |-|-|-|-|
-|C-01|Client|Before phase 1 ends|Open|
 |C-02|Client + counsel|Before phase 6|Open|
 |C-03|Client|Before launch|Open|
 |C-04|Client + counsel|Before phase 2|Open|
 |C-05|Client|Before phase 2 ends|Open|
-|C-06|Client + counsel|Before the first EU sign-up|Open|
 |C-07|Client|Before phase 2 ends|Open|
 |C-08|Client|Before phase 3 ends|Open — recommended yes|
 |C-09|Client|Before phase 1 ends|Open — recommended remove|
@@ -414,7 +412,7 @@ tracks only ownership, deadline and status.
 |C-11|Client|Before launch|Open — recommended yes|
 |C-12|Client|Before phase 6|Open|
 |C-13|Client|No deadline|Open|
-|D-01…D-09|Client + tech lead|Before launch|Open|
+|D-01…D-08|Client + tech lead|Before launch|Open|
 
 When a row closes, the answer goes into the document it belongs in —
 [requirements.md](requirements.md) for scope,
