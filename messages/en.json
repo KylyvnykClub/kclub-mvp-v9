@@ -1,0 +1,30 @@
+{
+  "home": {
+    "title": "KCLUB",
+    "subtitle": "Phase 0. Nothing is built yet."
+  },
+  "common": {
+    "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
+    "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
+    "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "notFound": "Page not found",
+    "back": "Back"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "phoneLabel": "Phone number",
+    "codeLabel": "Verification code",
+    "sendCode": "Send code",
+    "verifyCode": "Verify",
+    "codeSent": "Code sent to {phone}",
+    "codeExpired": "Code expired. Please request a new one.",
+    "tooManyAttempts": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}."
+  },
+  "metadata": {
+    "title": "KCLUB",
+    "description": "A closed international business club."
+  }
+}

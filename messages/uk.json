@@ -1,0 +1,30 @@
+{
+  "home": {
+    "title": "KCLUB",
+    "subtitle": "Фаза 0. Поки нічого не побудовано."
+  },
+  "common": {
+    "partners": "{count, plural, =0 {немає партнерів} one {# партнер} few {# партнери} many {# партнерів} other {# партнерів}}",
+    "members": "{count, plural, =0 {немає учасників} one {# учасник} few {# учасники} many {# учасників} other {# учасників}}",
+    "days": "{count, plural, =0 {немає днів} one {# день} few {# дні} many {# днів} other {# днів}}",
+    "loading": "Завантаження…",
+    "error": "Щось пішло не так",
+    "notFound": "Сторінку не знайдено",
+    "back": "Назад"
+  },
+  "auth": {
+    "signIn": "Увійти",
+    "signOut": "Вийти",
+    "phoneLabel": "Номер телефону",
+    "codeLabel": "Код підтвердження",
+    "sendCode": "Надіслати код",
+    "verifyCode": "Підтвердити",
+    "codeSent": "Код надіслано на {phone}",
+    "codeExpired": "Код протермінований. Запросіть новий.",
+    "tooManyAttempts": "Забагато спроб. Спробуйте знову через {minutes, plural, one {# хвилину} few {# хвилини} many {# хвилин} other {# хвилин}}."
+  },
+  "metadata": {
+    "title": "KCLUB",
+    "description": "Закритий міжнародний бізнес-клуб."
+  }
+}
