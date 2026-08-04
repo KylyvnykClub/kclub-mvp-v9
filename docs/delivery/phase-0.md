@@ -40,7 +40,7 @@ for spending two to three weeks before the first requirement is implemented.
 |T-0.5|The three blocking client decisions closed and recorded (see §3)|—|—|1d + client|open|
 |T-0.6|Next.js 15 skeleton: TypeScript strict, ESLint 9 flat config, Prettier (see §3), Husky, lint-staged, commitlint, `gitleaks`, pnpm pinned via Corepack|—|T-0.1|1d|done 2026-08-03 — see §3 on gitleaks|
 |T-0.7|Custom lint rules: no import from `modules/*/internal/**`, no `db.` call outside `src/data`, no React or HTTP import inside `src/domain`|—|T-0.6|0.5d|done 2026-08-04 — `tools/eslint/module-boundaries.mjs`, all three rules proved to fail|
-|T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|open|
+|T-0.8|`src/env.ts` — Zod schema for every environment variable; the application refuses to boot when it is unsatisfied; `.env.example` generated from it|—|T-0.6|0.5d|done 2026-08-04 — schemas in `src/env.schema.ts`, validated eagerly in `src/env.ts`, `.env.example` generated via `pnpm env:example`|
 |T-0.9|Drizzle + Neon wiring, `src/data` layer shape, baseline migration, `drizzle-kit` scripts, migration up/down/up check|—|T-0.8|1d|open|
 |T-0.10|Integration test harness: Testcontainers (PostgreSQL, Redis, MinIO), transactional isolation, typed factories, injected clock and id source|—|T-0.9|1.5d|open|
 |T-0.11|`platform` module skeleton: `Actor`, `assertCan`, rate limiting on Upstash, outbox table and dispatcher, feature flags|—|T-0.10|1.5d|open|
