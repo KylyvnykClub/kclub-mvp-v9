@@ -90,4 +90,4 @@ writeFileSync(target, output, "utf-8");
 const requiredCount = output
   .split("\n")
   .filter((l) => !l.startsWith("#") && l.includes("=")).length;
-console.log(`.env.example written (${requiredCount} required variables)`); // eslint-disable-line no-console
+console.log(`.env.example written (${requiredCount} required variables)`);

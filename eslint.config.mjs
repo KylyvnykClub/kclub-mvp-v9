@@ -88,4 +88,13 @@ export default tseslint.config(
     files: ["*.config.{js,mjs,ts}", "tools/**"],
     ...tseslint.configs.disableTypeChecked,
   },
+
+  {
+    // Infrastructure scripts may use database and console APIs directly.
+    files: ["tools/**"],
+    rules: {
+      "kclub/no-db-outside-data": "off",
+      "no-console": "off",
+    },
+  },
 );
