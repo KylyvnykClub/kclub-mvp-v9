@@ -1,0 +1,62 @@
+import {
+  PostgreSqlContainer,
+  type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
+import pg from "pg";
+
+const MIGRATIONS_DIR = join(__dirname, "../../db/migrations");
+
+async function runMigrations(connectionString: string): Promise<void> {
+  const client = new pg.Client({ connectionString });
+  await client.connect();
+
+  try {
+    const files = await readdir(MIGRATIONS_DIR);
+    const upFiles = files
+      .filter((f) => f.endsWith(".sql") && !f.endsWith(".down.sql"))
+      .sort();
+
+    for (const file of upFiles) {
+      const sql = await readFile(join(MIGRATIONS_DIR, file), "utf-8");
+      const statements = sql
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !s.startsWith("--"));
+
+      for (const stmt of statements) {
+        await client.query(stmt);
+      }
+    }
+  } finally {
+    await client.end();
+  }
+}
+
+let container: StartedPostgreSqlContainer | undefined;
+
+export async function setup(): Promise<void> {
+  try {
+    container = await new PostgreSqlContainer("postgres:17-alpine")
+      .withDatabase("kclub_test")
+      .withUsername("test")
+      .withPassword("test")
+      .start();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Failed to start PostgreSQL container. Is Docker running?\n${msg}`,
+    );
+  }
+
+  const connectionString = container.getConnectionUri();
+
+  await runMigrations(connectionString);
+
+  process.env["TEST_DATABASE_URL"] = connectionString;
+}
+
+export async function teardown(): Promise<void> {
+  await container?.stop();
+}

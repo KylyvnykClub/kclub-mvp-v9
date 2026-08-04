@@ -21,7 +21,11 @@
     "db:studio": "drizzle-kit studio",
     "db:updownup": "tsx tools/db-updownup.ts",
     "env:example": "tsx tools/gen-env-example.ts",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:watch": "vitest",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:unit",
     "prepare": "husky"
   },
   "dependencies": {
@@ -37,9 +41,12 @@
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.17.0",
     "@next/eslint-plugin-next": "^15.5.0",
+    "@testcontainers/postgresql": "^12.0.4",
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.20.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.17.0",
@@ -48,11 +55,14 @@
     "eslint-plugin-security": "^3.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
+    "pg": "^8.22.0",
     "prettier": "^3.6.2",
     "prettier-plugin-compact-markdown-table": "^0.1.0",
+    "testcontainers": "^12.0.4",
     "tsx": "^4.23.5",
     "typescript": "^5.9.0",
-    "typescript-eslint": "^8.19.0"
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^4.1.10"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
