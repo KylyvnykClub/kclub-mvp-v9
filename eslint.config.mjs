@@ -97,4 +97,14 @@ export default tseslint.config(
       "no-console": "off",
     },
   },
+
+  {
+    // Test files and test infrastructure.
+    files: ["**/*.test.ts", "tests/**"],
+    rules: {
+      "kclub/no-db-outside-data": "off",
+      "no-console": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+    },
+  },
 );
