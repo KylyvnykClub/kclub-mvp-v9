@@ -5,6 +5,9 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 
+import { fontBody, fontHeading } from "@/app/fonts";
+import { ThemeProvider } from "@/components/theme-provider";
+
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -36,9 +39,13 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <html lang={locale}>
-      <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={`${fontHeading.variable} ${fontBody.variable} font-sans antialiased`}
+      >
+        <NextIntlClientProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
