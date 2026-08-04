@@ -82,7 +82,7 @@ async function seedStripe(): Promise<void> {
     let productId: string;
 
     if (searchData.data.length > 0) {
-      productId = searchData.data[0].id;
+      productId = searchData.data[0]!.id;
       console.log(`  ✓ Product "${plan.name}" already exists (${productId})`);
     } else {
       const body = new URLSearchParams({
@@ -110,7 +110,7 @@ async function seedStripe(): Promise<void> {
 
     if (pricesData.data.length > 0) {
       console.log(
-        `  ✓ Price for "${plan.name}" already exists (${pricesData.data[0].id})`,
+        `  ✓ Price for "${plan.name}" already exists (${pricesData.data[0]!.id})`,
       );
     } else {
       const body = new URLSearchParams({

@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -29,4 +30,18 @@ const config: NextConfig = {
   },
 };
 
-export default withNextIntl(config);
+export default withSentryConfig(withNextIntl(config), {
+  // Suppresses source map uploading logs during build
+  silent: true,
+
+  // Hides source maps from generated client bundles
+  sourcemaps: {
+    disable: true,
+  },
+
+  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+  tunnelRoute: "/monitoring",
+
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+});
