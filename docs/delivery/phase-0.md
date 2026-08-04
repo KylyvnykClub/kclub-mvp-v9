@@ -50,7 +50,7 @@ for spending two to three weeks before the first requirement is implemented.
 |T-0.15|Design tokens from [ux.md §6](../ux.md#6-design-system): Tailwind 4 custom properties, light and dark themes, shadcn/ui base installed|—|T-0.6|1d|done 2026-08-04 — Tailwind 4, next-themes, globals.css OKLCH tokens, fonts and 9 shadcn/ui components added|
 |T-0.16|CI pipeline with every blocking gate in [testing.md §6](../testing.md#6-ci-gates) wired on the skeleton, first blocking result under 10 minutes|—|T-0.10, T-0.13, T-0.14|1.5d|done|
 |T-0.17|Environments: Terraform for Neon, Upstash, Cloudflare and Vercel; preview per pull request with a Neon branch; staging on merge to `main`; seed script|—|T-0.9, T-0.16|1.5d|done 2026-08-04 — 6 Terraform files, preview.yml with Neon branching, seed.ts|
-|T-0.18|Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety))|—|T-0.17|1d|open|
+|T-0.18|Observability wired: Sentry, OpenTelemetry, Axiom, health canary, staging smoke test, and a **rehearsed rollback** ([reliability.md §8](../reliability.md#8-deployment-safety))|—|T-0.17|1d|done 2026-08-05|
 |T-0.19|Process documents corrected to the real team shape (see §3)|—|T-0.4|0.5d|open|
 |T-0.20|FR-090…FR-098 assigned to phases; [requirements.md §6.1](../requirements.md#61-delivery-plan) updated; `check-plan.py --strict` green|—|T-0.5|0.5d|open|
 |T-0.21|`phase-1.md` written|—|T-0.5, T-0.20|0.5d|open|
