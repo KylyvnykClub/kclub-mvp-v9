@@ -64,49 +64,6 @@ document is updated in the same change.
 Ranked by what it costs to discover the answer late. Each names the decision
 that must be made and by whom; none can be resolved by an engineer.
 
-### C-01 — Closed chats and groups contradict "no member directory"
-
-**Severity:** blocking
-
-**The pack says** VIP members get access to closed groups, closed chats, closed
-meetings, and business, educational and networking events
-(Club Rules §3.2). Business Introductions include introducing two participants
-to each other and exchanging their contact information (BI Rules §2, §4).
-
-**The design says** there is no member directory, no member search and no
-member-to-member messaging, enforced structurally: no repository function
-returns a set of members to a member-scoped actor, and a generated test fails
-the build if one appears
-([decisions/0005](decisions/0005-no-member-directory.md)).
-
-These cannot both be true. A closed chat requires addressing a member; a
-networking event requires an attendee list; introducing two participants
-requires showing one to the other.
-
-**This is the single most consequential row in this document**, because ADR 0005
-is not a preference — it is the constraint the whole data layer was built to
-enforce, and the brief called the absence of a member list the product's
-differentiator.
-
-**Options:**
-
-1. **Keep ADR 0005; treat groups, chats and events as unbuilt options.** The
-   pack says the platform "may" provide them, not that it will. Nothing is
-   breached by not building them. Recommended: it preserves the product's
-   positioning, and the pack's permissive drafting already covers it.
-2. **Build member-to-member introductions as a double-opt-in exchange.** Neither
-   party is listed or searchable; a member may only be reached through a
-   moderated introduction, and contact details are exchanged only after both
-   accept. This is compatible with ADR 0005's spirit and would need the ADR
-   superseded and the enforcement test narrowed — carefully, because the test is
-   the control.
-3. **Drop ADR 0005 and build a member network.** A different product from the
-   one in [brief.md](brief.md), and the marketing claim "we never publish our
-   member list" would have to go.
-
-**Decision needed from:** client. **By:** before phase 1 ends — the data layer's
-shape depends on it.
-
 ### C-02 — "Business Introductions" and "client referrals" are two different features, and only one is designed
 
 **Severity:** blocking
@@ -217,33 +174,6 @@ It may equally be loose drafting rather than an intended gate.
 
 **Decision needed from:** client, and it is a pricing decision before it is an
 engineering one. **By:** before phase 2 ends.
-
-### C-06 — GDPR is absent from the legal pack
-
-**Severity:** high
-
-The Privacy Policy addresses CCPA/CPRA and states that data may move
-internationally, but contains no GDPR section: no lawful basis mapped per
-purpose in GDPR terms, no 72-hour supervisory-authority breach notification, no
-Article 27 EU representative, no sub-processor list, no reference to Standard
-Contractual Clauses for the US transfer, and no data-protection contact beyond a
-general mailbox.
-
-**The design assumes GDPR applies** and specifies all of the above
-([security.md §8](security.md#8-compliance),
-[data-storage.md §4](data-storage.md#4-retention-and-deletion)). The club is
-described in the pack itself as an international platform, and the brief targets
-members worldwide, so EU residents will join.
-
-**This is a commercial decision, not a technical one.** Either the pack is
-extended to cover GDPR, or the club deliberately restricts membership to
-non-EU/UK residents — which is enforceable at registration by country, and which
-would contradict "международный клуб". Doing neither means operating in the EU
-without the paperwork.
-
-**Recommendation:** extend the pack. The design already implements the controls;
-the gap is documentary. **Decision needed from:** client + counsel. **By:**
-before the first EU sign-up.
 
 ### C-07 — Business profile data is described as possibly public and indexable
 
