@@ -1,8 +1,4 @@
 {
-  "home": {
-    "title": "KCLUB",
-    "subtitle": "Phase 0. Nothing is built yet."
-  },
   "common": {
     "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
     "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
@@ -10,21 +6,486 @@
     "loading": "Loading…",
     "error": "Something went wrong",
     "notFound": "Page not found",
-    "back": "Back"
+    "back": "Back",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "continue": "Continue",
+    "required": "Required"
   },
   "auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",
     "phoneLabel": "Phone number",
+    "phonePlaceholder": "+380 XX XXX XX XX",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
     "codeLabel": "Verification code",
+    "codePlaceholder": "Enter 6-digit code",
     "sendCode": "Send code",
     "verifyCode": "Verify",
     "codeSent": "Code sent to {phone}",
     "codeExpired": "Code expired. Please request a new one.",
-    "tooManyAttempts": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}."
+    "tooManyAttempts": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to your KCLUB account",
+    "loginButton": "Sign in",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Create account",
+    "forgotPassword": "Forgot password?",
+    "invalidCredentials": "Invalid phone number or password",
+    "accountBlocked": "Account is not active"
+  },
+  "register": {
+    "title": "Join KCLUB",
+    "subtitle": "Create your membership account",
+    "step1Title": "Phone verification",
+    "step1Subtitle": "We'll send you a verification code",
+    "step2Title": "Verify your phone",
+    "step2Subtitle": "Enter the code sent to your phone",
+    "step3Title": "Complete your profile",
+    "step3Subtitle": "Set up your account details",
+    "nameLabel": "Display name",
+    "namePlaceholder": "Your name",
+    "countryLabel": "Country",
+    "languageLabel": "Preferred language",
+    "passwordConfirmLabel": "Confirm password",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordsNoMatch": "Passwords do not match",
+    "termsLabel": "I agree to the {terms}",
+    "termsLink": "Terms of Service",
+    "privacyLabel": "I agree to the {privacy}",
+    "privacyLink": "Privacy Policy",
+    "createAccount": "Create account",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "success": "Account created successfully!",
+    "phoneTaken": "This phone number is already registered",
+    "countries": {
+      "UA": "Ukraine",
+      "PL": "Poland",
+      "DE": "Germany",
+      "US": "United States",
+      "GB": "United Kingdom",
+      "CZ": "Czech Republic",
+      "FR": "France",
+      "IT": "Italy",
+      "ES": "Spain",
+      "PT": "Portugal"
+    },
+    "languages": {
+      "en": "English",
+      "uk": "Ukrainian",
+      "ru": "Russian"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}",
+    "profile": "Profile",
+    "card": "Membership Card",
+    "settings": "Settings",
+    "memberSince": "Member since {date}",
+    "editProfile": "Edit profile",
+    "personalInfo": "Personal information",
+    "phone": "Phone",
+    "name": "Name",
+    "country": "Country",
+    "language": "Language",
+    "security": "Security",
+    "activeSessions": "Active sessions",
+    "currentSession": "Current session",
+    "logoutAll": "Sign out from all devices"
+  },
+  "card": {
+    "membershipCard": "Membership Card",
+    "serial": "Card number",
+    "tier": "Tier",
+    "tierFree": "Standard",
+    "tierVip": "VIP",
+    "status": "Status",
+    "statusValid": "Active",
+    "statusRevoked": "Revoked",
+    "issuedAt": "Issued",
+    "verifiedTitle": "Membership Verified",
+    "verifiedSubtitle": "This card is valid and active",
+    "invalidTitle": "Card Not Found",
+    "invalidSubtitle": "This card could not be verified",
+    "revokedTitle": "Card Revoked",
+    "revokedSubtitle": "This membership has been revoked",
+    "memberName": "Member",
+    "verifyAt": "Verify at"
+  },
+  "legal": {
+    "title": "Legal",
+    "lastUpdated": "Last updated: {date}",
+    "version": "Version {version}",
+    "notFound": "Document not found",
+    "backToHome": "Back to home"
   },
   "metadata": {
     "title": "KCLUB",
     "description": "A closed international business club."
+  },
+  "home": {
+    "brand": "KCLUB",
+    "locale": {
+      "en": "English",
+      "ru": "Russian",
+      "uk": "Ukrainian"
+    },
+    "common": {
+      "menu": "Open navigation",
+      "close": "Close navigation",
+      "toggleTheme": "Toggle theme",
+      "scroll": "Scroll to content",
+      "viewProfile": "View Profile",
+      "website": "Website",
+      "discountLabel": "{percent}% off"
+    },
+    "carousel": {
+      "navigationLabel": "Carousel navigation",
+      "previousLabel": "Previous",
+      "nextLabel": "Next"
+    },
+    "nav": {
+      "directory": "Directory",
+      "catalog": "Catalog",
+      "about": "About Us",
+      "how_it_works": "How it works",
+      "partners": "Our Partners",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "signIn": "Sign In",
+      "join": "Join",
+      "cabinet": "Cabinet",
+      "account": "Account",
+      "dashboard": "Dashboard",
+      "signOut": "Sign Out",
+      "signingOut": "Signing out...",
+      "signOutError": "Could not sign out. Please try again."
+    },
+    "hero": {
+      "eyebrow": "Kylyvnyk Club Private Membership Club",
+      "titleLine1": "Private access for",
+      "titleLine2": "global professionals",
+      "subline": "A curated membership network for verified people, trusted partners, and warm business introductions.",
+      "cardEyebrow": "Private member card",
+      "cardCaption": "Verified access",
+      "primaryCta": "Join Now",
+      "secondaryCta": "Explore Catalog",
+      "stats": {
+        "verified": {
+          "title": "Verified members",
+          "copy": "Private onboarding and QR-backed identity."
+        },
+        "access": {
+          "title": "Trusted access",
+          "copy": "A quieter network for premium business context."
+        },
+        "reach": {
+          "title": "Global reach",
+          "copy": "Members, partners, and warm introductions."
+        }
+      },
+      "flagsMarquee": "Members from every region, including —"
+    },
+    "stats": {
+      "members": "Members",
+      "countries": "Countries",
+      "partners": "Partner Businesses",
+      "years": "Years Active"
+    },
+    "features": {
+      "eyebrow": "Member Platform",
+      "title": "Why KCLUB",
+      "items": [
+        {
+          "title": "Digital Club Card",
+          "description": "QR-verified, always in your pocket."
+        },
+        {
+          "title": "VIP Membership",
+          "description": "Exclusive network and business introductions."
+        },
+        {
+          "title": "Partner Directory",
+          "description": "Verified businesses across 12+ countries."
+        },
+        {
+          "title": "Business Introductions",
+          "description": "Warm B2B connections inside the club."
+        },
+        {
+          "title": "Multilingual Platform",
+          "description": "English, Russian, and Ukrainian."
+        },
+        {
+          "title": "Privacy First",
+          "description": "No public member lookup, phone-only auth."
+        }
+      ]
+    },
+    "howItWorks": {
+      "eyebrow": "Getting Started",
+      "title": "How It Works",
+      "steps": [
+        {
+          "title": "Apply",
+          "description": "Submit your membership application in a few minutes — no paperwork, just your details."
+        },
+        {
+          "title": "Get Verified",
+          "description": "Our team reviews your application and issues your QR-verified digital club card."
+        },
+        {
+          "title": "Unlock Access",
+          "description": "Sign in to the member cabinet to reach the partner directory and VIP features."
+        },
+        {
+          "title": "Grow Your Network",
+          "description": "Get warm business introductions and connect with verified members across the club."
+        }
+      ]
+    },
+    "services": {
+      "eyebrow": "Membership",
+      "title": "Choose your role in the club",
+      "member": {
+        "title": "Become a member",
+        "description": "Join an international business club, receive a digital club card, and access special offers from our partners.",
+        "cta": "Join the club"
+      },
+      "partner": {
+        "title": "Become a partner",
+        "description": "List your company in the club directory, offer members a discount, bonus, or other special terms, and attract new customers.",
+        "note": "Company profiles are published after moderation.",
+        "cta": "Register a company"
+      }
+    },
+    "about": {
+      "eyebrow": "About",
+      "title": "An international community built on trust",
+      "introduction": "KYLYVNYK CLUB is a private membership platform that brings together verified members, independent partners, and business owners across borders.",
+      "community": "Every member is verified before joining, so introductions, offers, and connections happen inside a trusted, curated circle rather than the open internet.",
+      "mission": {
+        "eyebrow": "Our Mission",
+        "title": "Building real connections, not just contacts",
+        "description": "We designed KYLYVNYK CLUB to make it easier for members to find trusted partners, exchange warm introductions, and access exclusive offers, without the noise of open marketplaces."
+      },
+      "audiences": {
+        "eyebrow": "Who It's For",
+        "title": "Built for members, professionals, and companies",
+        "members": {
+          "title": "Members",
+          "description": "Get a verified digital club card, browse the partner directory, and unlock special offers from trusted businesses."
+        },
+        "professionals": {
+          "title": "Professionals",
+          "description": "Grow your network through warm, vetted introductions instead of cold outreach."
+        },
+        "companies": {
+          "title": "Companies",
+          "description": "List your business in the partner directory and reach a curated audience of verified members."
+        }
+      },
+      "benefits": {
+        "eyebrow": "Why KYLYVNYK CLUB",
+        "title": "What membership gives you",
+        "international": {
+          "label": "Global",
+          "title": "International reach",
+          "description": "Connect with members and partners across countries, not just your local market."
+        },
+        "card": {
+          "label": "Identity",
+          "title": "Digital club card",
+          "description": "A verified, QR-backed card that confirms your membership wherever you go."
+        },
+        "offers": {
+          "label": "Offers",
+          "title": "Exclusive partner offers",
+          "description": "Access special terms and discounts published directly by verified partners."
+        },
+        "directory": {
+          "label": "Directory",
+          "title": "Curated partner directory",
+          "description": "Browse a moderated catalog of verified businesses across categories and cities."
+        },
+        "connections": {
+          "label": "Introductions",
+          "title": "Warm business introductions",
+          "description": "Get connected to the right people through Business Introductions instead of cold contacts."
+        },
+        "privacy": {
+          "label": "Privacy",
+          "title": "Privacy by design",
+          "description": "Your data and profile stay visible only within the club, under your control."
+        }
+      }
+    },
+    "principles": {
+      "eyebrow": "What guides us",
+      "title": "Our principles",
+      "items": {
+        "trust": {
+          "title": "Trust",
+          "description": "We develop a community built on respect, responsibility, and transparent rules."
+        },
+        "mutualBenefit": {
+          "title": "Mutual benefit",
+          "description": "Members receive valuable advantages, while partners gain opportunities to attract new customers."
+        },
+        "quality": {
+          "title": "Quality",
+          "description": "The quality of offers, connections, and collaboration within the club matters to us."
+        },
+        "privacy": {
+          "title": "Confidentiality",
+          "description": "We protect personal data and do not create an open, publicly accessible list of all members."
+        },
+        "international": {
+          "title": "International growth",
+          "description": "The club welcomes members and companies from different countries, subject to applicable rules and restrictions."
+        }
+      }
+    },
+    "featured": {
+      "eyebrow": "Directory",
+      "title": "Recommended Partners",
+      "topLabel": "Top",
+      "recommendedLabel": "Recommended",
+      "emptyTitle": "No featured partners yet",
+      "emptyDescription": "Published partners will appear here after moderation and placement approval."
+    },
+    "testimonials": {
+      "eyebrow": "Members",
+      "title": "What Members Say",
+      "items": [
+        {
+          "quote": "KCLUB gives our team a quieter way to meet vetted partners without opening the door to random outreach.",
+          "author": "Anna V.",
+          "initials": "AV",
+          "tier": "VIP"
+        },
+        {
+          "quote": "The directory is practical. I can verify a partner and move the conversation forward with confidence.",
+          "author": "Michael R.",
+          "initials": "MR",
+          "tier": "MEMBER"
+        },
+        {
+          "quote": "The introductions feel human, focused, and respectful of privacy.",
+          "author": "Olena K.",
+          "initials": "OK",
+          "tier": "VIP"
+        }
+      ]
+    },
+    "faq": {
+      "eyebrow": "Answers",
+      "title": "Frequently Asked Questions",
+      "items": [
+        {
+          "question": "What is KYLYVNYK CLUB?",
+          "answer": "KYLYVNYK CLUB is an international business club for members, entrepreneurs, professionals, and companies."
+        },
+        {
+          "question": "Who can become a member?",
+          "answer": "Any adult who has registered and accepted the club rules."
+        },
+        {
+          "question": "What does a member receive?",
+          "answer": "A member receives a digital club card and access to special offers from partners."
+        },
+        {
+          "question": "Is registration free?",
+          "answer": "Basic membership is provided free of charge. Certain additional features may be available through VIP membership."
+        },
+        {
+          "question": "What does VIP membership provide?",
+          "answer": "VIP provides access to additional features and selected club offers. The specific list of benefits is displayed on the platform."
+        },
+        {
+          "question": "How does the digital club card work?",
+          "answer": "The card, with its personal QR code, confirms membership status. To receive a partner offer, a member may need to present a valid card and meet the conditions of that specific offer."
+        },
+        {
+          "question": "What benefits do partners offer?",
+          "answer": "Partners may provide discounts, bonuses, special prices, or other terms. Each offer is determined by the partner."
+        },
+        {
+          "question": "Does the club guarantee that a discount will be provided?",
+          "answer": "A partner must honor its published terms when a member meets the offer requirements. However, the goods, services, and customer service are provided by the partner, not the club."
+        },
+        {
+          "question": "Can I register a company?",
+          "answer": "Yes. A company representative can create a business profile and submit it for moderation."
+        },
+        {
+          "question": "How can I become a club partner?",
+          "answer": "Complete the company profile, confirm the representative's authority, specify special terms for members, and submit the application for review."
+        },
+        {
+          "question": "When will a company appear in the directory?",
+          "answer": "After moderation is complete and the profile is approved."
+        },
+        {
+          "question": "Does the club verify all partner goods and services?",
+          "answer": "The club moderates business profiles before publication, but it is not the seller or provider of partners' goods and services."
+        },
+        {
+          "question": "In which countries does the club operate?",
+          "answer": "The platform is intended for an international community and is open to members and companies from different countries, provided this does not conflict with applicable law or club rules."
+        },
+        {
+          "question": "Is member data published?",
+          "answer": "Personal data is processed in accordance with the Privacy Policy. The visibility of specific information depends on platform features and profile settings."
+        },
+        {
+          "question": "Can I cancel a VIP subscription?",
+          "answer": "Yes. Subscription management is available in the member account, subject to the terms of the selected plan."
+        },
+        {
+          "question": "How can I contact support?",
+          "answer": "Use the contact form or the club's official email address."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to Join?",
+      "subline": "Create your member account and start with a verified digital club card.",
+      "button": "Join KCLUB"
+    },
+    "footer": {
+      "about": "About",
+      "aboutText": "KCLUB is a private membership platform for verified members, VIP access, and partner discovery.",
+      "links": "Links",
+      "legal": "Legal",
+      "rules": "Rules",
+      "locales": "Locales",
+      "directory": "Directory",
+      "signUp": "Sign Up",
+      "signIn": "Sign In",
+      "verifyCard": "Verify Card",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookiePolicy": "Cookie Policy",
+      "clubRules": "Club Rules",
+      "partnerRules": "Partner Rules",
+      "businessIntroRules": "Business Introduction Rules",
+      "refundPolicy": "Refund Policy",
+      "disclaimer": "Disclaimer",
+      "contactUs": "Contact Us",
+      "copyright": "© All rights reserved."
+    },
+    "partners": {
+      "eyebrow": "Trusted Elite Brands",
+      "title": "Top Kylyvnyk Partners",
+      "subtitle": "Curated blue-chip collaborations with unprecedented conditions secured for our private club holders",
+      "viewSpecial": "View Special",
+      "emptyTitle": "No top partners yet",
+      "emptyDescription": "Top partner offers will appear here after moderation and placement approval."
+    }
   }
 }

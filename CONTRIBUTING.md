@@ -58,10 +58,9 @@ will be stuck in the same place.
 **Model:** trunk-based. `main` is always deployable; everything else is a
 short-lived branch off it.
 
-**Default branch:** `main`, protected. Required: one approving review (two for
-`billing`, `identity` or `audit` — see below), all blocking CI gates green,
-branch up to date with `main`. Nobody pushes directly, including the tech lead;
-the protection rule is what makes that true rather than a habit.
+**Default branch:** `main`, protected by CI gates. Required: all blocking CI gates green,
+branch up to date with `main`. Nobody pushes directly, including the solo dev;
+the pre-push hook is what makes that true rather than a habit.
 
 **Branch naming:** `feat/short-description`, `fix/FR-014-card-reissue`,
 `chore/…`, `docs/…`. Reference the FR where one exists — it is what connects a
@@ -124,9 +123,7 @@ translation files. Beyond that, review quality collapses and approval becomes a
 formality. A large pull request is usually two or three that were not separated
 in time.
 
-**Reviewers required:** one engineer. **Two** for anything touching `billing`,
-`identity` or `audit`, and the second reviewer's job is specifically to ask
-"what happens when this runs twice, out of order, or halfway".
+**Reviewers required:** the author (solo development), plus AI code review (`/code-review`, `/reflect`) acting as the second reviewer. For anything touching `billing`, `identity` or `audit`, AI review must specifically ask "what happens when this runs twice, out of order, or halfway".
 
 **Review turnaround target:** within 4 working hours. A pull request waiting
 overnight is a branch getting older, and branch age is the thing this process is

@@ -34,10 +34,37 @@ async function run(file: string, label: string) {
     console.log(`  [skip] ${label} — empty`);
     return;
   }
-  const statements = content
-    .split(";")
+  let statements: string[] = [];
+  if (content.includes("--> statement-breakpoint")) {
+    statements = content.split("--> statement-breakpoint");
+  } else {
+    // Custom split ignoring semicolons inside $$ ... $$
+    const parts = content.split("$$");
+    let current = "";
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 1) {
+        current += "$$" + parts[i] + "$$";
+      } else {
+        const sub = parts[i].split(";");
+        for (let j = 0; j < sub.length - 1; j++) {
+          current += sub[j];
+          if (current.trim()) statements.push(current);
+          current = "";
+        }
+        current += sub[sub.length - 1];
+      }
+    }
+    if (current.trim()) statements.push(current);
+  }
+  
+  statements = statements
     .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--"));
+    .filter((s) => {
+      if (s.length === 0) return false;
+      const lines = s.split("\n").map(l => l.trim());
+      // Keep if at least one line is not a comment or empty
+      return lines.some(l => l.length > 0 && !l.startsWith("--"));
+    });
   for (const stmt of statements) {
     await sql.query(stmt);
   }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { inMemoryRateLimiter, assertRateLimit } from "./rate-limit.js";
-import { RateLimited } from "../../domain/errors.js";
+import { inMemoryRateLimiter, assertRateLimit } from "./rate-limit";
+import { RateLimited } from "../../domain/errors";
 
 describe("inMemoryRateLimiter", () => {
   it("allows requests within the limit", async () => {

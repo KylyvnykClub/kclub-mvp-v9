@@ -1,12 +1,12 @@
-export { appendAuditEntry } from "./audit-log.js";
-export type { AuditEntry } from "./audit-log.js";
-export { db } from "./db.js";
+export { appendAuditEntry } from "./audit-log";
+export type { AuditEntry } from "./audit-log";
+export { db } from "./db";
 export {
   enqueueOutbox,
   drainOutbox,
   markProcessed,
   countPending,
-} from "./outbox.js";
-export type { OutboxEntry } from "./outbox.js";
-export { isEnabled, setFlag, allFlags } from "./feature-flags.js";
-export type { FlagName } from "./feature-flags.js";
+} from "./outbox";
+export type { OutboxEntry } from "./outbox";
+export { isEnabled, setFlag, allFlags } from "./feature-flags";
+export type { FlagName } from "./feature-flags";

@@ -1,30 +1,30 @@
-export type { Clock, IdSource } from "./context.js";
+export type { Clock, IdSource } from "./context";
 export {
   realClock,
   realIdSource,
   deterministicClock,
   deterministicIdSource,
-} from "./context.js";
+} from "./context";
 
-export type { Actor, ActorType, Role } from "./actor.js";
+export type { Actor, ActorType, Role } from "./actor";
 export {
   ROLES,
   isStaff,
   isAuthenticated,
   staffAtLeast,
   actorId,
-} from "./actor.js";
+} from "./actor";
 
-export type { Action, Subject } from "./authorization.js";
-export { can, assertCan } from "./authorization.js";
+export type { Action, Subject } from "./authorization";
+export { can, assertCan } from "./authorization";
 
-export type { RouteEntry } from "./route-registry.js";
+export type { RouteEntry } from "./route-registry";
 export {
   registerRoute,
   getRegisteredRoutes,
   getMutatingStaffRoutes,
   clearRegistry,
-} from "./route-registry.js";
+} from "./route-registry";
 
 export {
   DomainError,
@@ -34,4 +34,4 @@ export {
   RateLimited,
   Validation,
   ExternalUnavailable,
-} from "./errors.js";
+} from "./errors";

@@ -1,4 +1,4 @@
-import type { Action, Subject } from "./authorization.js";
+import type { Action, Subject } from "./authorization";
 
 export interface RouteEntry {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";

@@ -1,7 +1,7 @@
 import { eq, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { outbox } from "./schema/outbox.js";
+import { outbox } from "./schema/outbox";
 
 export type OutboxEntry = typeof outbox.$inferSelect;
 

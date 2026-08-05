@@ -1,6 +1,6 @@
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
-import { auditLog } from "./schema/audit-log.js";
+import { auditLog } from "./schema/audit-log";
 
 export interface AuditEntry {
   actorType: string;
