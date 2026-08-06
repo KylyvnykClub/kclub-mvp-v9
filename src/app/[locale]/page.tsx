@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AboutSection } from "@/components/landing/about-section";
 import { BenefitsSection } from "@/components/landing/benefits-section";
 import { CardShowcase } from "@/components/landing/card-showcase";
+import { ShowcaseSection } from "@/components/landing/showcase-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
@@ -44,6 +45,7 @@ export default async function Page({ params }: Props) {
         <HowItWorksSection />
         <ServicesSection />
         <CardShowcase />
+        <ShowcaseSection />
         <FaqSection />
         <CtaSection />
       </main>
