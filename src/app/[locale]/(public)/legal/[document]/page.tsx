@@ -3,7 +3,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BadgeCheck } from "lucide-react";
 
 export default async function LegalDocumentPage({
   params,
@@ -14,7 +14,7 @@ export default async function LegalDocumentPage({
   setRequestLocale(locale);
   const t = await getTranslations("legal");
 
-  const doc = await getLegalDocument(documentSlug);
+  const doc = await getLegalDocument(documentSlug, locale);
 
   if (!doc) {
     notFound();
@@ -28,11 +28,11 @@ export default async function LegalDocumentPage({
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
         <Link
-          href={`/${locale}`}
+          href={`/${locale}/legal`}
           className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-accent transition-colors mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("backToHome")}
+          {t("backToLegal")}
         </Link>
 
         <header className="mb-10 border-b border-border/40 pb-8">
@@ -43,6 +43,15 @@ export default async function LegalDocumentPage({
             <span className="inline-flex items-center rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium ring-1 ring-inset ring-border/50">
               {t("version", { version: doc.version })}
             </span>
+            {doc.authoritative && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20"
+                title={t("authoritativeHint")}
+              >
+                <BadgeCheck className="h-3.5 w-3.5" />
+                {t("authoritative")}
+              </span>
+            )}
             <span className="inline-flex items-center">
               {t("lastUpdated", { date: lastUpdated })}
             </span>

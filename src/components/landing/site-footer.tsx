@@ -61,13 +61,51 @@ export function SiteFooter() {
           </h2>
           <ul className="mt-5 grid gap-3 text-sm font-normal">
             <li>
-              <Link href="/legal/terms" className="hover:text-accent">
+              <Link href="/legal/terms-of-use" className="hover:text-accent">
                 {t("footer.terms")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/privacy" className="hover:text-accent">
+              <Link href="/legal/privacy-policy" className="hover:text-accent">
                 {t("footer.privacy")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/cookie-policy" className="hover:text-accent">
+                {t("footer.cookiePolicy")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/club-rules" className="hover:text-accent">
+                {t("footer.clubRules")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/partner-rules" className="hover:text-accent">
+                {t("footer.partnerRules")}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/legal/business-introduction-rules"
+                className="hover:text-accent"
+              >
+                {t("footer.businessIntroRules")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/refund-policy" className="hover:text-accent">
+                {t("footer.refundPolicy")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/disclaimer" className="hover:text-accent">
+                {t("footer.disclaimer")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/contact-us" className="hover:text-accent">
+                {t("footer.contactUs")}
               </Link>
             </li>
           </ul>

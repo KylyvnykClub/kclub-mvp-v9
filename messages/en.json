@@ -77,7 +77,9 @@
       "en": "English",
       "uk": "Ukrainian",
       "ru": "Russian"
-    }
+    },
+    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
+    "ageLabel": "I confirm that I am 18 years of age or older"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -127,7 +129,11 @@
     "lastUpdated": "Last updated: {date}",
     "version": "Version {version}",
     "notFound": "Document not found",
-    "backToHome": "Back to home"
+    "backToHome": "Back to home",
+    "indexDescription": "The documents governing the use of the KYLYVNYK CLUB platform. These are the executed versions of the club's policies.",
+    "backToLegal": "Back to legal documents",
+    "authoritative": "Authoritative version",
+    "authoritativeHint": "This is the authoritative version of the document"
   },
   "metadata": {
     "title": "KCLUB",
