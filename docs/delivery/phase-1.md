@@ -7,8 +7,8 @@
 |T-1.1|`src/data/schema` for members, sessions, legal_acceptances, cards and run migrations|—|—|0.5d|open|
 |T-1.2|`crypto.ts` and `twilio.ts` integration for SMS codes|—|T-1.1|0.5d|open|
 |T-1.3|`src/modules/identity/service.ts`: Registration and session logic|FR-001, FR-002, FR-003|T-1.1, T-1.2|1d|open|
-|T-1.4|MDX compilation pipeline and legal doc skeletons|FR-093|—|1d|open|
-|T-1.5|Registration flow UI (`/register`) with terms acceptance|FR-097|T-1.3, T-1.4|1.5d|open|
+|T-1.4|MDX compilation pipeline and legal doc skeletons|FR-093|—|1d|done 2026-08-06 — nine executed documents published as locale-aware MDX with authoritative flag; RU text only, EN/UK translation gap recorded|
+|T-1.5|Registration flow UI (`/register`) with terms acceptance|FR-097|T-1.3, T-1.4|1.5d|done 2026-08-06 — four separate acknowledgements (terms, privacy, arbitration §29–30, age 18+), versions validated against published documents|
 |T-1.6|Login flow UI (`/login`) and session management logic|FR-005, FR-006, FR-007, FR-010|T-1.3|1d|open|
 |T-1.7|Profile management (name, language, country, deletion, phone change)|FR-008, FR-009, FR-011|T-1.3|1d|open|
 |T-1.8|Dashboard virtual card UI and wallet pass logic|FR-020, FR-021, FR-026, FR-027|T-1.3|1d|open|

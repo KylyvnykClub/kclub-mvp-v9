@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { getLegalDocument } from "@/lib/mdx";
 import { RegisterFlow } from "./_components/register-flow";
 
 export const metadata = {
@@ -13,5 +14,15 @@ export default async function RegisterPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <RegisterFlow />;
+  const [terms, privacy] = await Promise.all([
+    getLegalDocument("terms-of-use", locale),
+    getLegalDocument("privacy-policy", locale),
+  ]);
+
+  return (
+    <RegisterFlow
+      termsVersion={terms?.version ?? null}
+      privacyVersion={privacy?.version ?? null}
+    />
+  );
 }

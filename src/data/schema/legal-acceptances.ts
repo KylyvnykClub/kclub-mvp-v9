@@ -9,7 +9,8 @@ export const legalAcceptances = pgTable("legal_acceptances", {
     .notNull()
     .references(() => members.id, { onDelete: "cascade" }),
 
-  // The identifier of the document (e.g., 'terms-of-use', 'privacy-policy', 'arbitration')
+  // The identifier of the document (FR-093, FR-097): 'terms-of-use',
+  // 'privacy-policy', 'arbitration' (Terms §29–30), 'age-verification'
   documentId: varchar("document_id", { length: 255 }).notNull(),
 
   // The specific version accepted (FR-093)

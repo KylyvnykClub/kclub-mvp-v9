@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
+import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 
 import {
   Card,
@@ -30,16 +31,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 function SubmitButton({
   label,
   pendingLabel,
+  disabled,
 }: {
   label: string;
   pendingLabel?: string;
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
     <Button
       type="submit"
       className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-      disabled={pending}
+      disabled={pending || disabled}
     >
       {pending ? pendingLabel || "..." : label}
     </Button>
@@ -52,7 +55,13 @@ type AuthActionResult = {
   sent?: boolean;
 } | null;
 
-export function RegisterFlow() {
+export function RegisterFlow({
+  termsVersion,
+  privacyVersion,
+}: {
+  termsVersion: string | null;
+  privacyVersion: string | null;
+}) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("register");
@@ -62,6 +71,37 @@ export function RegisterFlow() {
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+  const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+
+  const consents = useMemo(() => {
+    return [
+      {
+        documentId: "terms-of-use" as const,
+        version: termsVersion ?? "",
+        key: "terms",
+      },
+      {
+        documentId: "privacy-policy" as const,
+        version: privacyVersion ?? "",
+        key: "privacy",
+      },
+      {
+        documentId: "arbitration" as const,
+        version: termsVersion ?? "",
+        key: "arbitration",
+      },
+      {
+        documentId: "age-verification" as const,
+        version: AGE_ATTESTATION_VERSION,
+        key: "age",
+      },
+    ];
+  }, [termsVersion, privacyVersion]);
+
+  const allAccepted =
+    termsVersion !== null &&
+    privacyVersion !== null &&
+    consents.every((c) => accepted[c.key]);
 
   const [phoneState, submitPhone] = useActionState(
     async (_prevState: AuthActionResult, formData: FormData) => {
@@ -80,6 +120,14 @@ export function RegisterFlow() {
     async (_prevState: AuthActionResult, formData: FormData) => {
       formData.append("phone", phone);
       formData.append("code", code);
+      formData.append(
+        "consents",
+        JSON.stringify(
+          consents
+            .filter((c) => accepted[c.key])
+            .map(({ documentId, version }) => ({ documentId, version })),
+        ),
+      );
       const res = await registerAction(formData);
       if (res?.success) {
         router.push(`/${locale}/dashboard/profile`);
@@ -270,12 +318,21 @@ export function RegisterFlow() {
 
               <div className="space-y-4 pt-2">
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="terms" required />
-                  <Label htmlFor="terms" className="text-sm font-normal">
+                  <Checkbox
+                    id="consent-terms"
+                    checked={!!accepted.terms}
+                    onCheckedChange={(c) =>
+                      setAccepted((p) => ({ ...p, terms: c === true }))
+                    }
+                  />
+                  <Label
+                    htmlFor="consent-terms"
+                    className="text-sm font-normal"
+                  >
                     {t.rich("termsLabel", {
                       terms: (chunks) => (
                         <Link
-                          href={`/${locale}/legal/terms`}
+                          href={`/${locale}/legal/terms-of-use`}
                           className="underline hover:text-primary"
                         >
                           {chunks}
@@ -285,18 +342,63 @@ export function RegisterFlow() {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="privacy" required />
-                  <Label htmlFor="privacy" className="text-sm font-normal">
+                  <Checkbox
+                    id="consent-privacy"
+                    checked={!!accepted.privacy}
+                    onCheckedChange={(c) =>
+                      setAccepted((p) => ({ ...p, privacy: c === true }))
+                    }
+                  />
+                  <Label
+                    htmlFor="consent-privacy"
+                    className="text-sm font-normal"
+                  >
                     {t.rich("privacyLabel", {
                       privacy: (chunks) => (
                         <Link
-                          href={`/${locale}/legal/privacy`}
+                          href={`/${locale}/legal/privacy-policy`}
                           className="underline hover:text-primary"
                         >
                           {chunks}
                         </Link>
                       ),
                     })}
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="consent-arbitration"
+                    checked={!!accepted.arbitration}
+                    onCheckedChange={(c) =>
+                      setAccepted((p) => ({ ...p, arbitration: c === true }))
+                    }
+                  />
+                  <Label
+                    htmlFor="consent-arbitration"
+                    className="text-sm font-normal"
+                  >
+                    {t.rich("arbitrationLabel", {
+                      terms: (chunks) => (
+                        <Link
+                          href={`/${locale}/legal/terms-of-use`}
+                          className="underline hover:text-primary"
+                        >
+                          {chunks}
+                        </Link>
+                      ),
+                    })}
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="consent-age"
+                    checked={!!accepted.age}
+                    onCheckedChange={(c) =>
+                      setAccepted((p) => ({ ...p, age: c === true }))
+                    }
+                  />
+                  <Label htmlFor="consent-age" className="text-sm font-normal">
+                    {t("ageLabel")}
                   </Label>
                 </div>
               </div>
@@ -307,7 +409,10 @@ export function RegisterFlow() {
                 </p>
               )}
 
-              <SubmitButton label={t("createAccount")} />
+              <SubmitButton
+                label={t("createAccount")}
+                disabled={!allAccepted}
+              />
             </form>
           )}
         </CardContent>
