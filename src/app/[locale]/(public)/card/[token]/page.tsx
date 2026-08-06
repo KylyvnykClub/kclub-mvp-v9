@@ -1,7 +1,13 @@
 import { getCardByPublicToken } from "@/actions/session";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { CheckCircle, XCircle, ShieldQuestion } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export default async function CardVerificationPage({
   params,
@@ -22,7 +28,9 @@ export default async function CardVerificationPage({
             <div className="mx-auto bg-muted p-3 rounded-full mb-4">
               <ShieldQuestion className="h-10 w-10 text-muted-foreground" />
             </div>
-            <CardTitle className="text-2xl font-serif">{t("invalidTitle")}</CardTitle>
+            <CardTitle className="text-2xl font-serif">
+              {t("invalidTitle")}
+            </CardTitle>
             <CardDescription>{t("invalidSubtitle")}</CardDescription>
           </CardHeader>
         </Card>
@@ -39,8 +47,12 @@ export default async function CardVerificationPage({
             <div className="mx-auto bg-destructive/10 p-3 rounded-full mb-4">
               <XCircle className="h-10 w-10 text-destructive" />
             </div>
-            <CardTitle className="text-2xl font-serif text-destructive">{t("revokedTitle")}</CardTitle>
-            <CardDescription className="text-destructive/80">{t("revokedSubtitle")}</CardDescription>
+            <CardTitle className="text-2xl font-serif text-destructive">
+              {t("revokedTitle")}
+            </CardTitle>
+            <CardDescription className="text-destructive/80">
+              {t("revokedSubtitle")}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -58,39 +70,61 @@ export default async function CardVerificationPage({
           <div className="mx-auto bg-emerald-500/10 p-3 rounded-full mb-4">
             <CheckCircle className="h-10 w-10 text-emerald-500" />
           </div>
-          <CardTitle className="text-2xl font-serif text-foreground">{t("verifiedTitle")}</CardTitle>
-          <CardDescription className="text-emerald-500/80 font-medium">{t("verifiedSubtitle")}</CardDescription>
+          <CardTitle className="text-2xl font-serif text-foreground">
+            {t("verifiedTitle")}
+          </CardTitle>
+          <CardDescription className="text-emerald-500/80 font-medium">
+            {t("verifiedSubtitle")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex justify-between items-center py-3 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">{t("memberName")}</span>
-              <span className="font-medium text-foreground">{card.memberName}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("memberName")}
+              </span>
+              <span className="font-medium text-foreground">
+                {card.memberName}
+              </span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">{t("serial")}</span>
-              <span className="font-mono text-sm tracking-wider">{card.serial}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("serial")}
+              </span>
+              <span className="font-mono text-sm tracking-wider">
+                {card.serial}
+              </span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-border/50">
               <span className="text-sm text-muted-foreground">{t("tier")}</span>
-              <span className={`font-medium ${isVip ? "text-[oklch(0.78_0.14_85)]" : "text-foreground"}`}>
+              <span
+                className={`font-medium ${isVip ? "text-[oklch(0.78_0.14_85)]" : "text-foreground"}`}
+              >
                 {tierText}
               </span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">{t("issuedAt")}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("issuedAt")}
+              </span>
               <span className="font-medium">
-                {new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(new Date(card.issuedAt))}
+                {new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(
+                  new Date(card.issuedAt),
+                )}
               </span>
             </div>
             {card.memberCountry && (
               <div className="flex justify-between items-center py-3 border-b border-border/50">
-                <span className="text-sm text-muted-foreground">{card.memberCountry}</span>
+                <span className="text-sm text-muted-foreground">
+                  {card.memberCountry}
+                </span>
                 <span className="font-medium">{card.memberCountry}</span>
               </div>
             )}
             <div className="flex justify-between items-center py-3">
-              <span className="text-sm text-muted-foreground">{t("status")}</span>
+              <span className="text-sm text-muted-foreground">
+                {t("status")}
+              </span>
               <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-500 border border-emerald-500/20">
                 {t("statusValid")}
               </span>

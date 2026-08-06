@@ -9,7 +9,7 @@ const protectedPaths = ["/dashboard", "/admin"];
 
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  
+
   // Basic session cookie check for protected routes.
   // Full verification happens in Server Components/Actions.
   const isProtected = protectedPaths.some((p) => pathname.includes(p));

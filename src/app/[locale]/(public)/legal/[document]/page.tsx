@@ -20,21 +20,21 @@ export default async function LegalDocumentPage({
     notFound();
   }
 
-  const lastUpdated = new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(
-    new Date(doc.lastUpdated)
-  );
+  const lastUpdated = new Intl.DateTimeFormat(locale, {
+    dateStyle: "long",
+  }).format(new Date(doc.lastUpdated));
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <Link 
+        <Link
           href={`/${locale}`}
           className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-accent transition-colors mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("backToHome")}
         </Link>
-        
+
         <header className="mb-10 border-b border-border/40 pb-8">
           <h1 className="text-4xl sm:text-5xl font-serif font-bold tracking-tight text-foreground mb-6">
             {doc.title}
