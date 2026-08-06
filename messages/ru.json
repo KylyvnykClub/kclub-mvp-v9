@@ -52,9 +52,9 @@
     "passwordConfirmLabel": "Подтвердить пароль",
     "passwordMinLength": "Пароль должен содержать не менее 8 символов",
     "passwordsNoMatch": "Пароли не совпадают",
-    "termsLabel": "Я согласен с {terms}",
-    "termsLink": "Условиями использования",
-    "privacyLabel": "Я согласен с {privacy}",
+    "termsLabel": "Я согласен с <terms>Правилами</terms>",
+    "termsLink": "Условия использования",
+    "privacyLabel": "Я согласен с <privacy>Политикой конфиденциальности</privacy>",
     "privacyLink": "Политикой конфиденциальности",
     "createAccount": "Создать аккаунт",
     "haveAccount": "Уже есть аккаунт?",
@@ -94,8 +94,14 @@
     "language": "Язык",
     "security": "Безопасность",
     "activeSessions": "Активные сессии",
-    "currentSession": "Текущая сессия",
-    "logoutAll": "Выйти со всех устройств"
+    "currentSession": "Текущий сеанс",
+    "logoutAll": "Выйти на всех устройствах",
+    "pendingCompanies": "Компании на модерации",
+    "sendReferral": "Отправить лида",
+    "referrals": "Лиды",
+    "sentReferrals": "Отправленные лиды",
+    "receivedReferrals": "Полученные лиды",
+    "moderateReferrals": "Модерация лидов"
   },
   "card": {
     "membershipCard": "Карта участника",
@@ -486,6 +492,29 @@
       "viewSpecial": "Смотреть Предложение",
       "emptyTitle": "Пока нет топ-партнёров",
       "emptyDescription": "Предложения топ-партнёров появятся здесь после модерации и утверждения размещения."
+    }
+  },
+  "Referral": {
+    "title": "Передать клиента (Лида)",
+    "description": "Свяжите клиента с этим партнером. Внимание: Вы должны подтвердить согласие клиента.",
+    "clientName": "Имя клиента",
+    "contactChannel": "Контакты (Телефон/Email)",
+    "serviceNeeded": "Какая услуга нужна",
+    "note": "Дополнительный комментарий (необязательно)",
+    "consentLabel": "Я подтверждаю, что клиент дал явное согласие на передачу его контактов этой компании.",
+    "sendAction": "Отправить Лида",
+    "successMessage": "Лид отправлен! Вскоре он пройдет модерацию.",
+    "errorMessage": "Не удалось отправить. Проверьте данные.",
+    "accept": "Принять Лида",
+    "decline": "Отклонить",
+    "contactRevealedAfterAccept": "Контакты будут показаны после принятия.",
+    "status": {
+      "pending_review": "На модерации",
+      "rejected": "Отклонено модератором",
+      "delivered": "Доставлено",
+      "accepted": "Принято",
+      "declined": "Отклонено партнером",
+      "expired": "Истекло время"
     }
   }
 }

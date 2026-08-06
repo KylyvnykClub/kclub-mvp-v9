@@ -14,7 +14,8 @@ export async function requestPhoneVerificationAction(formData: FormData) {
     const sent = await IdentityService.requestPhoneVerification(data.phone);
     return { success: true, sent }; // Always return true so we don't leak registered phones
   } catch (err) {
-    if (err instanceof z.ZodError) return { success: false, error: (err as z.ZodError).errors[0].message };
+    if (err instanceof z.ZodError)
+      return { success: false, error: err.issues[0]?.message };
     return { success: false, error: "Failed to send verification code" };
   }
 }
@@ -33,14 +34,15 @@ export async function registerAction(formData: FormData) {
   try {
     const headerList = await headers();
     const userAgent = headerList.get("user-agent") || "unknown";
-    const ipAddress = headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
     const data = registerSchema.parse(Object.fromEntries(formData));
-    
+
     // Parse consents from a hidden input or just hardcode the latest version for the MVP
     const consents = [
       { documentId: "terms", version: "1.0" },
-      { documentId: "privacy", version: "1.0" }
+      { documentId: "privacy", version: "1.0" },
     ];
 
     const result = await IdentityService.registerMember({
@@ -69,7 +71,8 @@ export async function registerAction(formData: FormData) {
       return { success: false, error: result.error };
     }
   } catch (err) {
-    if (err instanceof z.ZodError) return { success: false, error: (err as z.ZodError).errors[0].message };
+    if (err instanceof z.ZodError)
+      return { success: false, error: err.issues[0]?.message };
     return { success: false, error: "Registration failed" };
   }
 }
@@ -83,7 +86,8 @@ export async function loginAction(formData: FormData) {
   try {
     const headerList = await headers();
     const userAgent = headerList.get("user-agent") || "unknown";
-    const ipAddress = headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
     const data = loginSchema.parse(Object.fromEntries(formData));
 
@@ -107,7 +111,7 @@ export async function loginAction(formData: FormData) {
     } else {
       return { success: false, error: result.error };
     }
-  } catch (err) {
+  } catch {
     return { success: false, error: "Login failed" };
   }
 }

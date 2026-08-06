@@ -7,14 +7,33 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel?: string }) {
+function SubmitButton({
+  label,
+  pendingLabel,
+}: {
+  label: string;
+  pendingLabel?: string;
+}) {
   const { pending } = useFormStatus();
   return (
     <Button
@@ -22,10 +41,16 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel?: s
       className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
       disabled={pending}
     >
-      {pending ? (pendingLabel || "...") : label}
+      {pending ? pendingLabel || "..." : label}
     </Button>
   );
 }
+
+type AuthActionResult = {
+  success: boolean;
+  error?: string;
+  sent?: boolean;
+} | null;
 
 export function RegisterFlow() {
   const router = useRouter();
@@ -39,7 +64,7 @@ export function RegisterFlow() {
   const [code, setCode] = useState("");
 
   const [phoneState, submitPhone] = useActionState(
-    async (prevState: any, formData: FormData) => {
+    async (_prevState: AuthActionResult, formData: FormData) => {
       const p = formData.get("phone") as string;
       const res = await requestPhoneVerificationAction(formData);
       if (res?.success) {
@@ -48,11 +73,11 @@ export function RegisterFlow() {
       }
       return res;
     },
-    null
+    null,
   );
 
   const [registerState, submitRegister] = useActionState(
-    async (prevState: any, formData: FormData) => {
+    async (_prevState: AuthActionResult, formData: FormData) => {
       formData.append("phone", phone);
       formData.append("code", code);
       const res = await registerAction(formData);
@@ -61,7 +86,7 @@ export function RegisterFlow() {
       }
       return res;
     },
-    null
+    null,
   );
 
   const handleVerifyCode = (e: React.FormEvent) => {
@@ -99,7 +124,10 @@ export function RegisterFlow() {
         </CardHeader>
         <CardContent>
           {step === 1 && (
-            <form action={submitPhone} className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            <form
+              action={submitPhone}
+              className="space-y-4 animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="space-y-2">
                 <Label htmlFor="phone">{tAuth("phoneLabel")}</Label>
                 <Input
@@ -119,7 +147,10 @@ export function RegisterFlow() {
           )}
 
           {step === 2 && (
-            <form onSubmit={handleVerifyCode} className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            <form
+              onSubmit={handleVerifyCode}
+              className="space-y-4 animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="text-sm text-center text-muted-foreground mb-4">
                 {tAuth("codeSent", { phone })}
               </div>
@@ -155,7 +186,10 @@ export function RegisterFlow() {
           )}
 
           {step === 3 && (
-            <form action={submitRegister} className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            <form
+              action={submitRegister}
+              className="space-y-4 animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="space-y-2">
                 <Label htmlFor="displayName">{t("nameLabel")}</Label>
                 <Input
@@ -165,7 +199,7 @@ export function RegisterFlow() {
                   placeholder={t("namePlaceholder")}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">{tAuth("passwordLabel")}</Label>
                 <Input
@@ -177,9 +211,11 @@ export function RegisterFlow() {
                   placeholder={tAuth("passwordPlaceholder")}
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">{t("passwordConfirmLabel")}</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("passwordConfirmLabel")}
+                </Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -196,7 +232,18 @@ export function RegisterFlow() {
                     <SelectValue placeholder={t("countryLabel")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {["UA", "PL", "DE", "US", "GB", "CZ", "FR", "IT", "ES", "PT"].map((c) => (
+                    {[
+                      "UA",
+                      "PL",
+                      "DE",
+                      "US",
+                      "GB",
+                      "CZ",
+                      "FR",
+                      "IT",
+                      "ES",
+                      "PT",
+                    ].map((c) => (
                       <SelectItem key={c} value={c}>
                         {t(`countries.${c}`)}
                       </SelectItem>
@@ -225,25 +272,39 @@ export function RegisterFlow() {
                 <div className="flex items-center space-x-2">
                   <Checkbox id="terms" required />
                   <Label htmlFor="terms" className="text-sm font-normal">
-                    {t("termsLabel")}{" "}
-                    <Link href={`/${locale}/legal/terms`} className="underline hover:text-primary">
-                      {t("termsLink")}
-                    </Link>
+                    {t.rich("termsLabel", {
+                      terms: (chunks) => (
+                        <Link
+                          href={`/${locale}/legal/terms`}
+                          className="underline hover:text-primary"
+                        >
+                          {chunks}
+                        </Link>
+                      ),
+                    })}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="privacy" required />
                   <Label htmlFor="privacy" className="text-sm font-normal">
-                    {t("privacyLabel")}{" "}
-                    <Link href={`/${locale}/legal/privacy`} className="underline hover:text-primary">
-                      {t("privacyLink")}
-                    </Link>
+                    {t.rich("privacyLabel", {
+                      privacy: (chunks) => (
+                        <Link
+                          href={`/${locale}/legal/privacy`}
+                          className="underline hover:text-primary"
+                        >
+                          {chunks}
+                        </Link>
+                      ),
+                    })}
                   </Label>
                 </div>
               </div>
 
               {registerState?.error && (
-                <p className="text-sm text-destructive">{registerState.error}</p>
+                <p className="text-sm text-destructive">
+                  {registerState.error}
+                </p>
               )}
 
               <SubmitButton label={t("createAccount")} />
@@ -253,7 +314,10 @@ export function RegisterFlow() {
         <CardFooter className="justify-center pt-2 pb-6">
           <p className="text-sm text-muted-foreground">
             {t("haveAccount")}{" "}
-            <Link href={`/${locale}/login`} className="text-primary hover:underline">
+            <Link
+              href={`/${locale}/login`}
+              className="text-primary hover:underline"
+            >
               {t("loginLink")}
             </Link>
           </p>

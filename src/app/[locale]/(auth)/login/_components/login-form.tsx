@@ -36,8 +36,11 @@ export function LoginForm() {
   const locale = useLocale();
   const router = useRouter();
 
-  const [state, formAction, isPending] = useActionState(
-    async (_prevState: { success: boolean; error?: string }, formData: FormData) => {
+  const [state, formAction] = useActionState(
+    async (
+      _prevState: { success: boolean; error?: string },
+      formData: FormData,
+    ) => {
       const result = await loginAction(formData);
       return result;
     },

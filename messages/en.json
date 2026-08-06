@@ -52,9 +52,9 @@
     "passwordConfirmLabel": "Confirm password",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordsNoMatch": "Passwords do not match",
-    "termsLabel": "I agree to the {terms}",
+    "termsLabel": "I agree to the <terms>Terms</terms>",
     "termsLink": "Terms of Service",
-    "privacyLabel": "I agree to the {privacy}",
+    "privacyLabel": "I agree to the <privacy>Privacy Policy</privacy>",
     "privacyLink": "Privacy Policy",
     "createAccount": "Create account",
     "haveAccount": "Already have an account?",
@@ -95,7 +95,13 @@
     "security": "Security",
     "activeSessions": "Active sessions",
     "currentSession": "Current session",
-    "logoutAll": "Sign out from all devices"
+    "logoutAll": "Sign out from all devices",
+    "pendingCompanies": "Pending Companies",
+    "sendReferral": "Send Referral",
+    "referrals": "Referrals",
+    "sentReferrals": "Sent Referrals",
+    "receivedReferrals": "Received Referrals",
+    "moderateReferrals": "Moderate Referrals"
   },
   "card": {
     "membershipCard": "Membership Card",
@@ -486,6 +492,29 @@
       "viewSpecial": "View Special",
       "emptyTitle": "No top partners yet",
       "emptyDescription": "Top partner offers will appear here after moderation and placement approval."
+    }
+  },
+  "Referral": {
+    "title": "Send a warm lead",
+    "description": "Connect a client with this partner. Note: You must attest to the client's consent.",
+    "clientName": "Client Name",
+    "contactChannel": "Contact Details (Phone/Email)",
+    "serviceNeeded": "Service Needed",
+    "note": "Additional Note (Optional)",
+    "consentLabel": "I confirm that the client has explicitly consented to being introduced to this company.",
+    "sendAction": "Send Lead",
+    "successMessage": "Lead sent! It will be reviewed by our moderators shortly.",
+    "errorMessage": "Failed to send lead. Please check your inputs.",
+    "accept": "Accept Lead",
+    "decline": "Decline",
+    "contactRevealedAfterAccept": "Contact details will be revealed after accepting.",
+    "status": {
+      "pending_review": "Pending Review",
+      "rejected": "Rejected by Staff",
+      "delivered": "Delivered",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired"
     }
   }
 }

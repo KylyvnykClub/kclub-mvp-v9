@@ -3,8 +3,7 @@
 import { cookies } from "next/headers";
 import { IdentityService } from "@/modules/identity";
 import { db } from "@/data/db";
-import { cards, members } from "@/data/schema";
-import { eq } from "drizzle-orm";
+import { findCardByMemberId, findCardPublicByToken } from "@/data/members";
 
 /**
  * Retrieves the current authenticated member from the session cookie.
@@ -23,12 +22,7 @@ export async function getCurrentMember() {
     return null;
   }
 
-  // Fetch the member's card
-  const [memberCard] = await db
-    .select()
-    .from(cards)
-    .where(eq(cards.memberId, result.member.id))
-    .limit(1);
+  const memberCard = await findCardByMemberId(db, result.member.id);
 
   return {
     member: result.member,
@@ -42,24 +36,5 @@ export async function getCurrentMember() {
  * Returns card + member display info (no sensitive data).
  */
 export async function getCardByPublicToken(publicToken: string) {
-  const rows = await db
-    .select({
-      serial: cards.serial,
-      tier: cards.tier,
-      status: cards.status,
-      issuedAt: cards.issuedAt,
-      memberName: members.displayName,
-      memberCountry: members.country,
-      memberStatus: members.status,
-    })
-    .from(cards)
-    .innerJoin(members, eq(cards.memberId, members.id))
-    .where(eq(cards.token, publicToken))
-    .limit(1);
-
-  if (rows.length === 0) {
-    return null;
-  }
-
-  return rows[0];
+  return findCardPublicByToken(db, publicToken);
 }

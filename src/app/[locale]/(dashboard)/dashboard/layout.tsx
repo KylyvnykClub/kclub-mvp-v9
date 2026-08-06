@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
-import { redirect } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
-import { getCurrentMember } from '@/actions/session';
-import { DashboardHeader } from './_components/dashboard-header';
+import { ReactNode } from "react";
+import { redirect } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
+import { getCurrentMember } from "@/actions/session";
+import { DashboardHeader } from "./_components/dashboard-header";
 
 type Props = {
   children: ReactNode;
@@ -20,11 +20,9 @@ export default async function DashboardLayout({ children, params }: Props) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardHeader />
+      <DashboardHeader isAdmin={result.member.role === "admin"} />
       <main className="flex-1">
-        <div className="container mx-auto py-8">
-          {children}
-        </div>
+        <div className="container mx-auto py-8">{children}</div>
       </main>
     </div>
   );

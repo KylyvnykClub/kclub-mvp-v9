@@ -1,36 +1,32 @@
 import { db } from "@/data/db";
-import { members, sessions, legalAcceptances, cards } from "@/data/schema";
-import { eq, and, sql } from "drizzle-orm";
+import {
+  createSessionTx,
+  deleteSessionByToken,
+  findActiveSessionByToken,
+  findMemberByPhone,
+  registerMemberTx,
+} from "@/data/identity";
 import { hashPassword, verifyPassword, generateToken } from "./crypto";
 import { sendVerificationCode, checkVerificationCode } from "./twilio";
-import { appendAuditEntry } from "@/data/audit-log";
 
 export class IdentityService {
   /**
-   * Step 1 of registration: Member submits phone and details.
-   * We don't save the user yet (FR-004), or we save them as 'blocked' or we just
-   * send the SMS and only create the user when the code is verified.
-   * Actually, it's better to verify the code BEFORE creating the member to avoid
-   * junk records.
+   * Step 1 of registration: send the SMS code. The member row is only
+   * created after the code is verified (FR-004), so no junk records.
    */
   static async requestPhoneVerification(phone: string): Promise<boolean> {
-    // Check if phone already exists
-    const existing = await db.query.members.findFirst({
-      where: eq(members.phone, phone),
-    });
-    
+    const existing = await findMemberByPhone(db, phone);
+
     if (existing) {
-      // Don't leak whether phone is registered in the UI directly, but we can't send a registration code.
-      // Wait, Twilio Verify can send a code anyway, but we'll reject it on verify.
-      // Or we can just pretend it sent.
-      return false; // Let the caller decide how to handle
+      // Don't leak whether the phone is registered; the caller decides.
+      return false;
     }
 
     return await sendVerificationCode(phone);
   }
 
   /**
-   * Step 2 of registration: Complete registration after SMS code is verified.
+   * Step 2 of registration: complete registration after SMS code is verified.
    */
   static async registerMember(params: {
     phone: string;
@@ -43,78 +39,40 @@ export class IdentityService {
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
   }): Promise<{ success: boolean; sessionToken?: string; error?: string }> {
-    // 1. Verify code
     const isCodeValid = await checkVerificationCode(params.phone, params.code);
     if (!isCodeValid) {
       return { success: false, error: "Invalid or expired verification code" };
     }
 
-    // 2. Hash password
     const passwordHash = await hashPassword(params.passwordPlain);
 
-    // 3. Perform transaction to insert member, card, consents, and initial session
     try {
       const sessionToken = generateToken();
 
-      await db.transaction(async (tx) => {
-        // Insert member
-        const [member] = await tx
-          .insert(members)
-          .values({
-            phone: params.phone,
-            passwordHash,
-            displayName: params.displayName,
-            country: params.country,
-            language: params.language,
-          })
-          .returning();
+      // FR-020: membership card is issued automatically with registration.
+      const serial = `KCLUB-${Math.floor(100000 + Math.random() * 900000)}`;
+      const cardToken = generateToken(16);
 
-        // Insert legal acceptances
-        if (params.consents.length > 0) {
-          await tx.insert(legalAcceptances).values(
-            params.consents.map((c) => ({
-              memberId: member.id,
-              documentId: c.documentId,
-              version: c.version,
-            }))
-          );
-        }
-
-        // FR-020: Issue membership card automatically
-        // Serial is human readable, e.g., KCLUB-XXXXXX
-        const serial = `KCLUB-${Math.floor(100000 + Math.random() * 900000)}`;
-        const cardToken = generateToken(16); // 32 chars hex
-
-        await tx.insert(cards).values({
-          memberId: member.id,
-          serial,
-          token: cardToken,
-          tier: "free",
-        });
-
-        // Insert initial session
-        await tx.insert(sessions).values({
-          memberId: member.id,
-          token: sessionToken,
-          userAgent: params.userAgent,
-          ipAddress: params.ipAddress,
-        });
-
-        // Audit log
-        await appendAuditEntry(tx, {
-          actorType: "member",
-          actorId: member.id,
-          action: "member.registered",
-          subjectType: "member",
-          subjectId: member.id,
-          ip: params.ipAddress,
-          userAgent: params.userAgent,
-        });
+      await registerMemberTx(db, {
+        phone: params.phone,
+        passwordHash,
+        displayName: params.displayName,
+        country: params.country,
+        language: params.language,
+        userAgent: params.userAgent,
+        ipAddress: params.ipAddress,
+        consents: params.consents,
+        cardSerial: serial,
+        cardToken,
+        sessionToken,
       });
 
       return { success: true, sessionToken };
-    } catch (error) {
-      return { success: false, error: "Failed to create account. Phone might be registered already." };
+    } catch {
+      return {
+        success: false,
+        error: "Failed to create account. Phone might be registered already.",
+      };
     }
   }
 
@@ -127,9 +85,7 @@ export class IdentityService {
     userAgent: string;
     ipAddress: string;
   }): Promise<{ success: boolean; sessionToken?: string; error?: string }> {
-    const member = await db.query.members.findFirst({
-      where: eq(members.phone, params.phone),
-    });
+    const member = await findMemberByPhone(db, params.phone);
 
     if (!member) {
       return { success: false, error: "Invalid credentials" };
@@ -139,31 +95,20 @@ export class IdentityService {
       return { success: false, error: "Account is not active" };
     }
 
-    const isValid = await verifyPassword(member.passwordHash, params.passwordPlain);
+    const isValid = await verifyPassword(
+      member.passwordHash,
+      params.passwordPlain,
+    );
     if (!isValid) {
-      // Audit failed attempt?
       return { success: false, error: "Invalid credentials" };
     }
 
-    // Create session
     const sessionToken = generateToken();
-    await db.transaction(async (tx) => {
-      await tx.insert(sessions).values({
-        memberId: member.id,
-        token: sessionToken,
-        userAgent: params.userAgent,
-        ipAddress: params.ipAddress,
-      });
-
-      await appendAuditEntry(tx, {
-        actorType: "member",
-        actorId: member.id,
-        action: "member.logged_in",
-        subjectType: "member",
-        subjectId: member.id,
-        ip: params.ipAddress,
-        userAgent: params.userAgent,
-      });
+    await createSessionTx(db, {
+      memberId: member.id,
+      sessionToken,
+      userAgent: params.userAgent,
+      ipAddress: params.ipAddress,
     });
 
     return { success: true, sessionToken };
@@ -173,23 +118,11 @@ export class IdentityService {
    * Gets a member from a session token. Used by middleware.
    */
   static async authenticateSession(token: string) {
-    const session = await db.query.sessions.findFirst({
-      where: eq(sessions.token, token),
-      with: {
-        member: true,
-      },
-    });
+    const session = await findActiveSessionByToken(db, token);
 
-    if (!session || !session.member) {
+    if (!session) {
       return null;
     }
-
-    if (session.member.status !== "active") {
-      return null;
-    }
-
-    // Optionally update lastSeenAt
-    // await db.update(sessions).set({ lastSeenAt: new Date() }).where(eq(sessions.id, session.id));
 
     return { session, member: session.member };
   }
@@ -198,6 +131,6 @@ export class IdentityService {
    * Log out current session.
    */
   static async logout(token: string) {
-    await db.delete(sessions).where(eq(sessions.token, token));
+    await deleteSessionByToken(db, token);
   }
 }

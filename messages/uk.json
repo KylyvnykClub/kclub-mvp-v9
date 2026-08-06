@@ -413,9 +413,9 @@
     "passwordConfirmLabel": "Підтвердити пароль",
     "passwordMinLength": "Пароль повинен містити щонайменше 8 символів",
     "passwordsNoMatch": "Паролі не збігаються",
-    "termsLabel": "Я погоджуюся з {terms}",
-    "termsLink": "Умовами використання",
-    "privacyLabel": "Я погоджуюся з {privacy}",
+    "termsLabel": "Я погоджуюся з <terms>Умовами</terms>",
+    "termsLink": "Умови використання",
+    "privacyLabel": "Я погоджуюся з <privacy>Політикою конфіденційності</privacy>",
     "privacyLink": "Політикою конфіденційності",
     "createAccount": "Створити обліковий запис",
     "haveAccount": "Вже маєте обліковий запис?",
@@ -456,7 +456,13 @@
     "security": "Безпека",
     "activeSessions": "Активні сеанси",
     "currentSession": "Поточний сеанс",
-    "logoutAll": "Вийти з усіх пристроїв"
+    "logoutAll": "Вийти на всіх пристроях",
+    "pendingCompanies": "Компанії на модерації",
+    "sendReferral": "Відправити ліда",
+    "referrals": "Ліди",
+    "sentReferrals": "Відправлені ліди",
+    "receivedReferrals": "Отримані ліди",
+    "moderateReferrals": "Модерація лідів"
   },
   "card": {
     "membershipCard": "Карта учасника",
@@ -487,5 +493,28 @@
   "metadata": {
     "title": "KCLUB",
     "description": "Закритий міжнародний бізнес-клуб."
+  },
+  "Referral": {
+    "title": "Передати клієнта (Ліда)",
+    "description": "Зв'яжіть клієнта з цим партнером. Увага: Ви повинні підтвердити згоду клієнта.",
+    "clientName": "Ім'я клієнта",
+    "contactChannel": "Контакти (Телефон/Email)",
+    "serviceNeeded": "Яка послуга потрібна",
+    "note": "Додатковий коментар (необов'язково)",
+    "consentLabel": "Я підтверджую, що клієнт дав явну згоду на передачу його контактів цій компанії.",
+    "sendAction": "Відправити Ліда",
+    "successMessage": "Ліда відправлено! Незабаром він пройде модерацію.",
+    "errorMessage": "Не вдалося відправити. Перевірте дані.",
+    "accept": "Прийняти Ліда",
+    "decline": "Відхилити",
+    "contactRevealedAfterAccept": "Контакти будуть показані після прийняття.",
+    "status": {
+      "pending_review": "На модерації",
+      "rejected": "Відхилено модератором",
+      "delivered": "Доставлено",
+      "accepted": "Прийнято",
+      "declined": "Відхилено партнером",
+      "expired": "Час вийшов"
+    }
   }
 }
