@@ -1,8 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
-  createCheckoutSessionAction,
+  createVipCheckoutAction,
   createPortalSessionAction,
 } from "@/actions/stripe";
 import { Button } from "@/components/ui/button";
@@ -17,15 +18,14 @@ import { Badge } from "@/components/ui/badge";
 
 export function BillingSection({ tier }: { tier: "free" | "vip" }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("billing");
 
   const handleCheckout = () => {
     startTransition(async () => {
-      const priceId =
-        process.env.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID || "price_dummy";
       try {
-        await createCheckoutSessionAction(priceId);
+        await createVipCheckoutAction();
       } catch {
-        alert("Failed to start checkout");
+        alert(t("checkoutFailed"));
       }
     });
   };
@@ -35,7 +35,7 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
       try {
         await createPortalSessionAction();
       } catch {
-        alert("Failed to open portal");
+        alert(t("portalFailed"));
       }
     });
   };
@@ -46,10 +46,10 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-xl font-serif text-accent">
-              Membership & Billing
+              {t("title")}
             </CardTitle>
             <CardDescription className="mt-1">
-              Manage your KYLYVNYK CLUB membership subscription.
+              {t("description")}
             </CardDescription>
           </div>
           <Badge
@@ -64,31 +64,27 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
         {tier === "free" ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              You are currently on the Free tier. Upgrade to VIP to access
-              exclusive features, discounts from our partners, and the ability
-              to refer leads.
+              {t("freeDescription")}
             </p>
             <Button
               onClick={handleCheckout}
               disabled={isPending}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
-              {isPending ? "Loading..." : "Upgrade to VIP ($19.99/mo)"}
+              {isPending ? t("loading") : t("upgradeButton")}
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              You are an active VIP member. You can manage your payment methods,
-              view invoices, or cancel your subscription via the Stripe billing
-              portal.
+              {t("vipDescription")}
             </p>
             <Button
               onClick={handlePortal}
               disabled={isPending}
               variant="outline"
             >
-              {isPending ? "Loading..." : "Manage Subscription"}
+              {isPending ? t("loading") : t("manageButton")}
             </Button>
           </div>
         )}

@@ -522,5 +522,21 @@
       "declined": "Declined",
       "expired": "Expired"
     }
+  },
+  "billing": {
+    "title": "Membership & Billing",
+    "description": "Manage your KYLYVNYK CLUB membership subscription.",
+    "freeDescription": "You are currently on the Free tier. Upgrade to VIP to access exclusive features, discounts from our partners, and the ability to refer leads.",
+    "vipDescription": "You are an active VIP member. You can manage your payment methods, view invoices, or cancel your subscription via the Stripe billing portal.",
+    "upgradeButton": "Upgrade to VIP ($19.99/mo)",
+    "manageButton": "Manage Subscription",
+    "loading": "Loading...",
+    "checkoutFailed": "Failed to start checkout",
+    "portalFailed": "Failed to open billing portal",
+    "successTitle": "Payment received",
+    "successDescription": "Your subscription is being activated. This usually takes a few seconds.",
+    "canceledTitle": "Checkout canceled",
+    "canceledDescription": "You have not been charged. You can try again at any time from your profile.",
+    "backToProfile": "Back to profile"
   }
 }

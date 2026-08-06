@@ -42,6 +42,56 @@ async function appOrigin(): Promise<string> {
   return headersList.get("origin") || env.server.NEXT_PUBLIC_APP_URL;
 }
 
+export async function createVipCheckoutAction() {
+  const priceId = env.server.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID;
+  if (!priceId) {
+    throw new Error("VIP price is not configured");
+  }
+
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    throw new Error("Unauthorized");
+  }
+
+  const locale = auth.member.language || "en";
+
+  const stripeCustomerId = await getOrCreateStripeCustomer(
+    auth.member.id,
+    undefined,
+    auth.member.displayName,
+  );
+
+  const origin = await appOrigin();
+
+  const metadata: Record<string, string> = {
+    memberId: auth.member.id,
+  };
+
+  const session = await stripe.checkout.sessions.create({
+    customer: stripeCustomerId,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    metadata,
+    subscription_data: {
+      metadata,
+    },
+    success_url: `${origin}/${locale}/dashboard/checkout/success`,
+    cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
+  });
+
+  if (!session.url) {
+    throw new Error("Failed to create checkout session");
+  }
+
+  redirect(session.url);
+}
+
 export async function createCheckoutSessionAction(
   priceId: string,
   companyId?: string,
@@ -50,6 +100,8 @@ export async function createCheckoutSessionAction(
   if (!auth?.member) {
     throw new Error("Unauthorized");
   }
+
+  const locale = auth.member.language || "en";
 
   const stripeCustomerId = await getOrCreateStripeCustomer(
     auth.member.id,
@@ -81,8 +133,8 @@ export async function createCheckoutSessionAction(
     subscription_data: {
       metadata,
     },
-    success_url: `${origin}/en/dashboard/profile?checkout=success`,
-    cancel_url: `${origin}/en/dashboard/profile?checkout=canceled`,
+    success_url: `${origin}/${locale}/dashboard/checkout/success`,
+    cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
   });
 
   if (!session.url) {
@@ -107,11 +159,12 @@ export async function createPortalSessionAction() {
     throw new Error("No billing account found");
   }
 
+  const locale = auth.member.language || "en";
   const origin = await appOrigin();
 
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
-    return_url: `${origin}/en/dashboard/profile`,
+    return_url: `${origin}/${locale}/dashboard/profile`,
   });
 
   if (!portalSession.url) {
