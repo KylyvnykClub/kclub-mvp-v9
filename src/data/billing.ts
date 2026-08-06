@@ -67,6 +67,18 @@ export interface SubscriptionUpsert {
   currentPeriodEnd: Date;
   cancelAtPeriodEnd: Date | null;
   canceledAt: Date | null;
+
+  /** ADR 0004 watermark: the Stripe subscription's `updated` timestamp. */
+  stripeUpdatedAt: Date;
+}
+
+export async function findSubscriptionByStripeId(
+  db: DbClient,
+  stripeSubscriptionId: string,
+) {
+  return db.query.subscriptions.findFirst({
+    where: eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
+  });
 }
 
 export async function upsertSubscription(

@@ -1,12 +1,12 @@
 import { eq, isNull, sql } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import type { DbClient } from "./db";
 import { outbox } from "./schema/outbox";
 
 export type OutboxEntry = typeof outbox.$inferSelect;
 
 export async function enqueueOutbox(
-  db: NodePgDatabase,
+  db: DbClient,
   topic: string,
   payload: unknown,
 ): Promise<void> {
@@ -14,7 +14,7 @@ export async function enqueueOutbox(
 }
 
 export async function drainOutbox(
-  db: NodePgDatabase,
+  db: DbClient,
   batchSize: number,
 ): Promise<OutboxEntry[]> {
   const rows = await db.execute(sql`
@@ -29,17 +29,14 @@ export async function drainOutbox(
   return rows.rows as OutboxEntry[];
 }
 
-export async function markProcessed(
-  db: NodePgDatabase,
-  id: string,
-): Promise<void> {
+export async function markProcessed(db: DbClient, id: string): Promise<void> {
   await db
     .update(outbox)
     .set({ processedAt: new Date() })
     .where(eq(outbox.id, id));
 }
 
-export async function countPending(db: NodePgDatabase): Promise<number> {
+export async function countPending(db: DbClient): Promise<number> {
   const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(outbox)

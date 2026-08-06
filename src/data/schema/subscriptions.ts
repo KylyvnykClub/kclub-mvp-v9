@@ -29,4 +29,11 @@ export const subscriptions = pgTable("subscriptions", {
   currentPeriodEnd: timestamp("current_period_end", { mode: "date" }).notNull(),
   cancelAtPeriodEnd: timestamp("cancel_at_period_end", { mode: "date" }),
   canceledAt: timestamp("canceled_at", { mode: "date" }),
+
+  // ADR 0004: watermark of the last applied Stripe event's `created`
+  // timestamp. A delivery of an event older than this is a late delivery and
+  // is discarded rather than regressing state (integration.md §4 —
+  // out-of-order delivery is normal). The Subscription object has no `updated`
+  // field in the pinned API version, so the event clock is the ordering key.
+  stripeUpdatedAt: timestamp("stripe_updated_at", { mode: "date" }),
 });
