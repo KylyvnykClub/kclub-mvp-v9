@@ -49,11 +49,15 @@ function formatDev(level: LogLevel, message: string, ctx: LogContext): string {
   const prefix = `${ts} ${level.toUpperCase().padEnd(5)}`;
   const extras = Object.entries(ctx)
     .filter(([, v]) => v !== undefined)
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    .map(
-      ([k, v]) =>
-        `${k}=${typeof v === "object" ? JSON.stringify(v) : String(v)}`,
-    )
+    .map(([k, v]) => {
+      const rendered =
+        typeof v === "string"
+          ? v
+          : typeof v === "number" || typeof v === "boolean"
+            ? String(v)
+            : JSON.stringify(v);
+      return `${k}=${rendered}`;
+    })
     .join(" ");
   return `${prefix} ${message}${extras ? ` | ${extras}` : ""}`;
 }

@@ -12,21 +12,29 @@ export interface LegalDocument {
   content: string;
 }
 
-export async function getLegalDocument(id: string): Promise<LegalDocument | null> {
+export async function getLegalDocument(
+  id: string,
+): Promise<LegalDocument | null> {
   try {
     const filePath = path.join(CONTENT_PATH, `${id}.mdx`);
     const fileContent = await fs.readFile(filePath, "utf-8");
-    
+
     const { data, content } = matter(fileContent);
+
+    const frontmatter = data as Record<string, unknown>;
 
     return {
       id,
-      title: data.title || id,
-      version: data.version || "1.0",
-      lastUpdated: data.lastUpdated || new Date().toISOString().split("T")[0],
+      title: typeof frontmatter.title === "string" ? frontmatter.title : id,
+      version:
+        typeof frontmatter.version === "string" ? frontmatter.version : "1.0",
+      lastUpdated:
+        typeof frontmatter.lastUpdated === "string"
+          ? frontmatter.lastUpdated
+          : new Date().toISOString().slice(0, 10),
       content,
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -35,16 +43,16 @@ export async function getAllLegalDocuments(): Promise<LegalDocument[]> {
   try {
     const files = await fs.readdir(CONTENT_PATH);
     const mdxFiles = files.filter((f) => f.endsWith(".mdx"));
-    
+
     const docs = await Promise.all(
       mdxFiles.map(async (file) => {
         const id = file.replace(/\.mdx$/, "");
         return getLegalDocument(id);
-      })
+      }),
     );
 
     return docs.filter((d): d is LegalDocument => d !== null);
-  } catch (error) {
+  } catch {
     return [];
   }
 }
