@@ -1,5 +1,4 @@
-import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
-
+import type { InsertClient } from "./db";
 import { auditLog } from "./schema/audit-log";
 
 export interface AuditEntry {
@@ -15,9 +14,9 @@ export interface AuditEntry {
 }
 
 export async function appendAuditEntry(
-  db: PgDatabase<PgQueryResultHKT>,
+  db: InsertClient,
   entry: AuditEntry,
-) {
+): Promise<{ id: string; createdAt: Date }> {
   const [row] = await db
     .insert(auditLog)
     .values({

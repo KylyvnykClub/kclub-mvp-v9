@@ -1,0 +1,1253 @@
+ID,Block,Category,Subcategory,Status
+1,"Legal, Finance & Security",Law Firms & Attorneys,Consultations,ACTIVE
+2,"Legal, Finance & Security",Law Firms & Attorneys,Document Preparation,ACTIVE
+3,"Legal, Finance & Security",Law Firms & Attorneys,Legal or Financial Analysis,ACTIVE
+4,"Legal, Finance & Security",Law Firms & Attorneys,Registration & Filing,ACTIVE
+5,"Legal, Finance & Security",Law Firms & Attorneys,Representation,ACTIVE
+6,"Legal, Finance & Security",Law Firms & Attorneys,Pre-Litigation Support,ACTIVE
+7,"Legal, Finance & Security",Law Firms & Attorneys,Court or Administrative Representation,ACTIVE
+8,"Legal, Finance & Security",Law Firms & Attorneys,Audit & Review,ACTIVE
+9,"Legal, Finance & Security",Law Firms & Attorneys,Transaction Support,ACTIVE
+10,"Legal, Finance & Security",Law Firms & Attorneys,Ongoing Business Support,ACTIVE
+11,"Legal, Finance & Security",Immigration Law,Tourist Visas,ACTIVE
+12,"Legal, Finance & Security",Immigration Law,Work Visas & Work Permits,ACTIVE
+13,"Legal, Finance & Security",Immigration Law,Student Visas,ACTIVE
+14,"Legal, Finance & Security",Immigration Law,Family Reunification,ACTIVE
+15,"Legal, Finance & Security",Immigration Law,Temporary Residence Permit,ACTIVE
+16,"Legal, Finance & Security",Immigration Law,Permanent Residence,ACTIVE
+17,"Legal, Finance & Security",Immigration Law,Citizenship & Naturalization,ACTIVE
+18,"Legal, Finance & Security",Immigration Law,Business Immigration,ACTIVE
+19,"Legal, Finance & Security",Immigration Law,Investment Immigration,ACTIVE
+20,"Legal, Finance & Security",Immigration Law,Asylum & Humanitarian Protection,ACTIVE
+21,"Legal, Finance & Security",Immigration Law,Deportation & Removal Defense,ACTIVE
+22,"Legal, Finance & Security",Immigration Law,Immigration Appeals,ACTIVE
+23,"Legal, Finance & Security",Immigration Law,Status Extension & Change,ACTIVE
+24,"Legal, Finance & Security",Immigration Law,Employer-Sponsored Immigration Petitions,ACTIVE
+25,"Legal, Finance & Security",Immigration Law,Consular Support,ACTIVE
+26,"Legal, Finance & Security",Immigration Law,Relocation & Post-Move Adaptation,ACTIVE
+27,"Legal, Finance & Security",Family Law,Consultations,ACTIVE
+28,"Legal, Finance & Security",Family Law,Document Preparation,ACTIVE
+29,"Legal, Finance & Security",Family Law,Legal or Financial Analysis,ACTIVE
+30,"Legal, Finance & Security",Family Law,Registration & Filing,ACTIVE
+31,"Legal, Finance & Security",Family Law,Representation,ACTIVE
+32,"Legal, Finance & Security",Family Law,Pre-Litigation Support,ACTIVE
+33,"Legal, Finance & Security",Family Law,Court or Administrative Representation,ACTIVE
+34,"Legal, Finance & Security",Family Law,Audit & Review,ACTIVE
+35,"Legal, Finance & Security",Family Law,Transaction Support,ACTIVE
+36,"Legal, Finance & Security",Family Law,Ongoing Business Support,ACTIVE
+37,"Legal, Finance & Security",Criminal Law,Consultations,ACTIVE
+38,"Legal, Finance & Security",Criminal Law,Document Preparation,ACTIVE
+39,"Legal, Finance & Security",Criminal Law,Legal or Financial Analysis,ACTIVE
+40,"Legal, Finance & Security",Criminal Law,Registration & Filing,ACTIVE
+41,"Legal, Finance & Security",Criminal Law,Representation,ACTIVE
+42,"Legal, Finance & Security",Criminal Law,Pre-Litigation Support,ACTIVE
+43,"Legal, Finance & Security",Criminal Law,Court or Administrative Representation,ACTIVE
+44,"Legal, Finance & Security",Criminal Law,Audit & Review,ACTIVE
+45,"Legal, Finance & Security",Criminal Law,Transaction Support,ACTIVE
+46,"Legal, Finance & Security",Criminal Law,Ongoing Business Support,ACTIVE
+47,"Legal, Finance & Security",Civil Litigation,Consultations,ACTIVE
+48,"Legal, Finance & Security",Civil Litigation,Document Preparation,ACTIVE
+49,"Legal, Finance & Security",Civil Litigation,Legal or Financial Analysis,ACTIVE
+50,"Legal, Finance & Security",Civil Litigation,Registration & Filing,ACTIVE
+51,"Legal, Finance & Security",Civil Litigation,Representation,ACTIVE
+52,"Legal, Finance & Security",Civil Litigation,Pre-Litigation Support,ACTIVE
+53,"Legal, Finance & Security",Civil Litigation,Court or Administrative Representation,ACTIVE
+54,"Legal, Finance & Security",Civil Litigation,Audit & Review,ACTIVE
+55,"Legal, Finance & Security",Civil Litigation,Transaction Support,ACTIVE
+56,"Legal, Finance & Security",Civil Litigation,Ongoing Business Support,ACTIVE
+57,"Legal, Finance & Security",Corporate & Commercial Law,Consultations,ACTIVE
+58,"Legal, Finance & Security",Corporate & Commercial Law,Document Preparation,ACTIVE
+59,"Legal, Finance & Security",Corporate & Commercial Law,Legal or Financial Analysis,ACTIVE
+60,"Legal, Finance & Security",Corporate & Commercial Law,Registration & Filing,ACTIVE
+61,"Legal, Finance & Security",Corporate & Commercial Law,Representation,ACTIVE
+62,"Legal, Finance & Security",Corporate & Commercial Law,Pre-Litigation Support,ACTIVE
+63,"Legal, Finance & Security",Corporate & Commercial Law,Court or Administrative Representation,ACTIVE
+64,"Legal, Finance & Security",Corporate & Commercial Law,Audit & Review,ACTIVE
+65,"Legal, Finance & Security",Corporate & Commercial Law,Transaction Support,ACTIVE
+66,"Legal, Finance & Security",Corporate & Commercial Law,Ongoing Business Support,ACTIVE
+67,"Legal, Finance & Security",Tax Law,Consultations,ACTIVE
+68,"Legal, Finance & Security",Tax Law,Document Preparation,ACTIVE
+69,"Legal, Finance & Security",Tax Law,Legal or Financial Analysis,ACTIVE
+70,"Legal, Finance & Security",Tax Law,Registration & Filing,ACTIVE
+71,"Legal, Finance & Security",Tax Law,Representation,ACTIVE
+72,"Legal, Finance & Security",Tax Law,Pre-Litigation Support,ACTIVE
+73,"Legal, Finance & Security",Tax Law,Court or Administrative Representation,ACTIVE
+74,"Legal, Finance & Security",Tax Law,Audit & Review,ACTIVE
+75,"Legal, Finance & Security",Tax Law,Transaction Support,ACTIVE
+76,"Legal, Finance & Security",Tax Law,Ongoing Business Support,ACTIVE
+77,"Legal, Finance & Security",Employment Law,Consultations,ACTIVE
+78,"Legal, Finance & Security",Employment Law,Document Preparation,ACTIVE
+79,"Legal, Finance & Security",Employment Law,Legal or Financial Analysis,ACTIVE
+80,"Legal, Finance & Security",Employment Law,Registration & Filing,ACTIVE
+81,"Legal, Finance & Security",Employment Law,Representation,ACTIVE
+82,"Legal, Finance & Security",Employment Law,Pre-Litigation Support,ACTIVE
+83,"Legal, Finance & Security",Employment Law,Court or Administrative Representation,ACTIVE
+84,"Legal, Finance & Security",Employment Law,Audit & Review,ACTIVE
+85,"Legal, Finance & Security",Employment Law,Transaction Support,ACTIVE
+86,"Legal, Finance & Security",Employment Law,Ongoing Business Support,ACTIVE
+87,"Legal, Finance & Security",Real Estate & Land Law,Consultations,ACTIVE
+88,"Legal, Finance & Security",Real Estate & Land Law,Document Preparation,ACTIVE
+89,"Legal, Finance & Security",Real Estate & Land Law,Legal or Financial Analysis,ACTIVE
+90,"Legal, Finance & Security",Real Estate & Land Law,Registration & Filing,ACTIVE
+91,"Legal, Finance & Security",Real Estate & Land Law,Representation,ACTIVE
+92,"Legal, Finance & Security",Real Estate & Land Law,Pre-Litigation Support,ACTIVE
+93,"Legal, Finance & Security",Real Estate & Land Law,Court or Administrative Representation,ACTIVE
+94,"Legal, Finance & Security",Real Estate & Land Law,Audit & Review,ACTIVE
+95,"Legal, Finance & Security",Real Estate & Land Law,Transaction Support,ACTIVE
+96,"Legal, Finance & Security",Real Estate & Land Law,Ongoing Business Support,ACTIVE
+97,"Legal, Finance & Security",International Law,Consultations,ACTIVE
+98,"Legal, Finance & Security",International Law,Document Preparation,ACTIVE
+99,"Legal, Finance & Security",International Law,Legal or Financial Analysis,ACTIVE
+100,"Legal, Finance & Security",International Law,Registration & Filing,ACTIVE
+101,"Legal, Finance & Security",International Law,Representation,ACTIVE
+102,"Legal, Finance & Security",International Law,Pre-Litigation Support,ACTIVE
+103,"Legal, Finance & Security",International Law,Court or Administrative Representation,ACTIVE
+104,"Legal, Finance & Security",International Law,Audit & Review,ACTIVE
+105,"Legal, Finance & Security",International Law,Transaction Support,ACTIVE
+106,"Legal, Finance & Security",International Law,Ongoing Business Support,ACTIVE
+107,"Legal, Finance & Security",Intellectual Property,Consultations,ACTIVE
+108,"Legal, Finance & Security",Intellectual Property,Document Preparation,ACTIVE
+109,"Legal, Finance & Security",Intellectual Property,Legal or Financial Analysis,ACTIVE
+110,"Legal, Finance & Security",Intellectual Property,Registration & Filing,ACTIVE
+111,"Legal, Finance & Security",Intellectual Property,Representation,ACTIVE
+112,"Legal, Finance & Security",Intellectual Property,Pre-Litigation Support,ACTIVE
+113,"Legal, Finance & Security",Intellectual Property,Court or Administrative Representation,ACTIVE
+114,"Legal, Finance & Security",Intellectual Property,Audit & Review,ACTIVE
+115,"Legal, Finance & Security",Intellectual Property,Transaction Support,ACTIVE
+116,"Legal, Finance & Security",Intellectual Property,Ongoing Business Support,ACTIVE
+117,"Legal, Finance & Security",Notary Services,Signature Certification,ACTIVE
+118,"Legal, Finance & Security",Notary Services,Certified Copies,ACTIVE
+119,"Legal, Finance & Security",Notary Services,Powers of Attorney,ACTIVE
+120,"Legal, Finance & Security",Notary Services,Inheritance Matters,ACTIVE
+121,"Legal, Finance & Security",Notary Services,Prenuptial Agreements,ACTIVE
+122,"Legal, Finance & Security",Notary Services,Real Estate Transactions,ACTIVE
+123,"Legal, Finance & Security",Notary Services,Apostille & Legalization,ACTIVE
+124,"Legal, Finance & Security",Notary Services,Notarized Translations,ACTIVE
+125,"Legal, Finance & Security",Notary Services,Consultations,ACTIVE
+126,"Legal, Finance & Security",Notary Services,Document Preparation,ACTIVE
+127,"Legal, Finance & Security",Notary Services,Legal or Financial Analysis,ACTIVE
+128,"Legal, Finance & Security",Notary Services,Registration & Filing,ACTIVE
+129,"Legal, Finance & Security",Notary Services,Representation,ACTIVE
+130,"Legal, Finance & Security",Notary Services,Pre-Litigation Support,ACTIVE
+131,"Legal, Finance & Security",Accounting Services,Bookkeeping,ACTIVE
+132,"Legal, Finance & Security",Accounting Services,Payroll Services,ACTIVE
+133,"Legal, Finance & Security",Accounting Services,Tax Reporting,ACTIVE
+134,"Legal, Finance & Security",Accounting Services,Management Accounting,ACTIVE
+135,"Legal, Finance & Security",Accounting Services,Accounting Reconstruction,ACTIVE
+136,"Legal, Finance & Security",Accounting Services,Small Business Bookkeeping,ACTIVE
+137,"Legal, Finance & Security",Accounting Services,QuickBooks / Xero Support,ACTIVE
+138,"Legal, Finance & Security",Accounting Services,International Accounting,ACTIVE
+139,"Legal, Finance & Security",Accounting Services,Consultations,ACTIVE
+140,"Legal, Finance & Security",Accounting Services,Document Preparation,ACTIVE
+141,"Legal, Finance & Security",Accounting Services,Legal or Financial Analysis,ACTIVE
+142,"Legal, Finance & Security",Accounting Services,Registration & Filing,ACTIVE
+143,"Legal, Finance & Security",Accounting Services,Representation,ACTIVE
+144,"Legal, Finance & Security",Accounting Services,Pre-Litigation Support,ACTIVE
+145,"Legal, Finance & Security",Audit & Financial Control,Consultations,ACTIVE
+146,"Legal, Finance & Security",Audit & Financial Control,Document Preparation,ACTIVE
+147,"Legal, Finance & Security",Audit & Financial Control,Legal or Financial Analysis,ACTIVE
+148,"Legal, Finance & Security",Audit & Financial Control,Registration & Filing,ACTIVE
+149,"Legal, Finance & Security",Audit & Financial Control,Representation,ACTIVE
+150,"Legal, Finance & Security",Audit & Financial Control,Pre-Litigation Support,ACTIVE
+151,"Legal, Finance & Security",Audit & Financial Control,Court or Administrative Representation,ACTIVE
+152,"Legal, Finance & Security",Audit & Financial Control,Audit & Review,ACTIVE
+153,"Legal, Finance & Security",Audit & Financial Control,Transaction Support,ACTIVE
+154,"Legal, Finance & Security",Audit & Financial Control,Ongoing Business Support,ACTIVE
+155,"Legal, Finance & Security",Insurance,Health Insurance,ACTIVE
+156,"Legal, Finance & Security",Insurance,Auto Insurance,ACTIVE
+157,"Legal, Finance & Security",Insurance,Property Insurance,ACTIVE
+158,"Legal, Finance & Security",Insurance,Life Insurance,ACTIVE
+159,"Legal, Finance & Security",Insurance,Travel Insurance,ACTIVE
+160,"Legal, Finance & Security",Insurance,Business Insurance,ACTIVE
+161,"Legal, Finance & Security",Insurance,Liability Insurance,ACTIVE
+162,"Legal, Finance & Security",Insurance,Cargo Insurance,ACTIVE
+163,"Legal, Finance & Security",Insurance,Consultations,ACTIVE
+164,"Legal, Finance & Security",Insurance,Document Preparation,ACTIVE
+165,"Healthcare, Health & Care",Multispecialty Clinics,Initial Consultation,ACTIVE
+166,"Healthcare, Health & Care",Multispecialty Clinics,Preventive Checkup,ACTIVE
+167,"Healthcare, Health & Care",Multispecialty Clinics,Diagnostics,ACTIVE
+168,"Healthcare, Health & Care",Multispecialty Clinics,Outpatient Treatment,ACTIVE
+169,"Healthcare, Health & Care",Multispecialty Clinics,Procedures & Treatments,ACTIVE
+170,"Healthcare, Health & Care",Multispecialty Clinics,Second Medical Opinion,ACTIVE
+171,"Healthcare, Health & Care",Multispecialty Clinics,Telemedicine,ACTIVE
+172,"Healthcare, Health & Care",Multispecialty Clinics,Children's Programs,ACTIVE
+173,"Healthcare, Health & Care",Multispecialty Clinics,Corporate Health Programs,ACTIVE
+174,"Healthcare, Health & Care",Multispecialty Clinics,Rehabilitation,ACTIVE
+175,"Healthcare, Health & Care",Multispecialty Clinics,Urgent Care,ACTIVE
+176,"Healthcare, Health & Care",Family Medicine & Primary Care,Initial Consultation,ACTIVE
+177,"Healthcare, Health & Care",Family Medicine & Primary Care,Preventive Checkup,ACTIVE
+178,"Healthcare, Health & Care",Family Medicine & Primary Care,Diagnostics,ACTIVE
+179,"Healthcare, Health & Care",Family Medicine & Primary Care,Outpatient Treatment,ACTIVE
+180,"Healthcare, Health & Care",Family Medicine & Primary Care,Procedures & Treatments,ACTIVE
+181,"Healthcare, Health & Care",Family Medicine & Primary Care,Second Medical Opinion,ACTIVE
+182,"Healthcare, Health & Care",Family Medicine & Primary Care,Telemedicine,ACTIVE
+183,"Healthcare, Health & Care",Family Medicine & Primary Care,Children's Programs,ACTIVE
+184,"Healthcare, Health & Care",Family Medicine & Primary Care,Corporate Health Programs,ACTIVE
+185,"Healthcare, Health & Care",Family Medicine & Primary Care,Rehabilitation,ACTIVE
+186,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Walk-in clinic,ACTIVE
+187,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Adult Urgent Care,ACTIVE
+188,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Pediatric Urgent Care,ACTIVE
+189,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Non-Hospital Injury Treatment,ACTIVE
+190,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Treatment of Infections & Colds,ACTIVE
+191,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Stitching & Wound Closure,ACTIVE
+192,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Urgent Care X-Ray,ACTIVE
+193,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Rapid Testing,ACTIVE
+194,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Vaccination,ACTIVE
+195,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Medical Certificates,ACTIVE
+196,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Occupational health,ACTIVE
+197,"Healthcare, Health & Care",Urgent Care & Walk-In Services,Urgent Telemedicine Consultation,ACTIVE
+198,"Healthcare, Health & Care",Dentistry,General Dentistry,ACTIVE
+199,"Healthcare, Health & Care",Dentistry,Professional Dental Cleaning,ACTIVE
+200,"Healthcare, Health & Care",Dentistry,Cavity Treatment,ACTIVE
+201,"Healthcare, Health & Care",Dentistry,Endodontics,ACTIVE
+202,"Healthcare, Health & Care",Dentistry,Orthodontics,ACTIVE
+203,"Healthcare, Health & Care",Dentistry,Dental Implants,ACTIVE
+204,"Healthcare, Health & Care",Dentistry,Prosthodontics,ACTIVE
+205,"Healthcare, Health & Care",Dentistry,Oral Surgery,ACTIVE
+206,"Healthcare, Health & Care",Dentistry,Periodontics,ACTIVE
+207,"Healthcare, Health & Care",Dentistry,Pediatric Dentistry,ACTIVE
+208,"Healthcare, Health & Care",Dentistry,Cosmetic Dentistry,ACTIVE
+209,"Healthcare, Health & Care",Dentistry,Teeth Whitening,ACTIVE
+210,"Healthcare, Health & Care",Dentistry,Emergency Dentistry,ACTIVE
+211,"Healthcare, Health & Care",Dentistry,Dental X-Ray & 3D Imaging,ACTIVE
+212,"Healthcare, Health & Care",Dentistry,Sedation & General Anesthesia Dentistry,ACTIVE
+213,"Healthcare, Health & Care",Diagnostic Imaging,Initial Consultation,ACTIVE
+214,"Healthcare, Health & Care",Diagnostic Imaging,Preventive Checkup,ACTIVE
+215,"Healthcare, Health & Care",Diagnostic Imaging,Diagnostics,ACTIVE
+216,"Healthcare, Health & Care",Diagnostic Imaging,Outpatient Treatment,ACTIVE
+217,"Healthcare, Health & Care",Diagnostic Imaging,Procedures & Treatments,ACTIVE
+218,"Healthcare, Health & Care",Diagnostic Imaging,Second Medical Opinion,ACTIVE
+219,"Healthcare, Health & Care",Diagnostic Imaging,Telemedicine,ACTIVE
+220,"Healthcare, Health & Care",Diagnostic Imaging,Children's Programs,ACTIVE
+221,"Healthcare, Health & Care",Diagnostic Imaging,Corporate Health Programs,ACTIVE
+222,"Healthcare, Health & Care",Diagnostic Imaging,Rehabilitation,ACTIVE
+223,"Healthcare, Health & Care",Medical Laboratories,Initial Consultation,ACTIVE
+224,"Healthcare, Health & Care",Medical Laboratories,Preventive Checkup,ACTIVE
+225,"Healthcare, Health & Care",Medical Laboratories,Diagnostics,ACTIVE
+226,"Healthcare, Health & Care",Medical Laboratories,Outpatient Treatment,ACTIVE
+227,"Healthcare, Health & Care",Medical Laboratories,Procedures & Treatments,ACTIVE
+228,"Healthcare, Health & Care",Medical Laboratories,Second Medical Opinion,ACTIVE
+229,"Healthcare, Health & Care",Medical Laboratories,Telemedicine,ACTIVE
+230,"Healthcare, Health & Care",Medical Laboratories,Children's Programs,ACTIVE
+231,"Healthcare, Health & Care",Medical Laboratories,Corporate Health Programs,ACTIVE
+232,"Healthcare, Health & Care",Medical Laboratories,Rehabilitation,ACTIVE
+233,"Healthcare, Health & Care",Pediatrics,Initial Consultation,ACTIVE
+234,"Healthcare, Health & Care",Pediatrics,Preventive Checkup,ACTIVE
+235,"Healthcare, Health & Care",Pediatrics,Diagnostics,ACTIVE
+236,"Healthcare, Health & Care",Pediatrics,Outpatient Treatment,ACTIVE
+237,"Healthcare, Health & Care",Pediatrics,Procedures & Treatments,ACTIVE
+238,"Healthcare, Health & Care",Pediatrics,Second Medical Opinion,ACTIVE
+239,"Healthcare, Health & Care",Pediatrics,Telemedicine,ACTIVE
+240,"Healthcare, Health & Care",Pediatrics,Children's Programs,ACTIVE
+241,"Healthcare, Health & Care",Pediatrics,Corporate Health Programs,ACTIVE
+242,"Healthcare, Health & Care",Pediatrics,Rehabilitation,ACTIVE
+243,"Healthcare, Health & Care",Gynecology & Reproductive Health,Initial Consultation,ACTIVE
+244,"Healthcare, Health & Care",Gynecology & Reproductive Health,Preventive Checkup,ACTIVE
+245,"Healthcare, Health & Care",Gynecology & Reproductive Health,Diagnostics,ACTIVE
+246,"Healthcare, Health & Care",Gynecology & Reproductive Health,Outpatient Treatment,ACTIVE
+247,"Healthcare, Health & Care",Gynecology & Reproductive Health,Procedures & Treatments,ACTIVE
+248,"Healthcare, Health & Care",Gynecology & Reproductive Health,Second Medical Opinion,ACTIVE
+249,"Healthcare, Health & Care",Gynecology & Reproductive Health,Telemedicine,ACTIVE
+250,"Healthcare, Health & Care",Gynecology & Reproductive Health,Children's Programs,ACTIVE
+251,"Healthcare, Health & Care",Gynecology & Reproductive Health,Corporate Health Programs,ACTIVE
+252,"Healthcare, Health & Care",Gynecology & Reproductive Health,Rehabilitation,ACTIVE
+253,"Healthcare, Health & Care",Urology & Men's Health,Initial Consultation,ACTIVE
+254,"Healthcare, Health & Care",Urology & Men's Health,Preventive Checkup,ACTIVE
+255,"Healthcare, Health & Care",Urology & Men's Health,Diagnostics,ACTIVE
+256,"Healthcare, Health & Care",Urology & Men's Health,Outpatient Treatment,ACTIVE
+257,"Healthcare, Health & Care",Urology & Men's Health,Procedures & Treatments,ACTIVE
+258,"Healthcare, Health & Care",Urology & Men's Health,Second Medical Opinion,ACTIVE
+259,"Healthcare, Health & Care",Urology & Men's Health,Telemedicine,ACTIVE
+260,"Healthcare, Health & Care",Urology & Men's Health,Children's Programs,ACTIVE
+261,"Healthcare, Health & Care",Urology & Men's Health,Corporate Health Programs,ACTIVE
+262,"Healthcare, Health & Care",Urology & Men's Health,Rehabilitation,ACTIVE
+263,"Healthcare, Health & Care",Cardiology,Initial Consultation,ACTIVE
+264,"Healthcare, Health & Care",Cardiology,Preventive Checkup,ACTIVE
+265,"Healthcare, Health & Care",Cardiology,Diagnostics,ACTIVE
+266,"Healthcare, Health & Care",Cardiology,Outpatient Treatment,ACTIVE
+267,"Healthcare, Health & Care",Cardiology,Procedures & Treatments,ACTIVE
+268,"Healthcare, Health & Care",Cardiology,Second Medical Opinion,ACTIVE
+269,"Healthcare, Health & Care",Cardiology,Telemedicine,ACTIVE
+270,"Healthcare, Health & Care",Cardiology,Children's Programs,ACTIVE
+271,"Healthcare, Health & Care",Cardiology,Corporate Health Programs,ACTIVE
+272,"Healthcare, Health & Care",Cardiology,Rehabilitation,ACTIVE
+273,"Healthcare, Health & Care",Neurology,Initial Consultation,ACTIVE
+274,"Healthcare, Health & Care",Neurology,Preventive Checkup,ACTIVE
+275,"Healthcare, Health & Care",Neurology,Diagnostics,ACTIVE
+276,"Healthcare, Health & Care",Neurology,Outpatient Treatment,ACTIVE
+277,"Healthcare, Health & Care",Neurology,Procedures & Treatments,ACTIVE
+278,"Healthcare, Health & Care",Neurology,Second Medical Opinion,ACTIVE
+279,"Healthcare, Health & Care",Neurology,Telemedicine,ACTIVE
+280,"Healthcare, Health & Care",Neurology,Children's Programs,ACTIVE
+281,"Healthcare, Health & Care",Neurology,Corporate Health Programs,ACTIVE
+282,"Healthcare, Health & Care",Neurology,Rehabilitation,ACTIVE
+283,"Healthcare, Health & Care",Ophthalmology & Optical Services,Eye Exam,ACTIVE
+284,"Healthcare, Health & Care",Ophthalmology & Optical Services,Eyeglass Fitting,ACTIVE
+285,"Healthcare, Health & Care",Ophthalmology & Optical Services,Contact Lens Fitting,ACTIVE
+286,"Healthcare, Health & Care",Ophthalmology & Optical Services,Pediatric Ophthalmology,ACTIVE
+287,"Healthcare, Health & Care",Ophthalmology & Optical Services,Eye Disease Treatment,ACTIVE
+288,"Healthcare, Health & Care",Ophthalmology & Optical Services,Eye Surgery,ACTIVE
+289,"Healthcare, Health & Care",Ophthalmology & Optical Services,Laser Vision Correction,ACTIVE
+290,"Healthcare, Health & Care",Ophthalmology & Optical Services,Optical Store & Lens Sales,ACTIVE
+291,"Healthcare, Health & Care",Ophthalmology & Optical Services,Initial Consultation,ACTIVE
+292,"Healthcare, Health & Care",Ophthalmology & Optical Services,Preventive Checkup,ACTIVE
+293,"Healthcare, Health & Care",Orthopedics & Trauma Care,Initial Consultation,ACTIVE
+294,"Healthcare, Health & Care",Orthopedics & Trauma Care,Preventive Checkup,ACTIVE
+295,"Healthcare, Health & Care",Orthopedics & Trauma Care,Diagnostics,ACTIVE
+296,"Healthcare, Health & Care",Orthopedics & Trauma Care,Outpatient Treatment,ACTIVE
+297,"Healthcare, Health & Care",Orthopedics & Trauma Care,Procedures & Treatments,ACTIVE
+298,"Healthcare, Health & Care",Orthopedics & Trauma Care,Second Medical Opinion,ACTIVE
+299,"Healthcare, Health & Care",Orthopedics & Trauma Care,Telemedicine,ACTIVE
+300,"Healthcare, Health & Care",Orthopedics & Trauma Care,Children's Programs,ACTIVE
+301,"Healthcare, Health & Care",Orthopedics & Trauma Care,Corporate Health Programs,ACTIVE
+302,"Healthcare, Health & Care",Orthopedics & Trauma Care,Rehabilitation,ACTIVE
+303,"Healthcare, Health & Care",Dermatology,Initial Consultation,ACTIVE
+304,"Healthcare, Health & Care",Dermatology,Preventive Checkup,ACTIVE
+305,"Healthcare, Health & Care",Dermatology,Diagnostics,ACTIVE
+306,"Healthcare, Health & Care",Dermatology,Outpatient Treatment,ACTIVE
+307,"Healthcare, Health & Care",Dermatology,Procedures & Treatments,ACTIVE
+308,"Healthcare, Health & Care",Dermatology,Second Medical Opinion,ACTIVE
+309,"Healthcare, Health & Care",Dermatology,Telemedicine,ACTIVE
+310,"Healthcare, Health & Care",Dermatology,Children's Programs,ACTIVE
+311,"Healthcare, Health & Care",Dermatology,Corporate Health Programs,ACTIVE
+312,"Healthcare, Health & Care",Dermatology,Rehabilitation,ACTIVE
+313,"Healthcare, Health & Care",Mental Health & Psychotherapy,Individual Psychotherapy,ACTIVE
+314,"Healthcare, Health & Care",Mental Health & Psychotherapy,Family Therapy,ACTIVE
+315,"Healthcare, Health & Care",Mental Health & Psychotherapy,Couples Therapy,ACTIVE
+316,"Healthcare, Health & Care",Mental Health & Psychotherapy,Child Psychologist,ACTIVE
+317,"Healthcare, Health & Care",Mental Health & Psychotherapy,Adolescent Psychotherapy,ACTIVE
+318,"Healthcare, Health & Care",Mental Health & Psychotherapy,Psychiatric Consultation,ACTIVE
+319,"Healthcare, Health & Care",Mental Health & Psychotherapy,Anxiety Treatment,ACTIVE
+320,"Healthcare, Health & Care",Mental Health & Psychotherapy,Depression Treatment,ACTIVE
+321,"Healthcare, Health & Care",Mental Health & Psychotherapy,Trauma & PTSD,ACTIVE
+322,"Healthcare, Health & Care",Mental Health & Psychotherapy,Addiction Treatment,ACTIVE
+323,"Healthcare, Health & Care",Mental Health & Psychotherapy,Crisis Mental Health Support,ACTIVE
+324,"Healthcare, Health & Care",Mental Health & Psychotherapy,Online Psychotherapy,ACTIVE
+325,"Healthcare, Health & Care",Mental Health & Psychotherapy,Corporate Mental Health Programs,ACTIVE
+326,"Beauty, Fitness & Recovery",Beauty Salons,Individual Service,ACTIVE
+327,"Beauty, Fitness & Recovery",Beauty Salons,Comprehensive Program,ACTIVE
+328,"Beauty, Fitness & Recovery",Beauty Salons,Express Service,ACTIVE
+329,"Beauty, Fitness & Recovery",Beauty Salons,Personal Support,ACTIVE
+330,"Beauty, Fitness & Recovery",Beauty Salons,Group Classes,ACTIVE
+331,"Beauty, Fitness & Recovery",Beauty Salons,Services for Men,ACTIVE
+332,"Beauty, Fitness & Recovery",Beauty Salons,Services for Women,ACTIVE
+333,"Beauty, Fitness & Recovery",Beauty Salons,Children's Programs,ACTIVE
+334,"Beauty, Fitness & Recovery",Beauty Salons,On-Site Service,ACTIVE
+335,"Beauty, Fitness & Recovery",Beauty Salons,Online Format,ACTIVE
+336,"Beauty, Fitness & Recovery",Hair Salons,Individual Service,ACTIVE
+337,"Beauty, Fitness & Recovery",Hair Salons,Comprehensive Program,ACTIVE
+338,"Beauty, Fitness & Recovery",Hair Salons,Express Service,ACTIVE
+339,"Beauty, Fitness & Recovery",Hair Salons,Personal Support,ACTIVE
+340,"Beauty, Fitness & Recovery",Hair Salons,Group Classes,ACTIVE
+341,"Beauty, Fitness & Recovery",Hair Salons,Services for Men,ACTIVE
+342,"Beauty, Fitness & Recovery",Hair Salons,Services for Women,ACTIVE
+343,"Beauty, Fitness & Recovery",Hair Salons,Children's Programs,ACTIVE
+344,"Beauty, Fitness & Recovery",Hair Salons,On-Site Service,ACTIVE
+345,"Beauty, Fitness & Recovery",Hair Salons,Online Format,ACTIVE
+346,"Beauty, Fitness & Recovery",Barbershops,Individual Service,ACTIVE
+347,"Beauty, Fitness & Recovery",Barbershops,Comprehensive Program,ACTIVE
+348,"Beauty, Fitness & Recovery",Barbershops,Express Service,ACTIVE
+349,"Beauty, Fitness & Recovery",Barbershops,Personal Support,ACTIVE
+350,"Beauty, Fitness & Recovery",Barbershops,Group Classes,ACTIVE
+351,"Beauty, Fitness & Recovery",Barbershops,Services for Men,ACTIVE
+352,"Beauty, Fitness & Recovery",Barbershops,Services for Women,ACTIVE
+353,"Beauty, Fitness & Recovery",Barbershops,Children's Programs,ACTIVE
+354,"Beauty, Fitness & Recovery",Barbershops,On-Site Service,ACTIVE
+355,"Beauty, Fitness & Recovery",Barbershops,Online Format,ACTIVE
+356,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Facial Care,ACTIVE
+357,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Facial Cleansing,ACTIVE
+358,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Chemical Peels,ACTIVE
+359,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Injectable Aesthetics,ACTIVE
+360,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Device-Based Cosmetology,ACTIVE
+361,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Laser Treatments,ACTIVE
+362,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Dermal Fillers,ACTIVE
+363,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Skin Rejuvenation,ACTIVE
+364,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Acne Treatment,ACTIVE
+365,"Beauty, Fitness & Recovery",Cosmetology & Aesthetic Medicine,Individual Service,ACTIVE
+366,"Beauty, Fitness & Recovery",Manicure & Pedicure,Individual Service,ACTIVE
+367,"Beauty, Fitness & Recovery",Manicure & Pedicure,Comprehensive Program,ACTIVE
+368,"Beauty, Fitness & Recovery",Manicure & Pedicure,Express Service,ACTIVE
+369,"Beauty, Fitness & Recovery",Manicure & Pedicure,Personal Support,ACTIVE
+370,"Beauty, Fitness & Recovery",Manicure & Pedicure,Group Classes,ACTIVE
+371,"Beauty, Fitness & Recovery",Manicure & Pedicure,Services for Men,ACTIVE
+372,"Beauty, Fitness & Recovery",Manicure & Pedicure,Services for Women,ACTIVE
+373,"Beauty, Fitness & Recovery",Manicure & Pedicure,Children's Programs,ACTIVE
+374,"Beauty, Fitness & Recovery",Manicure & Pedicure,On-Site Service,ACTIVE
+375,"Beauty, Fitness & Recovery",Manicure & Pedicure,Online Format,ACTIVE
+376,"Beauty, Fitness & Recovery",Spa & Wellness,Individual Service,ACTIVE
+377,"Beauty, Fitness & Recovery",Spa & Wellness,Comprehensive Program,ACTIVE
+378,"Beauty, Fitness & Recovery",Spa & Wellness,Express Service,ACTIVE
+379,"Beauty, Fitness & Recovery",Spa & Wellness,Personal Support,ACTIVE
+380,"Beauty, Fitness & Recovery",Spa & Wellness,Group Classes,ACTIVE
+381,"Beauty, Fitness & Recovery",Spa & Wellness,Services for Men,ACTIVE
+382,"Beauty, Fitness & Recovery",Spa & Wellness,Services for Women,ACTIVE
+383,"Beauty, Fitness & Recovery",Spa & Wellness,Children's Programs,ACTIVE
+384,"Beauty, Fitness & Recovery",Spa & Wellness,On-Site Service,ACTIVE
+385,"Beauty, Fitness & Recovery",Spa & Wellness,Online Format,ACTIVE
+386,"Beauty, Fitness & Recovery",Massage,Individual Service,ACTIVE
+387,"Beauty, Fitness & Recovery",Massage,Comprehensive Program,ACTIVE
+388,"Beauty, Fitness & Recovery",Massage,Express Service,ACTIVE
+389,"Beauty, Fitness & Recovery",Massage,Personal Support,ACTIVE
+390,"Beauty, Fitness & Recovery",Massage,Group Classes,ACTIVE
+391,"Beauty, Fitness & Recovery",Massage,Services for Men,ACTIVE
+392,"Beauty, Fitness & Recovery",Massage,Services for Women,ACTIVE
+393,"Beauty, Fitness & Recovery",Massage,Children's Programs,ACTIVE
+394,"Beauty, Fitness & Recovery",Massage,On-Site Service,ACTIVE
+395,"Beauty, Fitness & Recovery",Massage,Online Format,ACTIVE
+396,"Beauty, Fitness & Recovery",Fitness Clubs,Gym,ACTIVE
+397,"Beauty, Fitness & Recovery",Fitness Clubs,Group Fitness,ACTIVE
+398,"Beauty, Fitness & Recovery",Fitness Clubs,Functional Training,ACTIVE
+399,"Beauty, Fitness & Recovery",Fitness Clubs,Strength Training,ACTIVE
+400,"Beauty, Fitness & Recovery",Fitness Clubs,Cardio Training,ACTIVE
+401,"Beauty, Fitness & Recovery",Fitness Clubs,Weight Loss,ACTIVE
+402,"Beauty, Fitness & Recovery",Fitness Clubs,Children's Fitness,ACTIVE
+403,"Beauty, Fitness & Recovery",Fitness Clubs,Corporate Fitness,ACTIVE
+404,"Beauty, Fitness & Recovery",Fitness Clubs,Online Training,ACTIVE
+405,"Beauty, Fitness & Recovery",Fitness Clubs,Individual Service,ACTIVE
+406,"Beauty, Fitness & Recovery",Personal Trainers,Individual Service,ACTIVE
+407,"Beauty, Fitness & Recovery",Personal Trainers,Comprehensive Program,ACTIVE
+408,"Beauty, Fitness & Recovery",Personal Trainers,Express Service,ACTIVE
+409,"Beauty, Fitness & Recovery",Personal Trainers,Personal Support,ACTIVE
+410,"Beauty, Fitness & Recovery",Personal Trainers,Group Classes,ACTIVE
+411,"Beauty, Fitness & Recovery",Personal Trainers,Services for Men,ACTIVE
+412,"Beauty, Fitness & Recovery",Personal Trainers,Services for Women,ACTIVE
+413,"Beauty, Fitness & Recovery",Personal Trainers,Children's Programs,ACTIVE
+414,"Beauty, Fitness & Recovery",Personal Trainers,On-Site Service,ACTIVE
+415,"Beauty, Fitness & Recovery",Personal Trainers,Online Format,ACTIVE
+416,"Beauty, Fitness & Recovery",Yoga & Pilates,Individual Service,ACTIVE
+417,"Beauty, Fitness & Recovery",Yoga & Pilates,Comprehensive Program,ACTIVE
+418,"Beauty, Fitness & Recovery",Yoga & Pilates,Express Service,ACTIVE
+419,"Beauty, Fitness & Recovery",Yoga & Pilates,Personal Support,ACTIVE
+420,"Beauty, Fitness & Recovery",Yoga & Pilates,Group Classes,ACTIVE
+421,"Beauty, Fitness & Recovery",Yoga & Pilates,Services for Men,ACTIVE
+422,"Beauty, Fitness & Recovery",Yoga & Pilates,Services for Women,ACTIVE
+423,"Beauty, Fitness & Recovery",Yoga & Pilates,Children's Programs,ACTIVE
+424,"Beauty, Fitness & Recovery",Yoga & Pilates,On-Site Service,ACTIVE
+425,"Beauty, Fitness & Recovery",Yoga & Pilates,Online Format,ACTIVE
+426,"Beauty, Fitness & Recovery",Dance Studios,Individual Service,ACTIVE
+427,"Beauty, Fitness & Recovery",Dance Studios,Comprehensive Program,ACTIVE
+428,"Beauty, Fitness & Recovery",Dance Studios,Express Service,ACTIVE
+429,"Beauty, Fitness & Recovery",Dance Studios,Personal Support,ACTIVE
+430,"Beauty, Fitness & Recovery",Dance Studios,Group Classes,ACTIVE
+431,"Beauty, Fitness & Recovery",Dance Studios,Services for Men,ACTIVE
+432,"Beauty, Fitness & Recovery",Dance Studios,Services for Women,ACTIVE
+433,"Beauty, Fitness & Recovery",Dance Studios,Children's Programs,ACTIVE
+434,"Beauty, Fitness & Recovery",Dance Studios,On-Site Service,ACTIVE
+435,"Beauty, Fitness & Recovery",Dance Studios,Online Format,ACTIVE
+436,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Individual Service,ACTIVE
+437,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Comprehensive Program,ACTIVE
+438,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Express Service,ACTIVE
+439,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Personal Support,ACTIVE
+440,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Group Classes,ACTIVE
+441,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Services for Men,ACTIVE
+442,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Services for Women,ACTIVE
+443,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Children's Programs,ACTIVE
+444,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,On-Site Service,ACTIVE
+445,"Beauty, Fitness & Recovery",Rehabilitation & Physiotherapy,Online Format,ACTIVE
+446,"Real Estate, Construction & Home Services",Real Estate Agencies,Residential Property Sales,ACTIVE
+447,"Real Estate, Construction & Home Services",Real Estate Agencies,Residential Property Purchase,ACTIVE
+448,"Real Estate, Construction & Home Services",Real Estate Agencies,Residential Rentals,ACTIVE
+449,"Real Estate, Construction & Home Services",Real Estate Agencies,Commercial Real Estate,ACTIVE
+450,"Real Estate, Construction & Home Services",Real Estate Agencies,New Developments,ACTIVE
+451,"Real Estate, Construction & Home Services",Real Estate Agencies,Country Properties,ACTIVE
+452,"Real Estate, Construction & Home Services",Real Estate Agencies,Land Plots,ACTIVE
+453,"Real Estate, Construction & Home Services",Real Estate Agencies,Investment Property,ACTIVE
+454,"Real Estate, Construction & Home Services",Real Estate Agencies,International Real Estate,ACTIVE
+455,"Real Estate, Construction & Home Services",Real Estate Agencies,Luxury Real Estate,ACTIVE
+456,"Real Estate, Construction & Home Services",Property Management,Consultation & Assessment,ACTIVE
+457,"Real Estate, Construction & Home Services",Property Management,Design & Planning,ACTIVE
+458,"Real Estate, Construction & Home Services",Property Management,Installation,ACTIVE
+459,"Real Estate, Construction & Home Services",Property Management,Repair,ACTIVE
+460,"Real Estate, Construction & Home Services",Property Management,Reconstruction,ACTIVE
+461,"Real Estate, Construction & Home Services",Property Management,Maintenance,ACTIVE
+462,"Real Estate, Construction & Home Services",Property Management,Emergency Call-Out,ACTIVE
+463,"Real Estate, Construction & Home Services",Property Management,Turnkey Services,ACTIVE
+464,"Real Estate, Construction & Home Services",Property Management,Residential Properties,ACTIVE
+465,"Real Estate, Construction & Home Services",Property Management,Commercial Properties,ACTIVE
+466,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Consultation & Assessment,ACTIVE
+467,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Design & Planning,ACTIVE
+468,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Installation,ACTIVE
+469,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Repair,ACTIVE
+470,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Reconstruction,ACTIVE
+471,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Maintenance,ACTIVE
+472,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Emergency Call-Out,ACTIVE
+473,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Turnkey Services,ACTIVE
+474,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Residential Properties,ACTIVE
+475,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Commercial Properties,ACTIVE
+476,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Industrial Properties,ACTIVE
+477,"Real Estate, Construction & Home Services",Real Estate Development & Investment Projects,Design or Technical Supervision,ACTIVE
+478,"Real Estate, Construction & Home Services",General Contractors,Consultation & Assessment,ACTIVE
+479,"Real Estate, Construction & Home Services",General Contractors,Design & Planning,ACTIVE
+480,"Real Estate, Construction & Home Services",General Contractors,Installation,ACTIVE
+481,"Real Estate, Construction & Home Services",General Contractors,Repair,ACTIVE
+482,"Real Estate, Construction & Home Services",General Contractors,Reconstruction,ACTIVE
+483,"Real Estate, Construction & Home Services",General Contractors,Maintenance,ACTIVE
+484,"Real Estate, Construction & Home Services",General Contractors,Emergency Call-Out,ACTIVE
+485,"Real Estate, Construction & Home Services",General Contractors,Turnkey Services,ACTIVE
+486,"Real Estate, Construction & Home Services",General Contractors,Residential Properties,ACTIVE
+487,"Real Estate, Construction & Home Services",General Contractors,Commercial Properties,ACTIVE
+488,"Real Estate, Construction & Home Services",Architecture & Design,Consultation & Assessment,ACTIVE
+489,"Real Estate, Construction & Home Services",Architecture & Design,Design & Planning,ACTIVE
+490,"Real Estate, Construction & Home Services",Architecture & Design,Installation,ACTIVE
+491,"Real Estate, Construction & Home Services",Architecture & Design,Repair,ACTIVE
+492,"Real Estate, Construction & Home Services",Architecture & Design,Reconstruction,ACTIVE
+493,"Real Estate, Construction & Home Services",Architecture & Design,Maintenance,ACTIVE
+494,"Real Estate, Construction & Home Services",Architecture & Design,Emergency Call-Out,ACTIVE
+495,"Real Estate, Construction & Home Services",Architecture & Design,Turnkey Services,ACTIVE
+496,"Real Estate, Construction & Home Services",Architecture & Design,Residential Properties,ACTIVE
+497,"Real Estate, Construction & Home Services",Architecture & Design,Commercial Properties,ACTIVE
+498,"Real Estate, Construction & Home Services",Interior Design,Brand Identity,ACTIVE
+499,"Real Estate, Construction & Home Services",Interior Design,Logo,ACTIVE
+500,"Real Estate, Construction & Home Services",Interior Design,Brand Guidelines,ACTIVE
+501,"Real Estate, Construction & Home Services",Interior Design,Graphic Design,ACTIVE
+502,"Real Estate, Construction & Home Services",Interior Design,Web Design,ACTIVE
+503,"Real Estate, Construction & Home Services",Interior Design,Packaging Design,ACTIVE
+504,"Real Estate, Construction & Home Services",Interior Design,Marketing Materials,ACTIVE
+505,"Real Estate, Construction & Home Services",Interior Design,Presentations,ACTIVE
+506,"Real Estate, Construction & Home Services",Interior Design,UX/UI Design,ACTIVE
+507,"Real Estate, Construction & Home Services",Interior Design,Consultation & Assessment,ACTIVE
+508,"Real Estate, Construction & Home Services",Renovation & Finishing,Consultation & Assessment,ACTIVE
+509,"Real Estate, Construction & Home Services",Renovation & Finishing,Design & Planning,ACTIVE
+510,"Real Estate, Construction & Home Services",Renovation & Finishing,Installation,ACTIVE
+511,"Real Estate, Construction & Home Services",Renovation & Finishing,Repair,ACTIVE
+512,"Real Estate, Construction & Home Services",Renovation & Finishing,Reconstruction,ACTIVE
+513,"Real Estate, Construction & Home Services",Renovation & Finishing,Maintenance,ACTIVE
+514,"Real Estate, Construction & Home Services",Renovation & Finishing,Emergency Call-Out,ACTIVE
+515,"Real Estate, Construction & Home Services",Renovation & Finishing,Turnkey Services,ACTIVE
+516,"Real Estate, Construction & Home Services",Renovation & Finishing,Residential Properties,ACTIVE
+517,"Real Estate, Construction & Home Services",Renovation & Finishing,Commercial Properties,ACTIVE
+518,"Real Estate, Construction & Home Services",Electricians,Electrical Wiring Installation,ACTIVE
+519,"Real Estate, Construction & Home Services",Electricians,Electrical Wiring Repair,ACTIVE
+520,"Real Estate, Construction & Home Services",Electricians,Electrical Panels,ACTIVE
+521,"Real Estate, Construction & Home Services",Electricians,Lighting,ACTIVE
+522,"Real Estate, Construction & Home Services",Electricians,Emergency Electrician,ACTIVE
+523,"Real Estate, Construction & Home Services",Electricians,Commercial Properties,ACTIVE
+524,"Real Estate, Construction & Home Services",Electricians,Industrial Electrical Installation,ACTIVE
+525,"Real Estate, Construction & Home Services",Electricians,EV Charging Stations,ACTIVE
+526,"Real Estate, Construction & Home Services",Electricians,Smart Home,ACTIVE
+527,"Real Estate, Construction & Home Services",Electricians,Consultation & Assessment,ACTIVE
+528,"Real Estate, Construction & Home Services",Plumbers,Leak Repair,ACTIVE
+529,"Real Estate, Construction & Home Services",Plumbers,Pipe Installation,ACTIVE
+530,"Real Estate, Construction & Home Services",Plumbers,Sewer Repair,ACTIVE
+531,"Real Estate, Construction & Home Services",Plumbers,Drain Cleaning,ACTIVE
+532,"Real Estate, Construction & Home Services",Plumbers,Plumbing Fixture Installation,ACTIVE
+533,"Real Estate, Construction & Home Services",Plumbers,Water Heaters,ACTIVE
+534,"Real Estate, Construction & Home Services",Plumbers,Emergency Plumber,ACTIVE
+535,"Real Estate, Construction & Home Services",Plumbers,Commercial Plumbing,ACTIVE
+536,"Real Estate, Construction & Home Services",Plumbers,Leak detection,ACTIVE
+537,"Real Estate, Construction & Home Services",Plumbers,Consultation & Assessment,ACTIVE
+538,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Air Conditioning Installation,ACTIVE
+539,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Air Conditioning Repair,ACTIVE
+540,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Heating Installation,ACTIVE
+541,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Heating Repair,ACTIVE
+542,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Ventilation,ACTIVE
+543,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Heat Pumps,ACTIVE
+544,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",HVAC Maintenance,ACTIVE
+545,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Commercial HVAC Systems,ACTIVE
+546,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Emergency HVAC,ACTIVE
+547,"Real Estate, Construction & Home Services","HVAC: Heating, Ventilation & Air Conditioning",Consultation & Assessment,ACTIVE
+548,"Real Estate, Construction & Home Services",Roofing,Consultation & Assessment,ACTIVE
+549,"Real Estate, Construction & Home Services",Roofing,Design & Planning,ACTIVE
+550,"Real Estate, Construction & Home Services",Roofing,Installation,ACTIVE
+551,"Real Estate, Construction & Home Services",Roofing,Repair,ACTIVE
+552,"Real Estate, Construction & Home Services",Roofing,Reconstruction,ACTIVE
+553,"Real Estate, Construction & Home Services",Roofing,Maintenance,ACTIVE
+554,"Real Estate, Construction & Home Services",Roofing,Emergency Call-Out,ACTIVE
+555,"Real Estate, Construction & Home Services",Roofing,Turnkey Services,ACTIVE
+556,"Real Estate, Construction & Home Services",Roofing,Residential Properties,ACTIVE
+557,"Real Estate, Construction & Home Services",Roofing,Commercial Properties,ACTIVE
+558,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Consultation & Assessment,ACTIVE
+559,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Design & Planning,ACTIVE
+560,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Installation,ACTIVE
+561,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Repair,ACTIVE
+562,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Reconstruction,ACTIVE
+563,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Maintenance,ACTIVE
+564,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Emergency Call-Out,ACTIVE
+565,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Turnkey Services,ACTIVE
+566,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Residential Properties,ACTIVE
+567,"Real Estate, Construction & Home Services","Windows, Doors & Glass",Commercial Properties,ACTIVE
+568,"Real Estate, Construction & Home Services",Joinery & Carpentry,Consultation & Assessment,ACTIVE
+569,"Real Estate, Construction & Home Services",Joinery & Carpentry,Design & Planning,ACTIVE
+570,"Real Estate, Construction & Home Services",Joinery & Carpentry,Installation,ACTIVE
+571,"Real Estate, Construction & Home Services",Joinery & Carpentry,Repair,ACTIVE
+572,"Real Estate, Construction & Home Services",Joinery & Carpentry,Reconstruction,ACTIVE
+573,"Real Estate, Construction & Home Services",Joinery & Carpentry,Maintenance,ACTIVE
+574,"Real Estate, Construction & Home Services",Joinery & Carpentry,Emergency Call-Out,ACTIVE
+575,"Real Estate, Construction & Home Services",Joinery & Carpentry,Turnkey Services,ACTIVE
+576,"Real Estate, Construction & Home Services",Joinery & Carpentry,Residential Properties,ACTIVE
+577,"Real Estate, Construction & Home Services",Joinery & Carpentry,Commercial Properties,ACTIVE
+578,"Real Estate, Construction & Home Services",Cleaning Services,House Cleaning,ACTIVE
+579,"Real Estate, Construction & Home Services",Cleaning Services,Apartment Cleaning,ACTIVE
+580,"Real Estate, Construction & Home Services",Cleaning Services,Commercial Cleaning,ACTIVE
+581,"Real Estate, Construction & Home Services",Cleaning Services,Post-Construction Cleaning,ACTIVE
+582,"Real Estate, Construction & Home Services",Cleaning Services,Office Cleaning,ACTIVE
+583,"Real Estate, Construction & Home Services",Cleaning Services,Window Cleaning,ACTIVE
+584,"Real Estate, Construction & Home Services",Cleaning Services,Upholstery Cleaning,ACTIVE
+585,"Real Estate, Construction & Home Services",Cleaning Services,Carpet Cleaning,ACTIVE
+586,"Real Estate, Construction & Home Services",Cleaning Services,Airbnb Cleaning,ACTIVE
+587,"Real Estate, Construction & Home Services",Cleaning Services,Move-In / Move-Out Cleaning,ACTIVE
+588,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Consultation & Assessment,ACTIVE
+589,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Design & Planning,ACTIVE
+590,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Installation,ACTIVE
+591,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Repair,ACTIVE
+592,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Reconstruction,ACTIVE
+593,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Maintenance,ACTIVE
+594,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Emergency Call-Out,ACTIVE
+595,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Turnkey Services,ACTIVE
+596,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Residential Properties,ACTIVE
+597,"Real Estate, Construction & Home Services",Landscaping & Grounds Maintenance,Commercial Properties,ACTIVE
+598,"Automotive, Transportation & Logistics",General Auto Repair Shops,Scheduled Maintenance,ACTIVE
+599,"Automotive, Transportation & Logistics",General Auto Repair Shops,Brake System Repair,ACTIVE
+600,"Automotive, Transportation & Logistics",General Auto Repair Shops,Suspension Repair,ACTIVE
+601,"Automotive, Transportation & Logistics",General Auto Repair Shops,Steering Repair,ACTIVE
+602,"Automotive, Transportation & Logistics",General Auto Repair Shops,Exhaust System Repair,ACTIVE
+603,"Automotive, Transportation & Logistics",General Auto Repair Shops,Air Conditioning Service,ACTIVE
+604,"Automotive, Transportation & Logistics",General Auto Repair Shops,Computer Diagnostics,ACTIVE
+605,"Automotive, Transportation & Logistics",General Auto Repair Shops,Pre-Purchase Vehicle Inspection,ACTIVE
+606,"Automotive, Transportation & Logistics",General Auto Repair Shops,Commercial Vehicle Service,ACTIVE
+607,"Automotive, Transportation & Logistics",General Auto Repair Shops,Mobile Mechanic,ACTIVE
+608,"Automotive, Transportation & Logistics",General Auto Repair Shops,State / safety inspection,ACTIVE
+609,"Automotive, Transportation & Logistics",General Auto Repair Shops,European Vehicle Service,ACTIVE
+610,"Automotive, Transportation & Logistics",General Auto Repair Shops,American Vehicle Service,ACTIVE
+611,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Gasoline Engine Repair,ACTIVE
+612,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Diesel Engine Repair,ACTIVE
+613,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Engine Rebuild,ACTIVE
+614,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Automatic Transmission Repair,ACTIVE
+615,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Manual Transmission Repair,ACTIVE
+616,"Automotive, Transportation & Logistics",Engine & Transmission Repair,CVT Repair,ACTIVE
+617,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Transfer Case Repair,ACTIVE
+618,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Differential Repair,ACTIVE
+619,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Engine Diagnostics,ACTIVE
+620,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Transmission Diagnostics,ACTIVE
+621,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Engine Replacement,ACTIVE
+622,"Automotive, Transportation & Logistics",Engine & Transmission Repair,Transmission Replacement,ACTIVE
+623,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Collision Repair,ACTIVE
+624,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Auto Painting,ACTIVE
+625,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Bumper Repair,ACTIVE
+626,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Paintless Dent Repair,ACTIVE
+627,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Frame & Structural Alignment Repair,ACTIVE
+628,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Auto Glass Replacement,ACTIVE
+629,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Hail Damage Repair,ACTIVE
+630,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Insurance Repair,ACTIVE
+631,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Damage Assessment,ACTIVE
+632,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Classic Car Restoration,ACTIVE
+633,"Automotive, Transportation & Logistics",Auto Body Repair & Collision Centers,Truck Body Repair,ACTIVE
+634,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Diagnostics,ACTIVE
+635,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Scheduled Maintenance,ACTIVE
+636,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Repair,ACTIVE
+637,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Sales,ACTIVE
+638,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Rental,ACTIVE
+639,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Emergency Assistance,ACTIVE
+640,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Corporate & Fleet Service,ACTIVE
+641,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Passenger Vehicles,ACTIVE
+642,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Commercial Vehicles,ACTIVE
+643,"Automotive, Transportation & Logistics",Tire Shops & Tire Service,Heavy-Duty Vehicles,ACTIVE
+644,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Diagnostics,ACTIVE
+645,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Scheduled Maintenance,ACTIVE
+646,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Repair,ACTIVE
+647,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Sales,ACTIVE
+648,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Rental,ACTIVE
+649,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Emergency Assistance,ACTIVE
+650,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Corporate & Fleet Service,ACTIVE
+651,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Passenger Vehicles,ACTIVE
+652,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Commercial Vehicles,ACTIVE
+653,"Automotive, Transportation & Logistics",Auto Electrical & Diagnostics,Heavy-Duty Vehicles,ACTIVE
+654,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Diagnostics,ACTIVE
+655,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Scheduled Maintenance,ACTIVE
+656,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Repair,ACTIVE
+657,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Sales,ACTIVE
+658,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Rental,ACTIVE
+659,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Emergency Assistance,ACTIVE
+660,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Corporate & Fleet Service,ACTIVE
+661,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Passenger Vehicles,ACTIVE
+662,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Commercial Vehicles,ACTIVE
+663,"Automotive, Transportation & Logistics",Oil Change & Quick Service,Heavy-Duty Vehicles,ACTIVE
+664,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Truck repair,ACTIVE
+665,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Diesel engine repair,ACTIVE
+666,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Semi-Truck Repair,ACTIVE
+667,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Trailer Repair,ACTIVE
+668,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Mobile truck repair,ACTIVE
+669,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Roadside truck assistance,ACTIVE
+670,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Truck Brake Repair,ACTIVE
+671,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Truck Transmission Repair,ACTIVE
+672,"Automotive, Transportation & Logistics",Truck & Diesel Repair,DOT inspection,ACTIVE
+673,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Fleet maintenance,ACTIVE
+674,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Reefer Unit Repair,ACTIVE
+675,"Automotive, Transportation & Logistics",Truck & Diesel Repair,Heavy Equipment Repair,ACTIVE
+676,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Diagnostics,ACTIVE
+677,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Scheduled Maintenance,ACTIVE
+678,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Repair,ACTIVE
+679,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Sales,ACTIVE
+680,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Rental,ACTIVE
+681,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Emergency Assistance,ACTIVE
+682,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Corporate & Fleet Service,ACTIVE
+683,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Passenger Vehicles,ACTIVE
+684,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Commercial Vehicles,ACTIVE
+685,"Automotive, Transportation & Logistics",EV & Hybrid Repair,Heavy-Duty Vehicles,ACTIVE
+686,"Automotive, Transportation & Logistics",Car Wash & Detailing,Diagnostics,ACTIVE
+687,"Automotive, Transportation & Logistics",Car Wash & Detailing,Scheduled Maintenance,ACTIVE
+688,"Automotive, Transportation & Logistics",Car Wash & Detailing,Repair,ACTIVE
+689,"Automotive, Transportation & Logistics",Car Wash & Detailing,Sales,ACTIVE
+690,"Automotive, Transportation & Logistics",Car Wash & Detailing,Rental,ACTIVE
+691,"Automotive, Transportation & Logistics",Car Wash & Detailing,Emergency Assistance,ACTIVE
+692,"Automotive, Transportation & Logistics",Car Wash & Detailing,Corporate & Fleet Service,ACTIVE
+693,"Automotive, Transportation & Logistics",Car Wash & Detailing,Passenger Vehicles,ACTIVE
+694,"Automotive, Transportation & Logistics",Car Wash & Detailing,Commercial Vehicles,ACTIVE
+695,"Automotive, Transportation & Logistics",Car Wash & Detailing,Heavy-Duty Vehicles,ACTIVE
+696,"Automotive, Transportation & Logistics",Auto Dealerships,New Vehicles,ACTIVE
+697,"Automotive, Transportation & Logistics",Auto Dealerships,Used Vehicles,ACTIVE
+698,"Automotive, Transportation & Logistics",Auto Dealerships,Commercial Vehicles,ACTIVE
+699,"Automotive, Transportation & Logistics",Auto Dealerships,Trucks,ACTIVE
+700,"Automotive, Transportation & Logistics",Auto Dealerships,Electric Vehicles,ACTIVE
+701,"Automotive, Transportation & Logistics",Auto Dealerships,Trade-In,ACTIVE
+702,"Automotive, Transportation & Logistics",Auto Dealerships,Auction Vehicles,ACTIVE
+703,"Automotive, Transportation & Logistics",Auto Dealerships,Vehicle Import,ACTIVE
+704,"Automotive, Transportation & Logistics",Auto Dealerships,Vehicle Sourcing,ACTIVE
+705,"Automotive, Transportation & Logistics",Auto Dealerships,Auto Financing,ACTIVE
+706,"Automotive, Transportation & Logistics",Car Rental & Leasing,Diagnostics,ACTIVE
+707,"Automotive, Transportation & Logistics",Car Rental & Leasing,Scheduled Maintenance,ACTIVE
+708,"Automotive, Transportation & Logistics",Car Rental & Leasing,Repair,ACTIVE
+709,"Automotive, Transportation & Logistics",Car Rental & Leasing,Sales,ACTIVE
+710,"Automotive, Transportation & Logistics",Car Rental & Leasing,Rental,ACTIVE
+711,"Automotive, Transportation & Logistics",Car Rental & Leasing,Emergency Assistance,ACTIVE
+712,"Automotive, Transportation & Logistics",Car Rental & Leasing,Corporate & Fleet Service,ACTIVE
+713,"Automotive, Transportation & Logistics",Car Rental & Leasing,Passenger Vehicles,ACTIVE
+714,"Automotive, Transportation & Logistics",Car Rental & Leasing,Commercial Vehicles,ACTIVE
+715,"Automotive, Transportation & Logistics",Car Rental & Leasing,Heavy-Duty Vehicles,ACTIVE
+716,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Diagnostics,ACTIVE
+717,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Scheduled Maintenance,ACTIVE
+718,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Repair,ACTIVE
+719,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Sales,ACTIVE
+720,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Rental,ACTIVE
+721,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Emergency Assistance,ACTIVE
+722,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Corporate & Fleet Service,ACTIVE
+723,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Passenger Vehicles,ACTIVE
+724,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Commercial Vehicles,ACTIVE
+725,"Automotive, Transportation & Logistics",Towing & Roadside Assistance,Heavy-Duty Vehicles,ACTIVE
+726,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,FTL Freight,ACTIVE
+727,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,LTL Freight,ACTIVE
+728,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Dry van,ACTIVE
+729,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Reefer Freight,ACTIVE
+730,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Flatbed Freight,ACTIVE
+731,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Container Shipping,ACTIVE
+732,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Vehicle Transport,ACTIVE
+733,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Oversized Loads,ACTIVE
+734,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Hazardous Materials Transport,ACTIVE
+735,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,International Freight,ACTIVE
+736,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Long-Haul Transportation,ACTIVE
+737,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Freight Forwarding,ACTIVE
+738,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Truck Dispatching,ACTIVE
+739,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Last-mile freight,ACTIVE
+740,"Automotive, Transportation & Logistics",Freight Transportation & Trucking,Moving & Household Goods,ACTIVE
+741,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Diagnostics,ACTIVE
+742,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Scheduled Maintenance,ACTIVE
+743,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Repair,ACTIVE
+744,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Sales,ACTIVE
+745,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Rental,ACTIVE
+746,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Emergency Assistance,ACTIVE
+747,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Corporate & Fleet Service,ACTIVE
+748,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Passenger Vehicles,ACTIVE
+749,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Commercial Vehicles,ACTIVE
+750,"Automotive, Transportation & Logistics",Courier & Last-Mile Delivery,Heavy-Duty Vehicles,ACTIVE
+751,Business & Professional Services,Business Consulting,Consultation,ACTIVE
+752,Business & Professional Services,Business Consulting,Current-State Audit,ACTIVE
+753,Business & Professional Services,Business Consulting,Strategy Development,ACTIVE
+754,Business & Professional Services,Business Consulting,Business Plan Preparation,ACTIVE
+755,Business & Professional Services,Business Consulting,Project Launch,ACTIVE
+756,Business & Professional Services,Business Consulting,Operational Support,ACTIVE
+757,Business & Professional Services,Business Consulting,Team Training,ACTIVE
+758,Business & Professional Services,Business Consulting,Solution Selection,ACTIVE
+759,Business & Professional Services,Business Consulting,Ongoing Support,ACTIVE
+760,Business & Professional Services,Business Consulting,Crisis Management,ACTIVE
+761,Business & Professional Services,Business Consulting,International Expansion,ACTIVE
+762,Business & Professional Services,Management & Strategy Consulting,Consultation,ACTIVE
+763,Business & Professional Services,Management & Strategy Consulting,Current-State Audit,ACTIVE
+764,Business & Professional Services,Management & Strategy Consulting,Strategy Development,ACTIVE
+765,Business & Professional Services,Management & Strategy Consulting,Business Plan Preparation,ACTIVE
+766,Business & Professional Services,Management & Strategy Consulting,Project Launch,ACTIVE
+767,Business & Professional Services,Management & Strategy Consulting,Operational Support,ACTIVE
+768,Business & Professional Services,Management & Strategy Consulting,Team Training,ACTIVE
+769,Business & Professional Services,Management & Strategy Consulting,Solution Selection,ACTIVE
+770,Business & Professional Services,Management & Strategy Consulting,Ongoing Support,ACTIVE
+771,Business & Professional Services,Management & Strategy Consulting,Crisis Management,ACTIVE
+772,Business & Professional Services,Management & Strategy Consulting,International Expansion,ACTIVE
+773,Business & Professional Services,Franchises & Franchising,Franchise Directory,ACTIVE
+774,Business & Professional Services,Franchises & Franchising,Franchise Development,ACTIVE
+775,Business & Professional Services,Franchises & Franchising,Franchise Packaging,ACTIVE
+776,Business & Professional Services,Franchises & Franchising,Franchise Sales,ACTIVE
+777,Business & Professional Services,Franchises & Franchising,Franchise Acquisition,ACTIVE
+778,Business & Professional Services,Franchises & Franchising,Franchise Consulting,ACTIVE
+779,Business & Professional Services,Franchises & Franchising,Franchise Legal Support,ACTIVE
+780,Business & Professional Services,Franchises & Franchising,Franchise Financial Model,ACTIVE
+781,Business & Professional Services,Franchises & Franchising,Franchise Network Marketing,ACTIVE
+782,Business & Professional Services,Franchises & Franchising,Franchisee Recruitment,ACTIVE
+783,Business & Professional Services,Franchises & Franchising,Franchise Audit,ACTIVE
+784,Business & Professional Services,Franchises & Franchising,International Franchising,ACTIVE
+785,Business & Professional Services,Franchises & Franchising,Master Franchise,ACTIVE
+786,Business & Professional Services,Franchises & Franchising,Franchisee Training,ACTIVE
+787,Business & Professional Services,Franchises & Franchising,Franchise Network Management,ACTIVE
+788,Business & Professional Services,Buying & Selling Businesses,Consultation,ACTIVE
+789,Business & Professional Services,Buying & Selling Businesses,Current-State Audit,ACTIVE
+790,Business & Professional Services,Buying & Selling Businesses,Strategy Development,ACTIVE
+791,Business & Professional Services,Buying & Selling Businesses,Business Plan Preparation,ACTIVE
+792,Business & Professional Services,Buying & Selling Businesses,Project Launch,ACTIVE
+793,Business & Professional Services,Buying & Selling Businesses,Operational Support,ACTIVE
+794,Business & Professional Services,Buying & Selling Businesses,Team Training,ACTIVE
+795,Business & Professional Services,Buying & Selling Businesses,Solution Selection,ACTIVE
+796,Business & Professional Services,Buying & Selling Businesses,Ongoing Support,ACTIVE
+797,Business & Professional Services,Buying & Selling Businesses,Crisis Management,ACTIVE
+798,Business & Professional Services,Investment & Financial Projects,Consultation,ACTIVE
+799,Business & Professional Services,Investment & Financial Projects,Current-State Audit,ACTIVE
+800,Business & Professional Services,Investment & Financial Projects,Strategy Development,ACTIVE
+801,Business & Professional Services,Investment & Financial Projects,Business Plan Preparation,ACTIVE
+802,Business & Professional Services,Investment & Financial Projects,Project Launch,ACTIVE
+803,Business & Professional Services,Investment & Financial Projects,Operational Support,ACTIVE
+804,Business & Professional Services,Investment & Financial Projects,Team Training,ACTIVE
+805,Business & Professional Services,Investment & Financial Projects,Solution Selection,ACTIVE
+806,Business & Professional Services,Investment & Financial Projects,Ongoing Support,ACTIVE
+807,Business & Professional Services,Investment & Financial Projects,Crisis Management,ACTIVE
+808,Business & Professional Services,Investment & Financial Projects,International Expansion,ACTIVE
+809,Business & Professional Services,HR & Recruitment,Consultation,ACTIVE
+810,Business & Professional Services,HR & Recruitment,Current-State Audit,ACTIVE
+811,Business & Professional Services,HR & Recruitment,Strategy Development,ACTIVE
+812,Business & Professional Services,HR & Recruitment,Business Plan Preparation,ACTIVE
+813,Business & Professional Services,HR & Recruitment,Project Launch,ACTIVE
+814,Business & Professional Services,HR & Recruitment,Operational Support,ACTIVE
+815,Business & Professional Services,HR & Recruitment,Team Training,ACTIVE
+816,Business & Professional Services,HR & Recruitment,Solution Selection,ACTIVE
+817,Business & Professional Services,HR & Recruitment,Ongoing Support,ACTIVE
+818,Business & Professional Services,HR & Recruitment,Crisis Management,ACTIVE
+819,Business & Professional Services,HR Administration & Payroll,Consultation,ACTIVE
+820,Business & Professional Services,HR Administration & Payroll,Current-State Audit,ACTIVE
+821,Business & Professional Services,HR Administration & Payroll,Strategy Development,ACTIVE
+822,Business & Professional Services,HR Administration & Payroll,Business Plan Preparation,ACTIVE
+823,Business & Professional Services,HR Administration & Payroll,Project Launch,ACTIVE
+824,Business & Professional Services,HR Administration & Payroll,Operational Support,ACTIVE
+825,Business & Professional Services,HR Administration & Payroll,Team Training,ACTIVE
+826,Business & Professional Services,HR Administration & Payroll,Solution Selection,ACTIVE
+827,Business & Professional Services,HR Administration & Payroll,Ongoing Support,ACTIVE
+828,Business & Professional Services,HR Administration & Payroll,Crisis Management,ACTIVE
+829,Business & Professional Services,Business Process Outsourcing,Consultation,ACTIVE
+830,Business & Professional Services,Business Process Outsourcing,Current-State Audit,ACTIVE
+831,Business & Professional Services,Business Process Outsourcing,Strategy Development,ACTIVE
+832,Business & Professional Services,Business Process Outsourcing,Business Plan Preparation,ACTIVE
+833,Business & Professional Services,Business Process Outsourcing,Project Launch,ACTIVE
+834,Business & Professional Services,Business Process Outsourcing,Operational Support,ACTIVE
+835,Business & Professional Services,Business Process Outsourcing,Team Training,ACTIVE
+836,Business & Professional Services,Business Process Outsourcing,Solution Selection,ACTIVE
+837,Business & Professional Services,Business Process Outsourcing,Ongoing Support,ACTIVE
+838,Business & Professional Services,Business Process Outsourcing,Crisis Management,ACTIVE
+839,Business & Professional Services,"Translation, Localization & Apostille",Written Translation,ACTIVE
+840,Business & Professional Services,"Translation, Localization & Apostille",Interpretation,ACTIVE
+841,Business & Professional Services,"Translation, Localization & Apostille",Simultaneous Interpretation,ACTIVE
+842,Business & Professional Services,"Translation, Localization & Apostille",Notarized Translation,ACTIVE
+843,Business & Professional Services,"Translation, Localization & Apostille",Sworn Translation,ACTIVE
+844,Business & Professional Services,"Translation, Localization & Apostille",Website & App Localization,ACTIVE
+845,Business & Professional Services,"Translation, Localization & Apostille",Legal Document Translation,ACTIVE
+846,Business & Professional Services,"Translation, Localization & Apostille",Medical Document Translation,ACTIVE
+847,Business & Professional Services,"Translation, Localization & Apostille",Apostille,ACTIVE
+848,Business & Professional Services,"Translation, Localization & Apostille",Document Legalization,ACTIVE
+849,Business & Professional Services,"Translation, Localization & Apostille",Consular Authentication,ACTIVE
+850,Business & Professional Services,"Translation, Localization & Apostille",Immigration Translation,ACTIVE
+851,Business & Professional Services,"Translation, Localization & Apostille",Subtitle Translation,ACTIVE
+852,Business & Professional Services,"Certification, Licensing & Compliance",Consultation,ACTIVE
+853,Business & Professional Services,"Certification, Licensing & Compliance",Current-State Audit,ACTIVE
+854,Business & Professional Services,"Certification, Licensing & Compliance",Strategy Development,ACTIVE
+855,Business & Professional Services,"Certification, Licensing & Compliance",Business Plan Preparation,ACTIVE
+856,Business & Professional Services,"Certification, Licensing & Compliance",Project Launch,ACTIVE
+857,Business & Professional Services,"Certification, Licensing & Compliance",Operational Support,ACTIVE
+858,Business & Professional Services,"Certification, Licensing & Compliance",Team Training,ACTIVE
+859,Business & Professional Services,"Certification, Licensing & Compliance",Solution Selection,ACTIVE
+860,Business & Professional Services,"Certification, Licensing & Compliance",Ongoing Support,ACTIVE
+861,Business & Professional Services,"Certification, Licensing & Compliance",Crisis Management,ACTIVE
+862,Business & Professional Services,Coworking & Virtual Offices,Consultation,ACTIVE
+863,Business & Professional Services,Coworking & Virtual Offices,Current-State Audit,ACTIVE
+864,Business & Professional Services,Coworking & Virtual Offices,Strategy Development,ACTIVE
+865,Business & Professional Services,Coworking & Virtual Offices,Business Plan Preparation,ACTIVE
+866,Business & Professional Services,Coworking & Virtual Offices,Project Launch,ACTIVE
+867,Business & Professional Services,Coworking & Virtual Offices,Operational Support,ACTIVE
+868,Business & Professional Services,Coworking & Virtual Offices,Team Training,ACTIVE
+869,Business & Professional Services,Coworking & Virtual Offices,Solution Selection,ACTIVE
+870,Business & Professional Services,Coworking & Virtual Offices,Ongoing Support,ACTIVE
+871,Business & Professional Services,Coworking & Virtual Offices,Crisis Management,ACTIVE
+872,Business & Professional Services,Customs Brokers & Foreign Trade Support,Consultation,ACTIVE
+873,Business & Professional Services,Customs Brokers & Foreign Trade Support,Current-State Audit,ACTIVE
+874,Business & Professional Services,Customs Brokers & Foreign Trade Support,Strategy Development,ACTIVE
+875,Business & Professional Services,Customs Brokers & Foreign Trade Support,Business Plan Preparation,ACTIVE
+876,Business & Professional Services,Customs Brokers & Foreign Trade Support,Project Launch,ACTIVE
+877,Business & Professional Services,Customs Brokers & Foreign Trade Support,Operational Support,ACTIVE
+878,Business & Professional Services,Customs Brokers & Foreign Trade Support,Team Training,ACTIVE
+879,Business & Professional Services,Customs Brokers & Foreign Trade Support,Solution Selection,ACTIVE
+880,Business & Professional Services,Customs Brokers & Foreign Trade Support,Ongoing Support,ACTIVE
+881,Business & Professional Services,Customs Brokers & Foreign Trade Support,Crisis Management,ACTIVE
+882,Business & Professional Services,Business Security,Consultation,ACTIVE
+883,Business & Professional Services,Business Security,Current-State Audit,ACTIVE
+884,Business & Professional Services,Business Security,Strategy Development,ACTIVE
+885,Business & Professional Services,Business Security,Business Plan Preparation,ACTIVE
+886,Business & Professional Services,Business Security,Project Launch,ACTIVE
+887,Business & Professional Services,Business Security,Operational Support,ACTIVE
+888,Business & Professional Services,Business Security,Team Training,ACTIVE
+889,Business & Professional Services,Business Security,Solution Selection,ACTIVE
+890,Business & Professional Services,Business Security,Ongoing Support,ACTIVE
+891,Business & Professional Services,Business Security,Crisis Management,ACTIVE
+892,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Custom Manufacturing,ACTIVE
+893,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Mass Production,ACTIVE
+894,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Wholesale Supply,ACTIVE
+895,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Retail Sales,ACTIVE
+896,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Contract Manufacturing,ACTIVE
+897,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Private label,ACTIVE
+898,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Export,ACTIVE
+899,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Import,ACTIVE
+900,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Project Procurement,ACTIVE
+901,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Maintenance,ACTIVE
+902,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Corporate Procurement,ACTIVE
+903,"Manufacturing, Trade & Agriculture",Manufacturing Companies,Custom Products,ACTIVE
+904,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Custom Manufacturing,ACTIVE
+905,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Mass Production,ACTIVE
+906,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Wholesale Supply,ACTIVE
+907,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Retail Sales,ACTIVE
+908,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Contract Manufacturing,ACTIVE
+909,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Private label,ACTIVE
+910,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Export,ACTIVE
+911,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Import,ACTIVE
+912,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Project Procurement,ACTIVE
+913,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Maintenance,ACTIVE
+914,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Corporate Procurement,ACTIVE
+915,"Manufacturing, Trade & Agriculture",Wholesale Trade & Distribution,Custom Products,ACTIVE
+916,"Manufacturing, Trade & Agriculture",Retail Stores,Custom Manufacturing,ACTIVE
+917,"Manufacturing, Trade & Agriculture",Retail Stores,Mass Production,ACTIVE
+918,"Manufacturing, Trade & Agriculture",Retail Stores,Wholesale Supply,ACTIVE
+919,"Manufacturing, Trade & Agriculture",Retail Stores,Retail Sales,ACTIVE
+920,"Manufacturing, Trade & Agriculture",Retail Stores,Contract Manufacturing,ACTIVE
+921,"Manufacturing, Trade & Agriculture",Retail Stores,Private label,ACTIVE
+922,"Manufacturing, Trade & Agriculture",Retail Stores,Export,ACTIVE
+923,"Manufacturing, Trade & Agriculture",Retail Stores,Import,ACTIVE
+924,"Manufacturing, Trade & Agriculture",Retail Stores,Project Procurement,ACTIVE
+925,"Manufacturing, Trade & Agriculture",Retail Stores,Maintenance,ACTIVE
+926,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Custom Manufacturing,ACTIVE
+927,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Mass Production,ACTIVE
+928,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Wholesale Supply,ACTIVE
+929,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Retail Sales,ACTIVE
+930,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Contract Manufacturing,ACTIVE
+931,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Private label,ACTIVE
+932,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Export,ACTIVE
+933,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Import,ACTIVE
+934,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Project Procurement,ACTIVE
+935,"Manufacturing, Trade & Agriculture",Online Stores & Marketplaces,Maintenance,ACTIVE
+936,"Manufacturing, Trade & Agriculture",Export & Import,Custom Manufacturing,ACTIVE
+937,"Manufacturing, Trade & Agriculture",Export & Import,Mass Production,ACTIVE
+938,"Manufacturing, Trade & Agriculture",Export & Import,Wholesale Supply,ACTIVE
+939,"Manufacturing, Trade & Agriculture",Export & Import,Retail Sales,ACTIVE
+940,"Manufacturing, Trade & Agriculture",Export & Import,Contract Manufacturing,ACTIVE
+941,"Manufacturing, Trade & Agriculture",Export & Import,Private label,ACTIVE
+942,"Manufacturing, Trade & Agriculture",Export & Import,Export,ACTIVE
+943,"Manufacturing, Trade & Agriculture",Export & Import,Import,ACTIVE
+944,"Manufacturing, Trade & Agriculture",Export & Import,Project Procurement,ACTIVE
+945,"Manufacturing, Trade & Agriculture",Export & Import,Maintenance,ACTIVE
+946,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Custom Manufacturing,ACTIVE
+947,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Mass Production,ACTIVE
+948,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Wholesale Supply,ACTIVE
+949,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Retail Sales,ACTIVE
+950,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Contract Manufacturing,ACTIVE
+951,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Private label,ACTIVE
+952,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Export,ACTIVE
+953,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Import,ACTIVE
+954,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Project Procurement,ACTIVE
+955,"Manufacturing, Trade & Agriculture",Equipment Suppliers,Maintenance,ACTIVE
+956,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Custom Manufacturing,ACTIVE
+957,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Mass Production,ACTIVE
+958,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Wholesale Supply,ACTIVE
+959,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Retail Sales,ACTIVE
+960,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Contract Manufacturing,ACTIVE
+961,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Private label,ACTIVE
+962,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Export,ACTIVE
+963,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Import,ACTIVE
+964,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Project Procurement,ACTIVE
+965,"Manufacturing, Trade & Agriculture",Industrial Repair & Maintenance,Maintenance,ACTIVE
+966,"Manufacturing, Trade & Agriculture",Food Manufacturing,Custom Manufacturing,ACTIVE
+967,"Manufacturing, Trade & Agriculture",Food Manufacturing,Mass Production,ACTIVE
+968,"Manufacturing, Trade & Agriculture",Food Manufacturing,Wholesale Supply,ACTIVE
+969,"Manufacturing, Trade & Agriculture",Food Manufacturing,Retail Sales,ACTIVE
+970,"Manufacturing, Trade & Agriculture",Food Manufacturing,Contract Manufacturing,ACTIVE
+971,"Manufacturing, Trade & Agriculture",Food Manufacturing,Private label,ACTIVE
+972,"Manufacturing, Trade & Agriculture",Food Manufacturing,Export,ACTIVE
+973,"Manufacturing, Trade & Agriculture",Food Manufacturing,Import,ACTIVE
+974,"Manufacturing, Trade & Agriculture",Food Manufacturing,Project Procurement,ACTIVE
+975,"Manufacturing, Trade & Agriculture",Food Manufacturing,Maintenance,ACTIVE
+976,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Custom Manufacturing,ACTIVE
+977,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Mass Production,ACTIVE
+978,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Wholesale Supply,ACTIVE
+979,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Retail Sales,ACTIVE
+980,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Contract Manufacturing,ACTIVE
+981,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Private label,ACTIVE
+982,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Export,ACTIVE
+983,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Import,ACTIVE
+984,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Project Procurement,ACTIVE
+985,"Manufacturing, Trade & Agriculture",Light Industry & Apparel,Maintenance,ACTIVE
+986,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Custom Manufacturing,ACTIVE
+987,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Mass Production,ACTIVE
+988,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Wholesale Supply,ACTIVE
+989,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Retail Sales,ACTIVE
+990,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Contract Manufacturing,ACTIVE
+991,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Private label,ACTIVE
+992,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Export,ACTIVE
+993,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Import,ACTIVE
+994,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Project Procurement,ACTIVE
+995,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Maintenance,ACTIVE
+996,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Corporate Procurement,ACTIVE
+997,"Manufacturing, Trade & Agriculture",Furniture Manufacturing,Custom Products,ACTIVE
+998,"Manufacturing, Trade & Agriculture",Building Materials,Custom Manufacturing,ACTIVE
+999,"Manufacturing, Trade & Agriculture",Building Materials,Mass Production,ACTIVE
+1000,"Manufacturing, Trade & Agriculture",Building Materials,Wholesale Supply,ACTIVE
+1001,"Manufacturing, Trade & Agriculture",Building Materials,Retail Sales,ACTIVE
+1002,"Manufacturing, Trade & Agriculture",Building Materials,Contract Manufacturing,ACTIVE
+1003,"Manufacturing, Trade & Agriculture",Building Materials,Private label,ACTIVE
+1004,"Manufacturing, Trade & Agriculture",Building Materials,Export,ACTIVE
+1005,"Manufacturing, Trade & Agriculture",Building Materials,Import,ACTIVE
+1006,"Manufacturing, Trade & Agriculture",Building Materials,Project Procurement,ACTIVE
+1007,"Manufacturing, Trade & Agriculture",Building Materials,Maintenance,ACTIVE
+1008,"Manufacturing, Trade & Agriculture",Printing & Packaging,Custom Manufacturing,ACTIVE
+1009,"Manufacturing, Trade & Agriculture",Printing & Packaging,Mass Production,ACTIVE
+1010,"Manufacturing, Trade & Agriculture",Printing & Packaging,Wholesale Supply,ACTIVE
+1011,"Manufacturing, Trade & Agriculture",Printing & Packaging,Retail Sales,ACTIVE
+1012,"Manufacturing, Trade & Agriculture",Printing & Packaging,Contract Manufacturing,ACTIVE
+1013,"Manufacturing, Trade & Agriculture",Printing & Packaging,Private label,ACTIVE
+1014,"Manufacturing, Trade & Agriculture",Printing & Packaging,Export,ACTIVE
+1015,"Manufacturing, Trade & Agriculture",Printing & Packaging,Import,ACTIVE
+1016,"Manufacturing, Trade & Agriculture",Printing & Packaging,Project Procurement,ACTIVE
+1017,"Manufacturing, Trade & Agriculture",Printing & Packaging,Maintenance,ACTIVE
+1018,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Custom Manufacturing,ACTIVE
+1019,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Mass Production,ACTIVE
+1020,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Wholesale Supply,ACTIVE
+1021,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Retail Sales,ACTIVE
+1022,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Contract Manufacturing,ACTIVE
+1023,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Private label,ACTIVE
+1024,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Export,ACTIVE
+1025,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Import,ACTIVE
+1026,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Project Procurement,ACTIVE
+1027,"Manufacturing, Trade & Agriculture",Agriculture & Agricultural Services,Maintenance,ACTIVE
+1028,"IT, Marketing, Design & Media",Website Development & E-Commerce,Corporate Websites,ACTIVE
+1029,"IT, Marketing, Design & Media",Website Development & E-Commerce,Online Stores,ACTIVE
+1030,"IT, Marketing, Design & Media",Website Development & E-Commerce,Landing Pages,ACTIVE
+1031,"IT, Marketing, Design & Media",Website Development & E-Commerce,Product & Service Catalogs,ACTIVE
+1032,"IT, Marketing, Design & Media",Website Development & E-Commerce,Marketplaces,ACTIVE
+1033,"IT, Marketing, Design & Media",Website Development & E-Commerce,Portals & User Accounts,ACTIVE
+1034,"IT, Marketing, Design & Media",Website Development & E-Commerce,Website Redesign,ACTIVE
+1035,"IT, Marketing, Design & Media",Website Development & E-Commerce,Frontend Development,ACTIVE
+1036,"IT, Marketing, Design & Media",Website Development & E-Commerce,Backend Development,ACTIVE
+1037,"IT, Marketing, Design & Media",Website Development & E-Commerce,CMS Development,ACTIVE
+1038,"IT, Marketing, Design & Media",Website Development & E-Commerce,Payment Gateway Integration,ACTIVE
+1039,"IT, Marketing, Design & Media",Website Development & E-Commerce,CRM & ERP Integration,ACTIVE
+1040,"IT, Marketing, Design & Media",Website Development & E-Commerce,Website Support,ACTIVE
+1041,"IT, Marketing, Design & Media",Website Development & E-Commerce,Performance Optimization,ACTIVE
+1042,"IT, Marketing, Design & Media",Website Development & E-Commerce,Multilingual Websites,ACTIVE
+1043,"IT, Marketing, Design & Media",Website Development & E-Commerce,Accessibility & ADA/WCAG,ACTIVE
+1044,"IT, Marketing, Design & Media",Software Development,Audit & Consultation,ACTIVE
+1045,"IT, Marketing, Design & Media",Software Development,Development from Scratch,ACTIVE
+1046,"IT, Marketing, Design & Media",Software Development,Enhancement & Modernization,ACTIVE
+1047,"IT, Marketing, Design & Media",Software Development,Integration,ACTIVE
+1048,"IT, Marketing, Design & Media",Software Development,Technical Support,ACTIVE
+1049,"IT, Marketing, Design & Media",Software Development,Outsourcing,ACTIVE
+1050,"IT, Marketing, Design & Media",Software Development,Implementation,ACTIVE
+1051,"IT, Marketing, Design & Media",Software Development,User Training,ACTIVE
+1052,"IT, Marketing, Design & Media",Software Development,Enterprise Solutions,ACTIVE
+1053,"IT, Marketing, Design & Media",Software Development,Mobile Solutions,ACTIVE
+1054,"IT, Marketing, Design & Media",Software Development,Cloud Solutions,ACTIVE
+1055,"IT, Marketing, Design & Media",Software Development,Analytics,ACTIVE
+1056,"IT, Marketing, Design & Media",Software Development,Information Security,ACTIVE
+1057,"IT, Marketing, Design & Media",Mobile Applications,Audit & Consultation,ACTIVE
+1058,"IT, Marketing, Design & Media",Mobile Applications,Development from Scratch,ACTIVE
+1059,"IT, Marketing, Design & Media",Mobile Applications,Enhancement & Modernization,ACTIVE
+1060,"IT, Marketing, Design & Media",Mobile Applications,Integration,ACTIVE
+1061,"IT, Marketing, Design & Media",Mobile Applications,Technical Support,ACTIVE
+1062,"IT, Marketing, Design & Media",Mobile Applications,Outsourcing,ACTIVE
+1063,"IT, Marketing, Design & Media",Mobile Applications,Implementation,ACTIVE
+1064,"IT, Marketing, Design & Media",Mobile Applications,User Training,ACTIVE
+1065,"IT, Marketing, Design & Media",Mobile Applications,Enterprise Solutions,ACTIVE
+1066,"IT, Marketing, Design & Media",Mobile Applications,Mobile Solutions,ACTIVE
+1067,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,AI Consulting,ACTIVE
+1068,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Chatbots,ACTIVE
+1069,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Voice Assistants,ACTIVE
+1070,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,AI Agents,ACTIVE
+1071,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Business Process Automation,ACTIVE
+1072,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,AI Document Processing,ACTIVE
+1073,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Analytics & Forecasting,ACTIVE
+1074,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Computer Vision,ACTIVE
+1075,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Speech Recognition,ACTIVE
+1076,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Content Generation,ACTIVE
+1077,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Recommendation Systems,ACTIVE
+1078,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,AI Integration with CRM,ACTIVE
+1079,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Customer Support Automation,ACTIVE
+1080,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,Corporate Knowledge Bases,ACTIVE
+1081,"IT, Marketing, Design & Media",Artificial Intelligence & Automation,AI Staff Training,ACTIVE
+1082,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Audit & Consultation,ACTIVE
+1083,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Development from Scratch,ACTIVE
+1084,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Enhancement & Modernization,ACTIVE
+1085,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Integration,ACTIVE
+1086,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Technical Support,ACTIVE
+1087,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Outsourcing,ACTIVE
+1088,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Implementation,ACTIVE
+1089,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,User Training,ACTIVE
+1090,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Enterprise Solutions,ACTIVE
+1091,"IT, Marketing, Design & Media",Cloud Infrastructure & DevOps,Mobile Solutions,ACTIVE
+1092,"IT, Marketing, Design & Media",Cybersecurity,Audit & Consultation,ACTIVE
+1093,"IT, Marketing, Design & Media",Cybersecurity,Development from Scratch,ACTIVE
+1094,"IT, Marketing, Design & Media",Cybersecurity,Enhancement & Modernization,ACTIVE
+1095,"IT, Marketing, Design & Media",Cybersecurity,Integration,ACTIVE
+1096,"IT, Marketing, Design & Media",Cybersecurity,Technical Support,ACTIVE
+1097,"IT, Marketing, Design & Media",Cybersecurity,Outsourcing,ACTIVE
+1098,"IT, Marketing, Design & Media",Cybersecurity,Implementation,ACTIVE
+1099,"IT, Marketing, Design & Media",Cybersecurity,User Training,ACTIVE
+1100,"IT, Marketing, Design & Media",Cybersecurity,Enterprise Solutions,ACTIVE
+1101,"IT, Marketing, Design & Media",Cybersecurity,Mobile Solutions,ACTIVE
+1102,"IT, Marketing, Design & Media",IT Support & Systems Administration,Audit & Consultation,ACTIVE
+1103,"IT, Marketing, Design & Media",IT Support & Systems Administration,Development from Scratch,ACTIVE
+1104,"IT, Marketing, Design & Media",IT Support & Systems Administration,Enhancement & Modernization,ACTIVE
+1105,"IT, Marketing, Design & Media",IT Support & Systems Administration,Integration,ACTIVE
+1106,"IT, Marketing, Design & Media",IT Support & Systems Administration,Technical Support,ACTIVE
+1107,"IT, Marketing, Design & Media",IT Support & Systems Administration,Outsourcing,ACTIVE
+1108,"IT, Marketing, Design & Media",IT Support & Systems Administration,Implementation,ACTIVE
+1109,"IT, Marketing, Design & Media",IT Support & Systems Administration,User Training,ACTIVE
+1110,"IT, Marketing, Design & Media",IT Support & Systems Administration,Enterprise Solutions,ACTIVE
+1111,"IT, Marketing, Design & Media",IT Support & Systems Administration,Mobile Solutions,ACTIVE
+1112,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Marketing Strategy,ACTIVE
+1113,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Lead Generation,ACTIVE
+1114,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Paid Search Advertising,ACTIVE
+1115,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Targeted Advertising,ACTIVE
+1116,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Email Marketing,ACTIVE
+1117,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Media Buying,ACTIVE
+1118,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Marketing Analytics,ACTIVE
+1119,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Marketing Automation,ACTIVE
+1120,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Local advertising,ACTIVE
+1121,"IT, Marketing, Design & Media",Digital Marketing & Advertising,Audit & Consultation,ACTIVE
+1122,"IT, Marketing, Design & Media",SEO & Local Marketing,SEO Audit,ACTIVE
+1123,"IT, Marketing, Design & Media",SEO & Local Marketing,Technical SEO,ACTIVE
+1124,"IT, Marketing, Design & Media",SEO & Local Marketing,Keyword Research,ACTIVE
+1125,"IT, Marketing, Design & Media",SEO & Local Marketing,On-Page Optimization,ACTIVE
+1126,"IT, Marketing, Design & Media",SEO & Local Marketing,Link Building,ACTIVE
+1127,"IT, Marketing, Design & Media",SEO & Local Marketing,Local SEO,ACTIVE
+1128,"IT, Marketing, Design & Media",SEO & Local Marketing,Google Business Profile,ACTIVE
+1129,"IT, Marketing, Design & Media",SEO & Local Marketing,E-Commerce SEO,ACTIVE
+1130,"IT, Marketing, Design & Media",SEO & Local Marketing,SEO Analytics,ACTIVE
+1131,"IT, Marketing, Design & Media",SEO & Local Marketing,Audit & Consultation,ACTIVE
+1132,"IT, Marketing, Design & Media",Social Media & Content,Social Media Strategy,ACTIVE
+1133,"IT, Marketing, Design & Media",Social Media & Content,Instagram,ACTIVE
+1134,"IT, Marketing, Design & Media",Social Media & Content,Facebook,ACTIVE
+1135,"IT, Marketing, Design & Media",Social Media & Content,TikTok,ACTIVE
+1136,"IT, Marketing, Design & Media",Social Media & Content,LinkedIn,ACTIVE
+1137,"IT, Marketing, Design & Media",Social Media & Content,YouTube,ACTIVE
+1138,"IT, Marketing, Design & Media",Social Media & Content,Content Creation,ACTIVE
+1139,"IT, Marketing, Design & Media",Social Media & Content,Community Management,ACTIVE
+1140,"IT, Marketing, Design & Media",Social Media & Content,Influencer Marketing,ACTIVE
+1141,"IT, Marketing, Design & Media",Social Media & Content,Social Media Analytics,ACTIVE
+1142,"IT, Marketing, Design & Media",Design & Branding,Brand Identity,ACTIVE
+1143,"IT, Marketing, Design & Media",Design & Branding,Logo,ACTIVE
+1144,"IT, Marketing, Design & Media",Design & Branding,Brand Guidelines,ACTIVE
+1145,"IT, Marketing, Design & Media",Design & Branding,Graphic Design,ACTIVE
+1146,"IT, Marketing, Design & Media",Design & Branding,Web Design,ACTIVE
+1147,"IT, Marketing, Design & Media",Design & Branding,Packaging Design,ACTIVE
+1148,"IT, Marketing, Design & Media",Design & Branding,Marketing Materials,ACTIVE
+1149,"IT, Marketing, Design & Media",Design & Branding,Presentations,ACTIVE
+1150,"IT, Marketing, Design & Media",Design & Branding,UX/UI Design,ACTIVE
+1151,"IT, Marketing, Design & Media",Design & Branding,Audit & Consultation,ACTIVE
+1152,"IT, Marketing, Design & Media","Photography, Video & Media Production",Audit & Consultation,ACTIVE
+1153,"IT, Marketing, Design & Media","Photography, Video & Media Production",Development from Scratch,ACTIVE
+1154,"IT, Marketing, Design & Media","Photography, Video & Media Production",Enhancement & Modernization,ACTIVE
+1155,"IT, Marketing, Design & Media","Photography, Video & Media Production",Integration,ACTIVE
+1156,"IT, Marketing, Design & Media","Photography, Video & Media Production",Technical Support,ACTIVE
+1157,"IT, Marketing, Design & Media","Photography, Video & Media Production",Outsourcing,ACTIVE
+1158,"IT, Marketing, Design & Media","Photography, Video & Media Production",Implementation,ACTIVE
+1159,"IT, Marketing, Design & Media","Photography, Video & Media Production",User Training,ACTIVE
+1160,"IT, Marketing, Design & Media","Photography, Video & Media Production",Enterprise Solutions,ACTIVE
+1161,"IT, Marketing, Design & Media","Photography, Video & Media Production",Mobile Solutions,ACTIVE
+1162,"Hospitality, Education & Personal Services",Hotels & Apartments,Hotels,ACTIVE
+1163,"Hospitality, Education & Personal Services",Hotels & Apartments,Aparthotels,ACTIVE
+1164,"Hospitality, Education & Personal Services",Hotels & Apartments,Hostels,ACTIVE
+1165,"Hospitality, Education & Personal Services",Hotels & Apartments,Guesthouses,ACTIVE
+1166,"Hospitality, Education & Personal Services",Hotels & Apartments,Short-Term Rentals,ACTIVE
+1167,"Hospitality, Education & Personal Services",Hotels & Apartments,Business Accommodation,ACTIVE
+1168,"Hospitality, Education & Personal Services",Hotels & Apartments,Family Accommodation,ACTIVE
+1169,"Hospitality, Education & Personal Services",Hotels & Apartments,Pet-Friendly Accommodation,ACTIVE
+1170,"Hospitality, Education & Personal Services",Hotels & Apartments,Conference Services,ACTIVE
+1171,"Hospitality, Education & Personal Services",Hotels & Apartments,Extended Stay,ACTIVE
+1172,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Air Travel Packages,ACTIVE
+1173,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Bus Tours,ACTIVE
+1174,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Beach Holidays,ACTIVE
+1175,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Ski Tours,ACTIVE
+1176,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Cruises,ACTIVE
+1177,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Business Travel,ACTIVE
+1178,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Family Tours,ACTIVE
+1179,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Custom Tours,ACTIVE
+1180,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Visa Support,ACTIVE
+1181,"Hospitality, Education & Personal Services",Travel Agencies & Tour Operators,Travel Insurance,ACTIVE
+1182,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",European Cuisine,ACTIVE
+1183,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Ukrainian Cuisine,ACTIVE
+1184,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Italian Cuisine,ACTIVE
+1185,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Asian Cuisine,ACTIVE
+1186,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",American Cuisine,ACTIVE
+1187,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Mediterranean Cuisine,ACTIVE
+1188,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Fast Casual,ACTIVE
+1189,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Family Restaurants,ACTIVE
+1190,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Banquets,ACTIVE
+1191,"Hospitality, Education & Personal Services","Restaurants, Cafes & Catering",Food Delivery,ACTIVE
+1192,"Hospitality, Education & Personal Services",Event & Wedding Planning,Individual Service,ACTIVE
+1193,"Hospitality, Education & Personal Services",Event & Wedding Planning,Family Services,ACTIVE
+1194,"Hospitality, Education & Personal Services",Event & Wedding Planning,Group Programs,ACTIVE
+1195,"Hospitality, Education & Personal Services",Event & Wedding Planning,Corporate Service,ACTIVE
+1196,"Hospitality, Education & Personal Services",Event & Wedding Planning,Premium Format,ACTIVE
+1197,"Hospitality, Education & Personal Services",Event & Wedding Planning,Budget Format,ACTIVE
+1198,"Hospitality, Education & Personal Services",Event & Wedding Planning,Online Booking,ACTIVE
+1199,"Hospitality, Education & Personal Services",Event & Wedding Planning,On-Site Service,ACTIVE
+1200,"Hospitality, Education & Personal Services",Event & Wedding Planning,Children's Services,ACTIVE
+1201,"Hospitality, Education & Personal Services",Event & Wedding Planning,Turnkey Organization,ACTIVE
+1202,"Hospitality, Education & Personal Services",Education Centers & Language Schools,English Language,ACTIVE
+1203,"Hospitality, Education & Personal Services",Education Centers & Language Schools,German Language,ACTIVE
+1204,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Italian Language,ACTIVE
+1205,"Hospitality, Education & Personal Services",Education Centers & Language Schools,French Language,ACTIVE
+1206,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Ukrainian Language,ACTIVE
+1207,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Romanian Language,ACTIVE
+1208,"Hospitality, Education & Personal Services",Education Centers & Language Schools,IELTS & TOEFL Preparation,ACTIVE
+1209,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Professional Courses,ACTIVE
+1210,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Computer Courses,ACTIVE
+1211,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Business Education,ACTIVE
+1212,"Hospitality, Education & Personal Services",Education Centers & Language Schools,School Readiness,ACTIVE
+1213,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Tutoring,ACTIVE
+1214,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Online Learning,ACTIVE
+1215,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Corporate Training,ACTIVE
+1216,"Hospitality, Education & Personal Services",Education Centers & Language Schools,Licensing & Exam Preparation,ACTIVE
+1217,"Hospitality, Education & Personal Services",Daycare & Childcare,Daycare,ACTIVE
+1218,"Hospitality, Education & Personal Services",Daycare & Childcare,Preschool,ACTIVE
+1219,"Hospitality, Education & Personal Services",Daycare & Childcare,Family Daycare,ACTIVE
+1220,"Hospitality, Education & Personal Services",Daycare & Childcare,After-School Care,ACTIVE
+1221,"Hospitality, Education & Personal Services",Daycare & Childcare,In-Home Nanny,ACTIVE
+1222,"Hospitality, Education & Personal Services",Daycare & Childcare,Babysitting,ACTIVE
+1223,"Hospitality, Education & Personal Services",Daycare & Childcare,Summer Camps,ACTIVE
+1224,"Hospitality, Education & Personal Services",Daycare & Childcare,Developmental Activities,ACTIVE
+1225,"Hospitality, Education & Personal Services",Daycare & Childcare,School Readiness,ACTIVE
+1226,"Hospitality, Education & Personal Services",Daycare & Childcare,Special Needs Childcare,ACTIVE
+1227,"Hospitality, Education & Personal Services",Daycare & Childcare,Bilingual Childcare Programs,ACTIVE
+1228,"Hospitality, Education & Personal Services",Daycare & Childcare,Hourly Childcare,ACTIVE
+1229,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Individual Service,ACTIVE
+1230,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Family Services,ACTIVE
+1231,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Group Programs,ACTIVE
+1232,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Corporate Service,ACTIVE
+1233,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Premium Format,ACTIVE
+1234,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Budget Format,ACTIVE
+1235,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Online Booking,ACTIVE
+1236,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,On-Site Service,ACTIVE
+1237,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Children's Services,ACTIVE
+1238,"Hospitality, Education & Personal Services",Appliance & Electronics Repair,Turnkey Organization,ACTIVE
+1239,"Hospitality, Education & Personal Services",Pet Services,Veterinary Clinics,ACTIVE
+1240,"Hospitality, Education & Personal Services",Pet Services,Pet Grooming,ACTIVE
+1241,"Hospitality, Education & Personal Services",Pet Services,Pet Boarding,ACTIVE
+1242,"Hospitality, Education & Personal Services",Pet Services,Dog Walking,ACTIVE
+1243,"Hospitality, Education & Personal Services",Pet Services,Pet Training,ACTIVE
+1244,"Hospitality, Education & Personal Services",Pet Services,Pet Stores,ACTIVE
+1245,"Hospitality, Education & Personal Services",Pet Services,Mobile Veterinarian,ACTIVE
+1246,"Hospitality, Education & Personal Services",Pet Services,Pet Sitting,ACTIVE
+1247,"Hospitality, Education & Personal Services",Pet Services,Dog Daycare,ACTIVE
+1248,"Hospitality, Education & Personal Services",Pet Services,Pet Transportation,ACTIVE
+1249,"Hospitality, Education & Personal Services",Pet Services,Individual Service,ACTIVE
+1250,"Hospitality, Education & Personal Services",Pet Services,Family Services,ACTIVE
+1251,"Hospitality, Education & Personal Services",Pet Services,Group Programs,ACTIVE
+1252,"Hospitality, Education & Personal Services",Pet Services,Corporate Service,ACTIVE

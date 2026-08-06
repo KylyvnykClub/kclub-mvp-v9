@@ -4,17 +4,17 @@ import { members } from "./members";
 
 export const legalAcceptances = pgTable("legal_acceptances", {
   ...baseColumns,
-  
+
   memberId: uuid("member_id")
     .notNull()
     .references(() => members.id, { onDelete: "cascade" }),
-    
+
   // The identifier of the document (e.g., 'terms-of-use', 'privacy-policy', 'arbitration')
   documentId: varchar("document_id", { length: 255 }).notNull(),
-  
+
   // The specific version accepted (FR-093)
   version: varchar("version", { length: 50 }).notNull(),
-  
+
   // The timestamp it was accepted (FR-097 requires this)
   acceptedAt: timestamp("accepted_at", { withTimezone: true })
     .notNull()

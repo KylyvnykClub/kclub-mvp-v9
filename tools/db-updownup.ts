@@ -45,7 +45,7 @@ async function run(file: string, label: string) {
       if (i % 2 === 1) {
         current += "$$" + parts[i] + "$$";
       } else {
-        const sub = parts[i].split(";");
+        const sub = parts[i]!.split(";");
         for (let j = 0; j < sub.length - 1; j++) {
           current += sub[j];
           if (current.trim()) statements.push(current);
@@ -56,14 +56,14 @@ async function run(file: string, label: string) {
     }
     if (current.trim()) statements.push(current);
   }
-  
+
   statements = statements
     .map((s) => s.trim())
     .filter((s) => {
       if (s.length === 0) return false;
-      const lines = s.split("\n").map(l => l.trim());
+      const lines = s.split("\n").map((l) => l.trim());
       // Keep if at least one line is not a comment or empty
-      return lines.some(l => l.length > 0 && !l.startsWith("--"));
+      return lines.some((l) => l.length > 0 && !l.startsWith("--"));
     });
   for (const stmt of statements) {
     await sql.query(stmt);
