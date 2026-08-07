@@ -40,6 +40,7 @@ Exit checks already verified locally: `check-plan.py --strict`, `check-docs.py
   dotenv `config()` in module body runs before the dynamic import but after
   hoisted static imports, so a static import would break plain `db:seed`.
 - Requires `pnpm db:seed:categories` run first (fails fast with hint).
+- **Fix:** Added bypass for dummy `STRIPE_SECRET_KEY` (skips gracefully instead of crashing) and updated `feature_flag` raw SQL insert to match actual schema column `name`.
 
 ### T-4.4 — i18n full sweep (`messages/*.json` + 21 TSX files)
 - New namespaces `catalogue`, `company`, `admin` (members/companies/categories/
