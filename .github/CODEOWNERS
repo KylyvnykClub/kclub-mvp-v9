@@ -10,7 +10,7 @@
 # tracked alongside filling in the `Owner:` headers. `tools/check-docs.py` warns
 # on every unowned document until then, deliberately.
 #
-# Replace @tech-lead, @client, @backend, @frontend, @designer and @qa with real
+# Replace @tech-lead, @client, @designer with real
 # handles. Do not use a team handle: teams do not notice that a document is
 # stale; people do.
 
@@ -23,27 +23,27 @@
 # /docs/architecture.md          @tech-lead
 # /docs/technology.md            @tech-lead
 # /docs/decisions/               @tech-lead
-# /docs/data-storage.md          @backend
-# /docs/ux.md                    @frontend @designer
-# /docs/glossary.md              @frontend
+# /docs/data-storage.md          @tech-lead
+# /docs/ux.md                    @tech-lead @designer
+# /docs/glossary.md              @tech-lead
 # /docs/security.md              @tech-lead @client
 # /docs/reliability.md           @tech-lead
 # /docs/observability.md         @tech-lead
-# /docs/integration.md           @backend
-# /docs/testing.md               @qa
+# /docs/integration.md           @tech-lead
+# /docs/testing.md               @tech-lead
 # /docs/documentation.md         @tech-lead
 # /docs/runbooks/                @tech-lead
 
 # --- Code (paths exist from phase 0 onward) ----------------------------------
 #
-# The three directories below carry the two-reviewer rule in
-# CONTRIBUTING.md — "Pull requests". Listing two owners is what makes that
-# automatic rather than remembered.
+# The three directories below previously carried a two-reviewer rule in
+# CONTRIBUTING.md. With AI review replacing the second reviewer for solo
+# development, they only strictly require the solo developer (@tech-lead).
 
-# /src/modules/billing/          @tech-lead @backend
-# /src/modules/identity/         @tech-lead @backend
-# /src/modules/audit/            @tech-lead @backend
+# /src/modules/billing/          @tech-lead
+# /src/modules/identity/         @tech-lead
+# /src/modules/audit/            @tech-lead
 # /src/modules/referrals/        @tech-lead @client
-# /db/migrations/                @backend @tech-lead
+# /db/migrations/                @tech-lead
 # /.github/                      @tech-lead
 # /tools/                        @tech-lead

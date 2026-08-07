@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptions" ADD COLUMN "stripe_updated_at" timestamp;

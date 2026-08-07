@@ -288,7 +288,7 @@ ambiguity for international members.
 
 |Regime|Applies because|Principal obligation|
 |-|-|-|
-|GDPR / UK GDPR|Members will be resident in the EU and the UK|Lawful basis, data subject access and erasure, breach notification within 72 hours, processing agreements with every sub-processor, an Art. 27 representative if the operator is outside the EU. **The supplied legal pack has no GDPR section** — the design implements these controls against a policy that does not yet promise them, which is [legal-alignment.md C-06](legal-alignment.md#c-06-gdpr-is-absent-from-the-legal-pack)|
+|GDPR / UK GDPR|Members will be resident in the EU and the UK|Lawful basis, data subject access and erasure, breach notification within 72 hours, processing agreements with every sub-processor, Standard Contractual Clauses for US transfer. Client has elected not to appoint an Art. 27 representative. **The supplied legal pack has no GDPR section** — the design implements these controls against a policy that does not yet promise them|
 |CCPA/CPRA (California)|US market focus; California residents|Notice at collection, right to know/delete, "do not sell or share" — we sell no data, but the notice is still required|
 |TCPA and CTIA messaging principles (US)|We send SMS to US numbers|Express consent captured at sign-up, opt-out honoured, A2P 10DLC brand and campaign registration before any production SMS|
 |PCI-DSS SAQ-A|We take card payments|Satisfied by never touching card data: all entry happens in Stripe-hosted Checkout and Portal — see [decisions/0004-stripe-billing-as-system-of-record.md](decisions/0004-stripe-billing-as-system-of-record.md)|
@@ -331,14 +331,14 @@ before the largest surface (the staff console) is built.
 
 |Phase|Weeks|Delivers|Exit criterion|
 |-|-|-|-|
-|0 — Foundations|1–2|Repository, CI, environments, design tokens, i18n scaffolding, schema baseline, observability wired|A trivial change reaches staging automatically, with tests and a rollback|
-|1 — Identity and card|2–5|FR-001…FR-026|A stranger can register by phone and show a card that verifies by QR|
+|0 — Foundations|1–2|Repository, CI, environments, design tokens, i18n scaffolding, schema baseline, observability wired, FR-090…FR-092|A trivial change reaches staging automatically, with tests and a rollback|
+|1 — Identity and card|2–5|FR-001…FR-027, FR-093, FR-097|A stranger can register by phone and show a card that verifies by QR|
 |2 — Catalogue and onboarding|4–8|FR-030…FR-048|A partner can apply, be moderated, and appear in a searchable catalogue|
-|3 — Billing|7–10|FR-050…FR-060|Both subscriptions sell, lapse, recover and reconcile correctly against Stripe test clocks|
+|3 — Billing|7–10|FR-050…FR-060, FR-098|Both subscriptions sell, lapse, recover and reconcile correctly against Stripe test clocks|
 |4 — Private beta|10|Milestone in [brief.md](brief.md#first-milestone)|30 seeded partners, 50 invited members, English only|
-|5 — Staff console|9–13|FR-080…FR-089|Staff run the club without database access|
-|6 — Referrals|11–14|FR-070…FR-078|End-to-end referral with consent, quotas and moderation|
-|7 — Hardening and launch|13–15|Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
+|5 — Staff console|9–13|FR-080…FR-089, FR-094|Staff run the club without database access|
+|6 — Referrals|11–14|FR-070…FR-078, FR-095|End-to-end referral with consent, quotas and moderation|
+|7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.
@@ -390,15 +390,10 @@ phase's backend is being verified.
 ## 9. Open questions
 
 Questions raised by the legal pack are tracked separately in
-[legal-alignment.md §4](legal-alignment.md#4-decision-log); two of them — closed
-chats versus the no-directory constraint, and whether the club accepts EU
-members — are larger than anything in this table and block phase 1 and the first
-EU sign-up respectively.
+[legal-alignment.md §4](legal-alignment.md#4-decision-log).
 
 |Question|Owner|Needed by|
 |-|-|-|
 |What identity proof does support accept to restore an account when the phone number is gone?|Client|Before public launch|
-|Does the club operator accept being the GDPR data controller, and who is the Art. 27 EU representative?|Client|Before the first EU member|
 |Who is on call after launch, and under what arrangement?|Client|Before public launch|
 |Do offer restrictions (validity, territory, booking required, minimum order) become structured fields? Partner Rules §7 binds the partner to what is published, so free text is a dispute waiting to happen|Client + tech lead|Before phase 2 ends|
-|Are the nine legal documents converted to versioned MDX in the repository before launch? FR-093 records which version a member accepted, which only means something if a version is immutable|Client + tech lead|Before phase 1 ends|

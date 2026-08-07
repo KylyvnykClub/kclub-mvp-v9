@@ -59,13 +59,13 @@ A document with no owner will not be maintained. Name a person, not a team.
 |-|-|-|
 |`README.md`, [CONTRIBUTING.md](../CONTRIBUTING.md)|Tech lead — _(fill in)_|Client|
 |[brief.md](brief.md), [requirements.md](requirements.md)|Client — _(fill in)_|Tech lead|
-|[architecture.md](architecture.md), [technology.md](technology.md), [decisions/](decisions/)|Tech lead — _(fill in)_|Backend engineer|
-|[data-storage.md](data-storage.md)|Backend engineer — _(fill in)_|Tech lead|
-|[ux.md](ux.md), [glossary.md](glossary.md)|Frontend engineer — _(fill in)_|Designer, client|
+|[architecture.md](architecture.md), [technology.md](technology.md), [decisions/](decisions/)|Tech lead — _(fill in)_|AI Reviewer|
+|[data-storage.md](data-storage.md)|Tech lead — _(fill in)_|AI Reviewer|
+|[ux.md](ux.md), [glossary.md](glossary.md)|Tech lead — _(fill in)_|Designer, client|
 |[security.md](security.md)|Tech lead — _(fill in)_|Client (as the data controller)|
-|[reliability.md](reliability.md), [observability.md](observability.md), runbooks|Tech lead — _(fill in)_|Backend engineer|
-|[integration.md](integration.md)|Backend engineer — _(fill in)_|Tech lead|
-|[testing.md](testing.md)|QA — _(fill in)_|Tech lead|
+|[reliability.md](reliability.md), [observability.md](observability.md), runbooks|Tech lead — _(fill in)_|AI Reviewer|
+|[integration.md](integration.md)|Tech lead — _(fill in)_|AI Reviewer|
+|[testing.md](testing.md)|Tech lead — _(fill in)_|AI Reviewer|
 |[documentation.md](documentation.md)|Tech lead — _(fill in)_|Client|
 |[delivery/](delivery/), [CLAUDE.md](../CLAUDE.md)|Tech lead — _(fill in)_|Client|
 |[legal-alignment.md](legal-alignment.md), legal pack|Client — _(fill in)_|Counsel, tech lead|

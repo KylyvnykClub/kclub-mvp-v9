@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { serverSchema, clientSchema } from "./env.schema.js";
+import { serverSchema, clientSchema } from "./env.schema";
 
 export { serverSchema, clientSchema };
 export type ServerEnv = z.infer<typeof serverSchema>;

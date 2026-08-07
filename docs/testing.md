@@ -208,9 +208,9 @@ once and applied forever.
 |-|-|-|-|
 |Exploratory testing|Every release, 30 minutes, against staging|Whoever did not write the feature|Freeform, with a written note of anything surprising|
 |"Fresh phone" test|Every release|Anyone|Register as a brand-new member on a real phone with real SMS in staging. Automation cannot tell you the SMS took 40 seconds and the copy was confusing|
-|Accessibility check|Every release|QA|Keyboard-only, VoiceOver, 200% zoom, both themes ([ux.md §8](ux.md#8-accessibility))|
-|Cross-browser / device|Every release|QA|Firefox and Edge on desktop; a real iPhone and a real mid-range Android. QR scanning is verified on a real camera every time — it is the one interaction no emulator proves|
-|Localisation review|When strings change|Native speaker per language|Machine translation may draft, never ship unreviewed ([ux.md §9](ux.md#9-content-and-tone))|
+|Accessibility check|Every release|Tech lead / AI|Keyboard-only, VoiceOver, 200% zoom, both themes ([ux.md §8](ux.md#8-accessibility))|
+|Cross-browser / device|Every release|Tech lead|Firefox and Edge on desktop; a real iPhone and a real mid-range Android. QR scanning is verified on a real camera every time — it is the one interaction no emulator proves|
+|Localisation review|When strings change|Accepted Gap|Solo dev relies on machine translation. Must be resolved by native speakers before Phase 2 ends ([ux.md §9](ux.md#9-content-and-tone))|
 |Performance / load test|Before launch, then quarterly and before any release changing schema or hot queries|Tech lead|Against [requirements.md §5.1](requirements.md#51-performance)|
 |Security testing|Before launch, then annually and after any auth or billing change|Third party|[security.md §10](security.md#10-security-testing)|
 |Restore / failover drill|Quarterly|Tech lead|[reliability.md §6](reliability.md#6-backup-and-restore)|
@@ -238,8 +238,7 @@ A change is done when:
 - [ ] If it adds an alert: the runbook exists
 - [ ] Documentation in `docs/` is updated if the change affects it — see
       [documentation.md §3](documentation.md#3-update-triggers)
-- [ ] Reviewed and approved by at least one other engineer; two for anything in
-      `billing`, `identity` or `audit`
+- [ ] Reviewed and approved by AI Reviewer (`/code-review`, `/reflect`); acting as the second reviewer for anything in `billing`, `identity` or `audit`
 - [ ] Self-reviewed: the author has read their own diff as if it were someone
       else's
 

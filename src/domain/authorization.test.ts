@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { can, assertCan } from "./authorization.js";
-import { Forbidden } from "./errors.js";
-import type { Actor } from "./actor.js";
+import { can, assertCan } from "./authorization";
+import { Forbidden } from "./errors";
+import type { Actor } from "./actor";
 
 const guest: Actor = { type: "guest" };
 const member: Actor = { type: "member", id: "m1", role: "member" };

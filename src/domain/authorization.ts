@@ -1,6 +1,6 @@
-import type { Actor } from "./actor.js";
-import { isAuthenticated, isStaff, staffAtLeast } from "./actor.js";
-import { Forbidden } from "./errors.js";
+import type { Actor } from "./actor";
+import { isAuthenticated, isStaff, staffAtLeast } from "./actor";
+import { Forbidden } from "./errors";
 
 export type Action =
   | "read"

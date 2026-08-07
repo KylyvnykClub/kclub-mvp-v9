@@ -7,7 +7,7 @@ import {
   RateLimited,
   Validation,
   ExternalUnavailable,
-} from "./errors.js";
+} from "./errors";
 
 describe("DomainError hierarchy", () => {
   it("NotFound has correct code and message", () => {

@@ -2,9 +2,10 @@ import { beforeEach, afterEach } from "vitest";
 import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "@/data/schema/index.js";
 
 let client: pg.Client | undefined;
-let db: NodePgDatabase | undefined;
+let db: NodePgDatabase<typeof schema> | undefined;
 
 beforeEach(async () => {
   const connectionString = process.env["TEST_DATABASE_URL"];
@@ -16,7 +17,7 @@ beforeEach(async () => {
   await client.connect();
   await client.query("BEGIN");
 
-  db = drizzle(client);
+  db = drizzle(client, { schema });
 });
 
 afterEach(async () => {
@@ -28,7 +29,7 @@ afterEach(async () => {
   }
 });
 
-export function getTestDb(): NodePgDatabase {
+export function getTestDb(): NodePgDatabase<typeof schema> {
   if (!db) {
     throw new Error(
       "getTestDb() called outside of a test. Make sure integration-setup.ts is loaded.",

@@ -4,7 +4,7 @@ import {
   realIdSource,
   deterministicClock,
   deterministicIdSource,
-} from "./context.js";
+} from "./context";
 
 describe("Clock", () => {
   it("realClock returns a recent Date", () => {

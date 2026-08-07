@@ -2,7 +2,7 @@ import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import { routing } from "./routing";
 
-type Messages = Record<string, Record<string, string>>;
+type Messages = Record<string, unknown>;
 
 async function loadMessages(locale: string): Promise<Messages> {
   const mod = (await (locale === "ru"

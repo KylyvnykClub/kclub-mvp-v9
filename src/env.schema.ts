@@ -41,6 +41,11 @@ export const serverSchema = z.object({
   // ── Billing — Stripe ────────────────────────────────────
   STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+  NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
+  NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID: z.string().optional(),
+
+  // ── Cron ────────────────────────────────────────────────
+  CRON_SECRET: z.string().optional(),
 
   // ── Background jobs — Inngest ───────────────────────────
   INNGEST_EVENT_KEY: z.string().optional(),
@@ -77,6 +82,8 @@ export const serverSchema = z.object({
 export const clientSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_"),
+  NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
+  NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 });

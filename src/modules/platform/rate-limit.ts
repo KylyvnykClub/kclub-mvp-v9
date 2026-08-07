@@ -1,4 +1,4 @@
-import { RateLimited } from "../../domain/errors.js";
+import { RateLimited } from "../../domain/errors";
 
 export interface RateLimitResult {
   allowed: boolean;

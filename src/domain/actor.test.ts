@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { isStaff, isAuthenticated, staffAtLeast, actorId } from "./actor.js";
-import type { Actor } from "./actor.js";
+import { isStaff, isAuthenticated, staffAtLeast, actorId } from "./actor";
+import type { Actor } from "./actor";
 
 const guest: Actor = { type: "guest" };
 const member: Actor = { type: "member", id: "m1", role: "member" };
