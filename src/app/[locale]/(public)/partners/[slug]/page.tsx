@@ -22,23 +22,25 @@ export async function generateMetadata(
   { params }: Props,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "catalogue" });
   const partner = await getPartnerBySlugAction(slug);
 
   if (!partner) {
-    return { title: "Partner Not Found | KCLUB" };
+    return { title: t("notFoundMetaTitle") };
   }
 
+  const title = t("partnerMetaTitle", { name: partner.name });
+  const description =
+    partner.description?.substring(0, 160) ||
+    t("partnerMetaDescription", { name: partner.name });
+
   return {
-    title: `${partner.name} - KCLUB Partner`,
-    description:
-      partner.description?.substring(0, 160) ||
-      `Learn more about ${partner.name} on KCLUB.`,
+    title,
+    description,
     openGraph: {
-      title: `${partner.name} - KCLUB Partner`,
-      description:
-        partner.description?.substring(0, 160) ||
-        `Learn more about ${partner.name} on KCLUB.`,
+      title,
+      description,
       images: partner.logoUrl ? [{ url: partner.logoUrl }] : [],
     },
   };
@@ -87,6 +89,7 @@ export default async function PartnerLandingPage({ params }: Props) {
   }
 
   const tr = await getTranslations("Referral");
+  const tc = await getTranslations("catalogue");
   const referralTranslations = {
     title: tr("title"),
     description: tr("description"),
@@ -95,6 +98,7 @@ export default async function PartnerLandingPage({ params }: Props) {
     serviceNeeded: tr("serviceNeeded"),
     note: tr("note"),
     consentLabel: tr("consentLabel"),
+    consentError: tr("consentError"),
     sendAction: tr("sendAction"),
     successMessage: tr("successMessage"),
     errorMessage: tr("errorMessage"),
@@ -134,7 +138,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                 <div className="w-32 h-32 rounded-none bg-muted/20 border border-border/50 flex-shrink-0 flex items-center justify-center p-2">
                   <img
                     src={partner.logoUrl}
-                    alt={`${partner.name} logo`}
+                    alt={tc("logoAlt", { name: partner.name })}
                     className="max-w-full max-h-full object-contain"
                   />
                 </div>
@@ -177,16 +181,16 @@ export default async function PartnerLandingPage({ params }: Props) {
             <div className="lg:col-span-2 space-y-8">
               <div className="prose prose-invert max-w-none">
                 <h2 className="font-serif text-2xl border-b border-border/50 pb-2 mb-4">
-                  About the Company
+                  {tc("aboutSection")}
                 </h2>
                 <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                  {partner.description || "No description provided."}
+                  {partner.description || tc("noDescription")}
                 </p>
               </div>
 
               <div className="prose prose-invert max-w-none">
                 <h2 className="font-serif text-2xl border-b border-border/50 pb-2 mb-4">
-                  Specific Activities
+                  {tc("activitiesSection")}
                 </h2>
                 <ul className="list-disc pl-5 text-muted-foreground">
                   <li>{partner.businessCategory.subcategory}</li>
@@ -198,7 +202,7 @@ export default async function PartnerLandingPage({ params }: Props) {
             <div className="space-y-6">
               <div className="bg-card/50 border border-border/50 p-6 space-y-6">
                 <h3 className="font-serif text-xl border-b border-border/50 pb-2">
-                  Contact Information
+                  {tc("contactSection")}
                 </h3>
 
                 <ul className="space-y-4">
@@ -244,30 +248,29 @@ export default async function PartnerLandingPage({ params }: Props) {
                     </>
                   ) : (
                     <li className="text-sm text-muted-foreground italic bg-muted/20 p-3 border border-border/50">
-                      Contact details are visible to KCLUB residents only.
+                      {tc("contactsMembersOnly")}
                     </li>
                   )}
                 </ul>
 
                 {!isResident ? (
                   <div className="pt-4 space-y-4">
-                    <p className="text-sm">
-                      Join KCLUB to access exclusive partner discounts and
-                      direct contacts.
-                    </p>
+                    <p className="text-sm">{tc("joinPrompt")}</p>
                     <Button asChild className="w-full">
-                      <Link href={`/${locale}/login`}>Join the Club</Link>
+                      <Link href={`/${locale}/login`}>{tc("joinCta")}</Link>
                     </Button>
                   </div>
                 ) : (
                   <div className="pt-4 space-y-4">
                     <p className="text-xs text-muted-foreground">
-                      Company is represented by:
+                      {tc("representedBy")}
                     </p>
                     <div className="flex justify-between items-center py-2 border-b border-border/50">
-                      <span className="text-muted-foreground">Manager</span>
+                      <span className="text-muted-foreground">
+                        {tc("managerRole")}
+                      </span>
                       <span className="font-medium text-foreground">
-                        {partner.owner?.displayName || "Member"}
+                        {partner.owner?.displayName || tc("memberFallback")}
                       </span>
                     </div>
 

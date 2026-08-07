@@ -1,8 +1,10 @@
+import { getTranslations } from "next-intl/server";
 import { getPublicShowcasePartners } from "@/actions/company";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Tag } from "lucide-react";
 
 export async function ShowcaseSection() {
+  const t = await getTranslations("home.showcase");
   const partners = await getPublicShowcasePartners();
   if (!partners || partners.length === 0) return null;
 
@@ -11,12 +13,9 @@ export async function ShowcaseSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-4">
           <h2 className="text-3xl font-serif font-bold tracking-tight text-foreground sm:text-4xl">
-            Featured Partners
+            {t("title")}
           </h2>
-          <p className="text-lg text-muted-foreground">
-            A glimpse into our exclusive network of verified businesses and
-            services available to KCLUB members.
-          </p>
+          <p className="text-lg text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -49,7 +48,8 @@ export async function ShowcaseSection() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-3 h-3" />
                     <span className="truncate">
-                      {partner.city || "Global"}, {partner.country || "Online"}
+                      {partner.city || t("fallbackCity")},{" "}
+                      {partner.country || t("fallbackCountry")}
                     </span>
                   </div>
                 </div>
@@ -62,7 +62,7 @@ export async function ShowcaseSection() {
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  {partner.description || "Verified KCLUB Partner"}
+                  {partner.description || t("fallbackDescription")}
                 </p>
               </CardContent>
             </Card>

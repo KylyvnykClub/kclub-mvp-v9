@@ -18,10 +18,10 @@ scope.
 
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
-|T-4.1|Close T-3.2: VIP checkout reads single price from env, success/cancel pages grant nothing, locale-aware URLs, no-grant test|—|T-3.2|0.5d|open|
-|T-4.2|English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|T-1.4|1.5d|open|
-|T-4.3|Beta seed script: 30 companies with profiles and categories (published), 50 members with cards, idempotent|—|T-1.1, T-2.1|1d|open|
-|T-4.4|Hardcoded English strings audit: find and i18n any remaining raw-English labels in components (billing-section, card-showcase, admin pages)|—|—|0.5d|open|
+|T-4.1|Close T-3.2: VIP checkout reads single price from env, success/cancel pages grant nothing, locale-aware URLs, no-grant test|—|T-3.2|0.5d|partial — checkout action + success/cancel pages + locale-aware URLs done (`d8e3948`); missing: no-grant test|
+|T-4.2|English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|T-1.4|1.5d|blocked — awaiting EN source text from client counsel|
+|T-4.3|Beta seed script: 30 companies with profiles and categories (published), 50 members with cards, idempotent|—|T-1.1, T-2.1|1d|done — `pnpm db:seed:beta` adds 50 members + 30 companies + 30 synthetic listing subscriptions, idempotent|
+|T-4.4|Hardcoded English strings audit: find and i18n any remaining raw-English labels in components (billing-section, card-showcase, admin pages)|—|—|0.5d|done — full sweep: 3 new namespaces (`catalogue`, `company`, `admin`), 496 keys × 3 locales, all admin pages + forms + referral lists + metadata i18n'd|
 |T-4.5|Staging deployment verification: seed runs, sign-up with SMS works, card QR verifies, catalogue browsable, VIP checkout completes via Stripe test mode|—|T-4.1, T-4.2, T-4.3|0.5d|open|
 
 **Total: ~4 focused days.** T-4.2 (legal translation) is the largest item; T-4.5
@@ -49,10 +49,16 @@ review by counsel.
 
 **T-4.3 extends the existing `tools/seed.ts`.** The seed script already creates
 Stripe products/prices and feature flags. The beta seed adds companies (with
-profiles, categories, and `status: "published"`), members (with cards and legal
-acceptances), and is gated by a `--beta` flag. Uses `ON CONFLICT DO NOTHING` per
-the existing convention. Partner data is placeholder (30 fictional businesses
-across the seeded categories).
+profiles, categories, and `moderationStatus: "approved"`), members (with cards
+and legal acceptances), and is gated by a `--beta` flag (`pnpm db:seed:beta`).
+Uses `ON CONFLICT DO NOTHING` per the existing convention. Partner data is
+placeholder (30 fictional businesses across the seeded categories). Because the
+catalogue only lists companies with an active `subscriptions` row
+(`src/actions/company.ts`), the seed also inserts one synthetic listing
+subscription per company (`sub_seed_beta_*`, `status: "active"`, +1y period).
+This is a documented seed-only exception to ADR 0004's webhook-projection path:
+production entitlements never come from this route, and the rows are clearly
+labelled so they can be distinguished from real Stripe subscriptions.
 
 **T-4.4 catches strings outside i18n.** `billing-section.tsx` has raw English
 ("Membership & Billing", "Upgrade to VIP ($19.99/mo)"); other admin pages may
@@ -78,9 +84,9 @@ The §6.1 criterion, decomposed:
 - [ ] Directly visiting the checkout success URL does not change the member's tier
 - [ ] All nine legal documents render in English at `/en/legal/*` with the
       authoritative badge
-- [ ] `python tools/check-plan.py --strict` and
+- [x] `python tools/check-plan.py --strict` and
       `python tools/check-docs.py --strict` pass
-- [ ] `pnpm verify` passes
+- [x] `pnpm verify` passes
 
 ## 4. Demo script
 

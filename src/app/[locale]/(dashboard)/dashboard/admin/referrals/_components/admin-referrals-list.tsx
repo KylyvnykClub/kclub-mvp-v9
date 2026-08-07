@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useTransition, useState } from "react";
+import { useTranslations } from "next-intl";
 import { moderateReferralAction } from "@/actions/referral";
 import type { PendingReferralView } from "@/data/referrals";
 import { toast } from "sonner";
@@ -21,18 +22,18 @@ export function AdminReferralsList({
   referrals: PendingReferralView[];
   translations: Record<string, string>;
 }) {
+  const tr = useTranslations("Referral");
+  const tCommon = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [reason, setReason] = useState("");
 
   if (referrals.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">No pending referrals.</p>
-    );
+    return <p className="text-sm text-muted-foreground">{tr("noPending")}</p>;
   }
 
   const handleModerate = (id: string, action: "approve" | "reject") => {
     if (action === "reject" && !reason) {
-      toast.error("Please provide a rejection reason");
+      toast.error(tr("rejectReasonRequired"));
       return;
     }
 
@@ -44,11 +45,11 @@ export function AdminReferralsList({
           action === "reject" ? reason : undefined,
         );
         toast.success(
-          action === "approve" ? "Referral approved" : "Referral rejected",
+          action === "approve" ? tr("approvedToast") : tr("rejectedToast"),
         );
         setReason("");
       } catch {
-        toast.error("An error occurred");
+        toast.error(tCommon("error"));
       }
     });
   };
@@ -57,13 +58,13 @@ export function AdminReferralsList({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>From</TableHead>
-          <TableHead>To Company</TableHead>
+          <TableHead>{tr("dateColumn")}</TableHead>
+          <TableHead>{tr("fromColumn")}</TableHead>
+          <TableHead>{tr("toCompanyColumn")}</TableHead>
           <TableHead>{t.clientName}</TableHead>
           <TableHead>{t.serviceNeeded}</TableHead>
           <TableHead>{t.contactChannel}</TableHead>
-          <TableHead>Action</TableHead>
+          <TableHead>{tr("actionColumn")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -72,15 +73,15 @@ export function AdminReferralsList({
             <TableCell>
               {new Date(ref.createdAt).toLocaleDateString()}
             </TableCell>
-            <TableCell>{ref.sender?.displayName || "Unknown"}</TableCell>
-            <TableCell>{ref.recipientCompany?.name || "Unknown"}</TableCell>
+            <TableCell>{ref.sender?.displayName || tr("unknown")}</TableCell>
+            <TableCell>{ref.recipientCompany?.name || tr("unknown")}</TableCell>
             <TableCell>{ref.clientName}</TableCell>
             <TableCell>{ref.serviceNeeded}</TableCell>
             <TableCell>
               {ref.contactChannel}
               {ref.note && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  Note: {ref.note}
+                  {tr("notePrefix")} {ref.note}
                 </div>
               )}
             </TableCell>
@@ -92,12 +93,12 @@ export function AdminReferralsList({
                   disabled={isPending}
                   onClick={() => handleModerate(ref.id, "approve")}
                 >
-                  Approve
+                  {tr("approve")}
                 </Button>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Reason (if rejecting)"
+                    placeholder={tr("rejectReasonPlaceholder")}
                     className="text-xs border px-2 py-1 flex-1 bg-transparent"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
@@ -108,7 +109,7 @@ export function AdminReferralsList({
                     disabled={isPending}
                     onClick={() => handleModerate(ref.id, "reject")}
                   >
-                    Reject
+                    {tr("reject")}
                   </Button>
                 </div>
               </div>

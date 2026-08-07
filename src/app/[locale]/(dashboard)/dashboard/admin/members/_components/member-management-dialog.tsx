@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -28,32 +29,34 @@ import type { MemberAdminView } from "@/data/members";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "An error occurred";
-}
-
 export function MemberManagementDialog({
   member,
 }: {
   member: MemberAdminView;
 }) {
+  const t = useTranslations("admin.members");
+  const tCard = useTranslations("card");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const [reason, setReason] = useState("");
   const [newTier, setNewTier] = useState<"free" | "vip">("free");
 
+  const errorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : tCommon("error");
+
   const handleBlockToggle = () => {
     const isBlocked = member.status === "blocked";
     if (!reason && !isBlocked) {
-      toast.error("Reason is required to block a member");
+      toast.error(t("reasonRequiredBlock"));
       return;
     }
 
     startTransition(async () => {
       try {
         await blockMemberAction(member.id, !isBlocked, reason);
-        toast.success(isBlocked ? "Member unblocked" : "Member blocked");
+        toast.success(isBlocked ? t("unblocked") : t("blocked"));
         setOpen(false);
         window.location.reload();
       } catch (err) {
@@ -64,14 +67,14 @@ export function MemberManagementDialog({
 
   const handleRevokeCard = (cardId: string) => {
     if (!reason) {
-      toast.error("Reason is required to revoke a card");
+      toast.error(t("reasonRequiredRevoke"));
       return;
     }
 
     startTransition(async () => {
       try {
         await revokeCardAction(cardId, reason);
-        toast.success("Card revoked");
+        toast.success(t("cardRevoked"));
         window.location.reload();
       } catch (err) {
         toast.error(errorMessage(err));
@@ -83,7 +86,7 @@ export function MemberManagementDialog({
     startTransition(async () => {
       try {
         await reissueCardAction(member.id, newTier);
-        toast.success("New card issued");
+        toast.success(t("cardIssued"));
         window.location.reload();
       } catch (err) {
         toast.error(errorMessage(err));
@@ -95,41 +98,43 @@ export function MemberManagementDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          Manage
+          {t("manage")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            Manage Member: {member.displayName || member.phone}
+            {t("manageTitle", {
+              name: member.displayName || member.phone,
+            })}
           </DialogTitle>
-          <DialogDescription>
-            Administer member status and cards.
-          </DialogDescription>
+          <DialogDescription>{t("manageDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="space-y-4">
-            <h4 className="font-medium text-sm border-b pb-2">Status</h4>
+            <h4 className="font-medium text-sm border-b pb-2">
+              {t("statusSection")}
+            </h4>
             <div className="flex justify-between items-center">
               <span className="text-sm">
-                Account Status:{" "}
+                {t("accountStatus")}{" "}
                 {member.status === "blocked" ? (
-                  <Badge variant="destructive">Blocked</Badge>
+                  <Badge variant="destructive">{t("statusBlocked")}</Badge>
                 ) : (
                   <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/30">
-                    Active
+                    {t("statusActive")}
                   </Badge>
                 )}
               </span>
             </div>
 
             <div className="space-y-2">
-              <Label>Reason (Required for blocking or revoking)</Label>
+              <Label>{t("reasonLabel")}</Label>
               <Input
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Violation of terms..."
+                placeholder={t("reasonPlaceholder")}
               />
             </div>
 
@@ -139,12 +144,14 @@ export function MemberManagementDialog({
               onClick={handleBlockToggle}
               disabled={isPending}
             >
-              {member.status === "blocked" ? "Unblock Member" : "Block Member"}
+              {member.status === "blocked" ? t("unblock") : t("block")}
             </Button>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-medium text-sm border-b pb-2">Cards</h4>
+            <h4 className="font-medium text-sm border-b pb-2">
+              {t("cardsSection")}
+            </h4>
             {member.cards && member.cards.length > 0 ? (
               <div className="space-y-3">
                 {member.cards.map((card) => (
@@ -159,11 +166,18 @@ export function MemberManagementDialog({
                           card.status === "valid" ? "default" : "destructive"
                         }
                       >
-                        {card.status}
+                        {card.status === "valid"
+                          ? tCard("statusValid")
+                          : tCard("statusRevoked")}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>Tier: {card.tier}</span>
+                      <span>
+                        {t("tierLabel")}:{" "}
+                        {card.tier === "vip"
+                          ? tCard("tierVip")
+                          : tCard("tierFree")}
+                      </span>
                       {card.status === "valid" && (
                         <Button
                           variant="outline"
@@ -171,7 +185,7 @@ export function MemberManagementDialog({
                           onClick={() => handleRevokeCard(card.id)}
                           disabled={isPending}
                         >
-                          Revoke
+                          {t("revoke")}
                         </Button>
                       )}
                     </div>
@@ -179,11 +193,13 @@ export function MemberManagementDialog({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No cards found.</p>
+              <p className="text-sm text-muted-foreground">
+                {t("noCardsFound")}
+              </p>
             )}
 
             <div className="pt-2 space-y-2">
-              <Label>Issue New Card</Label>
+              <Label>{t("issueNew")}</Label>
               <div className="flex space-x-2">
                 <Select
                   value={newTier}
@@ -193,12 +209,12 @@ export function MemberManagementDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="vip">VIP</SelectItem>
+                    <SelectItem value="free">{t("tierFree")}</SelectItem>
+                    <SelectItem value="vip">{t("tierVip")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleReissueCard} disabled={isPending}>
-                  Issue
+                  {t("issue")}
                 </Button>
               </div>
             </div>

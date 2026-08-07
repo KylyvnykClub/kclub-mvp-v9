@@ -41,13 +41,13 @@ export function DashboardHeader({ isAdmin }: { isAdmin?: boolean }) {
               href={`/${locale}/partners`}
               className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
             >
-              Partners
+              {tDashboard("navPartners")}
             </Link>
             <Link
               href={`/${locale}/dashboard/company/new`}
               className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
             >
-              Register Company
+              {tDashboard("navRegisterCompany")}
             </Link>
             {isAdmin && (
               <>
@@ -55,13 +55,13 @@ export function DashboardHeader({ isAdmin }: { isAdmin?: boolean }) {
                   href={`/${locale}/dashboard/admin/categories`}
                   className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
                 >
-                  Admin: Categories
+                  {tDashboard("navAdminCategories")}
                 </Link>
                 <Link
                   href={`/${locale}/dashboard/admin/companies`}
                   className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
                 >
-                  Admin: Moderation
+                  {tDashboard("navAdminModeration")}
                 </Link>
               </>
             )}

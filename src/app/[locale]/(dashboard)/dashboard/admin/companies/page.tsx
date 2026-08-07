@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getPendingCompaniesAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
@@ -13,6 +13,8 @@ export default async function AdminCompaniesPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations("admin.companies");
+
   const auth = await getCurrentMember();
   if (!auth?.member || auth.member.role !== "admin") {
     redirect(`/${locale}/dashboard/profile`);
@@ -25,18 +27,15 @@ export default async function AdminCompaniesPage({
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-serif font-bold tracking-tight">
-          Company Moderation
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Review and approve companies submitted by members. Approved companies
-          appear in the public Partners directory.
-        </p>
+        <p className="text-muted-foreground mt-2">{t("description")}</p>
       </div>
 
       <div className="bg-card border border-border/50">
         {companies.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
-            No pending companies to moderate.
+            {t("empty")}
           </div>
         ) : (
           <div className="divide-y divide-border/50">
@@ -52,24 +51,25 @@ export default async function AdminCompaniesPage({
                       variant="outline"
                       className="bg-muted/50 text-xs text-muted-foreground uppercase"
                     >
-                      PENDING
+                      {t("statusPending")}
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     <p>
-                      <strong>Owner:</strong> {company.owner?.displayName}
+                      <strong>{t("ownerLabel")}</strong>{" "}
+                      {company.owner?.displayName}
                     </p>
                     <p>
-                      <strong>Category:</strong>{" "}
+                      <strong>{t("categoryLabel")}</strong>{" "}
                       {company.businessCategory?.block} /{" "}
                       {company.businessCategory?.category}
                     </p>
                     <p>
-                      <strong>Slug:</strong> {company.slug}
+                      <strong>{t("slugLabel")}</strong> {company.slug}
                     </p>
                     {company.discount && (
                       <p>
-                        <strong>Discount:</strong>{" "}
+                        <strong>{t("discountLabel")}</strong>{" "}
                         <span className="text-accent">{company.discount}</span>
                       </p>
                     )}
