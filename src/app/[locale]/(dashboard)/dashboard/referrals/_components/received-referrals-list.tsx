@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { respondToReferralAction } from "@/actions/referral";
 import type { ReceivedReferralView } from "@/data/referrals";
 import type { ReferralTranslations } from "./referral-translations";
@@ -23,14 +24,12 @@ export function ReceivedReferralsList({
   referrals: ReceivedReferralView[];
   translations: ReferralTranslations;
 }) {
+  const tr = useTranslations("Referral");
+  const tCommon = useTranslations("common");
   const [isPending, startTransition] = useTransition();
 
   if (referrals.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        No referrals received yet.
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">{tr("noReceived")}</p>;
   }
 
   const handleAction = (id: string, action: "accept" | "decline") => {
@@ -38,10 +37,10 @@ export function ReceivedReferralsList({
       try {
         await respondToReferralAction(id, action);
         toast.success(
-          action === "accept" ? "Referral accepted" : "Referral declined",
+          action === "accept" ? tr("acceptedToast") : tr("declinedToast"),
         );
       } catch {
-        toast.error("An error occurred");
+        toast.error(tCommon("error"));
       }
     });
   };
@@ -50,11 +49,11 @@ export function ReceivedReferralsList({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>From</TableHead>
+          <TableHead>{tr("dateColumn")}</TableHead>
+          <TableHead>{tr("fromColumn")}</TableHead>
           <TableHead>{t.clientName}</TableHead>
           <TableHead>{t.serviceNeeded}</TableHead>
-          <TableHead>Contact / Action</TableHead>
+          <TableHead>{tr("contactActionColumn")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -63,7 +62,7 @@ export function ReceivedReferralsList({
             <TableCell>
               {new Date(ref.createdAt).toLocaleDateString()}
             </TableCell>
-            <TableCell>{ref.sender?.displayName || "Unknown"}</TableCell>
+            <TableCell>{ref.sender?.displayName || tr("unknown")}</TableCell>
             <TableCell>{ref.clientName}</TableCell>
             <TableCell>{ref.serviceNeeded}</TableCell>
             <TableCell>
@@ -94,7 +93,7 @@ export function ReceivedReferralsList({
                   </span>
                   {ref.note && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Note: {ref.note}
+                      {tr("notePrefix")} {ref.note}
                     </p>
                   )}
                 </div>

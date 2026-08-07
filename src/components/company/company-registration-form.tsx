@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useActionState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   registerCompanyAction,
@@ -14,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export function CompanyRegistrationForm() {
+  const t = useTranslations("company");
   const [state, action, pending] = useActionState(registerCompanyAction, null);
 
   const [blocks, setBlocks] = useState<string[]>([]);
@@ -61,12 +63,12 @@ export function CompanyRegistrationForm() {
       )}
       {state?.success && (
         <div className="text-sm text-green-500 bg-green-500/10 p-4 rounded-none border border-green-500/20">
-          <p className="font-bold mb-2">Company registered successfully!</p>
+          <p className="font-bold mb-2">{t("successTitle")}</p>
           <Link
             href="/dashboard/profile"
             className="underline hover:text-green-400"
           >
-            Return to Profile
+            {t("returnToProfile")}
           </Link>
         </div>
       )}
@@ -75,11 +77,11 @@ export function CompanyRegistrationForm() {
         <>
           <div className="space-y-4">
             <h2 className="font-serif text-xl border-b border-border/50 pb-2">
-              Business Category
+              {t("categorySection")}
             </h2>
 
             <div className="space-y-2">
-              <Label htmlFor="block">Business Block</Label>
+              <Label htmlFor="block">{t("blockLabel")}</Label>
               <select
                 id="block"
                 className="flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -87,7 +89,7 @@ export function CompanyRegistrationForm() {
                 onChange={(e) => setSelectedBlock(e.target.value)}
                 required
               >
-                <option value="">Select a block...</option>
+                <option value="">{t("blockPlaceholder")}</option>
                 {blocks.map((b) => (
                   <option key={b} value={b}>
                     {b}
@@ -97,7 +99,7 @@ export function CompanyRegistrationForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{t("categoryLabel")}</Label>
               <select
                 id="category"
                 className="flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -106,7 +108,7 @@ export function CompanyRegistrationForm() {
                 disabled={!selectedBlock}
                 required
               >
-                <option value="">Select a category...</option>
+                <option value="">{t("categoryPlaceholder")}</option>
                 {categories.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -116,7 +118,9 @@ export function CompanyRegistrationForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessCategoryId">Subcategory (Activity)</Label>
+              <Label htmlFor="businessCategoryId">
+                {t("subcategoryLabel")}
+              </Label>
               <select
                 id="businessCategoryId"
                 name="businessCategoryId"
@@ -126,7 +130,7 @@ export function CompanyRegistrationForm() {
                 disabled={!selectedCategory}
                 required
               >
-                <option value="">Select specific activity...</option>
+                <option value="">{t("subcategoryPlaceholder")}</option>
                 {subcategories.map((sc) => (
                   <option key={sc.id} value={sc.id}>
                     {sc.subcategory}
@@ -138,35 +142,35 @@ export function CompanyRegistrationForm() {
 
           <div className="space-y-4 pt-4">
             <h2 className="font-serif text-xl border-b border-border/50 pb-2">
-              Company Details
+              {t("detailsSection")}
             </h2>
 
             <div className="space-y-2">
-              <Label htmlFor="name">Company Name</Label>
+              <Label htmlFor="name">{t("nameLabel")}</Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="e.g. Acme Corp"
+                placeholder={t("namePlaceholder")}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="legalName">Legal Entity Name (Optional)</Label>
+              <Label htmlFor="legalName">{t("legalNameLabel")}</Label>
               <Input
                 id="legalName"
                 name="legalName"
-                placeholder="e.g. Acme Corporation LLC"
+                placeholder={t("legalNamePlaceholder")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="taxId">Tax ID / EDRPOU (Optional)</Label>
+                <Label htmlFor="taxId">{t("taxIdLabel")}</Label>
                 <Input id="taxId" name="taxId" placeholder="12345678" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="website">Website (Optional)</Label>
+                <Label htmlFor="website">{t("websiteLabel")}</Label>
                 <Input
                   id="website"
                   name="website"
@@ -176,7 +180,7 @@ export function CompanyRegistrationForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">Logo URL (Optional)</Label>
+              <Label htmlFor="logoUrl">{t("logoLabel")}</Label>
               <Input
                 id="logoUrl"
                 name="logoUrl"
@@ -186,26 +190,31 @@ export function CompanyRegistrationForm() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country">{t("countryLabel")}</Label>
                 <Input
                   id="country"
                   name="country"
-                  placeholder="e.g. Ukraine"
+                  placeholder={t("countryPlaceholder")}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" placeholder="e.g. Kyiv" required />
+                <Label htmlFor="city">{t("cityLabel")}</Label>
+                <Input
+                  id="city"
+                  name="city"
+                  placeholder={t("cityPlaceholder")}
+                  required
+                />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("descriptionLabel")}</Label>
               <Textarea
                 id="description"
                 name="description"
-                placeholder="Briefly describe your company's core business..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={4}
               />
             </div>
@@ -213,25 +222,22 @@ export function CompanyRegistrationForm() {
 
           <div className="space-y-4 pt-4">
             <h2 className="font-serif text-xl border-b border-border/50 pb-2">
-              Partner Details
+              {t("partnerSection")}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              This information will be displayed in the public Partners
-              Directory.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("partnerNote")}</p>
 
             <div className="space-y-2">
-              <Label htmlFor="discount">Provided Discount</Label>
+              <Label htmlFor="discount">{t("discountLabel")}</Label>
               <Input
                 id="discount"
                 name="discount"
-                placeholder="e.g. 15% discount for KCLUB members"
+                placeholder={t("discountPlaceholder")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contactEmail">Contact Email</Label>
+                <Label htmlFor="contactEmail">{t("contactEmailLabel")}</Label>
                 <Input
                   id="contactEmail"
                   name="contactEmail"
@@ -240,7 +246,7 @@ export function CompanyRegistrationForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactPhone">Contact Phone</Label>
+                <Label htmlFor="contactPhone">{t("contactPhoneLabel")}</Label>
                 <Input
                   id="contactPhone"
                   name="contactPhone"
@@ -255,7 +261,7 @@ export function CompanyRegistrationForm() {
             disabled={pending || !selectedSubcategory}
             className="w-full"
           >
-            {pending ? "Registering..." : "Register Company"}
+            {pending ? t("submitting") : t("submit")}
           </Button>
         </>
       )}

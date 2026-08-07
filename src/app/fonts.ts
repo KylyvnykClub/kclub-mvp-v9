@@ -1,9 +1,9 @@
-import { Titillium_Web } from "next/font/google";
+import { Manrope } from "next/font/google";
 
-export const fontBody = Titillium_Web({
-  subsets: ["latin", "latin-ext"],
+export const fontBody = Manrope({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-body",
-  weight: ["200", "300", "400", "600", "700", "900"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 

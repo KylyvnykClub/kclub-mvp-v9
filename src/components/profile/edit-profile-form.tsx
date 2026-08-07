@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { updateProfileAction } from "@/actions/profile";
 import type { ProfileView } from "@/data/profiles";
 import { Button } from "@/components/ui/button";
@@ -9,17 +10,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export function EditProfileForm({ profile }: { profile: ProfileView }) {
+  const t = useTranslations("dashboard");
+  const tCommon = useTranslations("common");
   const [state, action, pending] = useActionState(updateProfileAction, null);
 
   return (
     <form action={action} className="space-y-4">
       {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
       {state?.success && (
-        <p className="text-sm text-green-500">Profile updated successfully</p>
+        <p className="text-sm text-green-500">{t("profileUpdated")}</p>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="avatarUrl">Avatar URL</Label>
+        <Label htmlFor="avatarUrl">{t("avatarLabel")}</Label>
         <Input
           id="avatarUrl"
           name="avatarUrl"
@@ -29,11 +32,11 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="bio">Bio</Label>
+        <Label htmlFor="bio">{t("bioLabel")}</Label>
         <Textarea
           id="bio"
           name="bio"
-          placeholder="Tell us about yourself..."
+          placeholder={t("bioPlaceholder")}
           defaultValue={profile?.bio || ""}
           rows={4}
         />
@@ -41,27 +44,27 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
+          <Label htmlFor="industry">{t("industryLabel")}</Label>
           <Input
             id="industry"
             name="industry"
-            placeholder="e.g. Technology"
+            placeholder={t("industryPlaceholder")}
             defaultValue={profile?.industry || ""}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="location">Location</Label>
+          <Label htmlFor="location">{t("locationLabel")}</Label>
           <Input
             id="location"
             name="location"
-            placeholder="e.g. Kyiv, Ukraine"
+            placeholder={t("locationPlaceholder")}
             defaultValue={profile?.location || ""}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="linkedin">LinkedIn URL</Label>
+        <Label htmlFor="linkedin">{t("linkedinLabel")}</Label>
         <Input
           id="linkedin"
           name="linkedin"
@@ -71,7 +74,7 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="twitter">Twitter / X URL</Label>
+        <Label htmlFor="twitter">{t("twitterLabel")}</Label>
         <Input
           id="twitter"
           name="twitter"
@@ -81,7 +84,7 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
       </div>
 
       <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Saving..." : "Save Profile"}
+        {pending ? tCommon("saving") : t("saveProfile")}
       </Button>
     </form>
   );

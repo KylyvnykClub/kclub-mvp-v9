@@ -48,7 +48,7 @@ export function SiteHeader() {
 
         <nav
           className="hidden items-center gap-5 lg:flex"
-          aria-label="Primary navigation"
+          aria-label={t("common.primaryNav")}
         >
           {navigation.map(([key, href]) => (
             <Link
@@ -64,7 +64,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <div
             className="hidden items-center gap-1 sm:flex"
-            aria-label="Language"
+            aria-label={t("common.languageSwitcher")}
           >
             {(["en", "ru", "uk"] as const).map((item) => (
               <button
@@ -112,7 +112,7 @@ export function SiteHeader() {
         <nav
           id="mobile-navigation"
           className="border-b border-border bg-background/95 px-4 py-5 backdrop-blur-xl lg:hidden"
-          aria-label="Mobile navigation"
+          aria-label={t("common.mobileNav")}
         >
           <div className="mx-auto grid max-w-7xl gap-1">
             {navigation.map(([key, href]) => (

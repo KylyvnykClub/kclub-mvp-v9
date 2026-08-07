@@ -1,10 +1,16 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getLegalDocument } from "@/lib/mdx";
 import { RegisterFlow } from "./_components/register-flow";
 
-export const metadata = {
-  title: "Register - KCLUB",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  return { title: t("registerTitle") };
+}
 
 export default async function RegisterPage({
   params,

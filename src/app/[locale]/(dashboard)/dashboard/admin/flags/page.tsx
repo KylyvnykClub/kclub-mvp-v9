@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { getFeatureFlagsAction } from "@/actions/feature-flags";
 import { redirect } from "next/navigation";
@@ -13,6 +13,8 @@ export default async function AdminFlagsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const t = await getTranslations("admin.flags");
 
   const session = await getCurrentMember();
   if (!session?.member || session.member.role !== "admin") {
@@ -30,21 +32,15 @@ export default async function AdminFlagsPage({
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          Feature Flags
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Manage system-wide feature flags to safely enable or disable
-          functionality.
-        </p>
+        <p className="text-muted-foreground mt-2">{t("description")}</p>
       </div>
 
       <Alert className="rounded-none border-primary/50 bg-primary/5">
         <InfoIcon className="h-4 w-4 text-primary" />
-        <AlertTitle>Warning</AlertTitle>
-        <AlertDescription>
-          Changing feature flags takes effect immediately across the entire
-          system. Please proceed with caution.
-        </AlertDescription>
+        <AlertTitle>{t("warning")}</AlertTitle>
+        <AlertDescription>{t("warningText")}</AlertDescription>
       </Alert>
 
       <div className="space-y-4">

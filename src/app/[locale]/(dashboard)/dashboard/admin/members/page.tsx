@@ -1,5 +1,5 @@
 import { getMembersListAction } from "@/actions/admin-members";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
 import {
@@ -23,6 +23,9 @@ export default async function AdminMembersPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations("admin.members");
+  const tCard = await getTranslations("card");
+
   const session = await getCurrentMember();
   if (!session?.member || session.member.role !== "admin") {
     redirect(`/${locale}/dashboard`);
@@ -35,11 +38,9 @@ export default async function AdminMembersPage({
     <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          Member & Card Administration
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">
-          View members, block accounts, and revoke or reissue membership cards.
-        </p>
+        <p className="text-muted-foreground mt-2">{t("description")}</p>
       </div>
 
       <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
@@ -48,14 +49,14 @@ export default async function AdminMembersPage({
             <input
               name="q"
               defaultValue={q}
-              placeholder="Search by name, phone or card serial..."
+              placeholder={t("searchPlaceholder")}
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             />
             <button
               type="submit"
               className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
             >
-              Search
+              {t("search")}
             </button>
           </form>
         </div>
@@ -63,11 +64,11 @@ export default async function AdminMembersPage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Display Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Cards</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t("colDisplayName")}</TableHead>
+              <TableHead>{t("colPhone")}</TableHead>
+              <TableHead>{t("colCards")}</TableHead>
+              <TableHead>{t("colStatus")}</TableHead>
+              <TableHead>{t("colActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,14 +78,14 @@ export default async function AdminMembersPage({
                   colSpan={5}
                   className="text-center text-muted-foreground py-8"
                 >
-                  No members found.
+                  {t("noResults")}
                 </TableCell>
               </TableRow>
             ) : (
               membersList.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell className="font-medium">
-                    {m.displayName || "N/A"}
+                    {m.displayName || t("notAvailable")}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{m.phone}</TableCell>
                   <TableCell>
@@ -99,23 +100,25 @@ export default async function AdminMembersPage({
                               }
                               className="text-[10px] ml-1"
                             >
-                              {c.status}
+                              {c.status === "valid"
+                                ? tCard("statusValid")
+                                : tCard("statusRevoked")}
                             </Badge>
                           </span>
                         ))}
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">
-                        No cards
+                        {t("noCards")}
                       </span>
                     )}
                   </TableCell>
                   <TableCell>
                     {m.status === "blocked" ? (
-                      <Badge variant="destructive">Blocked</Badge>
+                      <Badge variant="destructive">{t("statusBlocked")}</Badge>
                     ) : (
                       <Badge className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30">
-                        Active
+                        {t("statusActive")}
                       </Badge>
                     )}
                   </TableCell>

@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getPartnersListAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { isFeatureEnabled } from "@/actions/feature-flags";
@@ -13,11 +13,16 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export function generateMetadata() {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "catalogue" });
   return {
-    title: "Partners Directory | KCLUB",
-    description:
-      "Discover verified partners and businesses within the KCLUB ecosystem.",
+    title: t("metaTitle"),
+    description: t("metaDescription"),
   };
 }
 
@@ -30,6 +35,8 @@ export default async function CatalogueDirectoryPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const t = await getTranslations("catalogue");
 
   const session = await getCurrentMember();
   if (!session?.member) {
@@ -46,11 +53,10 @@ export default async function CatalogueDirectoryPage({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
       <div className="text-center space-y-4">
         <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-          Partners Directory
+          {t("title")}
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Discover and connect with verified businesses within the KCLUB
-          ecosystem.
+          {t("subtitle")}
         </p>
 
         <form className="max-w-2xl mx-auto mt-6 flex flex-col sm:flex-row gap-2">
@@ -58,28 +64,28 @@ export default async function CatalogueDirectoryPage({
             type="text"
             name="q"
             defaultValue={q || ""}
-            placeholder="Search by name..."
+            placeholder={t("searchPlaceholder")}
             className="flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <input
             type="text"
             name="country"
             defaultValue={country || ""}
-            placeholder="Country"
+            placeholder={t("countryPlaceholder")}
             className="w-full sm:w-32 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <input
             type="text"
             name="city"
             defaultValue={city || ""}
-            placeholder="City"
+            placeholder={t("cityPlaceholder")}
             className="w-full sm:w-32 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <button
             type="submit"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
           >
-            Filter
+            {t("filter")}
           </button>
         </form>
       </div>
@@ -87,7 +93,7 @@ export default async function CatalogueDirectoryPage({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {partners.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground bg-muted/10 border border-border/50">
-            No partners registered yet.
+            {t("empty")}
           </div>
         ) : (
           partners.map((partner) => (
@@ -124,7 +130,7 @@ export default async function CatalogueDirectoryPage({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                    {partner.description || "No description provided."}
+                    {partner.description || t("noDescription")}
                   </p>
 
                   {partner.discount && (

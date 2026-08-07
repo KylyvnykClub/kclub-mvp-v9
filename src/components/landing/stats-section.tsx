@@ -12,7 +12,7 @@ export function StatsSection() {
 
   return (
     <section
-      aria-label="KCLUB in numbers"
+      aria-label={t("common.statsSection")}
       className="border-b border-border bg-background py-8"
     >
       <div className="kclub-shell grid grid-cols-2 gap-px border border-border bg-border lg:grid-cols-4">

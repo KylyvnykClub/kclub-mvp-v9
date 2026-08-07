@@ -4,14 +4,22 @@
  * Usage:
  *   pnpm db:seed              — seed the local/preview database
  *   pnpm db:seed --production — seed production (staff user only, no test data)
+ *   pnpm db:seed:beta         — beta seed: 50 members + 30 partner listings
  *
  * What it does:
  *   1. Ensures Stripe products and prices exist (VIP membership, listing subscription).
  *   2. Creates a bootstrap staff user (from ADMIN_BOOTSTRAP_OWNER_PHONE / PASSWORD).
  *   3. Inserts feature flags with safe defaults.
  *   4. In non-production: inserts sample data for development.
+ *   5. With --beta: seeds the Private Beta dataset (phase 4, requirements.md §6.1).
  *
  * Idempotent: safe to run multiple times. Uses ON CONFLICT DO NOTHING.
+ *
+ * Beta seed note (ADR 0004): partner listing entitlements are normally
+ * projected from Stripe webhooks. The beta seed inserts synthetic
+ * subscription rows directly (sub_seed_beta_*) as a documented seed-only
+ * exception so the catalogue is browsable on staging without 30 real
+ * Stripe checkout flows. Production entitlements never come from this path.
  */
 
 import { config } from "dotenv";
@@ -185,6 +193,485 @@ async function seedDevData(): Promise<void> {
   // This function will grow as schemas are added.
 }
 
+// ── Beta seed (phase 4, requirements.md §6.1) ────────────────
+
+const isBeta = process.argv.includes("--beta");
+
+const BETA_FIRST_NAMES = [
+  "Olena",
+  "Dmytro",
+  "Iryna",
+  "Andrii",
+  "Kateryna",
+  "Serhii",
+  "Yulia",
+  "Oleksandr",
+  "Natalia",
+  "Viktor",
+  "Tetiana",
+  "Maksym",
+  "Svitlana",
+  "Ihor",
+  "Liudmyla",
+  "Pavlo",
+  "Oksana",
+  "Roman",
+  "Halyna",
+  "Bohdan",
+  "Mariia",
+  "Vasyl",
+  "Anastasiia",
+  "Kostiantyn",
+  "Zoryana",
+];
+
+const BETA_LAST_NAMES = [
+  "Shevchenko",
+  "Bondarenko",
+  "Kovalenko",
+  "Tkachenko",
+  "Melnyk",
+  "Boyko",
+  "Kravchenko",
+  "Oliynyk",
+  "Lysenko",
+  "Savchenko",
+  "Rudenko",
+  "Marchenko",
+  "Hrytsenko",
+  "Pavlenko",
+  "Klymenko",
+  "Moroz",
+  "Koval",
+  "Bondar",
+  "Polishchuk",
+  "Tymoshenko",
+  "Nazarenko",
+  "Havryliuk",
+  "Demydenko",
+  "Zinchenko",
+  "Litvin",
+];
+
+const BETA_COMPANIES = [
+  {
+    name: "TechNova Solutions",
+    description:
+      "Custom software development and cloud infrastructure consulting for growing businesses.",
+    discount: "15% off for KCLUB members",
+    categoryHint: "IT",
+  },
+  {
+    name: "GreenLeaf Organics",
+    description:
+      "Organic food production and distribution with a focus on sustainable farming.",
+    discount: "10% off first order for KCLUB members",
+    categoryHint: "Food",
+  },
+  {
+    name: "Atlas Logistics",
+    description:
+      "International freight forwarding and supply chain management services.",
+    discount: "Free consultation for KCLUB members",
+    categoryHint: "Logistics",
+  },
+  {
+    name: "BrightPath Education",
+    description:
+      "Professional development courses and corporate training programs.",
+    discount: "20% off courses for KCLUB members",
+    categoryHint: "Education",
+  },
+  {
+    name: "Summit Financial",
+    description: "Accounting, tax advisory, and financial planning for SMEs.",
+    discount: "15% off advisory services for KCLUB members",
+    categoryHint: "Finance",
+  },
+  {
+    name: "Nordic Design Studio",
+    description:
+      "Brand identity, UX/UI design, and creative direction for digital products.",
+    discount: "10% off design projects for KCLUB members",
+    categoryHint: "Design",
+  },
+  {
+    name: "Velocity Motors",
+    description:
+      "Premium car dealership and after-sales service with flexible leasing.",
+    discount: "5% off service packages for KCLUB members",
+    categoryHint: "Automotive",
+  },
+  {
+    name: "HarborView Realty",
+    description:
+      "Commercial and residential real estate advisory across major cities.",
+    discount: "Reduced commission for KCLUB members",
+    categoryHint: "Real Estate",
+  },
+  {
+    name: "PureWell Clinic",
+    description:
+      "Private medical clinic offering preventive care and executive health checks.",
+    discount: "15% off health checks for KCLUB members",
+    categoryHint: "Health",
+  },
+  {
+    name: "CraftBrew Collective",
+    description:
+      "Artisanal brewery with taproom events and wholesale distribution.",
+    discount: "Free tasting for KCLUB members",
+    categoryHint: "Food",
+  },
+  {
+    name: "Skyline Construction",
+    description:
+      "General contracting and renovation for commercial and residential projects.",
+    discount: "10% off project estimates for KCLUB members",
+    categoryHint: "Construction",
+  },
+  {
+    name: "Lumen Media Group",
+    description:
+      "Full-service digital marketing, SEO, and content production agency.",
+    discount: "15% off retainers for KCLUB members",
+    categoryHint: "Marketing",
+  },
+  {
+    name: "EverGreen Energy",
+    description: "Solar panel installation and renewable energy consulting.",
+    discount: "Free site assessment for KCLUB members",
+    categoryHint: "Energy",
+  },
+  {
+    name: "Cobalt Legal",
+    description:
+      "Corporate law, contract drafting, and cross-border transaction support.",
+    discount: "10% off legal fees for KCLUB members",
+    categoryHint: "Legal",
+  },
+  {
+    name: "Aurora Travel",
+    description: "Bespoke travel planning and corporate retreat organization.",
+    discount: "8% off packages for KCLUB members",
+    categoryHint: "Travel",
+  },
+  {
+    name: "Ironclad Security",
+    description:
+      "Physical and cybersecurity services for enterprises and events.",
+    discount: "Free risk assessment for KCLUB members",
+    categoryHint: "Security",
+  },
+  {
+    name: "Verde Agriculture",
+    description: "Modern farming equipment supply and agronomy consulting.",
+    discount: "12% off equipment for KCLUB members",
+    categoryHint: "Agriculture",
+  },
+  {
+    name: "PixelForge Games",
+    description: "Indie game development studio and interactive entertainment.",
+    discount: "Early access for KCLUB members",
+    categoryHint: "IT",
+  },
+  {
+    name: "Sterling Insurance",
+    description: "Business insurance, liability coverage, and risk management.",
+    discount: "10% off premiums for KCLUB members",
+    categoryHint: "Finance",
+  },
+  {
+    name: "Cascade Water Systems",
+    description: "Water purification and industrial filtration solutions.",
+    discount: "15% off installation for KCLUB members",
+    categoryHint: "Manufacturing",
+  },
+  {
+    name: "Horizon Ventures",
+    description:
+      "Venture capital and startup advisory for early-stage founders.",
+    discount: "Priority intro calls for KCLUB members",
+    categoryHint: "Finance",
+  },
+  {
+    name: "TerraCotta Ceramics",
+    description: "Handmade ceramics studio with wholesale and custom orders.",
+    discount: "20% off wholesale for KCLUB members",
+    categoryHint: "Manufacturing",
+  },
+  {
+    name: "Quantum Analytics",
+    description:
+      "Data science consulting and business intelligence dashboards.",
+    discount: "15% off projects for KCLUB members",
+    categoryHint: "IT",
+  },
+  {
+    name: "Fjord Seafood",
+    description:
+      "Premium seafood import and distribution to restaurants and retail.",
+    discount: "10% off bulk orders for KCLUB members",
+    categoryHint: "Food",
+  },
+  {
+    name: "Apex Fitness",
+    description:
+      "Boutique fitness studio with personal training and corporate wellness.",
+    discount: "Free trial month for KCLUB members",
+    categoryHint: "Health",
+  },
+  {
+    name: "Solstice Events",
+    description: "Conference production, venue management, and event catering.",
+    discount: "10% off venue hire for KCLUB members",
+    categoryHint: "Events",
+  },
+  {
+    name: "Redwood Furniture",
+    description:
+      "Custom furniture manufacturing and interior fit-out services.",
+    discount: "15% off custom orders for KCLUB members",
+    categoryHint: "Manufacturing",
+  },
+  {
+    name: "Nimbus Cloud Services",
+    description:
+      "Managed cloud hosting, DevOps, and infrastructure automation.",
+    discount: "20% off first year for KCLUB members",
+    categoryHint: "IT",
+  },
+  {
+    name: "Golden Harvest Farms",
+    description: "Grain production and agricultural commodity trading.",
+    discount: "Market-rate pricing for KCLUB members",
+    categoryHint: "Agriculture",
+  },
+  {
+    name: "BluePeak Consulting",
+    description:
+      "Management consulting and operational excellence for mid-market firms.",
+    discount: "15% off engagements for KCLUB members",
+    categoryHint: "Consulting",
+  },
+];
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
+function betaPhone(i: number): string {
+  return `+380501${String(i).padStart(6, "0")}`;
+}
+
+function betaCardSerial(i: number): string {
+  return `KCLUB-${String(100000 + i)}`;
+}
+
+function betaCardToken(i: number): string {
+  return `beta-card-token-${String(i).padStart(4, "0")}`;
+}
+
+async function seedBetaData(): Promise<void> {
+  if (!isBeta) return;
+
+  if (isProduction) {
+    console.error(
+      "\n❌ Refusing to seed beta data in production mode. Beta seed is for staging/preview only.",
+    );
+    process.exit(1);
+  }
+
+  console.log("\n🎟️  Seeding beta data (50 members + 30 companies)...");
+
+  const { db } = await import("../src/data/db");
+  const {
+    members,
+    cards,
+    legalAcceptances,
+    companies,
+    subscriptions,
+    businessCategories,
+    profiles,
+  } = await import("../src/data/schema");
+  const { hashPassword } = await import("../src/modules/identity/crypto");
+  const { appendAuditEntry } = await import("../src/data/audit-log");
+  const { eq, inArray } = await import("drizzle-orm");
+
+  const passwordHash = await hashPassword("BetaMember2026!");
+
+  const categories = await db.query.businessCategories.findMany({
+    where: eq(businessCategories.status, "ACTIVE"),
+  });
+
+  if (categories.length === 0) {
+    console.warn(
+      "⚠️  No active business categories found. Run pnpm db:seed:categories first.",
+    );
+    return;
+  }
+
+  const categoryMap = new Map<string, number>();
+  for (const cat of categories) {
+    if (!categoryMap.has(cat.category)) {
+      categoryMap.set(cat.category, cat.id);
+    }
+  }
+
+  const categoryIds = Array.from(categoryMap.values());
+  const fallbackCategoryId = categoryIds[0]!;
+
+  let memberCount = 0;
+  let companyCount = 0;
+
+  for (let i = 0; i < 50; i++) {
+    const phone = betaPhone(i);
+    const displayName = `${BETA_FIRST_NAMES[i % BETA_FIRST_NAMES.length]} ${
+      BETA_LAST_NAMES[i % BETA_LAST_NAMES.length]
+    }`;
+
+    const inserted = await db
+      .insert(members)
+      .values({
+        phone,
+        passwordHash,
+        displayName,
+        locale: "en",
+        country: "UA",
+        language: "en",
+        status: "active",
+        role: "user",
+      })
+      .onConflictDoNothing({ target: members.phone })
+      .returning({ id: members.id });
+
+    if (inserted.length === 0) {
+      continue;
+    }
+
+    const memberId = inserted[0]!.id;
+    memberCount++;
+
+    await appendAuditEntry(db, {
+      actorType: "member",
+      actorId: memberId,
+      action: "member.registered",
+      subjectType: "member",
+      subjectId: memberId,
+      meta: { source: "beta_seed" },
+    });
+
+    await db
+      .insert(cards)
+      .values({
+        memberId,
+        serial: betaCardSerial(i),
+        token: betaCardToken(i),
+        tier: "free",
+        status: "valid",
+      })
+      .onConflictDoNothing({ target: cards.serial });
+
+    await db.insert(legalAcceptances).values([
+      { memberId, documentId: "terms-of-use", version: "1.0" },
+      { memberId, documentId: "privacy-policy", version: "1.0" },
+      { memberId, documentId: "arbitration", version: "1.0" },
+      { memberId, documentId: "age-verification", version: "1.0" },
+    ]);
+
+    await db
+      .insert(profiles)
+      .values({
+        memberId,
+        bio: `${displayName} is a member of KCLUB.`,
+        industry: "Business",
+        location: "Kyiv, Ukraine",
+      })
+      .onConflictDoNothing({ target: profiles.memberId });
+  }
+
+  console.log(`  ✓ Inserted ${memberCount} new members`);
+
+  const betaPhones = Array.from({ length: 50 }, (_, i) => betaPhone(i));
+  const betaMembers = await db.query.members.findMany({
+    where: inArray(members.phone, betaPhones),
+    orderBy: (m, { asc }) => [asc(m.phone)],
+  });
+
+  const memberIds = betaMembers.map((m) => m.id);
+
+  if (memberIds.length === 0) {
+    console.warn(
+      "⚠️  No beta members found to own companies. Skipping companies.",
+    );
+    return;
+  }
+
+  for (const [i, company] of BETA_COMPANIES.entries()) {
+    const slug = slugify(company.name);
+    const ownerId = memberIds[i % memberIds.length]!;
+
+    let categoryId = fallbackCategoryId;
+    for (const [catName, catId] of categoryMap) {
+      if (catName.toLowerCase().includes(company.categoryHint.toLowerCase())) {
+        categoryId = catId;
+        break;
+      }
+    }
+
+    const inserted = await db
+      .insert(companies)
+      .values({
+        ownerId,
+        businessCategoryId: categoryId,
+        name: company.name,
+        slug,
+        description: company.description,
+        discount: company.discount,
+        country: "Ukraine",
+        city: "Kyiv",
+        moderationStatus: "approved",
+      })
+      .onConflictDoNothing({ target: companies.slug })
+      .returning({ id: companies.id });
+
+    if (inserted.length === 0) {
+      continue;
+    }
+
+    const companyId = inserted[0]!.id;
+    companyCount++;
+
+    const stripeSubId = `sub_seed_beta_${slug}`;
+    const stripeCusId = `cus_seed_beta_${slug}`;
+
+    const existingSub = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.stripeSubscriptionId, stripeSubId),
+    });
+
+    if (!existingSub) {
+      const now = new Date();
+      const oneYear = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+      await db.insert(subscriptions).values({
+        stripeSubscriptionId: stripeSubId,
+        memberId: ownerId,
+        companyId,
+        stripeCustomerId: stripeCusId,
+        status: "active",
+        priceId: "price_seed_beta_listing",
+        currentPeriodStart: now,
+        currentPeriodEnd: oneYear,
+        stripeUpdatedAt: now,
+      });
+    }
+  }
+
+  console.log(`  ✓ Inserted ${companyCount} new companies`);
+}
+
 // ── Main ─────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -199,6 +686,8 @@ async function main(): Promise<void> {
   await seedFeatureFlags();
 
   await seedDevData();
+
+  await seedBetaData();
 
   console.log("\n✅ Seed complete.\n");
 }

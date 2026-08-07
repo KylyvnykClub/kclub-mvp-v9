@@ -62,16 +62,22 @@ export default async function ProfilePage({ params }: Props) {
     <div className="space-y-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {tDashboard("welcome", { name: member.displayName || "Member" })}
+          {tDashboard("welcome", {
+            name: member.displayName || tDashboard("memberFallback"),
+          })}
         </h1>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="companies">My Companies</TabsTrigger>
-          <TabsTrigger value="edit">Edit Profile</TabsTrigger>
+          <TabsTrigger value="overview">
+            {tDashboard("tabOverview")}
+          </TabsTrigger>
+          <TabsTrigger value="billing">{tDashboard("tabBilling")}</TabsTrigger>
+          <TabsTrigger value="companies">
+            {tDashboard("tabCompanies")}
+          </TabsTrigger>
+          <TabsTrigger value="edit">{tDashboard("tabEditProfile")}</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-8 md:grid-cols-2">
@@ -184,7 +190,7 @@ export default async function ProfilePage({ params }: Props) {
                           {tDashboard("name")}
                         </div>
                         <div className="font-medium tracking-wider text-sm text-foreground/90 uppercase">
-                          {member.displayName || "MEMBER"}
+                          {member.displayName || tDashboard("memberFallback")}
                         </div>
                       </div>
 
@@ -235,7 +241,7 @@ export default async function ProfilePage({ params }: Props) {
           <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
             <CardHeader>
               <CardTitle className="text-xl font-serif text-accent">
-                Public Profile
+                {tDashboard("publicProfile")}
               </CardTitle>
             </CardHeader>
             <CardContent>

@@ -1,37 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { moderateCompanyAction } from "@/actions/company";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function ModerateActions({ companyId }: { companyId: string }) {
+  const t = useTranslations("admin.companies");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleApprove = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to approve this company for the public directory?",
-      )
-    )
-      return;
+    if (!confirm(t("approveConfirm"))) return;
 
     setIsLoading(true);
     const res = await moderateCompanyAction(companyId, "approved");
     setIsLoading(false);
 
     if (res.success) {
-      alert("Company approved successfully!");
+      alert(t("approved"));
       router.refresh();
     } else {
-      alert(`Error: ${res.error}`);
+      alert(t("actionFailed", { error: res.error ?? "" }));
     }
   };
 
   const handleReject = async () => {
-    const reason = window.prompt("Reason for rejection (will be saved in DB):");
+    const reason = window.prompt(t("rejectPrompt"));
     if (reason === null) return; // cancelled
 
     setIsLoading(true);
@@ -39,10 +36,10 @@ export function ModerateActions({ companyId }: { companyId: string }) {
     setIsLoading(false);
 
     if (res.success) {
-      alert("Company rejected.");
+      alert(t("rejected"));
       router.refresh();
     } else {
-      alert(`Error: ${res.error}`);
+      alert(t("actionFailed", { error: res.error ?? "" }));
     }
   };
 
@@ -55,7 +52,7 @@ export function ModerateActions({ companyId }: { companyId: string }) {
         disabled={isLoading}
         className="text-green-500 hover:text-green-600 hover:bg-green-500/10"
       >
-        <Check className="w-4 h-4 mr-1" /> Approve
+        <Check className="w-4 h-4 mr-1" /> {t("approve")}
       </Button>
       <Button
         variant="outline"
@@ -64,7 +61,7 @@ export function ModerateActions({ companyId }: { companyId: string }) {
         disabled={isLoading}
         className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
       >
-        <X className="w-4 h-4 mr-1" /> Reject
+        <X className="w-4 h-4 mr-1" /> {t("reject")}
       </Button>
     </div>
   );

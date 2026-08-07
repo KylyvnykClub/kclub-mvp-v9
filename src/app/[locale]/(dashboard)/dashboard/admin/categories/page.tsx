@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { listAllCategories } from "@/data/companies";
@@ -15,6 +15,8 @@ export default async function AdminCategoriesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations("admin.categories");
+
   const result = await getCurrentMember();
   if (!result || !result.member || result.member.role !== "admin") {
     redirect(`/${locale}/dashboard/profile`);
@@ -26,12 +28,9 @@ export default async function AdminCategoriesPage({ params }: Props) {
     <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          Business Categories
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Manage the taxonomy of business categories used during company
-          registration.
-        </p>
+        <p className="text-muted-foreground mt-2">{t("description")}</p>
       </div>
 
       <div className="border border-border/50 overflow-hidden">
@@ -40,22 +39,22 @@ export default async function AdminCategoriesPage({ params }: Props) {
             <thead>
               <tr className="border-b border-border/50 bg-muted/50">
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                  ID
+                  {t("colId")}
                 </th>
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                  Block
+                  {t("colBlock")}
                 </th>
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                  Category
+                  {t("colCategory")}
                 </th>
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                  Subcategory
+                  {t("colSubcategory")}
                 </th>
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                  Status
+                  {t("colStatus")}
                 </th>
                 <th className="p-4 font-medium text-sm text-muted-foreground uppercase tracking-wider text-right">
-                  Actions
+                  {t("colActions")}
                 </th>
               </tr>
             </thead>
@@ -78,7 +77,9 @@ export default async function AdminCategoriesPage({ params }: Props) {
                       }
                       className="rounded-none"
                     >
-                      {cat.status}
+                      {cat.status === "ACTIVE"
+                        ? t("statusActive")
+                        : t("statusInactive")}
                     </Badge>
                   </td>
                   <td className="p-4 text-right">
@@ -93,7 +94,7 @@ export default async function AdminCategoriesPage({ params }: Props) {
                         size="sm"
                         className="rounded-none text-xs h-8"
                       >
-                        Toggle
+                        {t("toggle")}
                       </Button>
                     </form>
                   </td>

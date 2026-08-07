@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   createCheckoutSessionAction,
   createPortalSessionAction,
@@ -24,6 +25,8 @@ export function CompanyList({
   companies: CompanyRow[];
   subscriptions: SubscriptionRow[];
 }) {
+  const t = useTranslations("billing");
+  const tCompany = useTranslations("company");
   const [isPending, startTransition] = useTransition();
 
   const handleCheckout = (companyId: string) => {
@@ -34,7 +37,7 @@ export function CompanyList({
       try {
         await createCheckoutSessionAction(priceId, companyId);
       } catch {
-        alert("Failed to start checkout");
+        alert(t("checkoutFailed"));
       }
     });
   };
@@ -44,16 +47,22 @@ export function CompanyList({
       try {
         await createPortalSessionAction();
       } catch {
-        alert("Failed to open portal");
+        alert(t("portalFailedAlert"));
       }
     });
+  };
+
+  const moderationLabel = (status: string) => {
+    if (status === "approved") return tCompany("moderationApproved");
+    if (status === "rejected") return tCompany("moderationRejected");
+    return tCompany("moderationPending");
   };
 
   if (companies.length === 0) {
     return (
       <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
         <CardContent className="p-8 text-center text-muted-foreground">
-          You have not registered any companies yet.
+          {t("noCompanies")}
         </CardContent>
       </Card>
     );
@@ -77,19 +86,19 @@ export function CompanyList({
                     {company.name}
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    Moderation Status:{" "}
+                    {t("moderationStatusLabel")}{" "}
                     <Badge variant="outline" className="uppercase text-[10px]">
-                      {company.moderationStatus}
+                      {moderationLabel(company.moderationStatus)}
                     </Badge>
                   </CardDescription>
                 </div>
                 {isActive ? (
                   <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">
-                    PAID
+                    {t("paid")}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-muted-foreground">
-                    UNPAID
+                    {t("unpaid")}
                   </Badge>
                 )}
               </div>
@@ -98,28 +107,27 @@ export function CompanyList({
               {isActive ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    This company has an active listing subscription.
+                    {t("activeListing")}
                   </p>
                   <Button
                     onClick={handlePortal}
                     disabled={isPending}
                     variant="outline"
                   >
-                    {isPending ? "Loading..." : "Manage Subscription"}
+                    {isPending ? t("loading") : t("manageButton")}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    To publish this company in the public directory (once
-                    approved), an active listing subscription is required.
+                    {t("listingRequired")}
                   </p>
                   <Button
                     onClick={() => handleCheckout(company.id)}
                     disabled={isPending}
                     className="bg-accent text-accent-foreground hover:bg-accent/90"
                   >
-                    {isPending ? "Loading..." : "Subscribe Listing ($19.99/mo)"}
+                    {isPending ? t("loading") : t("subscribeListing")}
                   </Button>
                 </div>
               )}
