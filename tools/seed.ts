@@ -65,8 +65,10 @@ const PLANS: StripePlan[] = [
 
 async function seedStripe(): Promise<void> {
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-  if (!STRIPE_SECRET_KEY) {
-    console.warn("⚠️  STRIPE_SECRET_KEY not set — skipping Stripe seed.");
+  if (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.includes("placeholder")) {
+    console.warn(
+      "⚠️  STRIPE_SECRET_KEY not set or is placeholder — skipping Stripe seed.",
+    );
     return;
   }
 
@@ -171,9 +173,9 @@ const DEFAULT_FLAGS: Array<{
 async function seedFeatureFlags(): Promise<void> {
   for (const flag of DEFAULT_FLAGS) {
     await sql`
-      INSERT INTO feature_flag (key, enabled, description, created_at, updated_at)
-      VALUES (${flag.key}, ${flag.enabled}, ${flag.description}, now(), now())
-      ON CONFLICT (key) DO NOTHING
+      INSERT INTO feature_flag (name, enabled, updated_at)
+      VALUES (${flag.key}, ${flag.enabled}, now())
+      ON CONFLICT (name) DO NOTHING
     `;
     console.log(`  ✓ Flag "${flag.key}" = ${flag.enabled}`);
   }
