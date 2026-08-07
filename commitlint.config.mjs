@@ -21,6 +21,7 @@ export default {
         "audit",
         "platform",
         "web",
+        "ui",
         // Not modules, but real places a change lands.
         "deps",
         "ci",
