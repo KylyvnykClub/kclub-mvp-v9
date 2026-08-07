@@ -14,12 +14,11 @@ Plan: `docs/delivery/phase-4.md` (5 tasks, exit checks, demo script).
 ## Where we are
 
 |Task|Status|
-|-|-|
-|T-4.1 VIP checkout|partial — code committed (`d8e3948`); **no-grant test missing**|
+|T-4.1 VIP checkout|done — test added (`tests/checkout-success.integration.test.ts`)|
 |T-4.2 EN legal docs|blocked — awaiting EN source text from client counsel|
 |T-4.3 beta seed|done (`f761c61`)|
 |T-4.4 i18n sweep|done (`f761c61`)|
-|T-4.5 staging verification|open (manual; depends on T-4.1/4.2/4.3)|
+|T-4.5 staging verification|open (manual; depends on T-4.2/4.3)|
 
 Exit checks already verified locally: `check-plan.py --strict`, `check-docs.py
 --strict`, `pnpm verify` (all green; 139 unit tests).
@@ -64,18 +63,12 @@ Exit checks already verified locally: `check-plan.py --strict`, `check-docs.py
 1. `src/app/fonts.ts` Manrope swap — uncommitted since 2026-08-06, not visually
    verified. Commit as `chore(web)`.
 2. `outputs/` untracked project-tracker artifact — add to `.gitignore`.
-3. T-4.1 no-grant test: prove direct visit to checkout success URL does not
-   change card tier (success page grants nothing by construction — it is a pure
-   display page — but the test is required by phase-4.md/phase-3.md T-3.2).
 
 ## Next steps (suggested order)
 
-1. `/commit` this session's work (two logical commits: `feat(platform): beta
-   seed` + `feat(web): i18n full sweep`, plus `chore(web)` font + `docs` row).
-2. Write the T-4.1 no-grant test → flip T-4.1/T-3.2 to done.
-3. Run `pnpm db:seed:beta` on staging/preview (NOT the unknown Neon instance
+1. Run `pnpm db:seed:beta` on staging/preview (NOT the unknown Neon instance
    without confirming it is throwaway), then T-4.5 demo script.
-4. T-4.2 as soon as EN legal text arrives: drop `content/legal/{id}.en.mdx`
+2. T-4.2 as soon as EN legal text arrives: drop `content/legal/{id}.en.mdx`
    files, set `authoritative: true` on EN, `false` on RU base.
 
 ## Learnings
