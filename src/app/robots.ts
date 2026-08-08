@@ -1,0 +1,13 @@
+import { MetadataRoute } from "next";
+import { env } from "@/env";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/dashboard/admin/", "/api/"],
+    },
+    sitemap: `${env.server.BASE_URL || "https://kylyvnyk.club"}/sitemap.xml`,
+  };
+}

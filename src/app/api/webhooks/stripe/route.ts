@@ -52,6 +52,18 @@ export async function POST(req: Request) {
       }
     });
 
+    if (process.env.NODE_ENV === "development") {
+      // Automatically trigger outbox drain in development mode
+      // since Vercel Cron is not running locally.
+      fetch(new URL("/api/cron/outbox-drain", req.url).toString(), {
+        headers: env.server.CRON_SECRET
+          ? { authorization: `Bearer ${env.server.CRON_SECRET}` }
+          : undefined,
+      }).catch((err) =>
+        console.error("Auto-drain trigger failed in dev:", err),
+      );
+    }
+
     return new NextResponse(null, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

@@ -50,10 +50,36 @@ export function staffAtLeast(
     "staff_support" | "staff_moderator" | "staff_admin" | "staff_owner",
 ): boolean {
   if (!isStaff(actor)) return false;
+  // eslint-disable-next-line security/detect-object-injection
   return (STAFF_RANK[actor.role] ?? 0) >= (STAFF_RANK[minimumRole] ?? 0);
 }
 
 export function actorId(actor: Actor): string | null {
   if (actor.type === "guest" || actor.type === "system") return null;
   return actor.id;
+}
+
+export function buildActor(member: { id: string; role: Role }): Actor {
+  if (member.role.startsWith("staff_")) {
+    return {
+      type: "staff",
+      id: member.id,
+      role: member.role as Extract<Role, `staff_${string}`>,
+    };
+  }
+
+  // Note: partner_owner will require injecting companyIds in the future
+  if (member.role === "partner_owner") {
+    return {
+      type: "partner_owner",
+      id: member.id,
+      companyIds: [],
+    };
+  }
+
+  return {
+    type: "member",
+    id: member.id,
+    role: member.role as "member" | "member_vip",
+  };
 }

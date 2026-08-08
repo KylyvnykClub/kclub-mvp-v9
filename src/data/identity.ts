@@ -83,6 +83,7 @@ export async function createSessionTx(
     sessionToken: string;
     userAgent: string;
     ipAddress: string;
+    isPartialSession?: boolean;
   },
 ): Promise<void> {
   await db.transaction(async (tx) => {
@@ -91,6 +92,7 @@ export async function createSessionTx(
       token: input.sessionToken,
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
+      isPartialSession: input.isPartialSession ?? false,
     });
 
     await appendAuditEntry(tx, {
@@ -129,4 +131,37 @@ export async function deleteSessionByToken(
   token: string,
 ): Promise<void> {
   await db.delete(sessions).where(eq(sessions.token, token));
+}
+
+export async function upgradeSessionTx(
+  db: DbClient,
+  token: string,
+  memberId: string,
+  ipAddress: string,
+  userAgent: string,
+  newSecret?: string,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(sessions)
+      .set({ isPartialSession: false })
+      .where(eq(sessions.token, token));
+
+    if (newSecret) {
+      await tx
+        .update(members)
+        .set({ totpEnabled: true, totpSecret: newSecret })
+        .where(eq(members.id, memberId));
+    }
+
+    await appendAuditEntry(tx, {
+      actorType: "member",
+      actorId: memberId,
+      action: "member.totp_verified",
+      subjectType: "member",
+      subjectId: memberId,
+      ip: ipAddress,
+      userAgent,
+    });
+  });
 }

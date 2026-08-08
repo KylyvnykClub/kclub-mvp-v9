@@ -1,4 +1,11 @@
-import { pgTable, text, uuid, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  uuid,
+  timestamp,
+  varchar,
+  boolean,
+} from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
 import { members } from "./members";
 
@@ -19,4 +26,7 @@ export const sessions = pgTable("sessions", {
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+
+  // For TOTP multi-step login
+  isPartialSession: boolean("is_partial_session").notNull().default(false),
 });

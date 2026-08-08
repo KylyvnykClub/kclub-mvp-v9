@@ -150,7 +150,23 @@ export async function loginAction(formData: FormData) {
       ipAddress,
     });
 
-    if (result.success && result.sessionToken) {
+    if (result.success && result.sessionToken && result.requiresTotp) {
+      const cookieStore = await cookies();
+      cookieStore.set("session", result.sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15, // 15 minutes for partial session
+      });
+      return {
+        success: true,
+        requiresTotp: true,
+        setupTotp: result.setupTotp,
+        totpUri: result.totpUri,
+        totpSecret: result.totpSecret,
+      };
+    } else if (result.success && result.sessionToken) {
       const cookieStore = await cookies();
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,
@@ -165,6 +181,52 @@ export async function loginAction(formData: FormData) {
     }
   } catch {
     return { success: false, error: "Login failed" };
+  }
+}
+
+const verifyTotpSchema = z.object({
+  code: z.string().min(6).max(6),
+  newSecret: z.string().optional(),
+});
+
+export async function verifyTotpAction(formData: FormData) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("session")?.value;
+    if (!token) {
+      return { success: false, error: "Session expired" };
+    }
+
+    const headerList = await headers();
+    const userAgent = headerList.get("user-agent") || "unknown";
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+
+    const data = verifyTotpSchema.parse(Object.fromEntries(formData));
+
+    const result = await IdentityService.verifyTotp({
+      sessionToken: token,
+      code: data.code,
+      newSecret: data.newSecret,
+      userAgent,
+      ipAddress,
+    });
+
+    if (result.success) {
+      // Upgrade the cookie duration to full 30 days
+      cookieStore.set("session", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+      return { success: true };
+    }
+
+    return { success: false, error: result.error };
+  } catch {
+    return { success: false, error: "Verification failed" };
   }
 }
 

@@ -1,4 +1,5 @@
-import type { InsertClient } from "./db";
+import { desc, ilike, or } from "drizzle-orm";
+import type { DbClient, InsertClient } from "./db";
 import { auditLog } from "./schema/audit-log";
 
 export interface AuditEntry {
@@ -33,4 +34,25 @@ export async function appendAuditEntry(
     .returning({ id: auditLog.id, createdAt: auditLog.createdAt });
 
   return row!;
+}
+
+export async function searchAuditLogs(db: DbClient, query?: string) {
+  const baseQuery = db
+    .select()
+    .from(auditLog)
+    .orderBy(desc(auditLog.createdAt))
+    .limit(100);
+
+  if (query) {
+    const searchPattern = `%${query}%`;
+    return await baseQuery.where(
+      or(
+        ilike(auditLog.action, searchPattern),
+        ilike(auditLog.actorId, searchPattern),
+        ilike(auditLog.subjectId, searchPattern),
+      ),
+    );
+  }
+
+  return await baseQuery;
 }

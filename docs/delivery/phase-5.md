@@ -9,7 +9,7 @@
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
 |T-5.1|Move from Phase 4: English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|—|1.5d|open|
-|T-5.2|Staff authentication with TOTP enforcement (second factor mandatory for `staff_*` roles)|FR-080|—|2d|open|
+|T-5.2|Staff authentication with TOTP enforcement (second factor mandatory for `staff_*` roles)|FR-080|—|2d|DONE|
 |T-5.3|Support Dashboard: total members, active members, new members (7d), companies/referrals awaiting moderation|FR-081|T-5.2|1d|open|
 |T-5.4|Admin Dashboard: 30d revenue, active subscriptions by type, renewals due (7d), 50 recent payments, revenue by country (map)|FR-082|T-5.2|2d|open|
 |T-5.5|Member Directory & Admin: find members (phone/serial/name), view history, block/unblock with reason|FR-083, FR-084|T-5.2|2d|open|

@@ -2,6 +2,8 @@ import { getMembersListAction } from "@/actions/admin-members";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import {
   Table,
   TableBody,
@@ -27,7 +29,12 @@ export default async function AdminMembersPage({
   const tCard = await getTranslations("card");
 
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin") {
+  if (!session?.member) {
+    redirect(`/${locale}/login`);
+  }
+
+  const actor = buildActor(session.member);
+  if (!can(actor, "block", "member")) {
     redirect(`/${locale}/dashboard`);
   }
 

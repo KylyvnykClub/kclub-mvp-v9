@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { DashboardHeader } from "./_components/dashboard-header";
+import { buildActor } from "@/domain/actor";
 
 type Props = {
   children: ReactNode;
@@ -20,7 +21,7 @@ export default async function DashboardLayout({ children, params }: Props) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardHeader isAdmin={result.member.role === "admin"} />
+      <DashboardHeader actor={buildActor(result.member)} />
       <main className="flex-1">
         <div className="container mx-auto py-8">{children}</div>
       </main>

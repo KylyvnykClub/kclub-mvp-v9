@@ -3,7 +3,7 @@
     "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
     "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
     "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
-    "loading": "Loading…",
+    "loading": "Loading\u00e2\u20ac\u00a6",
     "error": "Something went wrong",
     "notFound": "Page not found",
     "back": "Back",
@@ -84,7 +84,7 @@
       "uk": "Ukrainian",
       "ru": "Russian"
     },
-    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
+    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms \u00c2\u00a729\u00e2\u20ac\u201c30)</terms>",
     "ageLabel": "I confirm that I am 18 years of age or older"
   },
   "dashboard": {
@@ -130,7 +130,14 @@
     "locationPlaceholder": "e.g. Kyiv, Ukraine",
     "linkedinLabel": "LinkedIn URL",
     "twitterLabel": "Twitter / X URL",
-    "saveProfile": "Save Profile"
+    "saveProfile": "Save Profile",
+    "navAdminSupport": "Support",
+    "navAdminMembers": "Members",
+    "navAdminFlags": "Feature Flags",
+    "navAdminAudit": "Audit Logs",
+    "dataPrivacy": "Data Privacy",
+    "dataPrivacyDesc": "You can download a copy of your personal data for GDPR compliance.",
+    "exportData": "Export My Data"
   },
   "card": {
     "membershipCard": "Membership Card",
@@ -232,7 +239,7 @@
           "copy": "Members, partners, and warm introductions."
         }
       },
-      "flagsMarquee": "Members from every region, including —"
+      "flagsMarquee": "Members from every region, including \u00e2\u20ac\u201d"
     },
     "stats": {
       "members": "Members",
@@ -276,7 +283,7 @@
       "steps": [
         {
           "title": "Apply",
-          "description": "Submit your membership application in a few minutes — no paperwork, just your details."
+          "description": "Submit your membership application in a few minutes \u00e2\u20ac\u201d no paperwork, just your details."
         },
         {
           "title": "Get Verified",
@@ -521,7 +528,7 @@
       "refundPolicy": "Refund Policy",
       "disclaimer": "Disclaimer",
       "contactUs": "Contact Us",
-      "copyright": "© All rights reserved."
+      "copyright": "\u00c2\u00a9 All rights reserved."
     },
     "partners": {
       "eyebrow": "Trusted Elite Brands",
@@ -747,6 +754,47 @@
       "warning": "Warning",
       "warningText": "Changing feature flags takes effect immediately across the entire system. Please proceed with caution.",
       "rowHint": "Toggle whether this feature is active."
+    },
+    "support": {
+      "title": "Support Dashboard",
+      "description": "Overview of member and moderation statistics.",
+      "totalMembers": "Total Members",
+      "activeMembers": "Active Members",
+      "newMembers": "New Members",
+      "last7Days": "Last 7 days",
+      "pendingCompanies": "Pending Companies",
+      "pendingReferrals": "Pending Referrals",
+      "clickToReview": "Click to review"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "description": "Overview of financial metrics and subscriptions.",
+      "revenue30d": "30-Day Revenue",
+      "last30Days": "Last 30 days",
+      "activeVip": "Active VIP Subscriptions",
+      "activeCompany": "Active Company Subscriptions",
+      "renewalsDue": "Renewals Due",
+      "next7Days": "Next 7 days",
+      "recentPayments": "Recent Payments",
+      "recentPaymentsDesc": "Last 50 successful payments",
+      "noPayments": "No recent payments found",
+      "unknownCustomer": "Unknown Customer",
+      "viewReceipt": "View Receipt",
+      "revenueByCountry": "Revenue by Country",
+      "revenueByCountryDesc": "Revenue distribution from the last 30 days",
+      "noData": "No data available"
+    },
+    "audit": {
+      "title": "Audit Logs",
+      "description": "System-wide activity logs.",
+      "searchPlaceholder": "Search action or ID...",
+      "search": "Search",
+      "colDate": "Date",
+      "colActor": "Actor",
+      "colAction": "Action",
+      "colSubject": "Subject",
+      "colDetails": "Details",
+      "noResults": "No audit logs found."
     }
   }
 }
