@@ -7,7 +7,14 @@ export const memberStatusEnum = pgEnum("member_status", [
   "pending_deletion",
 ]);
 
-export const memberRoleEnum = pgEnum("member_role", ["user", "admin"]);
+export const memberRoleEnum = pgEnum("member_role", [
+  "user",
+  "admin",
+  "staff_support",
+  "staff_moderator",
+  "staff_admin",
+  "staff_owner",
+]);
 
 export const members = pgTable("members", {
   ...baseColumns,
@@ -26,6 +33,10 @@ export const members = pgTable("members", {
 
   // Status tracking (FR-009, FR-010)
   status: memberStatusEnum("status").notNull().default("active"),
+
+  // TOTP Tracking (FR-080)
+  totpSecret: text("totp_secret"),
+  totpEnabled: boolean("totp_enabled").notNull().default(false),
 
   // Role tracking
   role: memberRoleEnum("role").notNull().default("user"),

@@ -2,6 +2,8 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { getFeatureFlagsAction } from "@/actions/feature-flags";
 import { redirect } from "next/navigation";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { FlagRow } from "./_components/flag-row";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -17,7 +19,11 @@ export default async function AdminFlagsPage({
   const t = await getTranslations("admin.flags");
 
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin") {
+  if (!session?.member) {
+    redirect(`/${locale}/login`);
+  }
+  const actor = buildActor(session.member);
+  if (!can(actor, "manage_flags", "feature_flag")) {
     redirect(`/${locale}/dashboard`);
   }
 

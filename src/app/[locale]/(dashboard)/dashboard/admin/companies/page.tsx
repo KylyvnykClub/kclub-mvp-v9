@@ -2,6 +2,8 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getPendingCompaniesAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { ModerateActions } from "./_components/moderate-actions";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,8 +18,12 @@ export default async function AdminCompaniesPage({
   const t = await getTranslations("admin.companies");
 
   const auth = await getCurrentMember();
-  if (!auth?.member || auth.member.role !== "admin") {
-    redirect(`/${locale}/dashboard/profile`);
+  if (!auth?.member) {
+    redirect(`/${locale}/login`);
+  }
+  const actor = buildActor(auth.member);
+  if (!can(actor, "read", "company")) {
+    redirect(`/${locale}/dashboard`);
   }
 
   const result = await getPendingCompaniesAction();

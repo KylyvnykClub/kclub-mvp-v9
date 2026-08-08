@@ -9,6 +9,8 @@ import {
   type FlagName,
 } from "@/data/feature-flags";
 import { getCurrentMember } from "./session";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { revalidatePath } from "next/cache";
 
 export async function isFeatureEnabled(name: FlagName): Promise<boolean> {
@@ -24,7 +26,11 @@ function assertFlagName(name: string): FlagName {
 
 export async function toggleFeatureFlagAction(name: string, enabled: boolean) {
   const auth = await getCurrentMember();
-  if (!auth?.member || auth.member.role !== "admin") {
+  if (!auth?.member) {
+    throw new Error("Unauthorized");
+  }
+  const actor = buildActor(auth.member);
+  if (!can(actor, "manage_flags", "feature_flag")) {
     throw new Error("Unauthorized");
   }
 
@@ -37,7 +43,11 @@ export async function toggleFeatureFlagAction(name: string, enabled: boolean) {
 
 export async function getFeatureFlagsAction() {
   const auth = await getCurrentMember();
-  if (!auth?.member || auth.member.role !== "admin") {
+  if (!auth?.member) {
+    throw new Error("Unauthorized");
+  }
+  const actor = buildActor(auth.member);
+  if (!can(actor, "manage_flags", "feature_flag")) {
     throw new Error("Unauthorized");
   }
 

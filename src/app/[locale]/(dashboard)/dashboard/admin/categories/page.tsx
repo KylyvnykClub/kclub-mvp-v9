@@ -3,6 +3,8 @@ import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { listAllCategories } from "@/data/companies";
 import { redirect } from "next/navigation";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toggleCategoryStatusAction } from "@/actions/admin";
@@ -18,8 +20,13 @@ export default async function AdminCategoriesPage({ params }: Props) {
   const t = await getTranslations("admin.categories");
 
   const result = await getCurrentMember();
-  if (!result || !result.member || result.member.role !== "admin") {
-    redirect(`/${locale}/dashboard/profile`);
+  if (!result || !result.member) {
+    redirect(`/${locale}/login`);
+  }
+
+  const actor = buildActor(result.member);
+  if (!can(actor, "read", "company")) {
+    redirect(`/${locale}/dashboard`);
   }
 
   const categories = await listAllCategories(db);

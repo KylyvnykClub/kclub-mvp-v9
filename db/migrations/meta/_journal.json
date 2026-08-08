@@ -64,6 +64,13 @@
       "when": 1786014012315,
       "tag": "20260806110012_orange_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786175750464,
+      "tag": "20260808075550_quick_vertigo",
+      "breakpoints": true
     }
   ]
 }

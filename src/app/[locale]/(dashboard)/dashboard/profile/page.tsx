@@ -238,16 +238,38 @@ export default async function ProfilePage({ params }: Props) {
         </TabsContent>
 
         <TabsContent value="edit">
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-serif text-accent">
-                {tDashboard("publicProfile")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EditProfileForm profile={profile} />
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+              <CardHeader>
+                <CardTitle className="text-xl font-serif text-accent">
+                  {tDashboard("publicProfile")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EditProfileForm profile={profile} />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+              <CardHeader>
+                <CardTitle className="text-xl font-serif text-accent">
+                  {tDashboard("dataPrivacy")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {tDashboard("dataPrivacyDesc")}
+                </p>
+                <a
+                  href="/api/export/member"
+                  download
+                  className="inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {tDashboard("exportData")}
+                </a>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

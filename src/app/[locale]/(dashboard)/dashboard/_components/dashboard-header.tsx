@@ -6,8 +6,10 @@ import Link from "next/link";
 import { logoutAction } from "@/actions/auth";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Actor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 
-export function DashboardHeader({ isAdmin }: { isAdmin?: boolean }) {
+export function DashboardHeader({ actor }: { actor: Actor }) {
   const tDashboard = useTranslations("dashboard");
   const tAuth = useTranslations("auth");
   const locale = useLocale();
@@ -49,8 +51,14 @@ export function DashboardHeader({ isAdmin }: { isAdmin?: boolean }) {
             >
               {tDashboard("navRegisterCompany")}
             </Link>
-            {isAdmin && (
+            {can(actor, "read", "company") && (
               <>
+                <Link
+                  href={`/${locale}/dashboard/admin/support`}
+                  className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
+                >
+                  {tDashboard("navAdminSupport")}
+                </Link>
                 <Link
                   href={`/${locale}/dashboard/admin/categories`}
                   className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
@@ -64,6 +72,30 @@ export function DashboardHeader({ isAdmin }: { isAdmin?: boolean }) {
                   {tDashboard("navAdminModeration")}
                 </Link>
               </>
+            )}
+            {can(actor, "block", "member") && (
+              <Link
+                href={`/${locale}/dashboard/admin/members`}
+                className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
+              >
+                {tDashboard("navAdminMembers")}
+              </Link>
+            )}
+            {can(actor, "manage_flags", "feature_flag") && (
+              <Link
+                href={`/${locale}/dashboard/admin/flags`}
+                className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
+              >
+                {tDashboard("navAdminFlags")}
+              </Link>
+            )}
+            {can(actor, "read", "audit_log") && (
+              <Link
+                href={`/${locale}/dashboard/admin/audit`}
+                className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
+              >
+                {tDashboard("navAdminAudit")}
+              </Link>
             )}
           </nav>
         </div>

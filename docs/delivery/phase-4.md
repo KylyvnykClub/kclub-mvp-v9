@@ -18,11 +18,11 @@ scope.
 
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
-|T-4.1|Close T-3.2: VIP checkout reads single price from env, success/cancel pages grant nothing, locale-aware URLs, no-grant test|—|T-3.2|0.5d|partial — checkout action + success/cancel pages + locale-aware URLs done (`d8e3948`); missing: no-grant test|
-|T-4.2|English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|T-1.4|1.5d|blocked — awaiting EN source text from client counsel|
+|T-4.1|Close T-3.2: VIP checkout reads single price from env, success/cancel pages grant nothing, locale-aware URLs, no-grant test|—|T-3.2|0.5d|done — checkout action + success/cancel pages + locale-aware URLs done (`d8e3948`), no-grant test added|
+|T-4.2|English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|T-1.4|1.5d|moved to phase 5 — awaiting EN source text from client counsel|
 |T-4.3|Beta seed script: 30 companies with profiles and categories (published), 50 members with cards, idempotent|—|T-1.1, T-2.1|1d|done — `pnpm db:seed:beta` adds 50 members + 30 companies + 30 synthetic listing subscriptions, idempotent|
 |T-4.4|Hardcoded English strings audit: find and i18n any remaining raw-English labels in components (billing-section, card-showcase, admin pages)|—|—|0.5d|done — full sweep: 3 new namespaces (`catalogue`, `company`, `admin`), 496 keys × 3 locales, all admin pages + forms + referral lists + metadata i18n'd|
-|T-4.5|Staging deployment verification: seed runs, sign-up with SMS works, card QR verifies, catalogue browsable, VIP checkout completes via Stripe test mode|—|T-4.1, T-4.2, T-4.3|0.5d|open|
+|T-4.5|Staging deployment verification: seed runs, sign-up with SMS works, card QR verifies, catalogue browsable, VIP checkout completes via Stripe test mode|—|T-4.1, T-4.2, T-4.3|0.5d|done|
 
 **Total: ~4 focused days.** T-4.2 (legal translation) is the largest item; T-4.5
 is a manual verification session.

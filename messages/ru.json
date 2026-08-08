@@ -130,7 +130,14 @@
     "locationPlaceholder": "напр. Киев, Украина",
     "linkedinLabel": "URL LinkedIn",
     "twitterLabel": "URL Twitter / X",
-    "saveProfile": "Сохранить профиль"
+    "saveProfile": "Сохранить профиль",
+    "navAdminSupport": "Поддержка",
+    "navAdminMembers": "Участники",
+    "navAdminFlags": "Функции (Flags)",
+    "navAdminAudit": "Аудит",
+    "dataPrivacy": "Конфиденциальность данных",
+    "dataPrivacyDesc": "Вы можете скачать копию ваших личных данных для соответствия GDPR.",
+    "exportData": "Экспорт моих данных"
   },
   "card": {
     "membershipCard": "Карта участника",
@@ -747,6 +754,47 @@
       "warning": "Внимание",
       "warningText": "Изменение функциональных флагов вступает в силу немедленно во всей системе. Действуйте осторожно.",
       "rowHint": "Переключить активность этой функции."
+    },
+    "support": {
+      "title": "Дашборд поддержки",
+      "description": "Обзор статистики участников и модерации.",
+      "totalMembers": "Всего участников",
+      "activeMembers": "Активных участников",
+      "newMembers": "Новых участников",
+      "last7Days": "За последние 7 дней",
+      "pendingCompanies": "Компании на модерации",
+      "pendingReferrals": "Рефералы на модерации",
+      "clickToReview": "Нажмите для проверки"
+    },
+    "dashboard": {
+      "title": "Дашборд администратора",
+      "description": "Обзор финансовых показателей и подписок.",
+      "revenue30d": "Доход за 30 дней",
+      "last30Days": "За последние 30 дней",
+      "activeVip": "Активные VIP подписки",
+      "activeCompany": "Активные подписки компаний",
+      "renewalsDue": "Ожидаемые продления",
+      "next7Days": "В ближайшие 7 дней",
+      "recentPayments": "Последние платежи",
+      "recentPaymentsDesc": "Последние 50 успешных платежей",
+      "noPayments": "Нет недавних платежей",
+      "unknownCustomer": "Неизвестный клиент",
+      "viewReceipt": "Чек",
+      "revenueByCountry": "Доход по странам",
+      "revenueByCountryDesc": "Распределение дохода за последние 30 дней",
+      "noData": "Нет данных"
+    },
+    "audit": {
+      "title": "Аудит",
+      "description": "Журнал активности системы.",
+      "searchPlaceholder": "Поиск по действию или ID...",
+      "search": "Искать",
+      "colDate": "Дата",
+      "colActor": "Аккаунт",
+      "colAction": "Действие",
+      "colSubject": "Объект",
+      "colDetails": "Детали",
+      "noResults": "Записи не найдены."
     }
   }
 }

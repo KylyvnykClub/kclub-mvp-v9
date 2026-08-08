@@ -1,7 +1,7 @@
 import { eq, ilike, or } from "drizzle-orm";
 
 import type { DbClient } from "./db";
-import { cards, members } from "./schema";
+import { cards, companies, members, subscriptions } from "./schema";
 
 export async function findCardByMemberId(db: DbClient, memberId: string) {
   return db.query.cards.findFirst({
@@ -110,4 +110,30 @@ export async function insertCard(
     .returning();
 
   return card!;
+}
+
+export async function getMemberExportData(db: DbClient, memberId: string) {
+  const memberData = await db.query.members.findFirst({
+    where: eq(members.id, memberId),
+  });
+
+  const memberCards = await db.query.cards.findMany({
+    where: eq(cards.memberId, memberId),
+  });
+
+  const memberSubscriptions = await db.query.subscriptions.findMany({
+    where: eq(subscriptions.memberId, memberId),
+  });
+
+  const memberCompanies = await db.query.companies.findMany({
+    where: eq(companies.ownerId, memberId),
+  });
+
+  return {
+    exportDate: new Date().toISOString(),
+    member: memberData,
+    cards: memberCards,
+    subscriptions: memberSubscriptions,
+    companies: memberCompanies,
+  };
 }
