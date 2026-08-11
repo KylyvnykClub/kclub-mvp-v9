@@ -16,8 +16,11 @@ export const sessions = pgTable("sessions", {
     .notNull()
     .references(() => members.id, { onDelete: "cascade" }),
 
-  // The token issued to the client
+  // Legacy lookup column retained during expand/migrate.
   token: text("token").notNull().unique(),
+
+  // Hash used for new session lookup.
+  tokenHash: text("token_hash").unique(),
 
   // Auditing / Session management (FR-007)
   userAgent: text("user_agent").notNull(),

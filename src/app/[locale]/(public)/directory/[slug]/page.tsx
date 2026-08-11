@@ -12,6 +12,7 @@ import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
+import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -67,24 +68,32 @@ export default async function PartnerLandingPage({ params }: Props) {
   const isResident = !!session?.member;
 
   let canSendReferral = false;
-  const vipPriceId = process.env.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID;
-  if (session?.member?.canSendReferrals && vipPriceId) {
-    const vipSub = await findActiveSubscriptionByPrice(
-      db,
-      session.member.id,
-      vipPriceId,
-    );
+  if (session?.member?.canSendReferrals) {
+    let vipPriceId: string | null = null;
+    try {
+      vipPriceId = configuredCheckoutPriceId("vip");
+    } catch {
+      vipPriceId = null;
+    }
 
-    if (vipSub) {
-      const memberCompanies =
-        await listApprovedCompaniesWithSubscriptionsByOwner(
-          db,
-          session.member.id,
-        );
-
-      canSendReferral = memberCompanies.some((c) =>
-        c.subscriptions.some((s) => s.status === "active"),
+    if (vipPriceId) {
+      const vipSub = await findActiveSubscriptionByPrice(
+        db,
+        session.member.id,
+        vipPriceId,
       );
+
+      if (vipSub) {
+        const memberCompanies =
+          await listApprovedCompaniesWithSubscriptionsByOwner(
+            db,
+            session.member.id,
+          );
+
+        canSendReferral = memberCompanies.some((c) =>
+          c.subscriptions.some((s) => s.status === "active"),
+        );
+      }
     }
   }
 

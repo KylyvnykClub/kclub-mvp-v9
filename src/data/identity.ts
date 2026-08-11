@@ -1,8 +1,15 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
 import { cards, legalAcceptances, members, sessions } from "./schema";
+import { hashSessionToken } from "@/lib/session-token";
+
+function sessionTokenLookup(token: string) {
+  const tokenHash = hashSessionToken(token);
+
+  return or(eq(sessions.tokenHash, tokenHash), eq(sessions.token, token));
+}
 
 export async function findMemberByPhone(db: DbClient, phone: string) {
   return db.query.members.findFirst({
@@ -57,9 +64,12 @@ export async function registerMemberTx(
       tier: "free",
     });
 
+    const sessionTokenHash = hashSessionToken(input.sessionToken);
+
     await tx.insert(sessions).values({
       memberId: member!.id,
-      token: input.sessionToken,
+      token: sessionTokenHash,
+      tokenHash: sessionTokenHash,
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
     });
@@ -87,9 +97,12 @@ export async function createSessionTx(
   },
 ): Promise<void> {
   await db.transaction(async (tx) => {
+    const sessionTokenHash = hashSessionToken(input.sessionToken);
+
     await tx.insert(sessions).values({
       memberId: input.memberId,
-      token: input.sessionToken,
+      token: sessionTokenHash,
+      tokenHash: sessionTokenHash,
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
       isPartialSession: input.isPartialSession ?? false,
@@ -109,7 +122,7 @@ export async function createSessionTx(
 
 export async function findActiveSessionByToken(db: DbClient, token: string) {
   const session = await db.query.sessions.findFirst({
-    where: eq(sessions.token, token),
+    where: sessionTokenLookup(token),
     with: {
       member: true,
     },
@@ -130,7 +143,7 @@ export async function deleteSessionByToken(
   db: DbClient,
   token: string,
 ): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.token, token));
+  await db.delete(sessions).where(sessionTokenLookup(token));
 }
 
 export async function upgradeSessionTx(
@@ -145,7 +158,7 @@ export async function upgradeSessionTx(
     await tx
       .update(sessions)
       .set({ isPartialSession: false })
-      .where(eq(sessions.token, token));
+      .where(sessionTokenLookup(token));
 
     if (newSecret) {
       await tx

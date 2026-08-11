@@ -31,11 +31,8 @@ export function CompanyList({
 
   const handleCheckout = (companyId: string) => {
     startTransition(async () => {
-      const priceId =
-        process.env.NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID ||
-        "price_dummy_listing";
       try {
-        await createCheckoutSessionAction(priceId, companyId);
+        await createCheckoutSessionAction(companyId);
       } catch {
         alert(t("checkoutFailed"));
       }
