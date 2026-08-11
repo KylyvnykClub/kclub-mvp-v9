@@ -176,7 +176,7 @@ boundary with MSW in integration tests and are sandboxed in staging. Details in
 |Authorization and member-leak suites|Every push|Yes|
 |Localisation completeness|Every push|Yes|
 |Secret scan (`gitleaks`)|Every push|Yes|
-|Dependency audit (high/critical)|Every push|Yes|
+|Dependency audit (moderate and above)|Every push|Yes|
 |CodeQL|Every push|Yes|
 |Build succeeds|Every push|Yes|
 |Bundle size budget|Every push|Yes|
