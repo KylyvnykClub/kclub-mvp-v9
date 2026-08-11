@@ -10,12 +10,25 @@ import {
   setMemberStatus,
 } from "@/data/members";
 import { getCurrentMember } from "@/actions/session";
+import { buildActor, type PersistedRole } from "@/domain/actor";
+import { can, type Action, type Subject } from "@/domain/authorization";
 import crypto from "crypto";
+
+function requireAuthorized(
+  member: { id: string; role: PersistedRole } | undefined,
+  action: Action,
+  subject: Subject,
+) {
+  if (!member) throw new Error("Unauthorized");
+
+  const actor = buildActor(member);
+  if (!can(actor, action, subject)) throw new Error("Unauthorized");
+  return member;
+}
 
 export async function getMembersListAction(query: string = "") {
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin")
-    throw new Error("Unauthorized");
+  requireAuthorized(session?.member, "read", "member");
 
   const result = await searchMembers(db, query || undefined);
 
@@ -34,8 +47,11 @@ export async function blockMemberAction(
   reason: string,
 ) {
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin")
-    throw new Error("Unauthorized");
+  const member = requireAuthorized(
+    session?.member,
+    blocked ? "block" : "unblock",
+    "member",
+  );
 
   if (blocked && !reason) {
     throw new Error("Reason is required when blocking a member");
@@ -45,8 +61,8 @@ export async function blockMemberAction(
 
   // FR-087: Audit log
   await appendAuditEntry(db, {
-    actorType: session.member.role,
-    actorId: session.member.id,
+    actorType: member.role,
+    actorId: member.id,
     action: blocked ? "block_member" : "unblock_member",
     subjectType: "member",
     subjectId: memberId,
@@ -69,8 +85,7 @@ function generateSerial() {
 
 export async function revokeCardAction(cardId: string, reason: string) {
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin")
-    throw new Error("Unauthorized");
+  const member = requireAuthorized(session?.member, "revoke", "card");
 
   if (!reason) {
     throw new Error("Reason is required to revoke a card");
@@ -82,8 +97,8 @@ export async function revokeCardAction(cardId: string, reason: string) {
 
   // FR-087: Audit log
   await appendAuditEntry(db, {
-    actorType: session.member.role,
-    actorId: session.member.id,
+    actorType: member.role,
+    actorId: member.id,
     action: "revoke_card",
     subjectType: "card",
     subjectId: cardId,
@@ -98,8 +113,7 @@ export async function reissueCardAction(
   tier: "free" | "vip",
 ) {
   const session = await getCurrentMember();
-  if (!session?.member || session.member.role !== "admin")
-    throw new Error("Unauthorized");
+  const member = requireAuthorized(session?.member, "reissue", "card");
 
   const newCard = await insertCard(db, {
     memberId,
@@ -109,8 +123,8 @@ export async function reissueCardAction(
   });
 
   await appendAuditEntry(db, {
-    actorType: session.member.role,
-    actorId: session.member.id,
+    actorType: member.role,
+    actorId: member.id,
     action: "issue_card",
     subjectType: "card",
     subjectId: newCard.id,
