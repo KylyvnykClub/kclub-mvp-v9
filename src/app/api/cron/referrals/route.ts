@@ -2,15 +2,11 @@ import { NextResponse } from "next/server";
 import { db } from "@/data/db";
 import { expireDeliveredReferrals } from "@/data/referrals";
 import { env } from "@/env";
+import { authorizeCronRequest } from "@/modules/platform";
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("authorization");
-  if (
-    env.server.CRON_SECRET &&
-    authHeader !== `Bearer ${env.server.CRON_SECRET}`
-  ) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const unauthorized = authorizeCronRequest(req, env.server.CRON_SECRET);
+  if (unauthorized) return unauthorized;
 
   // FR-077: expire delivered referrals past their expiry, deleting the
   // contact details in the same statement.

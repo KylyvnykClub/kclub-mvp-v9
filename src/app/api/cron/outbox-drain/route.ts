@@ -7,6 +7,7 @@ import {
   BILLING_OUTBOX_TOPIC,
   reconcileSubscription,
 } from "@/modules/billing/projection";
+import { authorizeCronRequest } from "@/modules/platform";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 const fetchSubscription = stripe.subscriptions.retrieve.bind(stripe);
@@ -36,13 +37,8 @@ export interface DrainResult {
  * drain; SKIP LOCKED prevents two drains from taking the same row.
  */
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("authorization");
-  if (
-    env.server.CRON_SECRET &&
-    authHeader !== `Bearer ${env.server.CRON_SECRET}`
-  ) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const unauthorized = authorizeCronRequest(req, env.server.CRON_SECRET);
+  if (unauthorized) return unauthorized;
 
   const entries = await drainOutbox(db, BATCH_SIZE);
   const result: DrainResult = {
