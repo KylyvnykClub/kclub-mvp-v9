@@ -50,21 +50,28 @@ const config: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(config), {
-  // Suppresses source map uploading logs during build
-  silent: true,
+const nextConfig = withNextIntl(config);
+const sentryEnabled = Boolean(
+  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+);
 
-  // Hides source maps from generated client bundles
-  sourcemaps: {
-    disable: true,
-  },
+export default sentryEnabled
+  ? withSentryConfig(nextConfig, {
+      // Suppresses source map uploading logs during build
+      silent: true,
 
-  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  tunnelRoute: "/monitoring",
+      // Hides source maps from generated client bundles
+      sourcemaps: {
+        disable: true,
+      },
 
-  webpack: {
-    treeshake: {
-      removeDebugLogging: true,
-    },
-  },
-});
+      // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+      tunnelRoute: "/monitoring",
+
+      webpack: {
+        treeshake: {
+          removeDebugLogging: true,
+        },
+      },
+    })
+  : nextConfig;

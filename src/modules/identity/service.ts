@@ -10,6 +10,18 @@ import { generateToken, hashPassword, verifyPassword } from "./crypto";
 import { generateTotpSecret, verifyTotpCode } from "./totp";
 import { checkVerificationCode, sendVerificationCode } from "./twilio";
 import { upgradeSessionTx } from "@/data/identity";
+import { logger } from "@/lib/logger";
+
+function isPhoneUniquenessError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    "constraint" in error &&
+    error.code === "23505" &&
+    error.constraint === "members_phone_unique"
+  );
+}
 
 export class IdentityService {
   /**
@@ -68,10 +80,21 @@ export class IdentityService {
       });
 
       return { success: true, sessionToken };
-    } catch {
+    } catch (error) {
+      logger.error("Failed to create member account", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      if (isPhoneUniquenessError(error)) {
+        return {
+          success: false,
+          error: "Phone is already registered.",
+        };
+      }
+
       return {
         success: false,
-        error: "Failed to create account. Phone might be registered already.",
+        error: "Failed to create account. Please try again.",
       };
     }
   }
