@@ -53,7 +53,6 @@ export class IdentityService {
 
       // FR-020: membership card is issued automatically with registration.
       const serial = `KCLUB-${Math.floor(100000 + Math.random() * 900000)}`;
-      const cardToken = generateToken(16);
 
       await registerMemberTx(db, {
         phone: params.phone,
@@ -65,7 +64,6 @@ export class IdentityService {
         ipAddress: params.ipAddress,
         consents: params.consents,
         cardSerial: serial,
-        cardToken,
         sessionToken,
       });
 

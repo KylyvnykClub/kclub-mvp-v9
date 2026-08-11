@@ -1,8 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { eq, or } from "drizzle-orm";
 
 import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
 import { cards, legalAcceptances, members, sessions } from "./schema";
+import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 import { hashSessionToken } from "@/lib/session-token";
 
 function sessionTokenLookup(token: string) {
@@ -27,7 +29,6 @@ export interface RegisterMemberInput {
   ipAddress: string;
   consents: Array<{ documentId: string; version: string }>;
   cardSerial: string;
-  cardToken: string;
   sessionToken: string;
 }
 
@@ -57,10 +58,15 @@ export async function registerMemberTx(
       );
     }
 
+    const cardId = randomUUID();
+    const cardTokenHash = hashCardToken(createCardPublicTokenWithEnv(cardId));
+
     await tx.insert(cards).values({
+      id: cardId,
       memberId: member!.id,
       serial: input.cardSerial,
-      token: input.cardToken,
+      token: cardTokenHash,
+      tokenHash: cardTokenHash,
       tier: "free",
     });
 

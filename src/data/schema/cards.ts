@@ -25,6 +25,9 @@ export const cards = pgTable("cards", {
   // FR-022: Opaque, unguessable token for QR URL
   token: text("token").notNull().unique(),
 
+  // Hash used for card verification lookup.
+  tokenHash: text("token_hash").unique(),
+
   // FR-023: Tier
   tier: cardTierEnum("tier").notNull().default("free"),
 

@@ -12,7 +12,6 @@ import {
 import { getCurrentMember } from "@/actions/session";
 import { buildActor, type PersistedRole } from "@/domain/actor";
 import { can, type Action, type Subject } from "@/domain/authorization";
-import crypto from "crypto";
 
 function requireAuthorized(
   member: { id: string; role: PersistedRole } | undefined,
@@ -70,10 +69,6 @@ export async function blockMemberAction(
   });
 }
 
-function generateToken() {
-  return crypto.randomBytes(32).toString("hex");
-}
-
 function generateSerial() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const genGroup = () =>
@@ -118,7 +113,6 @@ export async function reissueCardAction(
   const newCard = await insertCard(db, {
     memberId,
     serial: generateSerial(),
-    token: generateToken(),
     tier,
   });
 

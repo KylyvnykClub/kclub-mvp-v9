@@ -78,6 +78,13 @@
       "when": 1786456199298,
       "tag": "20260811134959_hash_session_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786465200000,
+      "tag": "20260811162000_hash_card_tokens",
+      "breakpoints": true
     }
   ]
 }

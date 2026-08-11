@@ -1,12 +1,27 @@
+import { randomUUID } from "node:crypto";
 import { eq, ilike, or } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { cards, companies, members, subscriptions } from "./schema";
+import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
+
+function cardTokenLookup(token: string) {
+  const tokenHash = hashCardToken(token);
+
+  return or(eq(cards.tokenHash, tokenHash), eq(cards.token, token));
+}
 
 export async function findCardByMemberId(db: DbClient, memberId: string) {
-  return db.query.cards.findFirst({
+  const card = await db.query.cards.findFirst({
     where: eq(cards.memberId, memberId),
   });
+
+  if (!card) return null;
+
+  return {
+    ...card,
+    token: createCardPublicTokenWithEnv(card.id),
+  };
 }
 
 export async function findCardPublicByToken(db: DbClient, token: string) {
@@ -21,7 +36,7 @@ export async function findCardPublicByToken(db: DbClient, token: string) {
     })
     .from(cards)
     .innerJoin(members, eq(cards.memberId, members.id))
-    .where(eq(cards.token, token))
+    .where(cardTokenLookup(token))
     .limit(1);
 
   return rows[0] ?? null;
@@ -93,16 +108,20 @@ export async function insertCard(
   input: {
     memberId: string;
     serial: string;
-    token: string;
     tier: "free" | "vip";
   },
 ) {
+  const cardId = randomUUID();
+  const cardTokenHash = hashCardToken(createCardPublicTokenWithEnv(cardId));
+
   const [card] = await db
     .insert(cards)
     .values({
+      id: cardId,
       memberId: input.memberId,
       serial: input.serial,
-      token: input.token,
+      token: cardTokenHash,
+      tokenHash: cardTokenHash,
       tier: input.tier,
       status: "valid",
     })
