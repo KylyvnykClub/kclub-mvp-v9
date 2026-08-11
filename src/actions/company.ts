@@ -20,6 +20,8 @@ import { isFeatureEnabled } from "./feature-flags";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
+const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
+
 export async function getBlocksAction() {
   return listActiveCategoryBlocks(db);
 }
@@ -130,6 +132,10 @@ export async function registerCompanyAction(
 }
 
 export async function getPartnersListAction(filters?: PartnerFilters) {
+  if (SKIP_DB_PRERENDER) {
+    return [];
+  }
+
   const auth = await getCurrentMember();
   if (!auth?.member) {
     const isPublic = await isFeatureEnabled("public_catalogue");
@@ -144,6 +150,10 @@ export async function getPartnersListAction(filters?: PartnerFilters) {
 }
 
 export async function getPublicShowcasePartners() {
+  if (SKIP_DB_PRERENDER) {
+    return [];
+  }
+
   const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
 
   if (activeCompanyIds.length === 0) return [];
@@ -153,6 +163,10 @@ export async function getPublicShowcasePartners() {
 }
 
 export async function getPartnerBySlugAction(slug: string) {
+  if (SKIP_DB_PRERENDER) {
+    return null;
+  }
+
   const auth = await getCurrentMember();
   if (!auth?.member) {
     const isPublic = await isFeatureEnabled("public_catalogue");

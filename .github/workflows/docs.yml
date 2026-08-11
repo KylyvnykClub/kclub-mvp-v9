@@ -46,11 +46,12 @@ jobs:
       - name: Check Prettier formatting
         run: pnpm format:check
 
-      # .claude/ holds vendored agent and skill definitions we do not author and
-      # would lose on the next update. Linting someone else's markdown produces
-      # failures nobody is allowed to fix.
+      # .claude/ holds vendored agent and skill definitions we do not author.
+      # .state/ is local handoff state, CREDENTIALS.md is a local ignored file,
+      # and docs/policy/ contains legal source text whose structure is
+      # validated by tools/check-docs.py instead.
       - name: Lint markdown formatting
-        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude"
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude" "#.state" "#docs/policy" "#CREDENTIALS.md"
 
   triggers:
     name: Documentation update triggers
