@@ -3,6 +3,7 @@ import { getPartnersListAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { isFeatureEnabled } from "@/actions/feature-flags";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, BadgeCheck, MapPin, Search } from "lucide-react";
 
@@ -133,11 +134,14 @@ export default async function CatalogueDirectoryPage({
                 <div>
                   <div className="flex items-start justify-between gap-5">
                     {partner.logoUrl ? (
-                      <div className="flex size-16 shrink-0 items-center justify-center border border-border bg-muted/20 p-2">
-                        <img
+                      <div className="relative flex size-16 shrink-0 items-center justify-center border border-border bg-muted/20 p-2">
+                        <Image
                           src={partner.logoUrl}
                           alt={partner.name}
-                          className="max-h-full max-w-full object-contain"
+                          fill
+                          unoptimized
+                          sizes="64px"
+                          className="object-contain p-2"
                         />
                       </div>
                     ) : (

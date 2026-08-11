@@ -23,6 +23,7 @@ export default tseslint.config(
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".next-stale-*/**",
       "next-env.d.ts",
       "coverage/**",
       "docs/**",

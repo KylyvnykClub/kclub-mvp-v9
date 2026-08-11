@@ -34,7 +34,7 @@ export async function getAdminDashboardMetricsAction() {
   });
 
   let revenue30d = 0;
-  const revenueByCountry: Record<string, number> = {};
+  const revenueByCountry = new Map<string, number>();
   const recentPayments = [];
 
   for (const charge of charges.data) {
@@ -42,8 +42,10 @@ export async function getAdminDashboardMetricsAction() {
       revenue30d += charge.amount;
 
       const country = charge.billing_details?.address?.country || "Unknown";
-      revenueByCountry[country] =
-        (revenueByCountry[country] || 0) + charge.amount;
+      revenueByCountry.set(
+        country,
+        (revenueByCountry.get(country) ?? 0) + charge.amount,
+      );
 
       if (recentPayments.length < 50) {
         recentPayments.push({
@@ -64,7 +66,7 @@ export async function getAdminDashboardMetricsAction() {
     activeVip,
     activeCompany,
     renewalsDue,
-    revenueByCountry,
+    revenueByCountry: Object.fromEntries(revenueByCountry),
     recentPayments,
   };
 }

@@ -3,7 +3,9 @@ import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
 
-const CONTENT_PATH = path.join(process.cwd(), "content/legal");
+const CONTENT_PATH = path.resolve(process.cwd(), "content/legal");
+const LEGAL_ID_PATTERN = /^[a-z0-9-]+$/;
+const LOCALE_PATTERN = /^[a-z]{2}$/;
 
 const FRONTMATTER_SCHEMA = z.object({
   title: z.string(),
@@ -23,6 +25,15 @@ export interface LegalDocument {
   content: string;
 }
 
+function resolveContentFile(fileName: string): string | null {
+  const resolvedPath = path.resolve(CONTENT_PATH, fileName);
+  const contentRoot = `${CONTENT_PATH}${path.sep}`;
+  if (!resolvedPath.startsWith(contentRoot)) {
+    return null;
+  }
+  return resolvedPath;
+}
+
 /**
  * A document is stored as `{id}.mdx` when it is the authoritative version
  * (FR-093: the English version is authoritative). Translations, when they
@@ -31,6 +42,11 @@ export interface LegalDocument {
  */
 async function readDocument(filePath: string): Promise<LegalDocument | null> {
   try {
+    if (!filePath.startsWith(`${CONTENT_PATH}${path.sep}`)) {
+      return null;
+    }
+    // The path is constrained to content/legal by resolveContentFile above.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = await fs.readFile(filePath, "utf-8");
     const { data, content } = matter(fileContent);
     const parsed = FRONTMATTER_SCHEMA.safeParse(data);
@@ -59,8 +75,16 @@ export async function getLegalDocument(
   id: string,
   locale: string,
 ): Promise<LegalDocument | null> {
-  const localizedPath = path.join(CONTENT_PATH, `${id}.${locale}.mdx`);
-  const authoritativePath = path.join(CONTENT_PATH, `${id}.mdx`);
+  if (!LEGAL_ID_PATTERN.test(id) || !LOCALE_PATTERN.test(locale)) {
+    return null;
+  }
+
+  const localizedPath = resolveContentFile(`${id}.${locale}.mdx`);
+  const authoritativePath = resolveContentFile(`${id}.mdx`);
+  if (!localizedPath || !authoritativePath) {
+    return null;
+  }
+
   return (
     (await readDocument(localizedPath)) ??
     (await readDocument(authoritativePath))
@@ -70,7 +94,13 @@ export async function getLegalDocument(
 export async function getAllLegalDocuments(
   locale: string,
 ): Promise<LegalDocument[]> {
+  if (!LOCALE_PATTERN.test(locale)) {
+    return [];
+  }
+
   try {
+    // CONTENT_PATH is a fixed repository content root.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const files = await fs.readdir(CONTENT_PATH);
     const ids = new Set<string>();
     for (const file of files) {

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { getPublicShowcasePartners } from "@/actions/company";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Tag } from "lucide-react";
+import Image from "next/image";
 
 export async function ShowcaseSection() {
   const t = await getTranslations("home.showcase");
@@ -26,10 +27,13 @@ export async function ShowcaseSection() {
             >
               <div className="h-32 bg-primary/5 relative flex items-center justify-center p-4 border-b border-border/50">
                 {partner.logoUrl ? (
-                  <img
+                  <Image
                     src={partner.logoUrl}
                     alt={partner.name}
-                    className="max-h-full max-w-full object-contain"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-contain p-4"
                   />
                 ) : (
                   <span className="font-serif text-2xl font-bold text-muted-foreground/30">
