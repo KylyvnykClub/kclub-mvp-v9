@@ -7,7 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
-import { Globe, Mail, Phone, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  BadgeCheck,
+  Globe,
+  Mail,
+  Phone,
+} from "lucide-react";
 import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
@@ -135,97 +142,113 @@ export default async function PartnerLandingPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="min-h-screen bg-background pt-12 pb-24">
-        {/* Hero Section */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-card border border-border/50 p-8 relative overflow-hidden">
-            {/* Background accent */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+      <main className="min-h-screen bg-background pb-24">
+        <section className="border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
+          <div className="kclub-shell">
+            <Link
+              href={`/${locale}/directory`}
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              {tc("title")}
+            </Link>
 
-            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
+            <div className="mt-10 grid gap-10 lg:grid-cols-[auto_1fr_auto] lg:items-end">
               {partner.logoUrl ? (
-                <div className="w-32 h-32 rounded-none bg-muted/20 border border-border/50 flex-shrink-0 flex items-center justify-center p-2">
+                <div className="flex size-28 shrink-0 items-center justify-center border border-white/15 bg-white/5 p-3 sm:size-32">
                   <img
                     src={partner.logoUrl}
                     alt={tc("logoAlt", { name: partner.name })}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-h-full max-w-full object-contain"
                   />
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-none bg-accent/10 border border-accent/20 flex-shrink-0 flex items-center justify-center font-serif text-5xl text-accent">
+                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent sm:size-32">
                   {partner.name.charAt(0).toUpperCase()}
                 </div>
               )}
 
-              <div className="flex-1 space-y-4">
-                <div>
-                  <Badge className="bg-accent text-accent-foreground hover:bg-accent/90 uppercase text-[10px] tracking-wider font-bold">
+              <div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="rounded-none bg-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-accent-foreground hover:bg-accent">
                     {partner.businessCategory?.block} /{" "}
                     {partner.businessCategory?.category}
                   </Badge>
-                  <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight">
-                    {partner.name}
-                  </h1>
-                  {partner.legalName && (
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {partner.legalName}
-                    </p>
-                  )}
                 </div>
-
-                {partner.discount && (
-                  <div className="inline-flex bg-accent text-accent-foreground px-4 py-2 text-lg font-medium border border-accent">
-                    {partner.discount}
-                  </div>
+                <h1 className="mt-5 text-5xl font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-7xl">
+                  {partner.name}
+                </h1>
+                {partner.legalName && (
+                  <p className="mt-4 text-sm font-light leading-6 text-white/55">
+                    {partner.legalName}
+                  </p>
                 )}
               </div>
+
+              {partner.discount && (
+                <div className="border border-accent bg-accent px-5 py-4 text-sm font-black uppercase tracking-[0.12em] text-accent-foreground lg:max-w-64">
+                  <p className="mb-2 text-[10px] tracking-[0.18em] opacity-70">
+                    KCLUB
+                  </p>
+                  <p>{partner.discount}</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Content Section */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Description */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className="prose prose-invert max-w-none">
-                <h2 className="font-serif text-2xl border-b border-border/50 pb-2 mb-4">
+        <section className="kclub-shell mt-10">
+          <div className="grid gap-px border border-border bg-border lg:grid-cols-[1fr_0.45fr]">
+            <div className="space-y-10 bg-background p-6 sm:p-10">
+              <section>
+                <p className="kclub-eyebrow">{tc("aboutSection")}</p>
+                <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
                   {tc("aboutSection")}
                 </h2>
-                <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                <p className="mt-5 max-w-3xl whitespace-pre-wrap text-base font-light leading-8 text-muted-foreground">
                   {partner.description || tc("noDescription")}
                 </p>
-              </div>
+              </section>
 
-              <div className="prose prose-invert max-w-none">
-                <h2 className="font-serif text-2xl border-b border-border/50 pb-2 mb-4">
+              <section className="border-t border-border pt-8">
+                <p className="kclub-eyebrow">{tc("activitiesSection")}</p>
+                <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
                   {tc("activitiesSection")}
                 </h2>
-                <ul className="list-disc pl-5 text-muted-foreground">
-                  <li>{partner.businessCategory.subcategory}</li>
-                </ul>
-              </div>
+                <div className="mt-5 inline-flex border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]">
+                  {partner.businessCategory.subcategory}
+                </div>
+              </section>
             </div>
 
-            {/* Right Column: Contact & CTA */}
-            <div className="space-y-6">
-              <div className="bg-card/50 border border-border/50 p-6 space-y-6">
-                <h3 className="font-serif text-xl border-b border-border/50 pb-2">
-                  {tc("contactSection")}
-                </h3>
+            <aside className="bg-muted/30 p-6 sm:p-8">
+              <div className="sticky top-24 space-y-7">
+                <div>
+                  <p className="kclub-eyebrow">{tc("contactSection")}</p>
+                  <h2 className="mt-5 text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
+                    {tc("contactSection")}
+                  </h2>
+                </div>
 
-                <ul className="space-y-4">
+                <ul className="space-y-3">
                   {partner.website && (
-                    <li className="flex items-center text-sm">
-                      <Globe className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <li className="border border-border bg-background px-4 py-3 text-sm">
                       <a
                         href={partner.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-accent transition-colors flex items-center"
+                        className="flex items-center justify-between gap-3 transition-colors hover:text-accent"
                       >
-                        {partner.website.replace(/^https?:\/\//, "")}
-                        <ExternalLink className="w-3 h-3 ml-1 opacity-50" />
+                        <span className="inline-flex min-w-0 items-center gap-3">
+                          <Globe
+                            className="size-4 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <span className="truncate">
+                            {partner.website.replace(/^https?:\/\//, "")}
+                          </span>
+                        </span>
+                        <ArrowUpRight className="size-4" aria-hidden="true" />
                       </a>
                     </li>
                   )}
@@ -233,54 +256,71 @@ export default async function PartnerLandingPage({ params }: Props) {
                   {isResident ? (
                     <>
                       {partner.contactEmail && (
-                        <li className="flex items-center text-sm">
-                          <Mail className="w-4 h-4 mr-3 text-muted-foreground" />
+                        <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`mailto:${partner.contactEmail}`}
-                            className="hover:text-accent transition-colors"
+                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent"
                           >
+                            <Mail
+                              className="size-4 shrink-0 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             {partner.contactEmail}
                           </a>
                         </li>
                       )}
                       {partner.contactPhone && (
-                        <li className="flex items-center text-sm">
-                          <Phone className="w-4 h-4 mr-3 text-muted-foreground" />
+                        <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`tel:${partner.contactPhone}`}
-                            className="hover:text-accent transition-colors"
+                            className="flex items-center gap-3 transition-colors hover:text-accent"
                           >
+                            <Phone
+                              className="size-4 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             {partner.contactPhone}
                           </a>
                         </li>
                       )}
                     </>
                   ) : (
-                    <li className="text-sm text-muted-foreground italic bg-muted/20 p-3 border border-border/50">
+                    <li className="border border-border bg-background p-4 text-sm font-light leading-6 text-muted-foreground">
                       {tc("contactsMembersOnly")}
                     </li>
                   )}
                 </ul>
 
                 {!isResident ? (
-                  <div className="pt-4 space-y-4">
-                    <p className="text-sm">{tc("joinPrompt")}</p>
-                    <Button asChild className="w-full">
+                  <div className="space-y-4 border-t border-border pt-6">
+                    <p className="text-sm font-light leading-6 text-muted-foreground">
+                      {tc("joinPrompt")}
+                    </p>
+                    <Button
+                      asChild
+                      className="h-12 w-full rounded-none bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+                    >
                       <Link href={`/${locale}/login`}>{tc("joinCta")}</Link>
                     </Button>
                   </div>
                 ) : (
-                  <div className="pt-4 space-y-4">
-                    <p className="text-xs text-muted-foreground">
-                      {tc("representedBy")}
-                    </p>
-                    <div className="flex justify-between items-center py-2 border-b border-border/50">
-                      <span className="text-muted-foreground">
-                        {tc("managerRole")}
-                      </span>
-                      <span className="font-medium text-foreground">
-                        {partner.owner?.displayName || tc("memberFallback")}
-                      </span>
+                  <div className="space-y-5 border-t border-border pt-6">
+                    <div className="border border-border bg-background p-4">
+                      <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                        <BadgeCheck
+                          className="size-4 text-accent"
+                          aria-hidden="true"
+                        />
+                        {tc("representedBy")}
+                      </p>
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm text-muted-foreground">
+                          {tc("managerRole")}
+                        </span>
+                        <span className="text-right text-sm font-bold text-foreground">
+                          {partner.owner?.displayName || tc("memberFallback")}
+                        </span>
+                      </div>
                     </div>
 
                     {canSendReferral && (
@@ -292,10 +332,10 @@ export default async function PartnerLandingPage({ params }: Props) {
                   </div>
                 )}
               </div>
-            </div>
+            </aside>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </>
   );
 }
