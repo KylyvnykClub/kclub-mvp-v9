@@ -177,7 +177,7 @@ boundary with MSW in integration tests and are sandboxed in staging. Details in
 |Localisation completeness|Every push|Yes|
 |Secret scan (`gitleaks`)|Every push|Yes|
 |Dependency audit (moderate and above)|Every push|Yes|
-|CodeQL|Every push|Yes|
+|CodeQL|Every push|Yes — SARIF artifact in CI; Security tab upload requires GitHub Code Scanning to be enabled for the repository|
 |Build succeeds|Every push|Yes|
 |Bundle size budget|Every push|Yes|
 |End-to-end tests against the preview|On pull request, after deploy|Yes|

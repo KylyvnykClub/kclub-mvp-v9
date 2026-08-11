@@ -341,7 +341,7 @@ account compromised by phishing. Each has a runbook in
 
 |Activity|Frequency|Who|
 |-|-|-|
-|Automated scanning in CI (`pnpm audit`, `gitleaks`, ESLint security rules, CodeQL)|Every pull request|CI, blocking on moderate and above|
+|Automated scanning in CI (`pnpm audit`, `gitleaks`, ESLint security rules, CodeQL)|Every pull request|CI, blocking on moderate and above for audit/gitleaks/ESLint; CodeQL produces a SARIF artifact until GitHub Code Scanning is enabled for the repository|
 |Authorization test suite: every route replayed as guest, as another member, and as each staff role|Every pull request|CI, blocking|
 |Log-redaction test: a request containing every secret field produces no log line containing any of them|Every pull request|CI, blocking|
 |Dependency audit review|Weekly|Tech lead|
