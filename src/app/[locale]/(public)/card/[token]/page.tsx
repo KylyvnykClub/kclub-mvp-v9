@@ -113,14 +113,6 @@ export default async function CardVerificationPage({
                 )}
               </span>
             </div>
-            {card.memberCountry && (
-              <div className="flex justify-between items-center py-3 border-b border-border/50">
-                <span className="text-sm text-muted-foreground">
-                  {card.memberCountry}
-                </span>
-                <span className="font-medium">{card.memberCountry}</span>
-              </div>
-            )}
             <div className="flex justify-between items-center py-3">
               <span className="text-sm text-muted-foreground">
                 {t("status")}

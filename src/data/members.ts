@@ -17,7 +17,6 @@ export async function findCardPublicByToken(db: DbClient, token: string) {
       status: cards.status,
       issuedAt: cards.issuedAt,
       memberName: members.displayName,
-      memberCountry: members.country,
       memberStatus: members.status,
     })
     .from(cards)
