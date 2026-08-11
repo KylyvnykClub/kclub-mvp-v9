@@ -138,12 +138,13 @@ go red, delete it. A guard that has never failed is not known to work.
 
 **T-0.6 — two gaps left open, deliberately.**
 
-_`gitleaks` is not installed locally._ It is not in winget, and the pre-commit
-hook therefore prints a loud warning and continues rather than blocking. Blocking
-every commit on a missing binary is how people learn `--no-verify`, which costs
-more than the scan is worth. The real gate is the CI one in T-0.16, where the
-GitHub action supplies the binary. Until then, staged changes are not scanned on
-this machine.
+_`gitleaks` is not installed locally._ The pre-commit hook now uses a Docker
+fallback when the binary is missing, so staged changes are still scanned on this
+machine while Docker is running. If neither `gitleaks` nor Docker is available,
+the hook prints a loud warning and continues rather than blocking. Blocking every
+commit on a missing binary is how people learn `--no-verify`, which costs more
+than the scan is worth. The real gate is the CI one in T-0.16, where the GitHub
+action supplies the binary.
 
 _Node is 24 locally, 22 in CI and on Vercel._ `.nvmrc` and
 [technology.md §9](../technology.md#9-versions-and-upgrade-policy) both say the
