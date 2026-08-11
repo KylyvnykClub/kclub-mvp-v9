@@ -34,13 +34,14 @@ class ResourceMissingError extends Error {
 
 /** Minimal Stripe.Subscription fixture; fields outside the fold are undefined. */
 function subscriptionFixture(
+  memberId: string,
   overrides: Partial<Stripe.Subscription> = {},
 ): Stripe.Subscription {
   return {
     id: "sub_test",
     customer: "cus_test",
     status: "active",
-    metadata: { memberId: "11111111-1111-4111-8111-111111111111" },
+    metadata: { memberId },
     items: {
       data: [
         {
@@ -84,81 +85,96 @@ async function cardTierOf(db: DbClient, memberId: string) {
 describe("billing projection (ADR 0004)", () => {
   it("FR-052: an active subscription projects the vip tier onto the member's card", async () => {
     const db = testDbClient();
-    await seedMemberAndCard(db, "11111111-1111-4111-8111-111111111111");
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
 
     const result = await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture()),
-      "sub_test",
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
       EPOCH,
     );
 
     expect(result).toBe("applied");
-    expect(await cardTierOf(db, "11111111-1111-4111-8111-111111111111")).toBe(
-      "vip",
-    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
   });
 
   it("FR-052: a cancelled subscription demotes the tier to free", async () => {
     const db = testDbClient();
-    await seedMemberAndCard(db, "11111111-1111-4111-8111-111111111111");
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
 
     await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture({ status: "active" })),
-      "sub_test",
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+          }),
+        ),
+      subscriptionId,
       EPOCH,
     );
     const result = await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture({ status: "canceled" })),
-      "sub_test",
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "canceled",
+          }),
+        ),
+      subscriptionId,
       EPOCH + 60,
     );
 
     expect(result).toBe("applied");
-    expect(await cardTierOf(db, "11111111-1111-4111-8111-111111111111")).toBe(
-      "free",
-    );
+    expect(await cardTierOf(db, memberId)).toBe("free");
   });
 
   it("FR-052: the entitlement comes from the re-fetched subscription, not the caller", async () => {
     const db = testDbClient();
-    await seedMemberAndCard(db, "11111111-1111-4111-8111-111111111111");
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
 
     // The fetcher returns an active subscription; the projection must reflect
     // that state even though nothing about it is known at the call site.
     const result = await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture()),
-      "sub_test",
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
       EPOCH,
     );
 
     expect(result).toBe("applied");
-    expect(await cardTierOf(db, "11111111-1111-4111-8111-111111111111")).toBe(
-      "vip",
-    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
   });
 
   it("FR-053: the same event delivered twice is processed exactly once", async () => {
     const db = testDbClient();
+    const eventId = `evt_${crypto.randomUUID()}`;
 
     const handler = async (
       tx: Parameters<Parameters<typeof processWebhookOnce>[3]>[0],
     ) => {
-      await enqueueOutbox(tx, BILLING_OUTBOX_TOPIC, { eventId: "evt_1" });
+      await enqueueOutbox(tx, BILLING_OUTBOX_TOPIC, { eventId });
     };
 
     const first = await processWebhookOnce(
       testDb(),
-      "evt_1",
+      eventId,
       "customer.subscription.created",
       handler,
     );
     const second = await processWebhookOnce(
       testDb(),
-      "evt_1",
+      eventId,
       "customer.subscription.created",
       handler,
     );
@@ -170,50 +186,68 @@ describe("billing projection (ADR 0004)", () => {
 
   it("FR-053: an older event arriving after a newer one is discarded (watermark)", async () => {
     const db = testDbClient();
-    await seedMemberAndCard(db, "11111111-1111-4111-8111-111111111111");
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
 
     const newer = await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture({ status: "canceled" })),
-      "sub_test",
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "canceled",
+          }),
+        ),
+      subscriptionId,
       EPOCH + 1000,
     );
     const older = await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture({ status: "active" })),
-      "sub_test",
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+          }),
+        ),
+      subscriptionId,
       EPOCH,
     );
 
     expect(newer).toBe("applied");
     expect(older).toBe("stale");
     // The stale event must not regress the cancelled state.
-    expect(await cardTierOf(db, "11111111-1111-4111-8111-111111111111")).toBe(
-      "free",
-    );
+    expect(await cardTierOf(db, memberId)).toBe("free");
   });
 
   it("FR-053: a deleted subscription is marked deleted and demotes the tier", async () => {
     const db = testDbClient();
-    await seedMemberAndCard(db, "11111111-1111-4111-8111-111111111111");
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
 
     await reconcileSubscription(
       db,
-      () => Promise.resolve(subscriptionFixture({ status: "active" })),
-      "sub_test",
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+          }),
+        ),
+      subscriptionId,
       EPOCH,
     );
 
     const result = await reconcileSubscription(
       db,
       () => Promise.reject(new ResourceMissingError()),
-      "sub_test",
+      subscriptionId,
       EPOCH + 2000,
     );
 
     expect(result).toBe("deleted");
-    expect(await cardTierOf(db, "11111111-1111-4111-8111-111111111111")).toBe(
-      "free",
-    );
+    expect(await cardTierOf(db, memberId)).toBe("free");
   });
 });
