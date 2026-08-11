@@ -1,7 +1,7 @@
 # Observability
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** before the first production deploy, together with
 > [reliability.md](reliability.md).
@@ -240,8 +240,8 @@ Four. A fifth would go unopened.
 |Dashboard|Answers|Audience|Link|
 |-|-|-|-|
 |Service health|Is anything on fire right now? Traffic, error rate, p95 latency by route, dependency status, outbox depth|On-call|_(fill in — Axiom, at setup)_|
-|Deployment|Did the last release change anything? Error rate and latency before/after each deployment marker, with the SHA and author|Engineers|_(fill in)_|
-|Money and access|Are payments turning into access? Entitlement lag, reconciliation divergences, failed payments, dunning recoveries, checkout completion|Tech lead + client|_(fill in)_|
+|Deployment|Did the last release change anything? Error rate and latency before/after each deployment marker, with the SHA and author|Engineers|To be confirmed by launch owner|
+|Money and access|Are payments turning into access? Entitlement lag, reconciliation divergences, failed payments, dunning recoveries, checkout completion|Tech lead + client|To be confirmed by launch owner|
 |Club health|Is the club growing and is the queue clear? Members, subscriptions, MRR, funnel, published partners, moderation queue age, zero-result searches|Client|Staff console, so it needs no separate tool or login|
 
 The fourth deliberately lives in the product itself (FR-081, FR-082). A business

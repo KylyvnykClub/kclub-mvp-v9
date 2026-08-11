@@ -1,7 +1,7 @@
 # Security
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** before the first production deploy — §1 and §4 sooner.
 

@@ -1,6 +1,21 @@
 import { describe, it, expect } from "vitest";
 import { getTestDb, getTestClient } from "./setup/integration-setup.js";
 import { appendAuditEntry } from "@/data/audit-log.js";
+import type pg from "pg";
+
+async function expectPermissionDenied(
+  client: pg.Client,
+  statement: string,
+): Promise<void> {
+  await client.query("SET ROLE app_rw");
+  await client.query("SAVEPOINT permission_check");
+  try {
+    await expect(client.query(statement)).rejects.toThrow(/permission denied/);
+    await client.query("ROLLBACK TO SAVEPOINT permission_check");
+  } finally {
+    await client.query("RESET ROLE");
+  }
+}
 
 describe("audit_log", () => {
   it("appends an entry and returns id + timestamp", async () => {
@@ -74,16 +89,10 @@ describe("audit_log", () => {
          VALUES ('staff', 'original', 'member', 'm1')`,
       );
 
-      await client.query("SET ROLE app_rw");
-      try {
-        await expect(
-          client.query(
-            "UPDATE audit_log SET action = 'tampered' WHERE action = 'original'",
-          ),
-        ).rejects.toThrow(/permission denied/);
-      } finally {
-        await client.query("RESET ROLE");
-      }
+      await expectPermissionDenied(
+        client,
+        "UPDATE audit_log SET action = 'tampered' WHERE action = 'original'",
+      );
     });
 
     it("app_rw role CANNOT DELETE from audit_log", async () => {
@@ -94,14 +103,10 @@ describe("audit_log", () => {
          VALUES ('staff', 'should_persist', 'member', 'm1')`,
       );
 
-      await client.query("SET ROLE app_rw");
-      try {
-        await expect(
-          client.query("DELETE FROM audit_log WHERE action = 'should_persist'"),
-        ).rejects.toThrow(/permission denied/);
-      } finally {
-        await client.query("RESET ROLE");
-      }
+      await expectPermissionDenied(
+        client,
+        "DELETE FROM audit_log WHERE action = 'should_persist'",
+      );
     });
   });
 });

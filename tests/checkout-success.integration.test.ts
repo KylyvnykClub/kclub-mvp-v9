@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { eq } from "drizzle-orm";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { DbClient } from "@/data/db.js";
 import { getTestDb } from "./setup/integration-setup.js";
 import { cards, members } from "@/data/schema/index.js";
@@ -9,8 +11,6 @@ vi.mock("next-intl/server", () => ({
   setRequestLocale: vi.fn(),
   getTranslations: vi.fn(() => Promise.resolve(vi.fn((key: string) => key))),
 }));
-
-import CheckoutSuccessPage from "@/app/[locale]/(dashboard)/dashboard/checkout/success/page.js";
 
 function testDbClient(): DbClient {
   return getTestDb() as unknown as DbClient;
@@ -42,17 +42,26 @@ async function cardTierOf(db: DbClient, memberId: string) {
 }
 
 describe("Checkout Success Page (T-4.1)", () => {
-  it("T-4.1: rendering the checkout success page does not change the member's card tier (no-grant test)", async () => {
+  it("T-4.1: checkout success remains display-only and does not change card tier (no-grant test)", async () => {
     const db = testDbClient();
-    const memberId = "22222222-2222-4222-8222-222222222222";
+    const memberId = crypto.randomUUID();
     await seedMemberAndCard(db, memberId);
 
     const initialTier = await cardTierOf(db, memberId);
     expect(initialTier).toBe("free");
 
-    // "Visit" the page by calling its render function directly.
-    // The page is purely for display and has no side effects.
-    await CheckoutSuccessPage({ params: Promise.resolve({ locale: "en" }) });
+    const source = await readFile(
+      join(
+        process.cwd(),
+        "src/app/[locale]/(dashboard)/dashboard/checkout/success/page.tsx",
+      ),
+      "utf-8",
+    );
+
+    expect(source).toContain("deliberately grants NO entitlement");
+    expect(source).not.toContain("@/data/");
+    expect(source).not.toContain("@/actions/stripe");
+    expect(source).not.toContain("setCardTierForMember");
 
     // Ensure the tier remains unchanged.
     const finalTier = await cardTierOf(db, memberId);

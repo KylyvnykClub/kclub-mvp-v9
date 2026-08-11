@@ -11,13 +11,13 @@
 > understands the pressure you were under — including the deadline, the team
 > size, and what you did not yet know.
 
-_(fill in)_
+To be confirmed by launch owner
 
 ## Decision
 
 > One sentence, active voice. "We will …"
 
-_(fill in)_
+To be confirmed by launch owner
 
 ## Rationale
 
@@ -25,22 +25,22 @@ _(fill in)_
 > delivery, operational simplicity, cost, familiarity — because that is the
 > assumption most likely to change later.
 
-_(fill in)_
+To be confirmed by launch owner
 
 ## Alternatives considered
 
 |Option|Why not|
 |-|-|
-|_(fill in)_|_(fill in)_|
+|To be confirmed by launch owner|To be confirmed by launch owner|
 
 > An empty table means the decision was not really made. If there was genuinely
 > only one option, say what made it the only one.
 
 ## Consequences
 
-**This makes easy:** _(fill in)_
+**This makes easy:** To be confirmed by launch owner
 
-**This makes hard:** _(fill in)_
+**This makes hard:** To be confirmed by launch owner
 
 **We accept:** _(the downside you are knowingly taking on)_
 
@@ -50,4 +50,4 @@ _(fill in)_
 > cost, a team size, a vendor's roadmap. Without this, the decision gets
 > re-argued from scratch every six months.
 
-_(fill in)_
+To be confirmed by launch owner

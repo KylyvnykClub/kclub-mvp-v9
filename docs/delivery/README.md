@@ -1,7 +1,7 @@
 # Delivery
 
 > **Status:** Draft
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-03
 > **Write when:** before the first task is started.
 

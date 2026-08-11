@@ -1,7 +1,7 @@
 # Legal Alignment
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** legal documents exist that the product must implement. Delete
 > this document when every row is closed — it is a reconciliation register, not

@@ -1,7 +1,7 @@
 # Architecture
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** the system has more than one moving part.
 

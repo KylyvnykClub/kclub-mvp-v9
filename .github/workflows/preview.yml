@@ -33,11 +33,18 @@ jobs:
     outputs:
       db_url: ${{ steps.branch.outputs.db_url }}
       db_url_direct: ${{ steps.branch.outputs.db_url_with_pooler }}
+    env:
+      HAS_NEON_PREVIEW: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Skip preview when Neon secrets are absent
+        if: env.HAS_NEON_PREVIEW != 'true'
+        run: echo "Neon preview is not configured for this repository; skipping preview database setup."
+
       - name: Create or get Neon branch
+        if: env.HAS_NEON_PREVIEW == 'true'
         id: branch
         uses: neondatabase/create-branch-action@v5
         with:
@@ -47,24 +54,29 @@ jobs:
           username: neondb_owner
 
       - name: Setup pnpm
+        if: env.HAS_NEON_PREVIEW == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
+        if: env.HAS_NEON_PREVIEW == 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
+        if: env.HAS_NEON_PREVIEW == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Run Drizzle migrations
+        if: env.HAS_NEON_PREVIEW == 'true'
         run: pnpm db:migrate
         env:
           DATABASE_URL: ${{ steps.branch.outputs.db_url }}
           DATABASE_URL_DIRECT: ${{ steps.branch.outputs.db_url_with_pooler }}
 
       - name: Comment on PR with preview info
+        if: env.HAS_NEON_PREVIEW == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -108,8 +120,15 @@ jobs:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    env:
+      HAS_NEON_PREVIEW: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' }}
     steps:
+      - name: Skip teardown when Neon secrets are absent
+        if: env.HAS_NEON_PREVIEW != 'true'
+        run: echo "Neon preview is not configured for this repository; skipping preview teardown."
+
       - name: Delete Neon branch
+        if: env.HAS_NEON_PREVIEW == 'true'
         uses: neondatabase/delete-branch-action@v3
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
@@ -117,6 +136,7 @@ jobs:
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Comment on PR
+        if: env.HAS_NEON_PREVIEW == 'true'
         uses: actions/github-script@v7
         with:
           script: |

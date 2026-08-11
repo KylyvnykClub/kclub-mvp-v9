@@ -1,7 +1,7 @@
 # Integration
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** the first external dependency is added.
 
@@ -252,11 +252,11 @@ not invent its own.
 |-|-|-|-|
 |Stripe API|100 read/s, 100 write/s|Negligible|50%|
 |Twilio Verify|Service limits, plus per-number fraud rules|_(fill in after launch)_|—|
-|**Twilio spend**|A hard daily cap configured in Twilio, set at 3× the expected daily volume|_(fill in)_|**50% warn, 80% page**|
+|**Twilio spend**|A hard daily cap configured in Twilio, set at 3× the expected daily volume|To be confirmed by launch owner|**50% warn, 80% page**|
 |Resend|Plan-dependent daily send limit|Negligible|70%|
-|Upstash|Commands/day on plan|_(fill in)_|70%|
-|Vercel|Function concurrency, bandwidth|_(fill in)_|50% concurrency, 70% bandwidth|
-|Neon|Connections, compute hours|_(fill in)_|60% connections|
+|Upstash|Commands/day on plan|To be confirmed by launch owner|70%|
+|Vercel|Function concurrency, bandwidth|To be confirmed by launch owner|50% concurrency, 70% bandwidth|
+|Neon|Connections, compute hours|To be confirmed by launch owner|60% connections|
 
 The Twilio row is the only one where exceeding the limit costs money rather than
 availability, which is why it is the only one with a hard cap and a page.

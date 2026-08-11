@@ -14,6 +14,13 @@ import { can } from "@/domain/authorization";
 import { revalidatePath } from "next/cache";
 
 export async function isFeatureEnabled(name: FlagName): Promise<boolean> {
+  if (
+    process.env.KCLUB_SKIP_DB_PRERENDER === "1" &&
+    name === "public_catalogue"
+  ) {
+    return true;
+  }
+
   return isEnabled(db, name);
 }
 
@@ -38,7 +45,7 @@ export async function toggleFeatureFlagAction(name: string, enabled: boolean) {
   await upsertFlag(db, flagName, enabled);
 
   revalidatePath("/dashboard/admin/flags");
-  revalidatePath("/partners");
+  revalidatePath("/directory");
 }
 
 export async function getFeatureFlagsAction() {

@@ -492,6 +492,10 @@
     "navRegisterCompany": "Зареєструвати компанію",
     "navAdminCategories": "Адмін: Категорії",
     "navAdminModeration": "Адмін: Модерація",
+    "navAdminSupport": "Підтримка",
+    "navAdminMembers": "Учасники",
+    "navAdminFlags": "Функціональні прапорці",
+    "navAdminAudit": "Журнал аудиту",
     "profileUpdated": "Профіль успішно оновлено",
     "avatarLabel": "URL аватара",
     "bioLabel": "Про себе",
@@ -502,7 +506,10 @@
     "locationPlaceholder": "напр. Київ, Україна",
     "linkedinLabel": "URL LinkedIn",
     "twitterLabel": "URL Twitter / X",
-    "saveProfile": "Зберегти профіль"
+    "saveProfile": "Зберегти профіль",
+    "dataPrivacy": "Конфіденційність даних",
+    "dataPrivacyDesc": "Ви можете завантажити копію своїх персональних даних для відповідності GDPR.",
+    "exportData": "Експортувати мої дані"
   },
   "card": {
     "membershipCard": "Карта учасника",
@@ -747,6 +754,47 @@
       "warning": "Увага",
       "warningText": "Зміна функціональних прапорців набуває чинності негайно по всій системі. Дійте обережно.",
       "rowHint": "Перемкнути активність цієї функції."
+    },
+    "support": {
+      "title": "Панель підтримки",
+      "description": "Огляд статистики учасників і модерації.",
+      "totalMembers": "Усього учасників",
+      "activeMembers": "Активні учасники",
+      "newMembers": "Нові учасники",
+      "last7Days": "Останні 7 днів",
+      "pendingCompanies": "Компанії на модерації",
+      "pendingReferrals": "Реферали на модерації",
+      "clickToReview": "Натисніть, щоб переглянути"
+    },
+    "dashboard": {
+      "title": "Адмін-панель",
+      "description": "Огляд фінансових показників і підписок.",
+      "revenue30d": "Дохід за 30 днів",
+      "last30Days": "Останні 30 днів",
+      "activeVip": "Активні VIP-підписки",
+      "activeCompany": "Активні підписки компаній",
+      "renewalsDue": "Очікувані поновлення",
+      "next7Days": "Наступні 7 днів",
+      "recentPayments": "Останні платежі",
+      "recentPaymentsDesc": "Останні 50 успішних платежів",
+      "noPayments": "Останніх платежів не знайдено",
+      "unknownCustomer": "Невідомий клієнт",
+      "viewReceipt": "Переглянути чек",
+      "revenueByCountry": "Дохід за країнами",
+      "revenueByCountryDesc": "Розподіл доходу за останні 30 днів",
+      "noData": "Дані відсутні"
+    },
+    "audit": {
+      "title": "Журнал аудиту",
+      "description": "Загальносистемний журнал активності.",
+      "searchPlaceholder": "Пошук за дією або ID...",
+      "search": "Пошук",
+      "colDate": "Дата",
+      "colActor": "Актор",
+      "colAction": "Дія",
+      "colSubject": "Об'єкт",
+      "colDetails": "Деталі",
+      "noResults": "Записів аудиту не знайдено."
     }
   }
 }

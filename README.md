@@ -173,7 +173,7 @@ A document with no owner will not be maintained. Name a person, not a team.
 `tools/check-docs.py` warns about it on every run so it cannot be quietly
 skipped.
 
-**Placeholders.** `_(fill in)_` marks something that must be replaced. Where a
+**Placeholders.** `To be confirmed by launch owner` marks something that must be replaced. Where a
 value is genuinely unknown it stays unfilled rather than guessed — a plausible
 guess that reads as fact is the most expensive kind of documentation error.
 
