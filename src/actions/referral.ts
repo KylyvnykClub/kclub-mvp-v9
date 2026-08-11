@@ -16,6 +16,8 @@ import {
   setReferralModeration,
 } from "@/data/referrals";
 import { getCurrentMember } from "./session";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -44,9 +46,18 @@ export async function createReferralAction(
   const vipPriceId = process.env.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID;
   if (!vipPriceId) throw new Error("Billing is not configured");
 
-  // FR-070: sender must be VIP and own a published company
   const vipSub = await findActiveSubscriptionByPrice(db, member.id, vipPriceId);
+  const actor = buildActor({
+    id: member.id,
+    role: vipSub ? "member_vip" : "member",
+  });
+  if (!can(actor, "send_referral", "referral")) {
+    throw new Error(
+      "Unauthorized to send referrals. VIP subscription required, and you must not be barred.",
+    );
+  }
 
+  // A member must own at least one published company to send a referral.
   const memberCompanies = await listApprovedCompaniesWithSubscriptionsByOwner(
     db,
     member.id,
@@ -56,9 +67,9 @@ export async function createReferralAction(
     c.subscriptions.some((s) => s.status === "active"),
   );
 
-  if (!vipSub || !hasActiveCompany) {
+  if (!hasActiveCompany) {
     throw new Error(
-      "You must be a VIP member and own at least one published company to send referrals.",
+      "You must own at least one published company to send referrals.",
     );
   }
 
@@ -117,7 +128,12 @@ export async function moderateReferralAction(
 ) {
   const current = await getCurrentMember();
   const member = current?.member;
-  if (!member || member.role !== "admin") {
+  if (!member) {
+    throw new Error("Unauthorized");
+  }
+
+  const actor = buildActor(member);
+  if (!can(actor, action, "referral")) {
     throw new Error("Unauthorized");
   }
 
@@ -183,7 +199,12 @@ export async function getReceivedReferralsAction() {
 export async function getPendingReferralsAction() {
   const current = await getCurrentMember();
   const member = current?.member;
-  if (!member || member.role !== "admin") return [];
+  if (!member) return [];
+
+  const actor = buildActor(member);
+  if (!can(actor, "approve", "referral") && !can(actor, "reject", "referral")) {
+    return [];
+  }
 
   return listPendingReviewReferrals(db);
 }

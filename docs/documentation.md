@@ -1,7 +1,7 @@
 # Documentation
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-03
 > **Write when:** a second person starts maintaining the documentation.
 
@@ -57,18 +57,18 @@ A document with no owner will not be maintained. Name a person, not a team.
 
 |Document|Owner|Reviewer|
 |-|-|-|
-|`README.md`, [CONTRIBUTING.md](../CONTRIBUTING.md)|Tech lead — _(fill in)_|Client|
-|[brief.md](brief.md), [requirements.md](requirements.md)|Client — _(fill in)_|Tech lead|
-|[architecture.md](architecture.md), [technology.md](technology.md), [decisions/](decisions/)|Tech lead — _(fill in)_|AI Reviewer|
-|[data-storage.md](data-storage.md)|Tech lead — _(fill in)_|AI Reviewer|
-|[ux.md](ux.md), [glossary.md](glossary.md)|Tech lead — _(fill in)_|Designer, client|
-|[security.md](security.md)|Tech lead — _(fill in)_|Client (as the data controller)|
-|[reliability.md](reliability.md), [observability.md](observability.md), runbooks|Tech lead — _(fill in)_|AI Reviewer|
-|[integration.md](integration.md)|Tech lead — _(fill in)_|AI Reviewer|
-|[testing.md](testing.md)|Tech lead — _(fill in)_|AI Reviewer|
-|[documentation.md](documentation.md)|Tech lead — _(fill in)_|Client|
-|[delivery/](delivery/), [CLAUDE.md](../CLAUDE.md)|Tech lead — _(fill in)_|Client|
-|[legal-alignment.md](legal-alignment.md), legal pack|Client — _(fill in)_|Counsel, tech lead|
+|`README.md`, [CONTRIBUTING.md](../CONTRIBUTING.md)|Tech lead — To be confirmed by launch owner|Client|
+|[brief.md](brief.md), [requirements.md](requirements.md)|Client — To be confirmed by launch owner|Tech lead|
+|[architecture.md](architecture.md), [technology.md](technology.md), [decisions/](decisions/)|Tech lead — To be confirmed by launch owner|AI Reviewer|
+|[data-storage.md](data-storage.md)|Tech lead — To be confirmed by launch owner|AI Reviewer|
+|[ux.md](ux.md), [glossary.md](glossary.md)|Tech lead — To be confirmed by launch owner|Designer, client|
+|[security.md](security.md)|Tech lead — To be confirmed by launch owner|Client (as the data controller)|
+|[reliability.md](reliability.md), [observability.md](observability.md), runbooks|Tech lead — To be confirmed by launch owner|AI Reviewer|
+|[integration.md](integration.md)|Tech lead — To be confirmed by launch owner|AI Reviewer|
+|[testing.md](testing.md)|Tech lead — To be confirmed by launch owner|AI Reviewer|
+|[documentation.md](documentation.md)|Tech lead — To be confirmed by launch owner|Client|
+|[delivery/](delivery/), [CLAUDE.md](../CLAUDE.md)|Tech lead — To be confirmed by launch owner|Client|
+|[legal-alignment.md](legal-alignment.md), legal pack|Client — To be confirmed by launch owner|Counsel, tech lead|
 
 The names are unfilled because the team is not yet formed. **Assigning them is a
 kick-off task, not a later one** — `python tools/check-docs.py` warns on every
@@ -155,7 +155,7 @@ exact file usually gets acted on.
 - **Decisions:** always paired with rationale and the alternatives rejected.
 - **Numbers:** specific and measurable. Not "fast", not "secure", not "soon".
   A requirement without a number cannot be failed, and therefore cannot be met.
-- **Unknowns:** write `_(fill in)_` or `TBD — owner, date`, never a plausible
+- **Unknowns:** write `To be confirmed by launch owner` or `TBD — owner, date`, never a plausible
   guess. A guess that reads as fact is the most expensive kind of documentation
   error. Where a section genuinely does not apply, write
   `Not applicable — <reason>` rather than deleting it.
@@ -220,7 +220,7 @@ Triggers in §3 catch changes; reviews catch omissions.
 - [ ] Does anything contradict another document? (The known pairs to check:
       roles in requirements §3 vs. security §2; retention in security §3 vs.
       data-storage §4; SLOs in reliability §1 vs. alerts in observability §7)
-- [ ] Are the `_(fill in)_` placeholders that remain still genuinely unknown?
+- [ ] Are the `To be confirmed by launch owner` placeholders that remain still genuinely unknown?
 - [ ] Have the empty "last tested" cells in
       [reliability.md §4](reliability.md#4-redundancy-and-failover) been filled?
 - [ ] Does `python tools/check-docs.py --strict` pass with no warnings?

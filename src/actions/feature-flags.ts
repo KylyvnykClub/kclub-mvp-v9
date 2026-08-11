@@ -38,7 +38,7 @@ export async function toggleFeatureFlagAction(name: string, enabled: boolean) {
   await upsertFlag(db, flagName, enabled);
 
   revalidatePath("/dashboard/admin/flags");
-  revalidatePath("/partners");
+  revalidatePath("/directory");
 }
 
 export async function getFeatureFlagsAction() {

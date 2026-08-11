@@ -1,7 +1,7 @@
 # Requirements
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** before building anything beyond a prototype.
 

@@ -99,7 +99,7 @@ export default async function CatalogueDirectoryPage({
           partners.map((partner) => (
             <Link
               key={partner.id}
-              href={`/${locale}/partners/${partner.slug}`}
+              href={`/${locale}/directory/${partner.slug}`}
               className="group block"
             >
               <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 rounded-none shadow-sm transition-all duration-300 hover:border-accent/50 hover:bg-card">

@@ -11,6 +11,7 @@ export const ROLES = [
 ] as const;
 
 export type Role = (typeof ROLES)[number];
+export type PersistedRole = Role | "user" | "admin";
 
 export type Actor =
   | { type: "guest" }
@@ -59,17 +60,25 @@ export function actorId(actor: Actor): string | null {
   return actor.id;
 }
 
-export function buildActor(member: { id: string; role: Role }): Actor {
-  if (member.role.startsWith("staff_")) {
+export function normalizeRole(role: PersistedRole): Role {
+  if (role === "user") return "member";
+  if (role === "admin") return "staff_owner";
+  return role;
+}
+
+export function buildActor(member: { id: string; role: PersistedRole }): Actor {
+  const role = normalizeRole(member.role);
+
+  if (role.startsWith("staff_")) {
     return {
       type: "staff",
       id: member.id,
-      role: member.role as Extract<Role, `staff_${string}`>,
+      role: role as Extract<Role, `staff_${string}`>,
     };
   }
 
   // Note: partner_owner will require injecting companyIds in the future
-  if (member.role === "partner_owner") {
+  if (role === "partner_owner") {
     return {
       type: "partner_owner",
       id: member.id,
@@ -80,6 +89,6 @@ export function buildActor(member: { id: string; role: Role }): Actor {
   return {
     type: "member",
     id: member.id,
-    role: member.role as "member" | "member_vip",
+    role: role as "member" | "member_vip",
   };
 }

@@ -2,6 +2,10 @@ import { and, count, eq, gte, isNotNull, isNull, lte } from "drizzle-orm";
 import type { DbClient } from "./db";
 import { companies, members, referrals, subscriptions } from "./schema";
 
+function countValue(row: { value: number } | undefined): number {
+  return row?.value ?? 0;
+}
+
 export async function getAdminDashboardMetrics(db: DbClient) {
   const [activeVipResult] = await db
     .select({ value: count() })
@@ -10,7 +14,7 @@ export async function getAdminDashboardMetrics(db: DbClient) {
       and(eq(subscriptions.status, "active"), isNull(subscriptions.companyId)),
     );
 
-  const activeVip = activeVipResult.value;
+  const activeVip = countValue(activeVipResult);
 
   const [activeCompanyResult] = await db
     .select({ value: count() })
@@ -22,7 +26,7 @@ export async function getAdminDashboardMetrics(db: DbClient) {
       ),
     );
 
-  const activeCompany = activeCompanyResult.value;
+  const activeCompany = countValue(activeCompanyResult);
 
   // Renewals due in 7 days
   const nextWeek = new Date();
@@ -38,7 +42,7 @@ export async function getAdminDashboardMetrics(db: DbClient) {
       ),
     );
 
-  const renewalsDue = renewalsResult.value;
+  const renewalsDue = countValue(renewalsResult);
 
   return { activeVip, activeCompany, renewalsDue };
 }
@@ -47,13 +51,13 @@ export async function getAdminSupportMetrics(db: DbClient) {
   const [totalMembersResult] = await db
     .select({ value: count() })
     .from(members);
-  const totalMembers = totalMembersResult.value;
+  const totalMembers = countValue(totalMembersResult);
 
   const [activeMembersResult] = await db
     .select({ value: count() })
     .from(members)
     .where(eq(members.status, "active"));
-  const activeMembers = activeMembersResult.value;
+  const activeMembers = countValue(activeMembersResult);
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -61,19 +65,19 @@ export async function getAdminSupportMetrics(db: DbClient) {
     .select({ value: count() })
     .from(members)
     .where(gte(members.createdAt, sevenDaysAgo));
-  const newMembers = newMembersResult.value;
+  const newMembers = countValue(newMembersResult);
 
   const [pendingCompaniesResult] = await db
     .select({ value: count() })
     .from(companies)
     .where(eq(companies.moderationStatus, "pending"));
-  const pendingCompanies = pendingCompaniesResult.value;
+  const pendingCompanies = countValue(pendingCompaniesResult);
 
   const [pendingReferralsResult] = await db
     .select({ value: count() })
     .from(referrals)
-    .where(eq(referrals.status, "pending"));
-  const pendingReferrals = pendingReferralsResult.value;
+    .where(eq(referrals.status, "pending_review"));
+  const pendingReferrals = countValue(pendingReferralsResult);
 
   return {
     totalMembers,

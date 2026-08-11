@@ -40,7 +40,7 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
               {tDashboard("profile")}
             </Link>
             <Link
-              href={`/${locale}/partners`}
+              href={`/${locale}/directory`}
               className="text-sm font-medium transition-colors hover:text-accent text-foreground/80"
             >
               {tDashboard("navPartners")}

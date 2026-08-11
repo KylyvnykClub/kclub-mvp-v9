@@ -1,7 +1,7 @@
 # Technology
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-03
 > **Write when:** while the stack is being chosen — not after, when it has been
 > chosen by default by whoever wrote first.

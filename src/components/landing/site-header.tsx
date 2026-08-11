@@ -11,10 +11,10 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
 const navigation = [
-  ["about", "#about"],
-  ["how_it_works", "#how-it-works"],
-  ["partners", "#membership"],
-  ["faq", "#faq"],
+  ["about", "/#about"],
+  ["how_it_works", "/#how-it-works"],
+  ["partners", "/directory"],
+  ["faq", "/#faq"],
 ] as const;
 
 export function SiteHeader() {

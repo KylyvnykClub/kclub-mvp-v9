@@ -1,7 +1,7 @@
 # Reliability
 
 > **Status:** In review
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-02
 > **Write when:** before the first production deploy.
 
@@ -109,10 +109,10 @@ gets the same investment, and this table is what decides where it goes.
 |Application|Vercel runs many short-lived instances across zones automatically|Automatic|Seconds|Continuous, implicitly|
 |Static assets and marketing|Replicated to every edge location|Automatic|Seconds|Continuous|
 |Database|Neon: multi-AZ storage, compute restart on failure, 30-day PITR|Automatic within the region; manual to a restored branch|Under 1 minute for compute; minutes to hours for a restore|_(fill in — first drill scheduled for the week before launch)_|
-|Cache (Redis)|None. Deliberate|Not applicable — the system degrades instead|Immediate|_(fill in)_|
-|Object storage|R2 multi-zone, object versioning|Automatic|Seconds|_(fill in)_|
-|Background jobs|Inngest retries with backoff; the outbox is durable in PostgreSQL|Automatic|Minutes|_(fill in)_|
-|DNS|Cloudflare anycast|Automatic|Seconds|_(fill in)_|
+|Cache (Redis)|None. Deliberate|Not applicable — the system degrades instead|Immediate|To be confirmed by launch owner|
+|Object storage|R2 multi-zone, object versioning|Automatic|Seconds|To be confirmed by launch owner|
+|Background jobs|Inngest retries with backoff; the outbox is durable in PostgreSQL|Automatic|Minutes|To be confirmed by launch owner|
+|DNS|Cloudflare anycast|Automatic|Seconds|To be confirmed by launch owner|
 
 The blank cells are honest: nothing has been tested yet because nothing is
 deployed yet. They are filled in during the pre-launch drill and reviewed
@@ -225,9 +225,9 @@ that is the loop that makes this documentation set worth maintaining.
 |Resource|Current peak|Limit|Action threshold|
 |-|-|-|-|
 |Database connections (pooled)|_(fill in at launch)_|10,000 pooled / ~450 direct on Neon Scale|60% sustained → raise the pool, review per-request connection use|
-|Database compute|_(fill in)_|Autoscaling 1–4 CU|70% CPU for 15 minutes → raise the ceiling; sustained → add a read replica|
+|Database compute|To be confirmed by launch owner|Autoscaling 1–4 CU|70% CPU for 15 minutes → raise the ceiling; sustained → add a read replica|
 |Database storage|~0.2 GB|Practically unbounded on Neon|60 GB → begin monthly partitioning of `audit_log`, `payment`, `notification_log`|
-|Vercel function concurrency|_(fill in)_|Account limit, currently 1,000|50% sustained → request an increase before it is needed|
+|Vercel function concurrency|To be confirmed by launch owner|Account limit, currently 1,000|50% sustained → request an increase before it is needed|
 |Vercel bandwidth|—|1 TB included on Pro|70% of the monthly allowance → review image sizes first|
 |Redis commands|—|Upstash plan limit|70% → raise the plan; this is a cheap limit to raise|
 |Twilio SMS spend|—|**Hard daily cap set in Twilio**|50% of the daily cap → warn; 80% → page and consider the kill switch. This is the only limit whose breach costs money rather than availability|

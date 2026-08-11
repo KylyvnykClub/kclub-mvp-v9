@@ -190,6 +190,6 @@ export async function moderateCompanyAction(
   await setCompanyModerationStatus(db, id, status, reason ?? null);
 
   revalidatePath("/dashboard/admin/companies");
-  revalidatePath("/partners");
+  revalidatePath("/directory");
   return { success: true };
 }

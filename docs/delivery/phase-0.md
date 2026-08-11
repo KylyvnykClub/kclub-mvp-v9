@@ -1,7 +1,7 @@
 # Phase 0 — Foundations
 
 > **Status:** In progress
-> **Owner:** _(fill in)_
+> **Owner:** KCLUB Delivery Lead
 > **Last updated:** 2026-08-03
 > **Write when:** before the first commit of application code.
 

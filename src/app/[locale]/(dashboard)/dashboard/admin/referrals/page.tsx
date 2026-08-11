@@ -3,6 +3,8 @@ import { getPendingReferralsAction } from "@/actions/referral";
 import { AdminReferralsList } from "./_components/admin-referrals-list";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentMember } from "@/actions/session";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { redirect } from "next/navigation";
 
 export default async function AdminReferralsPage({
@@ -16,7 +18,12 @@ export default async function AdminReferralsPage({
   const tr = await getTranslations("Referral");
 
   const current = await getCurrentMember();
-  if (!current?.member || current.member.role !== "admin") {
+  if (!current?.member) {
+    redirect("/dashboard");
+  }
+
+  const actor = buildActor(current.member);
+  if (!can(actor, "approve", "referral") && !can(actor, "reject", "referral")) {
     redirect("/dashboard");
   }
 
