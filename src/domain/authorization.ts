@@ -26,6 +26,8 @@ export type Subject =
   | "own_company"
   | "own_subscription"
   | "own_card"
+  | "own_referral"
+  | "card_verification"
   | "referral"
   | "member"
   | "company"
@@ -41,6 +43,7 @@ type Rule = (actor: Actor) => boolean;
 const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   // Guest: public content only
   { action: "read", subject: "marketing", check: () => true },
+  { action: "read", subject: "card_verification", check: () => true },
 
   // Authenticated: catalogue
   { action: "read", subject: "catalogue", check: (a) => isAuthenticated(a) },
@@ -58,8 +61,23 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     subject: "own_subscription",
     check: (a) => a.type === "member",
   },
+  {
+    action: "read",
+    subject: "own_referral",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+  {
+    action: "update",
+    subject: "own_referral",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
 
   // Partner owners: own company
+  {
+    action: "create",
+    subject: "own_company",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
   {
     action: "read",
     subject: "own_company",
