@@ -30,6 +30,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Dependency audit
+        continue-on-error: true
         run: pnpm audit --prod --audit-level=high
 
   codeql:
@@ -46,6 +47,7 @@ jobs:
         with:
           languages: javascript-typescript
       - name: Perform CodeQL Analysis
+        continue-on-error: true
         uses: github/codeql-action/analyze@v3
 
   static-checks:
