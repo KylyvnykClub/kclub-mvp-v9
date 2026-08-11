@@ -14,8 +14,8 @@ import type { Actor } from "@/domain/actor.js";
  * company, subscription, referral, card.
  * Assert 403 or 404, never data.
  *
- * Currently passes trivially because no routes are registered.
- * Each suite must be proved to fail (phase-0.md §3).
+ * The route registry is populated with the real application surface so this
+ * suite cannot pass just because no routes were declared.
  */
 
 const ownSubjects = [
@@ -37,9 +37,9 @@ beforeEach(() => {
 });
 
 describe("constraint: object-level authorization replay", () => {
-  it("passes trivially with no registered routes", () => {
+  it("replays a non-empty route registry", () => {
     const routes = getRegisteredRoutes();
-    expect(routes).toHaveLength(0);
+    expect(routes.length).toBeGreaterThan(0);
   });
 
   it("own_* subjects are only accessible to the owning member", () => {
@@ -81,9 +81,10 @@ describe("constraint: object-level authorization replay", () => {
       const ownRoutes = routes.filter((r) =>
         ownSubjects.includes(r.subject as (typeof ownSubjects)[number]),
       );
-      expect(ownRoutes).toHaveLength(1);
+      expect(ownRoutes.length).toBeGreaterThan(0);
 
-      const route = ownRoutes[0]!;
+      const route = ownRoutes.find((r) => r.path === "/api/profile/:id")!;
+      expect(route).toBeDefined();
       const memberAllowed = can(member1, route.action, route.subject);
       expect(
         memberAllowed,

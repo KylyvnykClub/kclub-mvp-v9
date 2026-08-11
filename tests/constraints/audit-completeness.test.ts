@@ -17,23 +17,9 @@ import {
  * 2. The application role cannot UPDATE or DELETE audit_log
  *    (already proved in T-0.12 integration tests).
  *
- * Currently passes trivially because no mutating staff routes are
- * registered. Each suite must be proved to fail (phase-0.md §3).
+ * The route registry is populated with the real application surface so this
+ * suite cannot pass just because no mutating staff routes were declared.
  */
-
-/**
- * Tracks which actions have audit handlers wired.
- * Modules call registerAuditedAction() when they set up their use cases.
- */
-const auditedActions = new Set<string>();
-
-export function registerAuditedAction(action: string, subject: string): void {
-  auditedActions.add(`${action}:${subject}`);
-}
-
-export function clearAuditedActions(): void {
-  auditedActions.clear();
-}
 
 function auditKey(action: string, subject: string): string {
   return `${action}:${subject}`;
@@ -41,13 +27,12 @@ function auditKey(action: string, subject: string): string {
 
 beforeEach(() => {
   clearRegistry();
-  clearAuditedActions();
 });
 
 describe("constraint: audit completeness", () => {
-  it("passes trivially with no mutating staff routes", () => {
+  it("checks a non-empty mutating staff route set", () => {
     const routes = getMutatingStaffRoutes();
-    expect(routes).toHaveLength(0);
+    expect(routes.length).toBeGreaterThan(0);
   });
 
   it("every mutating staff route has a declared audit handler", () => {
@@ -55,8 +40,7 @@ describe("constraint: audit completeness", () => {
     const unaudited: string[] = [];
 
     for (const route of routes) {
-      const key = auditKey(route.action, route.subject);
-      if (!auditedActions.has(key)) {
+      if (!route.audited) {
         unaudited.push(
           `${route.method} ${route.path} (${route.action} ${route.subject})`,
         );
@@ -81,10 +65,12 @@ describe("constraint: audit completeness", () => {
       });
 
       const routes = getMutatingStaffRoutes();
-      expect(routes).toHaveLength(1);
+      expect(routes.length).toBeGreaterThan(0);
 
-      const key = auditKey("block", "member");
-      expect(auditedActions.has(key)).toBe(false);
+      const unaudited = routes.filter((r) => !r.audited);
+      expect(unaudited.map((r) => auditKey(r.action, r.subject))).toContain(
+        "block:member",
+      );
     });
 
     it("passes when the audit handler is registered", () => {
@@ -95,14 +81,11 @@ describe("constraint: audit completeness", () => {
         subject: "member",
         mutating: true,
         staffOnly: true,
+        audited: true,
       });
 
-      registerAuditedAction("block", "member");
-
       const routes = getMutatingStaffRoutes();
-      const unaudited = routes.filter(
-        (r) => !auditedActions.has(auditKey(r.action, r.subject)),
-      );
+      const unaudited = routes.filter((r) => !r.audited);
       expect(unaudited).toHaveLength(0);
     });
   });

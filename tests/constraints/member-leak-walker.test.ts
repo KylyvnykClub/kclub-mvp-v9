@@ -14,8 +14,8 @@ import type { Actor } from "@/domain/actor.js";
  * This test enumerates every registered route and asserts that
  * the authorization layer denies member-to-member visibility.
  *
- * Currently passes trivially because no routes are registered.
- * Each suite must be proved to fail (phase-0.md §3).
+ * The route registry is populated with the real application surface so this
+ * suite cannot pass just because no routes were declared.
  */
 
 const member1: Actor = { type: "member", id: "m1", role: "member" };
@@ -27,9 +27,9 @@ beforeEach(() => {
 });
 
 describe("constraint: member-leak walker (ADR 0005)", () => {
-  it("passes trivially with no registered routes", () => {
+  it("walks a non-empty route registry", () => {
     const routes = getRegisteredRoutes();
-    expect(routes).toHaveLength(0);
+    expect(routes.length).toBeGreaterThan(0);
   });
 
   it("no member can read another member via the authorization layer", () => {
