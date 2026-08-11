@@ -2,13 +2,61 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { redisRestRateLimiter } from "./modules/platform/rate-limit";
 
 const intlMiddleware = createMiddleware(routing);
 
 const protectedPaths = ["/dashboard", "/admin"];
+const cardVerificationPath = /^\/(en|ru|uk)\/card\/[^/]+$/;
+const cardVerificationLimit = 30;
+const cardVerificationWindowMs = 60_000;
 
-export default function middleware(req: NextRequest) {
+function clientIp(req: NextRequest) {
+  const forwardedFor = req.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim();
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-real-ip") ??
+    forwardedFor ??
+    "unknown"
+  );
+}
+
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (cardVerificationPath.test(pathname)) {
+    const limiter = redisRestRateLimiter(
+      process.env.UPSTASH_REDIS_REST_URL ?? "",
+      process.env.UPSTASH_REDIS_REST_TOKEN ?? "",
+    );
+
+    try {
+      const result = await limiter.check(
+        `card:ip:${clientIp(req)}`,
+        cardVerificationLimit,
+        cardVerificationWindowMs,
+      );
+      if (!result.allowed) {
+        return NextResponse.json(
+          { error: "rate_limited" },
+          {
+            status: 429,
+            headers: {
+              "retry-after": String(Math.ceil(result.resetMs / 1000)),
+            },
+          },
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: "rate_limited" },
+        { status: 429, headers: { "retry-after": "60" } },
+      );
+    }
+  }
 
   // Basic session cookie check for protected routes.
   // Full verification happens in Server Components/Actions.

@@ -51,3 +51,82 @@ export function inMemoryRateLimiter(): RateLimiter {
     },
   };
 }
+
+type FetchLike = typeof fetch;
+
+interface RedisRestResponse<T> {
+  result?: T;
+  error?: string;
+}
+
+async function redisCommand<T>(
+  url: string,
+  token: string,
+  command: string[],
+  fetchImpl: FetchLike,
+): Promise<T> {
+  const response = await fetchImpl(url, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(command),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Redis REST command failed with ${response.status}`);
+  }
+
+  const body = (await response.json()) as RedisRestResponse<T>;
+  if (body.error || body.result === undefined) {
+    throw new Error(body.error ?? "Redis REST command returned no result");
+  }
+
+  return body.result;
+}
+
+export function redisRestRateLimiter(
+  url: string,
+  token: string,
+  fetchImpl: FetchLike = fetch,
+): RateLimiter {
+  return {
+    async check(key, limit, windowMs): Promise<RateLimitResult> {
+      const redisKey = `rate:${key}`;
+      const count = await redisCommand<number>(
+        url,
+        token,
+        ["INCR", redisKey],
+        fetchImpl,
+      );
+
+      if (count === 1) {
+        await redisCommand<string>(
+          url,
+          token,
+          ["PEXPIRE", redisKey, String(windowMs)],
+          fetchImpl,
+        );
+      }
+
+      const ttlMs = await redisCommand<number>(
+        url,
+        token,
+        ["PTTL", redisKey],
+        fetchImpl,
+      );
+      const resetMs = ttlMs > 0 ? ttlMs : windowMs;
+
+      if (count > limit) {
+        return { allowed: false, remaining: 0, resetMs };
+      }
+
+      return {
+        allowed: true,
+        remaining: Math.max(0, limit - count),
+        resetMs,
+      };
+    },
+  };
+}
