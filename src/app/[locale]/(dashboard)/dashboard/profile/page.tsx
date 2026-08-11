@@ -59,9 +59,10 @@ export default async function ProfilePage({ params }: Props) {
     : "";
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
+    <div className="space-y-8">
+      <div className="border-b border-border pb-6">
+        <p className="kclub-eyebrow">{tDashboard("profile")}</p>
+        <h1 className="mt-5 text-4xl font-black uppercase leading-tight tracking-[-0.03em] text-foreground sm:text-5xl">
           {tDashboard("welcome", {
             name: member.displayName || tDashboard("memberFallback"),
           })}
@@ -69,7 +70,7 @@ export default async function ProfilePage({ params }: Props) {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-4">
+        <TabsList className="mb-6 h-auto w-full justify-start overflow-x-auto rounded-none border border-border bg-muted/30 p-1">
           <TabsTrigger value="overview">
             {tDashboard("tabOverview")}
           </TabsTrigger>
@@ -80,46 +81,49 @@ export default async function ProfilePage({ params }: Props) {
           <TabsTrigger value="edit">{tDashboard("tabEditProfile")}</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <div className="grid gap-8 md:grid-cols-2">
-            {/* Personal Info Card */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-serif text-accent">
+          <div className="grid gap-px border border-border bg-border lg:grid-cols-[0.9fr_1.1fr]">
+            <Card className="rounded-none border-0 bg-background shadow-none">
+              <CardHeader className="border-b border-border">
+                <CardTitle className="text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-foreground">
                   {tDashboard("personalInfo")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">
+              <CardContent className="p-0">
+                <div className="grid sm:grid-cols-2">
+                  <div className="border-b border-border p-5 sm:border-r">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                       {tDashboard("name")}
                     </p>
-                    <p className="font-medium">{member.displayName || "-"}</p>
+                    <p className="mt-2 text-base font-bold">
+                      {member.displayName || "-"}
+                    </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="border-b border-border p-5">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                       {tDashboard("phone")}
                     </p>
-                    <p className="font-medium font-mono tracking-wider">
+                    <p className="mt-2 font-mono text-base font-bold tracking-wider">
                       {maskPhone(member.phone)}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="border-b border-border p-5 sm:border-r sm:border-b-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                       {tDashboard("country")}
                     </p>
-                    <p className="font-medium">{member.country || "-"}</p>
+                    <p className="mt-2 text-base font-bold">
+                      {member.country || "-"}
+                    </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="border-b border-border p-5 sm:border-b-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                       {tDashboard("language")}
                     </p>
-                    <p className="font-medium uppercase">
+                    <p className="mt-2 text-base font-bold uppercase">
                       {member.language || locale}
                     </p>
                   </div>
-                  <div className="space-y-1 col-span-2 pt-4 border-t border-border/50">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="p-5 sm:col-span-2 sm:border-t sm:border-border">
+                    <p className="text-sm font-light leading-6 text-muted-foreground">
                       {tDashboard("memberSince", { date: memberSince })}
                     </p>
                   </div>
@@ -127,32 +131,25 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            {/* Virtual Card Visualization */}
-            <div className="flex flex-col items-center justify-center p-2">
+            <div className="flex flex-col items-center justify-center bg-zinc-950 p-6 sm:p-10">
               <div
-                className="w-full max-w-[400px] relative overflow-hidden rounded-2xl border border-accent/30 shadow-2xl transition-all duration-500 hover:shadow-accent/20 hover:border-accent/60 group"
+                className="relative w-full max-w-[420px] overflow-hidden rounded-[20px] border border-accent/40 shadow-[0_24px_80px_-35px_rgba(212,175,55,0.65)]"
                 style={{
                   aspectRatio: "85.6/53.98",
                   background:
-                    "linear-gradient(135deg, rgba(15,15,15,0.95) 0%, rgba(30,30,30,0.95) 100%)",
-                  backdropFilter: "blur(20px)",
+                    "linear-gradient(135deg, rgba(18,18,18,0.98) 0%, rgba(37,30,15,0.96) 100%)",
                 }}
               >
-                {/* Ambient glows */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-accent/20 rounded-full blur-3xl opacity-60 group-hover:bg-accent/40 transition-colors duration-700"></div>
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-accent/10 rounded-full blur-3xl opacity-60 group-hover:bg-accent/30 transition-colors duration-700"></div>
-
-                {/* Card Content */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
-                  {/* Top Row */}
-                  <div className="flex justify-between items-start">
-                    <div className="font-serif text-accent text-2xl font-bold tracking-widest drop-shadow-sm">
+                <div className="absolute inset-x-0 top-0 h-px bg-accent/70" />
+                <div className="absolute inset-0 z-10 flex flex-col justify-between p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="text-2xl font-black tracking-[0.18em] text-accent">
                       KCLUB
                     </div>
                     {card && (
                       <Badge
                         variant="outline"
-                        className="bg-black/60 border-accent/60 text-accent uppercase tracking-widest text-[10px] font-bold px-2 py-0.5"
+                        className="rounded-none border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent"
                       >
                         {card.tier === "vip"
                           ? tCard("tierVip")
@@ -161,10 +158,9 @@ export default async function ProfilePage({ params }: Props) {
                     )}
                   </div>
 
-                  {/* Middle Row (Chip / QR) */}
-                  <div className="flex items-center justify-between opacity-90 mt-2">
+                  <div className="mt-2 flex items-center justify-between opacity-90">
                     <svg
-                      className="w-9 h-9 text-accent/80"
+                      className="h-9 w-9 text-accent/80"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -179,17 +175,16 @@ export default async function ProfilePage({ params }: Props) {
                     )}
                   </div>
 
-                  {/* Bottom Row */}
                   <div className="space-y-4">
-                    <div className="font-mono text-xl tracking-[0.2em] text-foreground/95 drop-shadow-md">
+                    <div className="font-mono text-xl tracking-[0.2em] text-white drop-shadow-md">
                       {card?.serial || "XXXX-XXXX-XXXX"}
                     </div>
-                    <div className="flex justify-between items-end">
+                    <div className="flex items-end justify-between">
                       <div className="space-y-1">
-                        <div className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
+                        <div className="text-[9px] uppercase tracking-[0.15em] text-white/45">
                           {tDashboard("name")}
                         </div>
-                        <div className="font-medium tracking-wider text-sm text-foreground/90 uppercase">
+                        <div className="text-sm font-medium uppercase tracking-wider text-white/90">
                           {member.displayName || tDashboard("memberFallback")}
                         </div>
                       </div>
@@ -198,19 +193,19 @@ export default async function ProfilePage({ params }: Props) {
                         <div className="flex flex-col items-end gap-1.5">
                           <div className="flex items-center gap-1.5">
                             <span
-                              className={`w-2 h-2 rounded-full ${
+                              className={`h-2 w-2 rounded-full ${
                                 card.status === "valid"
                                   ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
                                   : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
                               }`}
                             ></span>
-                            <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground">
+                            <span className="text-[9px] uppercase tracking-[0.15em] text-white/45">
                               {card.status === "valid"
                                 ? tCard("statusValid")
                                 : tCard("statusRevoked")}
                             </span>
                           </div>
-                          <div className="text-[10px] tracking-widest text-muted-foreground font-mono">
+                          <div className="font-mono text-[10px] tracking-widest text-white/45">
                             {cardIssuedAt}
                           </div>
                         </div>
@@ -218,9 +213,6 @@ export default async function ProfilePage({ params }: Props) {
                     </div>
                   </div>
                 </div>
-
-                {/* Glass reflection */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none transform -skew-x-12 translate-x-full group-hover:translate-x-0"></div>
               </div>
             </div>
           </div>
@@ -239,9 +231,9 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="edit">
           <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
               <CardHeader>
-                <CardTitle className="text-xl font-serif text-accent">
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("publicProfile")}
                 </CardTitle>
               </CardHeader>
@@ -250,20 +242,20 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
               <CardHeader>
-                <CardTitle className="text-xl font-serif text-accent">
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("dataPrivacy")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="mb-4 text-sm text-muted-foreground">
                   {tDashboard("dataPrivacyDesc")}
                 </p>
                 <a
                   href="/api/export/member"
                   download
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center bg-secondary px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50"
                 >
                   {tDashboard("exportData")}
                 </a>

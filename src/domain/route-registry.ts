@@ -313,6 +313,14 @@ const staticRoutes: RouteEntry[] = [
     mutating: false,
     staffOnly: false,
   },
+  {
+    method: "GET",
+    path: "/.well-known/security.txt",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
 ];
 
 const routes: RouteEntry[] = [];

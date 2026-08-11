@@ -225,6 +225,20 @@ export type CompanyRow = Awaited<
   ReturnType<typeof listCompaniesByOwner>
 >[number];
 
+export async function findApprovedCompanyByOwner(
+  db: DbClient,
+  companyId: string,
+  ownerId: string,
+) {
+  return db.query.companies.findFirst({
+    where: and(
+      eq(companies.id, companyId),
+      eq(companies.ownerId, ownerId),
+      eq(companies.moderationStatus, "approved"),
+    ),
+  });
+}
+
 export async function listApprovedCompaniesWithSubscriptionsByOwner(
   db: DbClient,
   ownerId: string,

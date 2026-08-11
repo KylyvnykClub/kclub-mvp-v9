@@ -20,17 +20,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Blocking: a broken link or a reference to a section that no longer
-      # exists is the most common symptom of a document drifting from reality,
-      # and it is unambiguous enough to fail a build over.
-      - name: Check links and anchors
-        run: python tools/check-docs.py
-
-      # Advisory: unowned documents and stale dates are reported, not enforced,
-      # until owners are assigned at kick-off.
-      - name: Report warnings
-        if: always()
-        continue-on-error: true
+      # Blocking: broken links, missing owners, stale placeholders and anchor
+      # drift are all release risks once the project is past baseline setup.
+      - name: Check links, anchors, owners and placeholders
         run: python tools/check-docs.py --strict
 
       - uses: actions/setup-node@v4

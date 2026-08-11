@@ -7,9 +7,15 @@ import {
   findStripeCustomerIdByMember,
   insertStripeCustomerMapping,
 } from "@/data/billing";
+import { findApprovedCompanyByOwner } from "@/data/companies";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/env";
+import {
+  checkoutIdempotencyKey,
+  type CheckoutPlan,
+} from "@/modules/billing/checkout";
+import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -42,12 +48,11 @@ async function appOrigin(): Promise<string> {
   return headersList.get("origin") || env.server.NEXT_PUBLIC_APP_URL;
 }
 
-export async function createVipCheckoutAction() {
-  const priceId = env.server.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID;
-  if (!priceId) {
-    throw new Error("VIP price is not configured");
-  }
-
+async function createSubscriptionCheckout(params: {
+  plan: CheckoutPlan;
+  priceId: string;
+  companyId?: string;
+}) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
     throw new Error("Unauthorized");
@@ -67,23 +72,37 @@ export async function createVipCheckoutAction() {
     memberId: auth.member.id,
   };
 
-  const session = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    metadata,
-    subscription_data: {
+  if (params.companyId) {
+    metadata.companyId = params.companyId;
+  }
+
+  const session = await stripe.checkout.sessions.create(
+    {
+      customer: stripeCustomerId,
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: params.priceId,
+          quantity: 1,
+        },
+      ],
       metadata,
+      subscription_data: {
+        metadata,
+      },
+      success_url: `${origin}/${locale}/dashboard/checkout/success`,
+      cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
     },
-    success_url: `${origin}/${locale}/dashboard/checkout/success`,
-    cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
-  });
+    {
+      idempotencyKey: checkoutIdempotencyKey({
+        memberId: auth.member.id,
+        plan: params.plan,
+        priceId: params.priceId,
+        companyId: params.companyId,
+      }),
+    },
+  );
 
   if (!session.url) {
     throw new Error("Failed to create checkout session");
@@ -92,56 +111,33 @@ export async function createVipCheckoutAction() {
   redirect(session.url);
 }
 
-export async function createCheckoutSessionAction(
-  priceId: string,
-  companyId?: string,
-) {
+export async function createVipCheckoutAction() {
+  await createSubscriptionCheckout({
+    plan: "vip",
+    priceId: configuredCheckoutPriceId("vip"),
+  });
+}
+
+export async function createCheckoutSessionAction(companyId: string) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
     throw new Error("Unauthorized");
   }
 
-  const locale = auth.member.language || "en";
-
-  const stripeCustomerId = await getOrCreateStripeCustomer(
+  const company = await findApprovedCompanyByOwner(
+    db,
+    companyId,
     auth.member.id,
-    undefined,
-    auth.member.displayName,
   );
-
-  const origin = await appOrigin();
-
-  const metadata: Record<string, string> = {
-    memberId: auth.member.id,
-  };
-
-  if (companyId) {
-    metadata.companyId = companyId;
+  if (!company) {
+    throw new Error("Company is not eligible for listing checkout");
   }
 
-  const session = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    metadata,
-    subscription_data: {
-      metadata,
-    },
-    success_url: `${origin}/${locale}/dashboard/checkout/success`,
-    cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
+  await createSubscriptionCheckout({
+    plan: "listing",
+    priceId: configuredCheckoutPriceId("listing"),
+    companyId,
   });
-
-  if (!session.url) {
-    throw new Error("Failed to create checkout session");
-  }
-
-  redirect(session.url);
 }
 
 export async function createPortalSessionAction() {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { loginAction, verifyTotpAction } from "@/actions/auth";
+import { AuthShell } from "@/components/auth/auth-shell";
 import {
   Card,
   CardHeader,
@@ -24,7 +25,7 @@ function SubmitButton({ label }: { label: string }) {
   return (
     <Button
       type="submit"
-      className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+      className="h-12 w-full rounded-none bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
       disabled={pending}
     >
       {pending ? "..." : label}
@@ -84,22 +85,30 @@ export function LoginForm() {
 
   if (loginState.requiresTotp) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)] px-4 py-12">
-        <Card className="w-full max-w-md bg-card border-border shadow-2xl">
-          <CardHeader className="space-y-2 text-center pt-8">
-            <CardTitle className="text-[24px] font-bold tracking-tight text-white uppercase">
+      <AuthShell
+        eyebrow="KCLUB ACCESS"
+        title={loginState.setupTotp ? "Set Up 2FA" : "Two-Factor Auth"}
+        subtitle={
+          loginState.setupTotp
+            ? "Scan this QR code with your authenticator app"
+            : "Enter the code from your authenticator app"
+        }
+      >
+        <Card className="w-full rounded-none border-white/10 bg-background text-foreground shadow-none">
+          <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
+            <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
               {loginState.setupTotp ? "Set Up 2FA" : "Two-Factor Auth"}
             </CardTitle>
-            <CardDescription className="text-[14px] text-[#888]">
+            <CardDescription className="text-sm font-light leading-6 text-muted-foreground">
               {loginState.setupTotp
                 ? "Scan this QR code with your authenticator app"
                 : "Enter the code from your authenticator app"}
             </CardDescription>
           </CardHeader>
           <form action={totpFormAction}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5 p-6 sm:p-8">
               {loginState.setupTotp && loginState.totpUri && (
-                <div className="flex justify-center p-4 bg-white rounded-md mb-4">
+                <div className="mb-4 flex justify-center border border-border bg-white p-4">
                   <QRCodeSVG value={loginState.totpUri} size={200} />
                   <input
                     type="hidden"
@@ -119,22 +128,22 @@ export function LoginForm() {
                   maxLength={6}
                   placeholder="123456"
                   required
-                  className="bg-background/50 text-center tracking-widest text-lg"
+                  className="h-12 rounded-none bg-background text-center text-lg tracking-widest"
                 />
               </div>
               {totpState?.error && (
-                <div className="text-sm font-medium text-destructive text-center">
+                <div className="border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive">
                   {totpState.error}
                 </div>
               )}
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
+            <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
               <SubmitButton label="Verify" />
               <div className="text-sm text-center text-muted-foreground">
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="text-primary hover:underline underline-offset-4"
+                  className="font-bold uppercase tracking-[0.12em] text-foreground hover:text-accent"
                 >
                   Cancel
                 </button>
@@ -142,23 +151,27 @@ export function LoginForm() {
             </CardFooter>
           </form>
         </Card>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[calc(100vh-200px)] px-4 py-12">
-      <Card className="w-full max-w-md bg-card border-border shadow-2xl">
-        <CardHeader className="space-y-2 text-center pt-8">
-          <CardTitle className="text-[24px] font-bold tracking-tight text-white uppercase">
+    <AuthShell
+      eyebrow="KCLUB ACCESS"
+      title={t("loginTitle")}
+      subtitle={t("loginSubtitle")}
+    >
+      <Card className="w-full rounded-none border-white/10 bg-background text-foreground shadow-none">
+        <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
+          <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
             {t("loginTitle")}
           </CardTitle>
-          <CardDescription className="text-[14px] text-[#888]">
+          <CardDescription className="text-sm font-light leading-6 text-muted-foreground">
             {t("loginSubtitle")}
           </CardDescription>
         </CardHeader>
         <form action={loginFormAction}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5 p-6 sm:p-8">
             <div className="space-y-2 text-left">
               <Label htmlFor="phone">{t("phoneLabel")}</Label>
               <Input
@@ -167,7 +180,7 @@ export function LoginForm() {
                 type="tel"
                 placeholder={t("phonePlaceholder")}
                 required
-                className="bg-background/50"
+                className="h-12 rounded-none bg-background"
               />
             </div>
             <div className="space-y-2 text-left">
@@ -183,22 +196,22 @@ export function LoginForm() {
                 type="password"
                 placeholder={t("passwordPlaceholder")}
                 required
-                className="bg-background/50"
+                className="h-12 rounded-none bg-background"
               />
             </div>
             {loginState?.error && (
-              <div className="text-sm font-medium text-destructive text-center">
+              <div className="border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive">
                 {loginState.error}
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
             <SubmitButton label={t("loginButton")} />
             <div className="text-sm text-center text-muted-foreground">
               {t("noAccount")}{" "}
               <Link
                 href={`/${locale}/register`}
-                className="text-primary hover:underline underline-offset-4"
+                className="font-bold text-foreground hover:text-accent"
               >
                 {t("registerLink")}
               </Link>
@@ -206,6 +219,6 @@ export function LoginForm() {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

@@ -33,6 +33,10 @@ function requiredKeys(schema: AnyZodObject): Set<string> {
 function placeholder(name: string): string {
   if (name.startsWith("STRIPE_SECRET")) return "sk_test_REPLACE_ME";
   if (name.startsWith("STRIPE_WEBHOOK")) return "whsec_REPLACE_ME";
+  if (name.startsWith("STRIPE") && name.endsWith("PRICE_ID"))
+    return "price_REPLACE_ME";
+  if (name.startsWith("NEXT_PUBLIC_STRIPE") && name.endsWith("PRICE_ID"))
+    return "price_REPLACE_ME";
   if (name.startsWith("NEXT_PUBLIC_STRIPE")) return "pk_test_REPLACE_ME";
   if (name.includes("URL") || name.includes("_DSN"))
     return "https://REPLACE_ME";

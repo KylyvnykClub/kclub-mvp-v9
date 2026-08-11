@@ -18,6 +18,7 @@ import {
 import { getCurrentMember } from "./session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
+import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -43,8 +44,7 @@ export async function createReferralAction(
 
   const parsed = referralSchema.parse(data);
 
-  const vipPriceId = process.env.NEXT_PUBLIC_STRIPE_VIP_PRICE_ID;
-  if (!vipPriceId) throw new Error("Billing is not configured");
+  const vipPriceId = configuredCheckoutPriceId("vip");
 
   const vipSub = await findActiveSubscriptionByPrice(db, member.id, vipPriceId);
   const actor = buildActor({

@@ -43,6 +43,8 @@ export const serverSchema = z
     // ── Billing — Stripe ────────────────────────────────────
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+    STRIPE_VIP_PRICE_ID: z.string().optional(),
+    STRIPE_LISTING_PRICE_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID: z.string().optional(),
 
@@ -96,8 +98,6 @@ export const serverSchema = z
 export const clientSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_"),
-  NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
-  NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 });

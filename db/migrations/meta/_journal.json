@@ -71,6 +71,13 @@
       "when": 1786175750464,
       "tag": "20260808075550_quick_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786456199298,
+      "tag": "20260811134959_hash_session_tokens",
+      "breakpoints": true
     }
   ]
 }

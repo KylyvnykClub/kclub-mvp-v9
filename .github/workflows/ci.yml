@@ -46,7 +46,6 @@ jobs:
         with:
           languages: javascript-typescript
       - name: Perform CodeQL Analysis
-        continue-on-error: true
         uses: github/codeql-action/analyze@v3
 
   static-checks:
