@@ -107,7 +107,11 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="dashboard-mobile-navigation"
-            aria-label={open ? "Close navigation" : "Open navigation"}
+            aria-label={
+              open
+                ? tDashboard("closeNavigation")
+                : tDashboard("openNavigation")
+            }
           >
             {open ? (
               <X className="size-5" aria-hidden="true" />

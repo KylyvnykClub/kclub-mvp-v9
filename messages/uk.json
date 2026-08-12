@@ -496,6 +496,8 @@
     "navAdminMembers": "Учасники",
     "navAdminFlags": "Функціональні прапорці",
     "navAdminAudit": "Журнал аудиту",
+    "openNavigation": "Відкрити навігацію",
+    "closeNavigation": "Закрити навігацію",
     "profileUpdated": "Профіль успішно оновлено",
     "avatarLabel": "URL аватара",
     "bioLabel": "Про себе",
