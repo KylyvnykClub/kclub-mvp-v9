@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/data/db";
+import { findMemberByStripeCustomerId } from "@/data/billing";
 import { drainOutbox, markProcessed } from "@/data/outbox";
 import { env } from "@/env";
 import {
   BILLING_OUTBOX_TOPIC,
+  BILLING_NOTIFICATION_TOPIC,
   reconcileSubscription,
 } from "@/modules/billing/projection";
+import { sendPaymentFailedEmail } from "@/modules/notifications/email";
 import { authorizeCronRequest } from "@/modules/platform";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
@@ -20,12 +23,20 @@ interface SubscriptionSyncPayload {
   subscriptionId?: string;
 }
 
+interface NotificationPayload {
+  type?: string;
+  subscriptionId?: string;
+  customerId?: string;
+  attemptCount?: number;
+}
+
 /** Result of the drain, for observability. */
 export interface DrainResult {
   drained: number;
   processed: number;
   stale: number;
   deleted: number;
+  notified: number;
   failed: number;
 }
 
@@ -46,13 +57,26 @@ export async function GET(req: Request) {
     processed: 0,
     stale: 0,
     deleted: 0,
+    notified: 0,
     failed: 0,
   };
 
   for (const entry of entries) {
+    if (entry.topic === BILLING_NOTIFICATION_TOPIC) {
+      try {
+        await processNotification(entry.payload as NotificationPayload);
+        result.notified += 1;
+        await markProcessed(db, entry.id);
+      } catch (error) {
+        result.failed += 1;
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(`[billing-notification] failed: ${message}`);
+      }
+      continue;
+    }
+
     if (entry.topic !== BILLING_OUTBOX_TOPIC) {
-      // A topic no worker owns yet. Mark it so it does not sit unfinished
-      // forever; a real worker registers its topic when it exists.
       await markProcessed(db, entry.id);
       continue;
     }
@@ -80,7 +104,6 @@ export async function GET(req: Request) {
     } catch (error) {
       result.failed += 1;
       const message = error instanceof Error ? error.message : "Unknown error";
-      // Left unprocessed; the next drain retries it.
       console.error(
         `[billing-projection] failed for subscription ${subscriptionId}: ${message}`,
       );
@@ -88,4 +111,37 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({ success: true, ...result });
+}
+
+async function processNotification(
+  payload: NotificationPayload,
+): Promise<void> {
+  if (payload.type !== "payment_failed" || !payload.customerId) return;
+
+  const member = await findMemberByStripeCustomerId(db, payload.customerId);
+  if (!member) {
+    console.warn(
+      `[billing-notification] no member found for customer ${payload.customerId}`,
+    );
+    return;
+  }
+
+  // Look up email from the Stripe customer — members table has no email column.
+  const customer = await stripe.customers.retrieve(payload.customerId);
+  if (customer.deleted || !customer.email) {
+    console.warn(
+      `[billing-notification] no email for customer ${payload.customerId}`,
+    );
+    return;
+  }
+
+  const locale = (
+    ["en", "ru", "uk"].includes(member.language) ? member.language : "en"
+  ) as "en" | "ru" | "uk";
+
+  await sendPaymentFailedEmail({
+    to: customer.email,
+    displayName: member.displayName,
+    locale,
+  });
 }

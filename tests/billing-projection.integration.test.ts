@@ -6,9 +6,10 @@ import { getTestDb } from "./setup/integration-setup.js";
 import {
   reconcileSubscription,
   BILLING_OUTBOX_TOPIC,
+  BILLING_NOTIFICATION_TOPIC,
 } from "@/modules/billing/projection.js";
 import { findLapsedSubscriptions, processWebhookOnce } from "@/data/billing.js";
-import { enqueueOutbox, countPending } from "@/data/outbox.js";
+import { enqueueOutbox, countPending, drainOutbox } from "@/data/outbox.js";
 import { cards, members } from "@/data/schema/index.js";
 
 /**
@@ -433,6 +434,152 @@ describe("billing lapse semantics (FR-054)", () => {
         ),
       subscriptionId,
       afterPeriodEnd,
+    );
+
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+});
+
+describe("billing grace period (FR-056)", () => {
+  it("a past_due subscription keeps vip access during the dunning grace period", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    // Initially active.
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+
+    // Payment fails — Stripe sets status to past_due while retrying.
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "past_due",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 60,
+    );
+
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+
+  it("an unpaid subscription (grace expired) demotes to free", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+
+    // All retries exhausted — Stripe sets status to unpaid.
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "unpaid",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 14 * 86_400,
+    );
+
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("free");
+  });
+
+  it("invoice.payment_failed webhook writes a notification outbox row", async () => {
+    const db = testDbClient();
+    const eventId = `evt_${crypto.randomUUID()}`;
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    const customerId = `cus_${crypto.randomUUID()}`;
+
+    await processWebhookOnce(
+      testDb(),
+      eventId,
+      "invoice.payment_failed",
+      async (tx) => {
+        await enqueueOutbox(tx, BILLING_NOTIFICATION_TOPIC, {
+          eventId,
+          type: "payment_failed",
+          subscriptionId,
+          customerId,
+          attemptCount: 1,
+        });
+      },
+    );
+
+    const entries = await drainOutbox(db, 10);
+    const notificationEntry = entries.find(
+      (e) => e.topic === BILLING_NOTIFICATION_TOPIC,
+    );
+
+    expect(notificationEntry).toBeDefined();
+    const payload = notificationEntry!.payload as Record<string, unknown>;
+    expect(payload.type).toBe("payment_failed");
+    expect(payload.subscriptionId).toBe(subscriptionId);
+    expect(payload.customerId).toBe(customerId);
+  });
+
+  it("a recovered payment (past_due → active) keeps vip", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    // Active → past_due.
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "past_due",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 60,
+    );
+
+    // Payment recovered — Stripe sets back to active.
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 300,
     );
 
     expect(result).toBe("applied");
