@@ -170,6 +170,10 @@ Production readiness evidence is tracked separately from phase delivery:
 - [Production environment readiness](production-env-readiness.md) records the
   production and preview environment variables, vendor dashboards, and smoke
   evidence required before promotion.
+- [Production launch evidence](production-launch-evidence.md) tracks every
+  launch acceptance criterion from
+  [requirements.md §8](../requirements.md#8-acceptance-criteria) with status,
+  evidence and next action.
 
 **One gap found while writing this, and left visible rather than fixed:**
 [requirements.md §6.1](../requirements.md#61-delivery-plan) assigns FR ranges to
