@@ -7,7 +7,7 @@ import {
   reconcileSubscription,
   BILLING_OUTBOX_TOPIC,
 } from "@/modules/billing/projection.js";
-import { processWebhookOnce } from "@/data/billing.js";
+import { findLapsedSubscriptions, processWebhookOnce } from "@/data/billing.js";
 import { enqueueOutbox, countPending } from "@/data/outbox.js";
 import { cards, members } from "@/data/schema/index.js";
 
@@ -221,6 +221,47 @@ describe("billing projection (ADR 0004)", () => {
     expect(await cardTierOf(db, memberId)).toBe("free");
   });
 
+  it("FR-050: a checkout redirect (success URL) grants no entitlement by itself", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    const eventId = `evt_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    // Simulate what happens when a checkout completes: the webhook fires,
+    // processWebhookOnce records the event, and an outbox row is written.
+    // The success redirect happens at the same time but is a separate path.
+    await processWebhookOnce(
+      testDb(),
+      eventId,
+      "customer.subscription.created",
+      async (tx) => {
+        await enqueueOutbox(tx, BILLING_OUTBOX_TOPIC, {
+          eventId,
+          eventCreated: EPOCH,
+          subscriptionId,
+        });
+      },
+    );
+
+    // At this point the member lands on /checkout/success. The page renders a
+    // "payment received" message but never calls reconcileSubscription. The
+    // card tier must still be free — the entitlement only arrives when the
+    // outbox-drain worker runs the projection.
+    expect(await cardTierOf(db, memberId)).toBe("free");
+
+    // Only after the projection worker runs does the tier change.
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+
   it("FR-053: a deleted subscription is marked deleted and demotes the tier", async () => {
     const db = testDbClient();
     const memberId = crypto.randomUUID();
@@ -249,5 +290,152 @@ describe("billing projection (ADR 0004)", () => {
 
     expect(result).toBe("deleted");
     expect(await cardTierOf(db, memberId)).toBe("free");
+  });
+});
+
+describe("billing lapse semantics (FR-054)", () => {
+  it("a cancel-at-period-end subscription keeps vip while the period is active", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+            cancel_at_period_end: true,
+            cancel_at: EPOCH + 2_592_000,
+          }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+
+  it("findLapsedSubscriptions returns subscriptions past their period end", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+            cancel_at_period_end: true,
+            cancel_at: EPOCH + 2_592_000,
+          }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    const beforeEnd = new Date(EPOCH * 1000);
+    const beforeResults = await findLapsedSubscriptions(db, beforeEnd);
+    expect(
+      beforeResults.some((r) => r.stripeSubscriptionId === subscriptionId),
+    ).toBe(false);
+
+    const afterEnd = new Date((EPOCH + 2_592_000 + 60) * 1000);
+    const lapsed = await findLapsedSubscriptions(db, afterEnd);
+    expect(lapsed.some((r) => r.stripeSubscriptionId === subscriptionId)).toBe(
+      true,
+    );
+  });
+
+  it("the lapse cron path revokes access when Stripe confirms cancellation", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    // Initial active subscription with cancel_at_period_end.
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+            cancel_at_period_end: true,
+            cancel_at: EPOCH + 2_592_000,
+          }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+
+    // After the period ends, findLapsedSubscriptions finds it, and the cron
+    // re-fetches from Stripe. Stripe now reports status: "canceled".
+    const afterPeriodEnd = EPOCH + 2_592_000 + 120;
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "canceled",
+            canceled_at: EPOCH + 2_592_000,
+          }),
+        ),
+      subscriptionId,
+      afterPeriodEnd,
+    );
+
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("free");
+  });
+
+  it("a renewed subscription (Stripe auto-renewed) keeps vip after the lapse check", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+
+    // The lapse cron re-fetches and Stripe says it auto-renewed with a new
+    // period. The subscription is still active — access stays.
+    const afterPeriodEnd = EPOCH + 2_592_000 + 120;
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status: "active",
+            items: {
+              data: [
+                {
+                  price: { id: "price_vip_monthly" },
+                  current_period_start: EPOCH + 2_592_000,
+                  current_period_end: EPOCH + 5_184_000,
+                } as unknown as Stripe.SubscriptionItem,
+              ],
+            } as Stripe.ApiList<Stripe.SubscriptionItem>,
+          }),
+        ),
+      subscriptionId,
+      afterPeriodEnd,
+    );
+
+    expect(result).toBe("applied");
+    expect(await cardTierOf(db, memberId)).toBe("vip");
   });
 });

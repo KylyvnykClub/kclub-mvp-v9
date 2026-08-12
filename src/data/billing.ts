@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, lte } from "drizzle-orm";
 
 import type { Db, DbClient, DbTx } from "./db";
 import {
@@ -108,6 +108,25 @@ export async function setSubscriptionStatus(
     .update(subscriptions)
     .set({ status })
     .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+}
+
+/**
+ * Find subscriptions that are locally `active` but past their period end.
+ * These need re-fetching from Stripe to detect cancellation or lapse (FR-054).
+ */
+export async function findLapsedSubscriptions(
+  db: DbClient,
+  now: Date,
+): Promise<Array<{ stripeSubscriptionId: string }>> {
+  return db
+    .select({ stripeSubscriptionId: subscriptions.stripeSubscriptionId })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.status, "active"),
+        lte(subscriptions.currentPeriodEnd, now),
+      ),
+    );
 }
 
 export async function setCardTierForMember(

@@ -12,3 +12,6 @@ yarn.lock
 
 # Local-only session state (never committed).
 .state/
+
+# Claude Code configuration (auto-generated).
+.claude/
