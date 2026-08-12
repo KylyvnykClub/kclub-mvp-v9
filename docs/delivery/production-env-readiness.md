@@ -176,3 +176,17 @@ Before production promotion, attach or link evidence for:
 - Stripe checkout redirect smoke
 - Stripe webhook projection smoke
 - Cron outbox drain smoke
+
+## Deployment Smoke Command
+
+Run the repeatable smoke check against every preview used for launch approval
+and once against production immediately after promotion:
+
+```powershell
+pnpm smoke:deployment https://preview-or-production-url
+```
+
+The script checks `/health/live`, `/health/ready`, the English public entry
+points, and the dashboard profile gate. It expects `/health/ready` to return
+`200`; a `503` is a deploy blocker because it means the database or Redis is not
+reachable from the deployed environment.

@@ -25,6 +25,7 @@
     "db:studio": "drizzle-kit studio",
     "db:updownup": "tsx tools/db-updownup.ts",
     "env:example": "tsx tools/gen-env-example.ts",
+    "smoke:deployment": "tsx tools/smoke-deployment.ts",
     "i18n:check": "tsx tools/check-i18n-keys.ts",
     "test": "vitest run",
     "test:unit": "vitest run",
