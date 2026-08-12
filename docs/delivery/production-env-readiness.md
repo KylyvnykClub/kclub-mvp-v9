@@ -160,6 +160,7 @@ steps with owner, date, and verification evidence.
 
 Before production promotion, attach or link evidence for:
 
+- `pnpm env:check:production`
 - `pnpm verify`
 - `pnpm build`
 - `pnpm test:integration`
@@ -190,3 +191,17 @@ The script checks `/health/live`, `/health/ready`, the English public entry
 points, and the dashboard profile gate. It expects `/health/ready` to return
 `200`; a `503` is a deploy blocker because it means the database or Redis is not
 reachable from the deployed environment.
+
+## Production Env Check Command
+
+Run this in the production deployment environment, or locally with the exact
+production variables loaded:
+
+```powershell
+pnpm env:check:production
+```
+
+The command validates the runtime schema and launch-only invariants that the
+generic schema cannot know: app/auth URL parity, disabled dev SMS bypass, no
+production `E2E_TEST_SECRET`, no lingering bootstrap password, live Stripe keys,
+and production price ids for both subscription products.
