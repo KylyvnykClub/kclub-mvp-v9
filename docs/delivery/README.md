@@ -163,6 +163,14 @@ eight today would produce seven documents describing work whose shape will be
 known only after the phases before them are finished — and rewriting them later
 costs more than the planning is worth.
 
+## 8. Production Readiness
+
+Production readiness evidence is tracked separately from phase delivery:
+
+- [Production environment readiness](production-env-readiness.md) records the
+  production and preview environment variables, vendor dashboards, and smoke
+  evidence required before promotion.
+
 **One gap found while writing this, and left visible rather than fixed:**
 [requirements.md §6.1](../requirements.md#61-delivery-plan) assigns FR ranges to
 phases 1, 2, 3, 5 and 6, but the platform-wide requirements FR-090…FR-098
