@@ -204,4 +204,6 @@ pnpm env:check:production
 The command validates the runtime schema and launch-only invariants that the
 generic schema cannot know: app/auth URL parity, disabled dev SMS bypass, no
 production `E2E_TEST_SECRET`, no lingering bootstrap password, live Stripe keys,
-and production price ids for both subscription products.
+and production price ids for both subscription products. The CLI evaluates the
+loaded variables as production even when a local env file omits `VERCEL_ENV`, so
+a green run is not accidentally downgraded to a preview/development check.

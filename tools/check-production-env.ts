@@ -10,6 +10,8 @@ export type EnvCheckResult = {
   issues: EnvCheckIssue[];
 };
 
+type EnvCheckMode = "runtime" | "production";
+
 function isTruthy(value: unknown): boolean {
   return value === true || value === "true";
 }
@@ -108,9 +110,12 @@ function sharedIssues(env: Record<string, unknown>): EnvCheckIssue[] {
 
 export function checkProductionEnv(
   env: Record<string, unknown>,
+  mode: EnvCheckMode = "runtime",
 ): EnvCheckResult {
-  const serverResult = serverSchema.safeParse(env);
-  const clientResult = clientSchema.safeParse(env);
+  const envToValidate =
+    mode === "production" ? { ...env, VERCEL_ENV: "production" } : env;
+  const serverResult = serverSchema.safeParse(envToValidate);
+  const clientResult = clientSchema.safeParse(envToValidate);
   const issues: EnvCheckIssue[] = [];
 
   if (!serverResult.success) {
@@ -131,10 +136,10 @@ export function checkProductionEnv(
     }
   }
 
-  issues.push(...sharedIssues(env));
+  issues.push(...sharedIssues(envToValidate));
 
-  if (env["VERCEL_ENV"] === "production") {
-    issues.push(...productionOnlyIssues(env));
+  if (envToValidate["VERCEL_ENV"] === "production") {
+    issues.push(...productionOnlyIssues(envToValidate));
   }
 
   return {
@@ -144,7 +149,7 @@ export function checkProductionEnv(
 }
 
 function main() {
-  const result = checkProductionEnv(process.env);
+  const result = checkProductionEnv(process.env, "production");
 
   if (result.ok) {
     console.log("production environment check passed");
