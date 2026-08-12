@@ -32,7 +32,6 @@ export async function findCardPublicByToken(db: DbClient, token: string) {
       status: cards.status,
       issuedAt: cards.issuedAt,
       memberName: members.displayName,
-      memberStatus: members.status,
     })
     .from(cards)
     .innerJoin(members, eq(cards.memberId, members.id))

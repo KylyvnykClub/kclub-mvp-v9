@@ -58,6 +58,35 @@ describe("identity card token storage", () => {
     expect(publicCard?.serial).toBe(created.serial);
   });
 
+  it("FR-023 exposes only the public card verification fields", async () => {
+    const db = testDbClient();
+    const member = await seedMember(db);
+
+    const created = await insertCard(db, {
+      memberId: member.id,
+      serial: `DISCLOSURE-${crypto.randomUUID()}`,
+      tier: "vip",
+    });
+
+    const ownerCard = await findCardByMemberId(db, member.id);
+    const publicCard = await findCardPublicByToken(db, ownerCard!.token);
+
+    expect(publicCard).toMatchObject({
+      issuedAt: created.issuedAt,
+      memberName: member.displayName,
+      serial: created.serial,
+      status: "valid",
+      tier: "vip",
+    });
+    expect(Object.keys(publicCard ?? {}).sort()).toEqual([
+      "issuedAt",
+      "memberName",
+      "serial",
+      "status",
+      "tier",
+    ]);
+  });
+
   it("keeps legacy plaintext card tokens readable during the expand migration", async () => {
     const db = testDbClient();
     const member = await seedMember(db);
