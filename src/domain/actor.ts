@@ -1,26 +1,34 @@
-export const ROLES = [
-  "guest",
-  "member",
-  "member_vip",
-  "partner_owner",
+export const MEMBER_ROLES = ["member", "member_vip"] as const;
+export const STAFF_ROLES = [
   "staff_support",
   "staff_moderator",
   "staff_admin",
   "staff_owner",
+] as const;
+
+export const ROLES = [
+  "guest",
+  ...MEMBER_ROLES,
+  "partner_owner",
+  ...STAFF_ROLES,
   "system",
 ] as const;
 
 export type Role = (typeof ROLES)[number];
-export type PersistedRole = Role | "user" | "admin";
+export type MemberRole = (typeof MEMBER_ROLES)[number];
+export type StaffRole = (typeof STAFF_ROLES)[number];
+export type PersistedRole = MemberRole | "partner_owner" | StaffRole;
+export type LegacyPersistedRole = "user" | "admin";
+export type CompatiblePersistedRole = PersistedRole | LegacyPersistedRole;
 
 export type Actor =
   | { type: "guest" }
-  | { type: "member"; id: string; role: "member" | "member_vip" }
+  | { type: "member"; id: string; role: MemberRole }
   | { type: "partner_owner"; id: string; companyIds: string[] }
   | {
       type: "staff";
       id: string;
-      role: "staff_support" | "staff_moderator" | "staff_admin" | "staff_owner";
+      role: StaffRole;
     }
   | { type: "system" };
 
@@ -32,6 +40,19 @@ const STAFF_RANK: Record<string, number> = {
   staff_admin: 3,
   staff_owner: 4,
 };
+
+export function isStaffRole(role: CompatiblePersistedRole): role is StaffRole {
+  return (
+    role === "staff_support" ||
+    role === "staff_moderator" ||
+    role === "staff_admin" ||
+    role === "staff_owner"
+  );
+}
+
+function isMemberRole(role: CompatiblePersistedRole): role is MemberRole {
+  return role === "member" || role === "member_vip";
+}
 
 export function isStaff(
   actor: Actor,
@@ -45,11 +66,7 @@ export function isAuthenticated(
   return actor.type !== "guest";
 }
 
-export function staffAtLeast(
-  actor: Actor,
-  minimumRole:
-    "staff_support" | "staff_moderator" | "staff_admin" | "staff_owner",
-): boolean {
+export function staffAtLeast(actor: Actor, minimumRole: StaffRole): boolean {
   if (!isStaff(actor)) return false;
   // eslint-disable-next-line security/detect-object-injection
   return (STAFF_RANK[actor.role] ?? 0) >= (STAFF_RANK[minimumRole] ?? 0);
@@ -60,20 +77,23 @@ export function actorId(actor: Actor): string | null {
   return actor.id;
 }
 
-export function normalizeRole(role: PersistedRole): Role {
+export function normalizeRole(role: CompatiblePersistedRole): PersistedRole {
   if (role === "user") return "member";
   if (role === "admin") return "staff_owner";
   return role;
 }
 
-export function buildActor(member: { id: string; role: PersistedRole }): Actor {
+export function buildActor(member: {
+  id: string;
+  role: CompatiblePersistedRole;
+}): Actor {
   const role = normalizeRole(member.role);
 
-  if (role.startsWith("staff_")) {
+  if (isStaffRole(role)) {
     return {
       type: "staff",
       id: member.id,
-      role: role as Extract<Role, `staff_${string}`>,
+      role,
     };
   }
 
@@ -86,9 +106,13 @@ export function buildActor(member: { id: string; role: PersistedRole }): Actor {
     };
   }
 
+  if (!isMemberRole(role)) {
+    throw new Error("Unsupported persisted member role");
+  }
+
   return {
     type: "member",
     id: member.id,
-    role: role as "member" | "member_vip",
+    role,
   };
 }

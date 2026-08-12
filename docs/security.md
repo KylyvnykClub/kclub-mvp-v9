@@ -206,7 +206,7 @@ calendar reminder, and immediately when anyone with access leaves.
 
 |Control|Approach|
 |-|-|
-|Vulnerability scanning|`pnpm audit --audit-level=high` in CI on every pull request; GitHub Dependabot alerts; Renovate opens the fix pull request automatically|
+|Vulnerability scanning|`pnpm audit --audit-level=moderate` in CI on every pull request; GitHub Dependabot alerts; Renovate opens the fix pull request automatically|
 |Update cadence|Weekly grouped batch — see [technology.md §9](technology.md#9-versions-and-upgrade-policy)|
 |Critical patch SLA|Critical or high advisory affecting production code: patched and deployed within 48 hours. The clock starts when the advisory is published, not when someone notices|
 |Adding a new dependency|Approved by the tech lead in review, against four questions: is it maintained (release in the last 90 days), is the licence permissive, what is the transitive weight, and could we write this in fifty lines instead? A dependency added to save fifty lines is a decision to trust a stranger forever|
@@ -341,7 +341,7 @@ account compromised by phishing. Each has a runbook in
 
 |Activity|Frequency|Who|
 |-|-|-|
-|Automated scanning in CI (`pnpm audit`, `gitleaks`, ESLint security rules, CodeQL)|Every pull request|CI, blocking on high and critical|
+|Automated scanning in CI (`pnpm audit`, `gitleaks`, ESLint security rules, CodeQL)|Every pull request|CI, blocking on moderate and above for audit/gitleaks/ESLint; CodeQL produces a SARIF artifact until GitHub Code Scanning is enabled for the repository|
 |Authorization test suite: every route replayed as guest, as another member, and as each staff role|Every pull request|CI, blocking|
 |Log-redaction test: a request containing every secret field produces no log line containing any of them|Every pull request|CI, blocking|
 |Dependency audit review|Weekly|Tech lead|

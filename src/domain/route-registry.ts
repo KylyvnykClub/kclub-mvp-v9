@@ -321,6 +321,14 @@ const staticRoutes: RouteEntry[] = [
     mutating: false,
     staffOnly: false,
   },
+  {
+    method: "GET",
+    path: "/robots.txt",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
 ];
 
 const routes: RouteEntry[] = [];

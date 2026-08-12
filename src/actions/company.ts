@@ -17,6 +17,8 @@ import {
 } from "@/data/companies";
 import { getCurrentMember } from "./session";
 import { isFeatureEnabled } from "./feature-flags";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -182,7 +184,12 @@ export async function getPartnerBySlugAction(slug: string) {
 
 export async function getPendingCompaniesAction() {
   const auth = await getCurrentMember();
-  if (!auth || !auth.member || auth.member.role !== "admin") {
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized", data: [] };
+  }
+
+  const actor = buildActor(auth.member);
+  if (!can(actor, "read", "company")) {
     return { success: false, error: "Unauthorized", data: [] };
   }
 
@@ -197,7 +204,12 @@ export async function moderateCompanyAction(
   reason?: string,
 ) {
   const auth = await getCurrentMember();
-  if (!auth || !auth.member || auth.member.role !== "admin") {
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  if (!can(actor, status === "approved" ? "approve" : "reject", "company")) {
     return { success: false, error: "Unauthorized" };
   }
 

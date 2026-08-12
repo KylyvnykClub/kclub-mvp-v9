@@ -30,23 +30,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Dependency audit
-        run: pnpm audit --prod --audit-level=high
+        run: pnpm audit --audit-level=moderate
 
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        id: analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          output: codeql-results
+          upload: never
+          upload-database: false
+      - name: Upload CodeQL SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: ${{ steps.analyze.outputs.sarif-output }}
+          if-no-files-found: error
 
   static-checks:
     name: Lint, Format, Typecheck, i18n
@@ -59,6 +71,9 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Type check
@@ -69,6 +84,8 @@ jobs:
         run: pnpm format:check
       - name: i18n completeness
         run: pnpm i18n:check
+      - name: Delivery plan consistency
+        run: python tools/check-plan.py --strict
 
   test-unit:
     name: Unit Tests

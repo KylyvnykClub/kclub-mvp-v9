@@ -259,29 +259,30 @@ escalate. They live in `docs/runbooks/` and each is linked from its alert.
 
 |Runbook|Covers|Location|
 |-|-|-|
-|`site-down`|`/health/ready` failing|`docs/runbooks/site-down.md`|
-|`verification-down`|Card verification synthetic failing|`docs/runbooks/verification-down.md`|
-|`error-spike`|5xx above threshold|`docs/runbooks/error-spike.md`|
-|`bad-deploy`|Errors correlated with a release — rollback procedure first, diagnosis second|`docs/runbooks/bad-deploy.md`|
-|`entitlement-lag`|Payments not becoming access|`docs/runbooks/entitlement-lag.md`|
-|`webhooks-silent`|No Stripe events arriving|`docs/runbooks/webhooks-silent.md`|
-|`reconciliation-divergence`|Local state differs from Stripe|`docs/runbooks/reconciliation-divergence.md`|
-|`sms-pumping`|SMS spend or completion-rate anomaly|`docs/runbooks/sms-pumping.md`|
-|`outbox-stalled`|Background processing stopped|`docs/runbooks/outbox-stalled.md`|
-|`db-saturation`|Database CPU or connections|`docs/runbooks/db-saturation.md`|
-|`latency`|p95 regression|`docs/runbooks/latency.md`|
-|`credential-stuffing`|Authentication under attack|`docs/runbooks/credential-stuffing.md`|
-|`job-dead-letter`|A job exhausted its retries|`docs/runbooks/job-dead-letter.md`|
-|`backup-missing`|Nightly dump absent|`docs/runbooks/backup-missing.md`|
-|`cert-expiry`|Certificate renewal did not happen|`docs/runbooks/cert-expiry.md`|
-|`restore`|Restoring the database from a branch or a dump|`docs/runbooks/restore.md`|
-|`security-incident`|The first hour of a suspected breach ([security.md §9](security.md#9-incident-response))|`docs/runbooks/security-incident.md`|
+|`site-down`|`/health/ready` failing|[docs/runbooks/site-down.md](runbooks/site-down.md)|
+|`verification-down`|Card verification synthetic failing|[docs/runbooks/verification-down.md](runbooks/verification-down.md)|
+|`error-spike`|5xx above threshold|[docs/runbooks/error-spike.md](runbooks/error-spike.md)|
+|`bad-deploy`|Errors correlated with a release — rollback procedure first, diagnosis second|[docs/runbooks/bad-deploy.md](runbooks/bad-deploy.md)|
+|`entitlement-lag`|Payments not becoming access|[docs/runbooks/entitlement-lag.md](runbooks/entitlement-lag.md)|
+|`webhooks-silent`|No Stripe events arriving|[docs/runbooks/webhooks-silent.md](runbooks/webhooks-silent.md)|
+|`reconciliation-divergence`|Local state differs from Stripe|[docs/runbooks/reconciliation-divergence.md](runbooks/reconciliation-divergence.md)|
+|`sms-pumping`|SMS spend or completion-rate anomaly|[docs/runbooks/sms-pumping.md](runbooks/sms-pumping.md)|
+|`outbox-stalled`|Background processing stopped|[docs/runbooks/outbox-stalled.md](runbooks/outbox-stalled.md)|
+|`db-saturation`|Database CPU or connections|[docs/runbooks/db-saturation.md](runbooks/db-saturation.md)|
+|`latency`|p95 regression|[docs/runbooks/latency.md](runbooks/latency.md)|
+|`credential-stuffing`|Authentication under attack|[docs/runbooks/credential-stuffing.md](runbooks/credential-stuffing.md)|
+|`job-dead-letter`|A job exhausted its retries|[docs/runbooks/job-dead-letter.md](runbooks/job-dead-letter.md)|
+|`backup-missing`|Nightly dump absent|[docs/runbooks/backup-missing.md](runbooks/backup-missing.md)|
+|`cert-expiry`|Certificate renewal did not happen|[docs/runbooks/cert-expiry.md](runbooks/cert-expiry.md)|
+|`restore`|Restoring the database from a branch or a dump|[docs/runbooks/restore.md](runbooks/restore.md)|
+|`security-incident`|The first hour of a suspected breach ([security.md §9](security.md#9-incident-response))|[docs/runbooks/security-incident.md](runbooks/security-incident.md)|
 
 **The rule that keeps them true:** every paging alert must have a runbook before
 the alert is enabled, and a runbook is re-read by its author after any
 architecture change that touches it. An untested runbook is a story about how
 the system used to work.
 
-**Status at 2026-08-02:** none of these files exist yet. They are written during
-phase 7 and their existence is a launch blocker in
+**Status at 2026-08-12:** first-pass launch runbooks exist for every paging
+alert above. They remain draft until each is rehearsed against staging or a
+controlled drill, and that rehearsal evidence is still a launch blocker in
 [requirements.md §8](requirements.md#8-acceptance-criteria).

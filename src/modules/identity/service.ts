@@ -10,6 +10,19 @@ import { generateToken, hashPassword, verifyPassword } from "./crypto";
 import { generateTotpSecret, verifyTotpCode } from "./totp";
 import { checkVerificationCode, sendVerificationCode } from "./twilio";
 import { upgradeSessionTx } from "@/data/identity";
+import { logger } from "@/lib/logger";
+import { isStaffRole, normalizeRole } from "@/domain/actor";
+
+function isPhoneUniquenessError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    "constraint" in error &&
+    error.code === "23505" &&
+    error.constraint === "members_phone_unique"
+  );
+}
 
 export class IdentityService {
   /**
@@ -53,7 +66,6 @@ export class IdentityService {
 
       // FR-020: membership card is issued automatically with registration.
       const serial = `KCLUB-${Math.floor(100000 + Math.random() * 900000)}`;
-      const cardToken = generateToken(16);
 
       await registerMemberTx(db, {
         phone: params.phone,
@@ -65,15 +77,25 @@ export class IdentityService {
         ipAddress: params.ipAddress,
         consents: params.consents,
         cardSerial: serial,
-        cardToken,
         sessionToken,
       });
 
       return { success: true, sessionToken };
-    } catch {
+    } catch (error) {
+      logger.error("Failed to create member account", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      if (isPhoneUniquenessError(error)) {
+        return {
+          success: false,
+          error: "Phone is already registered.",
+        };
+      }
+
       return {
         success: false,
-        error: "Failed to create account. Phone might be registered already.",
+        error: "Failed to create account. Please try again.",
       };
     }
   }
@@ -113,7 +135,7 @@ export class IdentityService {
       return { success: false, error: "Invalid credentials" };
     }
 
-    const isStaff = member.role.startsWith("staff_");
+    const isStaff = isStaffRole(normalizeRole(member.role));
     const requiresTotp = isStaff;
 
     const sessionToken = generateToken();

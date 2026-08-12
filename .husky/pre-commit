@@ -4,8 +4,14 @@ pnpm lint-staged
 # the first line of defence is a person, and this one is not.
 if command -v gitleaks >/dev/null 2>&1; then
 	gitleaks protect --staged --redact --no-banner
+elif command -v docker >/dev/null 2>&1; then
+	repo_path="$(pwd)"
+	if command -v cygpath >/dev/null 2>&1; then
+		repo_path="$(cygpath -w "$repo_path")"
+	fi
+	MSYS_NO_PATHCONV=1 docker run --rm -v "$repo_path:/repo" -w /repo zricethezav/gitleaks:latest protect --staged --redact --no-banner
 else
-	echo "pre-commit: gitleaks is not installed - staged changes were NOT scanned." >&2
-	echo "            winget install gitleaks.gitleaks" >&2
+	echo "pre-commit: neither gitleaks nor docker is installed - staged changes were NOT scanned." >&2
+	echo "            Install gitleaks, or start Docker for the container fallback." >&2
 	echo "            Continuing, because a missing binary must not teach anyone --no-verify." >&2
 fi

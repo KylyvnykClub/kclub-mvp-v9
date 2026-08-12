@@ -32,16 +32,41 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   debug: 3,
 };
 
+function parseLogLevel(value: string | undefined): LogLevel | null {
+  if (
+    value === "error" ||
+    value === "warn" ||
+    value === "info" ||
+    value === "debug"
+  ) {
+    return value;
+  }
+  return null;
+}
+
 const CURRENT_LEVEL: LogLevel =
-  (process.env.LOG_LEVEL as LogLevel) ??
+  parseLogLevel(process.env.LOG_LEVEL) ??
   (process.env.NODE_ENV === "production" ? "info" : "debug");
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 const RELEASE = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ?? "local";
 const SERVICE = "kclub";
 
+function logLevelValue(level: LogLevel): number {
+  switch (level) {
+    case "error":
+      return LOG_LEVELS.error;
+    case "warn":
+      return LOG_LEVELS.warn;
+    case "info":
+      return LOG_LEVELS.info;
+    case "debug":
+      return LOG_LEVELS.debug;
+  }
+}
+
 function shouldLog(level: LogLevel): boolean {
-  return LOG_LEVELS[level] <= LOG_LEVELS[CURRENT_LEVEL];
+  return logLevelValue(level) <= logLevelValue(CURRENT_LEVEL);
 }
 
 function formatDev(level: LogLevel, message: string, ctx: LogContext): string {

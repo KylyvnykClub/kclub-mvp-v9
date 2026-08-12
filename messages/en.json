@@ -135,6 +135,8 @@
     "navAdminMembers": "Members",
     "navAdminFlags": "Feature Flags",
     "navAdminAudit": "Audit Logs",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation",
     "dataPrivacy": "Data Privacy",
     "dataPrivacyDesc": "You can download a copy of your personal data for GDPR compliance.",
     "exportData": "Export My Data"

@@ -6,6 +6,7 @@ import { isFeatureEnabled } from "@/actions/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Metadata, ResolvingMetadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -155,11 +156,14 @@ export default async function PartnerLandingPage({ params }: Props) {
 
             <div className="mt-10 grid gap-10 lg:grid-cols-[auto_1fr_auto] lg:items-end">
               {partner.logoUrl ? (
-                <div className="flex size-28 shrink-0 items-center justify-center border border-white/15 bg-white/5 p-3 sm:size-32">
-                  <img
+                <div className="relative flex size-28 shrink-0 items-center justify-center border border-white/15 bg-white/5 p-3 sm:size-32">
+                  <Image
                     src={partner.logoUrl}
                     alt={tc("logoAlt", { name: partner.name })}
-                    className="max-h-full max-w-full object-contain"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 112px, 128px"
+                    className="object-contain p-3"
                   />
                 </div>
               ) : (

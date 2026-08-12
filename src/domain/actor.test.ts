@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { isStaff, isAuthenticated, staffAtLeast, actorId } from "./actor";
+import {
+  isStaff,
+  isAuthenticated,
+  staffAtLeast,
+  actorId,
+  buildActor,
+  isStaffRole,
+  normalizeRole,
+} from "./actor";
 import type { Actor } from "./actor";
 
 const guest: Actor = { type: "guest" };
@@ -62,5 +70,46 @@ describe("actorId", () => {
   it("returns null for guest and system", () => {
     expect(actorId(guest)).toBeNull();
     expect(actorId(system)).toBeNull();
+  });
+});
+
+describe("persisted role compatibility", () => {
+  it("normalizes legacy database roles before building an actor", () => {
+    expect(buildActor({ id: "m-legacy", role: "user" })).toEqual({
+      type: "member",
+      id: "m-legacy",
+      role: "member",
+    });
+
+    expect(buildActor({ id: "s-legacy", role: "admin" })).toEqual({
+      type: "staff",
+      id: "s-legacy",
+      role: "staff_owner",
+    });
+  });
+
+  it("builds the domain actors persisted by the current member_role enum", () => {
+    expect(buildActor({ id: "m-vip", role: "member_vip" })).toEqual({
+      type: "member",
+      id: "m-vip",
+      role: "member_vip",
+    });
+
+    expect(buildActor({ id: "p-1", role: "partner_owner" })).toEqual({
+      type: "partner_owner",
+      id: "p-1",
+      companyIds: [],
+    });
+
+    expect(buildActor({ id: "s-1", role: "staff_moderator" })).toEqual({
+      type: "staff",
+      id: "s-1",
+      role: "staff_moderator",
+    });
+  });
+
+  it("uses the same compatibility mapping for staff session checks", () => {
+    expect(isStaffRole(normalizeRole("admin"))).toBe(true);
+    expect(isStaffRole(normalizeRole("user"))).toBe(false);
   });
 });

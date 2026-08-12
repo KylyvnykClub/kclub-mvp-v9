@@ -1,6 +1,7 @@
 # Dependencies and build output (when the app exists).
 node_modules/
 .next/
+.next-stale-*/
 dist/
 coverage/
 

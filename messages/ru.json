@@ -135,6 +135,8 @@
     "navAdminMembers": "Участники",
     "navAdminFlags": "Функции (Flags)",
     "navAdminAudit": "Аудит",
+    "openNavigation": "Открыть навигацию",
+    "closeNavigation": "Закрыть навигацию",
     "dataPrivacy": "Конфиденциальность данных",
     "dataPrivacyDesc": "Вы можете скачать копию ваших личных данных для соответствия GDPR.",
     "exportData": "Экспорт моих данных"
