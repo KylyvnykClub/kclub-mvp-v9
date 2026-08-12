@@ -11,6 +11,7 @@ import { generateTotpSecret, verifyTotpCode } from "./totp";
 import { checkVerificationCode, sendVerificationCode } from "./twilio";
 import { upgradeSessionTx } from "@/data/identity";
 import { logger } from "@/lib/logger";
+import { isStaffRole, normalizeRole } from "@/domain/actor";
 
 function isPhoneUniquenessError(error: unknown) {
   return (
@@ -134,7 +135,7 @@ export class IdentityService {
       return { success: false, error: "Invalid credentials" };
     }
 
-    const isStaff = member.role.startsWith("staff_");
+    const isStaff = isStaffRole(normalizeRole(member.role));
     const requiresTotp = isStaff;
 
     const sessionToken = generateToken();

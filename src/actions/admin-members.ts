@@ -10,11 +10,15 @@ import {
   setMemberStatus,
 } from "@/data/members";
 import { getCurrentMember } from "@/actions/session";
-import { buildActor, type PersistedRole } from "@/domain/actor";
+import {
+  buildActor,
+  normalizeRole,
+  type CompatiblePersistedRole,
+} from "@/domain/actor";
 import { can, type Action, type Subject } from "@/domain/authorization";
 
 function requireAuthorized(
-  member: { id: string; role: PersistedRole } | undefined,
+  member: { id: string; role: CompatiblePersistedRole } | undefined,
   action: Action,
   subject: Subject,
 ) {
@@ -22,7 +26,10 @@ function requireAuthorized(
 
   const actor = buildActor(member);
   if (!can(actor, action, subject)) throw new Error("Unauthorized");
-  return member;
+  return {
+    id: member.id,
+    role: normalizeRole(member.role),
+  };
 }
 
 export async function getMembersListAction(query: string = "") {

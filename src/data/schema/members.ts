@@ -10,6 +10,9 @@ export const memberStatusEnum = pgEnum("member_status", [
 export const memberRoleEnum = pgEnum("member_role", [
   "user",
   "admin",
+  "member",
+  "member_vip",
+  "partner_owner",
   "staff_support",
   "staff_moderator",
   "staff_admin",
@@ -39,5 +42,5 @@ export const members = pgTable("members", {
   totpEnabled: boolean("totp_enabled").notNull().default(false),
 
   // Role tracking
-  role: memberRoleEnum("role").notNull().default("user"),
+  role: memberRoleEnum("role").notNull().default("member"),
 });

@@ -85,6 +85,13 @@
       "when": 1786465200000,
       "tag": "20260811162000_hash_card_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786532400000,
+      "tag": "20260812110000_member_role_domain_contract",
+      "breakpoints": true
     }
   ]
 }
