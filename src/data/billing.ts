@@ -3,6 +3,7 @@ import { and, eq, lte } from "drizzle-orm";
 import type { Db, DbClient, DbTx } from "./db";
 import {
   cards,
+  members,
   processedWebhooks,
   stripeCustomers,
   subscriptions,
@@ -135,6 +136,24 @@ export async function setCardTierForMember(
   tier: "free" | "vip",
 ): Promise<void> {
   await db.update(cards).set({ tier }).where(eq(cards.memberId, memberId));
+}
+
+export async function findMemberByStripeCustomerId(
+  db: DbClient,
+  stripeCustomerId: string,
+): Promise<{ memberId: string; displayName: string; language: string } | null> {
+  const row = await db
+    .select({
+      memberId: members.id,
+      displayName: members.displayName,
+      language: members.language,
+    })
+    .from(stripeCustomers)
+    .innerJoin(members, eq(members.id, stripeCustomers.memberId))
+    .where(eq(stripeCustomers.stripeCustomerId, stripeCustomerId))
+    .limit(1);
+
+  return row[0] ?? null;
 }
 
 function isUniqueViolation(error: unknown): boolean {

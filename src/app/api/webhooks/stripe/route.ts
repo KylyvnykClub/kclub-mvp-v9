@@ -5,7 +5,10 @@ import { db } from "@/data/db";
 import { processWebhookOnce } from "@/data/billing";
 import { enqueueOutbox } from "@/data/outbox";
 import { env } from "@/env";
-import { BILLING_OUTBOX_TOPIC } from "@/modules/billing/projection";
+import {
+  BILLING_OUTBOX_TOPIC,
+  BILLING_NOTIFICATION_TOPIC,
+} from "@/modules/billing/projection";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -49,6 +52,28 @@ export async function POST(req: Request) {
           eventCreated: event.created,
           subscriptionId: event.data.object.id,
         });
+      }
+
+      if (event.type === "invoice.payment_failed") {
+        const invoice = event.data.object;
+        const subDetails = invoice.parent?.subscription_details;
+        const subscriptionId =
+          typeof subDetails?.subscription === "string"
+            ? subDetails.subscription
+            : subDetails?.subscription?.id;
+
+        if (subscriptionId) {
+          await enqueueOutbox(tx, BILLING_NOTIFICATION_TOPIC, {
+            eventId: event.id,
+            type: "payment_failed",
+            subscriptionId,
+            customerId:
+              typeof invoice.customer === "string"
+                ? invoice.customer
+                : invoice.customer?.id,
+            attemptCount: invoice.attempt_count,
+          });
+        }
       }
     });
 

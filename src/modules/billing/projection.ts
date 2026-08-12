@@ -13,6 +13,9 @@ import {
  */
 export const BILLING_OUTBOX_TOPIC = "billing.subscription.sync";
 
+/** Outbox topic for billing-related notifications (payment failures, grace expiry). */
+export const BILLING_NOTIFICATION_TOPIC = "billing.notification";
+
 /** Dependency: retrieves one subscription from Stripe, throwing on network errors. */
 export type SubscriptionFetcher = (
   subscriptionId: string,
@@ -123,9 +126,13 @@ export async function foldSubscription(
     await upsertSubscription(tx, values);
     // A subscription without a company is a VIP membership (FR-050). The
     // entitlement is projected onto the member's card tier.
+    // FR-056: past_due keeps access — Stripe is retrying payment during the
+    // 14-day dunning window. Only terminal states demote.
     if (!values.companyId) {
-      const newTier: "free" | "vip" =
-        subscription.status === "active" ? "vip" : "free";
+      const gracefulStatuses: Set<string> = new Set(["active", "past_due"]);
+      const newTier: "free" | "vip" = gracefulStatuses.has(subscription.status)
+        ? "vip"
+        : "free";
       await setCardTierForMember(tx, values.memberId, newTier);
     }
     return "applied" as const;
