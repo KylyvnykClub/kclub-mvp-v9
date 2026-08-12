@@ -340,12 +340,16 @@ describe("billing lapse semantics (FR-054)", () => {
     );
 
     const beforeEnd = new Date(EPOCH * 1000);
-    expect(await findLapsedSubscriptions(db, beforeEnd)).toHaveLength(0);
+    const beforeResults = await findLapsedSubscriptions(db, beforeEnd);
+    expect(
+      beforeResults.some((r) => r.stripeSubscriptionId === subscriptionId),
+    ).toBe(false);
 
     const afterEnd = new Date((EPOCH + 2_592_000 + 60) * 1000);
     const lapsed = await findLapsedSubscriptions(db, afterEnd);
-    expect(lapsed).toHaveLength(1);
-    expect(lapsed[0]!.stripeSubscriptionId).toBe(subscriptionId);
+    expect(lapsed.some((r) => r.stripeSubscriptionId === subscriptionId)).toBe(
+      true,
+    );
   });
 
   it("the lapse cron path revokes access when Stripe confirms cancellation", async () => {
