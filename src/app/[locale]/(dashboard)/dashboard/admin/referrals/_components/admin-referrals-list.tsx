@@ -11,7 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTransition, useState } from "react";
 import { useTranslations } from "next-intl";
-import { moderateReferralAction } from "@/actions/referral";
+import {
+  barReferralSenderAction,
+  moderateReferralAction,
+} from "@/actions/referral";
 import type { PendingReferralView } from "@/data/referrals";
 import { toast } from "sonner";
 
@@ -54,6 +57,23 @@ export function AdminReferralsList({
     });
   };
 
+  const handleBarSender = (senderId: string, barred: boolean) => {
+    if (!reason) {
+      toast.error(tr("barReasonRequired"));
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await barReferralSenderAction(senderId, barred, reason);
+        toast.success(barred ? tr("barredToast") : tr("unbarredToast"));
+        setReason("");
+      } catch {
+        toast.error(tCommon("error"));
+      }
+    });
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -86,7 +106,7 @@ export function AdminReferralsList({
               )}
             </TableCell>
             <TableCell>
-              <div className="flex flex-col gap-2">
+              <div className="flex min-w-64 flex-col gap-2">
                 <Button
                   size="sm"
                   variant="outline"
@@ -112,6 +132,20 @@ export function AdminReferralsList({
                     {tr("reject")}
                   </Button>
                 </div>
+                {ref.sender && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={() =>
+                      handleBarSender(ref.senderId, ref.sender.canSendReferrals)
+                    }
+                  >
+                    {ref.sender.canSendReferrals
+                      ? tr("barSender")
+                      : tr("unbarSender")}
+                  </Button>
+                )}
               </div>
             </TableCell>
           </TableRow>

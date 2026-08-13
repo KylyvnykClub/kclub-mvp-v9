@@ -8,7 +8,7 @@
 
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
-|T-5.1|Move from Phase 4: English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|—|1.5d|open|
+|T-5.1|Move from Phase 4: English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|—|1.5d|blocked 2026-08-13 — `content/legal/` still has only the nine base `.mdx` files and no `{id}.en.mdx` source texts; several base files contain Russian body text while marked `authoritative: true`, matching legal-alignment D-08; do not close without counsel-approved English source text|
 |T-5.2|Staff authentication with TOTP enforcement (second factor mandatory for `staff_*` roles)|FR-080|—|2d|DONE|
 |T-5.3|Support Dashboard: total members, active members, new members (7d), companies/referrals awaiting moderation|FR-081|T-5.2|1d|done 2026-08-13 — `/dashboard/admin/support` renders real support metrics, gates access through `read moderation`, excludes staff accounts from member counts, and has integration coverage for member/moderation counters|
 |T-5.4|Admin Dashboard: 30d revenue, active subscriptions by type, renewals due (7d), 50 recent payments, revenue by country (map)|FR-082|T-5.2|2d|done 2026-08-13 — finance dashboard is `staff_admin+`, keeps Stripe-sourced 30d revenue/recent payments/country revenue, renders a world-map visualization plus Recharts country bars, and has integration coverage for subscription split and 7d renewal metrics|
@@ -41,7 +41,7 @@ The §6.1 criterion, decomposed:
 - [x] Owners can create and manage other staff accounts
 - [x] All mutating actions are recorded in the audit log, which is searchable and immutable
 - [x] Data export works
-- [ ] T-5.1 (Legal translations) is completed
+- [ ] T-5.1 (Legal translations) is completed — blocked pending counsel-approved English source text
 - [ ] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass
 - [ ] `pnpm verify` passes
 

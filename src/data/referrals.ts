@@ -1,7 +1,7 @@
 import { and, desc, eq, gt, inArray, lt } from "drizzle-orm";
 
 import type { DbClient } from "./db";
-import { companies, referrals } from "./schema";
+import { companies, members, referrals } from "./schema";
 
 export async function listReferralsSince(
   db: DbClient,
@@ -70,6 +70,23 @@ export async function respondToReferral(
     .where(eq(referrals.id, referralId));
 }
 
+export async function setMemberReferralPermission(
+  db: DbClient,
+  memberId: string,
+  canSendReferrals: boolean,
+) {
+  const [member] = await db
+    .update(members)
+    .set({ canSendReferrals, updatedAt: new Date() })
+    .where(eq(members.id, memberId))
+    .returning({
+      id: members.id,
+      canSendReferrals: members.canSendReferrals,
+    });
+
+  return member ?? null;
+}
+
 export async function listSentReferrals(db: DbClient, senderId: string) {
   return db.query.referrals.findMany({
     where: eq(referrals.senderId, senderId),
@@ -89,7 +106,15 @@ export async function listReceivedReferralsForCompanies(
   companyIds: string[],
 ) {
   return db.query.referrals.findMany({
-    where: inArray(referrals.recipientCompanyId, companyIds),
+    where: and(
+      inArray(referrals.recipientCompanyId, companyIds),
+      inArray(referrals.status, [
+        "delivered",
+        "accepted",
+        "declined",
+        "expired",
+      ]),
+    ),
     orderBy: [desc(referrals.createdAt)],
     with: {
       recipientCompany: true,

@@ -231,6 +231,15 @@ const staticRoutes: RouteEntry[] = [
   },
   {
     method: "POST",
+    path: "action:barReferralSenderAction",
+    action: "block",
+    subject: "referral",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
+    method: "POST",
     path: "action:blockMemberAction",
     action: "block",
     subject: "member",

@@ -602,7 +602,12 @@
       "accepted": "Accepted",
       "declined": "Declined",
       "expired": "Expired"
-    }
+    },
+    "barReasonRequired": "Please provide a reason before changing referral sending access",
+    "barredToast": "Sender barred from sending referrals",
+    "unbarredToast": "Sender can send referrals again",
+    "barSender": "Bar sender",
+    "unbarSender": "Unbar sender"
   },
   "billing": {
     "title": "Membership & Billing",

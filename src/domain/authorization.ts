@@ -172,6 +172,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     check: (a) => staffAtLeast(a, "staff_moderator"),
   },
   {
+    action: "block",
+    subject: "referral",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+  {
     action: "manage_reference_data",
     subject: "reference_data",
     check: (a) => staffAtLeast(a, "staff_moderator"),
