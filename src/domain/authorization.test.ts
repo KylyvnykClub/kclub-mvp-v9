@@ -71,6 +71,7 @@ describe("can", () => {
     expect(can(staffOwner, "manage_flags", "feature_flag")).toBe(true);
     expect(can(staffOwner, "manage_prices", "plan_price")).toBe(true);
     expect(can(staffOwner, "read", "audit_log")).toBe(true);
+    expect(can(staffOwner, "export_data", "member")).toBe(true);
   });
 
   it("system can create and update subscriptions", () => {

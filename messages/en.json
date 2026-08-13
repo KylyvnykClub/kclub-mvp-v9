@@ -741,7 +741,9 @@
       "blocked": "Member blocked",
       "reasonRequiredRevoke": "Reason is required to revoke a card",
       "cardRevoked": "Card revoked",
-      "cardIssued": "New card issued"
+      "cardIssued": "New card issued",
+      "dataExportSection": "Data export",
+      "exportData": "Export member data"
     },
     "companies": {
       "title": "Company Moderation",

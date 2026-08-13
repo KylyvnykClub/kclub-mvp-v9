@@ -2,7 +2,18 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 
 import type { DbClient } from "./db";
-import { auditLog, cards, companies, members, subscriptions } from "./schema";
+import {
+  accountDeletionRequests,
+  auditLog,
+  cards,
+  companies,
+  legalAcceptances,
+  members,
+  profiles,
+  referrals,
+  sessions,
+  subscriptions,
+} from "./schema";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 
 const CLUB_MEMBER_ROLES = [
@@ -227,23 +238,86 @@ export async function getMemberExportData(db: DbClient, memberId: string) {
     where: eq(members.id, memberId),
   });
 
+  if (!memberData) {
+    return null;
+  }
+
   const memberCards = await db.query.cards.findMany({
     where: eq(cards.memberId, memberId),
   });
-
   const memberSubscriptions = await db.query.subscriptions.findMany({
     where: eq(subscriptions.memberId, memberId),
   });
-
   const memberCompanies = await db.query.companies.findMany({
     where: eq(companies.ownerId, memberId),
   });
+  const memberProfile = await db.query.profiles.findFirst({
+    where: eq(profiles.memberId, memberId),
+  });
+  const memberLegalAcceptances = await db.query.legalAcceptances.findMany({
+    where: eq(legalAcceptances.memberId, memberId),
+  });
+  const memberSessions = await db.query.sessions.findMany({
+    where: eq(sessions.memberId, memberId),
+  });
+  const sentReferrals = await db.query.referrals.findMany({
+    where: eq(referrals.senderId, memberId),
+  });
+  const memberDeletionRequests =
+    await db.query.accountDeletionRequests.findMany({
+      where: eq(accountDeletionRequests.memberId, memberId),
+    });
+
+  const companyIds = memberCompanies.map((company) => company.id);
+  const receivedReferrals =
+    companyIds.length > 0
+      ? await db.query.referrals.findMany({
+          where: inArray(referrals.recipientCompanyId, companyIds),
+        })
+      : [];
 
   return {
     exportDate: new Date().toISOString(),
-    member: memberData,
-    cards: memberCards,
+    member: {
+      id: memberData.id,
+      createdAt: memberData.createdAt,
+      updatedAt: memberData.updatedAt,
+      phone: memberData.phone,
+      displayName: memberData.displayName,
+      locale: memberData.locale,
+      country: memberData.country,
+      language: memberData.language,
+      status: memberData.status,
+      role: memberData.role,
+      canSendReferrals: memberData.canSendReferrals,
+      totpEnabled: memberData.totpEnabled,
+    },
+    profile: memberProfile,
+    cards: memberCards.map((card) => ({
+      id: card.id,
+      createdAt: card.createdAt,
+      updatedAt: card.updatedAt,
+      serial: card.serial,
+      tier: card.tier,
+      status: card.status,
+      issuedAt: card.issuedAt,
+    })),
     subscriptions: memberSubscriptions,
     companies: memberCompanies,
+    referrals: {
+      sent: sentReferrals,
+      receivedForOwnedCompanies: receivedReferrals,
+    },
+    legalAcceptances: memberLegalAcceptances,
+    accountDeletionRequests: memberDeletionRequests,
+    sessions: memberSessions.map((session) => ({
+      id: session.id,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      userAgent: session.userAgent,
+      ipAddress: session.ipAddress,
+      lastSeenAt: session.lastSeenAt,
+      isPartialSession: session.isPartialSession,
+    })),
   };
 }

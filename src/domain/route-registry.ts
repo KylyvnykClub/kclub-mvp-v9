@@ -431,6 +431,15 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    method: "GET",
+    path: "/api/admin/export/member/:memberId",
+    action: "export_data",
+    subject: "member",
+    mutating: false,
+    staffOnly: true,
+    audited: true,
+  },
+  {
     method: "POST",
     path: "/api/webhooks/stripe",
     action: "create",

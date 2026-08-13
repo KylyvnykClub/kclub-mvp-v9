@@ -38,6 +38,7 @@ export default async function AdminMembersPage({
     redirect(`/${locale}/dashboard`);
   }
   const canManageMembers = can(actor, "block", "member");
+  const canExportMembers = can(actor, "export_data", "member");
 
   const { q } = await searchParams;
   const membersList = await getMembersListAction(q);
@@ -138,6 +139,7 @@ export default async function AdminMembersPage({
                     <MemberManagementDialog
                       member={m}
                       canManage={canManageMembers}
+                      canExport={canExportMembers}
                     />
                   </TableCell>
                 </TableRow>

@@ -48,9 +48,11 @@ function memberStatusBadge(
 
 export function MemberManagementDialog({
   member,
+  canExport,
   canManage,
 }: {
   member: MemberAdminDirectoryView;
+  canExport: boolean;
   canManage: boolean;
 }) {
   const t = useTranslations("admin.members");
@@ -133,6 +135,21 @@ export function MemberManagementDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {canExport && (
+            <section className="space-y-3">
+              <h4 className="border-b pb-2 text-sm font-medium">
+                {t("dataExportSection")}
+              </h4>
+              <a
+                href={`/api/admin/export/member/${member.id}`}
+                download
+                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {t("exportData")}
+              </a>
+            </section>
+          )}
+
           <section className="space-y-3">
             <h4 className="border-b pb-2 text-sm font-medium">
               {t("statusSection")}

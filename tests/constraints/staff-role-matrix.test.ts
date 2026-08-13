@@ -86,6 +86,14 @@ const matrix: MatrixEntry[] = [
     owner: true,
   },
   {
+    action: "export_data",
+    subject: "member",
+    support: false,
+    moderator: false,
+    admin: false,
+    owner: true,
+  },
+  {
     action: "read",
     subject: "finance_dashboard",
     support: false,

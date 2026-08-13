@@ -741,7 +741,9 @@
       "blocked": "Участник заблокирован",
       "reasonRequiredRevoke": "Для отзыва карты нужна причина",
       "cardRevoked": "Карта отозвана",
-      "cardIssued": "Выпущена новая карта"
+      "cardIssued": "Выпущена новая карта",
+      "dataExportSection": "??????? ??????",
+      "exportData": "?????????????? ?????? ?????????"
     },
     "companies": {
       "title": "Модерация компаний",

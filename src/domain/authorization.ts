@@ -16,6 +16,7 @@ export type Action =
   | "revoke"
   | "reissue"
   | "send_referral"
+  | "export_data"
   | "manage_reference_data"
   | "manage_staff"
   | "manage_flags"
@@ -136,6 +137,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "read",
     subject: "audit_log",
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    action: "export_data",
+    subject: "member",
     check: (a) => isStaff(a) && a.role === "staff_owner",
   },
   {
