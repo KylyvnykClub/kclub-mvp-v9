@@ -59,6 +59,11 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
       show: can(actor, "block", "member"),
     },
     {
+      href: `/${locale}/dashboard/admin/staff`,
+      label: tDashboard("navAdminStaff"),
+      show: can(actor, "manage_staff", "staff_user"),
+    },
+    {
       href: `/${locale}/dashboard/admin/flags`,
       label: tDashboard("navAdminFlags"),
       show: can(actor, "manage_flags", "feature_flag"),

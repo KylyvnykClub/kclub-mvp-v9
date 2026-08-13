@@ -150,7 +150,8 @@
     "deleteAccountConfirm": "I understand this starts account deletion and signs me out.",
     "deleteAccountButton": "Request deletion",
     "deleteAccountSubmitting": "Requesting deletion...",
-    "deleteAccountFailed": "Could not request account deletion"
+    "deleteAccountFailed": "Could not request account deletion",
+    "navAdminStaff": "Staff"
   },
   "card": {
     "membershipCard": "Membership Card",
@@ -839,6 +840,34 @@
       "colSubject": "Subject",
       "colDetails": "Details",
       "noResults": "No audit logs found."
+    },
+    "staff": {
+      "title": "Staff Management",
+      "description": "Create staff accounts, disable or re-enable access, and manage staff roles.",
+      "displayName": "Display name",
+      "phone": "Phone",
+      "country": "Country",
+      "language": "Language",
+      "temporaryPassword": "Temporary password",
+      "create": "Create staff",
+      "colName": "Name",
+      "colPhone": "Phone",
+      "colRole": "Role",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "saveRole": "Save role",
+      "disable": "Disable",
+      "enable": "Re-enable",
+      "self": "You",
+      "noResults": "No staff accounts found.",
+      "statusActive": "ACTIVE",
+      "statusDisabled": "DISABLED",
+      "roles": {
+        "staff_support": "Support",
+        "staff_moderator": "Moderator",
+        "staff_admin": "Admin",
+        "staff_owner": "Owner"
+      }
     }
   }
 }

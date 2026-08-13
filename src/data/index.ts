@@ -40,6 +40,14 @@ export {
   setMemberStatus,
   withMemberActivityHistory,
 } from "./members";
+export {
+  createStaffMember,
+  findStaffMemberById,
+  listStaffMembers,
+  setStaffMemberRole,
+  setStaffMemberStatus,
+} from "./staff";
+export type { StaffMemberView, StaffStatus } from "./staff";
 export type {
   MemberAdminDirectoryView,
   MemberAdminView,
