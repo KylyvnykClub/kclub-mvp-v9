@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 
 import { fontBody, fontHeading } from "@/app/fonts";
+import { PwaRegister } from "@/components/pwa-register";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "../globals.css";
@@ -20,6 +21,13 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("description"),
+    applicationName: "KYLYVNYK CLUB",
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      title: "KCLUB",
+      statusBarStyle: "black-translucent",
+    },
     robots: { index: false, follow: false },
   };
 }
@@ -27,6 +35,7 @@ export async function generateMetadata({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#090909",
 };
 
 export function generateStaticParams() {
@@ -52,7 +61,10 @@ export default async function LocaleLayout({ children, params }: Props) {
         className={`${fontHeading.variable} ${fontBody.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <PwaRegister />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>
