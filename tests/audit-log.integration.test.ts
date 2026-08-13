@@ -1,7 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { getTestDb, getTestClient } from "./setup/integration-setup.js";
-import { appendAuditEntry } from "@/data/audit-log.js";
+import { appendAuditEntry, searchAuditLogs } from "@/data/audit-log.js";
+import type { DbClient } from "@/data/db.js";
 import type pg from "pg";
+
+function testDbClient(): DbClient {
+  return getTestDb() as unknown as DbClient;
+}
 
 async function expectPermissionDenied(
   client: pg.Client,
@@ -55,6 +60,44 @@ describe("audit_log", () => {
       [result.id],
     );
     expect((row.rows[0] as { actor_id: string | null }).actor_id).toBeNull();
+  });
+
+  it("searches by actor, target, and date range", async () => {
+    const db = testDbClient();
+    await appendAuditEntry(db, {
+      actorType: "staff_owner",
+      actorId: "owner-1",
+      action: "disable_staff",
+      subjectType: "staff_user",
+      subjectId: "staff-1",
+      meta: { before: { status: "active" }, after: { status: "blocked" } },
+    });
+    await appendAuditEntry(db, {
+      actorType: "staff_admin",
+      actorId: "admin-1",
+      action: "block_member",
+      subjectType: "member",
+      subjectId: "member-1",
+    });
+
+    const ownerRows = await searchAuditLogs(db, { actor: "owner-1" });
+    expect(ownerRows.map((row) => row.action)).toContain("disable_staff");
+    expect(ownerRows.map((row) => row.action)).not.toContain("block_member");
+
+    const targetRows = await searchAuditLogs(db, { target: "staff_user" });
+    expect(targetRows.map((row) => row.subjectId)).toContain("staff-1");
+    expect(targetRows.map((row) => row.subjectId)).not.toContain("member-1");
+
+    const todayRows = await searchAuditLogs(db, {
+      dateFrom: new Date(Date.now() - 60_000),
+      dateTo: new Date(Date.now() + 60_000),
+    });
+    expect(todayRows.length).toBeGreaterThanOrEqual(2);
+
+    const futureRows = await searchAuditLogs(db, {
+      dateFrom: new Date("2999-01-01T00:00:00.000Z"),
+    });
+    expect(futureRows).toHaveLength(0);
   });
 
   describe("append-only constraint (security.md §7)", () => {

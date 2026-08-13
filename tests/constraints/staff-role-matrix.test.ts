@@ -80,9 +80,9 @@ const matrix: MatrixEntry[] = [
   {
     action: "read",
     subject: "audit_log",
-    support: true,
-    moderator: true,
-    admin: true,
+    support: false,
+    moderator: false,
+    admin: false,
     owner: true,
   },
   {

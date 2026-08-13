@@ -15,7 +15,7 @@
 |T-5.5|Member Directory & Admin: find members (phone/serial/name), view history, block/unblock with reason|FR-083, FR-084|T-5.2|2d|done 2026-08-13 — member directory now supports merged name/phone/card-serial search, excludes staff accounts, lets `staff_support` view member cards/subscriptions/activity history, keeps block/unblock/card mutations `staff_admin+`, requires reasons for status changes, and writes before/after audit metadata|
 |T-5.6|Reference Data Management: manage business categories, countries, and cities (with deletion constraints)|FR-085|T-5.2|1d|done 2026-08-13 — staff_moderator+ reference-data screen now creates/toggles/deletes business categories, countries, and cities; deletes are blocked when companies or child cities reference the row; all mutations audit before/after metadata and are covered by route/RBAC/audit constraints plus integration tests|
 |T-5.7|Staff Management: `staff_owner` can create/disable staff accounts and manage roles|FR-086|T-5.2|1.5d|done 2026-08-13 — `/dashboard/admin/staff` is owner-only, creates staff accounts with temporary passwords, disables/re-enables staff accounts, changes staff roles, blocks self role/status changes, terminates sessions on disable, audits every mutation, and is covered by route/RBAC/audit constraints plus integration tests|
-|T-5.8|Immutable Audit Log: record mutating actions, searchable by actor/target/date, uneditable|FR-087, FR-088|T-5.2|2d|open|
+|T-5.8|Immutable Audit Log: record mutating actions, searchable by actor/target/date, uneditable|FR-087, FR-088|T-5.2|2d|done 2026-08-13 — audit log remains append-only at DB permission level, full journal access is `staff_owner` only, `/dashboard/admin/audit` now supports free-text, actor, target, and date-range filters, and integration coverage proves append-only permissions plus actor/target/date search|
 |T-5.9|Security & Privacy: exclude console from marketing domain/indexing, implement GDPR data export for members|FR-089, FR-094|T-5.2|1.5d|open|
 
 **Total: ~14.5 focused days.**
@@ -39,7 +39,7 @@ The §6.1 criterion, decomposed:
 - [ ] Staff can search for members, view their cards/subscriptions, and block/unblock them
 - [x] Moderators can manage categories, countries, and cities safely
 - [x] Owners can create and manage other staff accounts
-- [ ] All mutating actions are recorded in the audit log, which is searchable and immutable
+- [x] All mutating actions are recorded in the audit log, which is searchable and immutable
 - [ ] Data export works
 - [ ] T-5.1 (Legal translations) is completed
 - [ ] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass

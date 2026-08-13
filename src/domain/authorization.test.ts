@@ -59,6 +59,7 @@ describe("can", () => {
     expect(can(admin, "publish", "company")).toBe(true);
     expect(can(admin, "revoke", "card")).toBe(true);
     expect(can(admin, "read", "finance_dashboard")).toBe(true);
+    expect(can(admin, "read", "audit_log")).toBe(false);
   });
 
   it("staff_admin cannot manage staff", () => {
@@ -69,6 +70,7 @@ describe("can", () => {
     expect(can(staffOwner, "manage_staff", "staff_user")).toBe(true);
     expect(can(staffOwner, "manage_flags", "feature_flag")).toBe(true);
     expect(can(staffOwner, "manage_prices", "plan_price")).toBe(true);
+    expect(can(staffOwner, "read", "audit_log")).toBe(true);
   });
 
   it("system can create and update subscriptions", () => {

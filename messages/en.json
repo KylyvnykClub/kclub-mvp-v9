@@ -839,7 +839,11 @@
       "colAction": "Action",
       "colSubject": "Subject",
       "colDetails": "Details",
-      "noResults": "No audit logs found."
+      "noResults": "No audit logs found.",
+      "actorPlaceholder": "Actor type or ID",
+      "targetPlaceholder": "Target type or ID",
+      "dateFrom": "Date from",
+      "dateTo": "Date to"
     },
     "staff": {
       "title": "Staff Management",

@@ -1,4 +1,4 @@
-import { desc, ilike, or } from "drizzle-orm";
+import { and, desc, gte, ilike, lte, or } from "drizzle-orm";
 import type { DbClient, InsertClient } from "./db";
 import { auditLog } from "./schema/audit-log";
 
@@ -36,22 +36,69 @@ export async function appendAuditEntry(
   return row!;
 }
 
-export async function searchAuditLogs(db: DbClient, query?: string) {
+export interface AuditLogFilters {
+  query?: string;
+  actor?: string;
+  target?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+}
+
+export async function searchAuditLogs(
+  db: DbClient,
+  filters: AuditLogFilters = {},
+) {
+  const conditions = [];
+
+  if (filters.query) {
+    const searchPattern = `%${filters.query}%`;
+    conditions.push(
+      or(
+        ilike(auditLog.action, searchPattern),
+        ilike(auditLog.actorType, searchPattern),
+        ilike(auditLog.actorId, searchPattern),
+        ilike(auditLog.subjectType, searchPattern),
+        ilike(auditLog.subjectId, searchPattern),
+      ),
+    );
+  }
+
+  if (filters.actor) {
+    const actorPattern = `%${filters.actor}%`;
+    conditions.push(
+      or(
+        ilike(auditLog.actorType, actorPattern),
+        ilike(auditLog.actorId, actorPattern),
+      ),
+    );
+  }
+
+  if (filters.target) {
+    const targetPattern = `%${filters.target}%`;
+    conditions.push(
+      or(
+        ilike(auditLog.subjectType, targetPattern),
+        ilike(auditLog.subjectId, targetPattern),
+      ),
+    );
+  }
+
+  if (filters.dateFrom) {
+    conditions.push(gte(auditLog.createdAt, filters.dateFrom));
+  }
+
+  if (filters.dateTo) {
+    conditions.push(lte(auditLog.createdAt, filters.dateTo));
+  }
+
   const baseQuery = db
     .select()
     .from(auditLog)
     .orderBy(desc(auditLog.createdAt))
     .limit(100);
 
-  if (query) {
-    const searchPattern = `%${query}%`;
-    return await baseQuery.where(
-      or(
-        ilike(auditLog.action, searchPattern),
-        ilike(auditLog.actorId, searchPattern),
-        ilike(auditLog.subjectId, searchPattern),
-      ),
-    );
+  if (conditions.length > 0) {
+    return await baseQuery.where(and(...conditions));
   }
 
   return await baseQuery;

@@ -136,7 +136,7 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "read",
     subject: "audit_log",
-    check: (a) => staffAtLeast(a, "staff_support"),
+    check: (a) => isStaff(a) && a.role === "staff_owner",
   },
   {
     action: "read",
