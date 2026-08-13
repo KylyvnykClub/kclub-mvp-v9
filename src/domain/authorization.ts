@@ -16,6 +16,7 @@ export type Action =
   | "revoke"
   | "reissue"
   | "send_referral"
+  | "manage_reference_data"
   | "manage_staff"
   | "manage_flags"
   | "manage_prices";
@@ -36,6 +37,7 @@ export type Subject =
   | "card"
   | "moderation"
   | "finance_dashboard"
+  | "reference_data"
   | "audit_log"
   | "staff_user"
   | "feature_flag"
@@ -161,6 +163,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "reject",
     subject: "referral",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+  {
+    action: "manage_reference_data",
+    subject: "reference_data",
     check: (a) => staffAtLeast(a, "staff_moderator"),
   },
 

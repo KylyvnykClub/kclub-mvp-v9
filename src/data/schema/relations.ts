@@ -7,10 +7,12 @@ import { profiles } from "./profiles";
 import { tags, profileTags } from "./tags";
 import { companies } from "./companies";
 import { businessCategories } from "./business-categories";
+import { cities } from "./cities";
 import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
 import { referrals } from "./referrals";
 import { accountDeletionRequests } from "./account-deletion-requests";
+import { countries } from "./countries";
 
 export const membersRelations = relations(members, ({ one, many }) => ({
   sessions: many(sessions),
@@ -117,6 +119,17 @@ export const businessCategoriesRelations = relations(
     companies: many(companies),
   }),
 );
+
+export const countriesRelations = relations(countries, ({ many }) => ({
+  cities: many(cities),
+}));
+
+export const citiesRelations = relations(cities, ({ one }) => ({
+  country: one(countries, {
+    fields: [cities.countryCode],
+    references: [countries.code],
+  }),
+}));
 
 export const referralsRelations = relations(referrals, ({ one }) => ({
   sender: one(members, {

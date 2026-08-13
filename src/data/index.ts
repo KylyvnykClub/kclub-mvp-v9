@@ -49,6 +49,12 @@ export { findProfileByMemberId, upsertProfile } from "./profiles";
 export type { ProfileUpdate, ProfileView, SocialLinks } from "./profiles";
 export {
   companySlugExists,
+  createBusinessCategory,
+  createCity,
+  createCountry,
+  deleteBusinessCategory,
+  deleteCity,
+  deleteCountry,
   findApprovedCompanyBySlug,
   insertCompany,
   listActiveCategoriesByBlock,
@@ -59,10 +65,13 @@ export {
   listApprovedCompaniesWithSubscriptionsByOwner,
   listCompaniesByOwner,
   listCompanyIdsWithActiveSubscription,
+  listCountries,
   listPendingCompanies,
   listShowcaseCompanies,
   setCategoryStatus,
+  setCityStatus,
   setCompanyModerationStatus,
+  setCountryStatus,
 } from "./companies";
 export type {
   PartnerCompanyView,

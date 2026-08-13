@@ -127,6 +127,14 @@ const matrix: MatrixEntry[] = [
     admin: true,
     owner: true,
   },
+  {
+    action: "manage_reference_data",
+    subject: "reference_data",
+    support: false,
+    moderator: true,
+    admin: true,
+    owner: true,
+  },
 
   // Admin actions
   {

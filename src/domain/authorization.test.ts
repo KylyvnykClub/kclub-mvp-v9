@@ -49,6 +49,9 @@ describe("can", () => {
   it("staff_moderator can approve companies", () => {
     expect(can(moderator, "approve", "company")).toBe(true);
     expect(can(moderator, "reject", "company")).toBe(true);
+    expect(can(moderator, "manage_reference_data", "reference_data")).toBe(
+      true,
+    );
   });
 
   it("staff_admin can block members and publish companies", () => {
