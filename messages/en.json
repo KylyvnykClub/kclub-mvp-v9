@@ -3,7 +3,7 @@
     "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
     "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
     "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
-    "loading": "Loadingâ€¦",
+    "loading": "Loading…",
     "error": "Something went wrong",
     "notFound": "Page not found",
     "back": "Back",
@@ -40,7 +40,15 @@
     "registerLink": "Create account",
     "forgotPassword": "Forgot password?",
     "invalidCredentials": "Invalid phone number or password",
-    "accountBlocked": "Account is not active"
+    "accountBlocked": "Account is not active",
+    "accessEyebrow": "KCLUB ACCESS",
+    "totpSetupTitle": "Set up 2FA",
+    "totpTitle": "Two-factor auth",
+    "totpSetupSubtitle": "Scan this QR code with your authenticator app",
+    "totpSubtitle": "Enter the code from your authenticator app",
+    "totpCodeLabel": "Authenticator code",
+    "totpVerify": "Verify",
+    "totpCancel": "Cancel"
   },
   "register": {
     "title": "Join KCLUB",
@@ -84,7 +92,7 @@
       "uk": "Ukrainian",
       "ru": "Russian"
     },
-    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms Â§29â€“30)</terms>",
+    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
     "ageLabel": "I confirm that I am 18 years of age or older"
   },
   "dashboard": {
@@ -253,7 +261,7 @@
           "copy": "Members, partners, and warm introductions."
         }
       },
-      "flagsMarquee": "Members from every region, including â€”"
+      "flagsMarquee": "Members from every region, including —"
     },
     "stats": {
       "members": "Members",
@@ -297,7 +305,7 @@
       "steps": [
         {
           "title": "Apply",
-          "description": "Submit your membership application in a few minutes â€” no paperwork, just your details."
+          "description": "Submit your membership application in a few minutes — no paperwork, just your details."
         },
         {
           "title": "Get Verified",
@@ -542,7 +550,7 @@
       "refundPolicy": "Refund Policy",
       "disclaimer": "Disclaimer",
       "contactUs": "Contact Us",
-      "copyright": "Â© All rights reserved."
+      "copyright": "© All rights reserved."
     },
     "partners": {
       "eyebrow": "Trusted Elite Brands",
@@ -656,7 +664,8 @@
     "joinCta": "Join the Club",
     "representedBy": "Company is represented by:",
     "managerRole": "Manager",
-    "memberFallback": "Member"
+    "memberFallback": "Member",
+    "eyebrow": "Partner directory"
   },
   "company": {
     "registerTitle": "Register Company",

@@ -34,16 +34,16 @@
 
 The §6.1 criterion, decomposed:
 
-- [ ] Staff can sign in with TOTP; without TOTP, sign-in is rejected
-- [ ] Dashboards render accurate statistics and finance data (with map)
-- [ ] Staff can search for members, view their cards/subscriptions, and block/unblock them
+- [x] Staff can sign in with TOTP; without TOTP, sign-in is rejected
+- [x] Dashboards render accurate statistics and finance data (with map)
+- [x] Staff can search for members, view their cards/subscriptions, and block/unblock them
 - [x] Moderators can manage categories, countries, and cities safely
 - [x] Owners can create and manage other staff accounts
 - [x] All mutating actions are recorded in the audit log, which is searchable and immutable
 - [x] Data export works
 - [x] T-5.1 (Legal translations) is completed
-- [ ] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass
-- [ ] `pnpm verify` passes
+- [x] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass
+- [x] `pnpm verify` passes
 
 ## 4. Demo script
 

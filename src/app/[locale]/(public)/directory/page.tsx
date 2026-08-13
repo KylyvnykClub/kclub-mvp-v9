@@ -47,7 +47,7 @@ export default async function CatalogueDirectoryPage({
     <main className="border-b border-border bg-background">
       <section className="border-b border-border bg-zinc-950 py-16 text-white sm:py-20">
         <div className="kclub-shell">
-          <p className="kclub-eyebrow !text-white/55">KCLUB DIRECTORY</p>
+          <p className="kclub-eyebrow !text-white/55">{t("eyebrow")}</p>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-end">
             <div>
               <h1 className="text-5xl font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-7xl">

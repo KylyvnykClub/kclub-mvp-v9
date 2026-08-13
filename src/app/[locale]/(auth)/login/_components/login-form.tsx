@@ -84,25 +84,26 @@ export function LoginForm() {
   ]);
 
   if (loginState.requiresTotp) {
+    const totpTitle = loginState.setupTotp
+      ? t("totpSetupTitle")
+      : t("totpTitle");
+    const totpSubtitle = loginState.setupTotp
+      ? t("totpSetupSubtitle")
+      : t("totpSubtitle");
+
     return (
       <AuthShell
-        eyebrow="KCLUB ACCESS"
-        title={loginState.setupTotp ? "Set Up 2FA" : "Two-Factor Auth"}
-        subtitle={
-          loginState.setupTotp
-            ? "Scan this QR code with your authenticator app"
-            : "Enter the code from your authenticator app"
-        }
+        eyebrow={t("accessEyebrow")}
+        title={totpTitle}
+        subtitle={totpSubtitle}
       >
         <Card className="w-full rounded-none border-white/10 bg-background text-foreground shadow-none">
           <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
             <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
-              {loginState.setupTotp ? "Set Up 2FA" : "Two-Factor Auth"}
+              {totpTitle}
             </CardTitle>
             <CardDescription className="text-sm font-light leading-6 text-muted-foreground">
-              {loginState.setupTotp
-                ? "Scan this QR code with your authenticator app"
-                : "Enter the code from your authenticator app"}
+              {totpSubtitle}
             </CardDescription>
           </CardHeader>
           <form action={totpFormAction}>
@@ -118,7 +119,7 @@ export function LoginForm() {
                 </div>
               )}
               <div className="space-y-2 text-left">
-                <Label htmlFor="code">Authenticator Code</Label>
+                <Label htmlFor="code">{t("totpCodeLabel")}</Label>
                 <Input
                   id="code"
                   name="code"
@@ -138,14 +139,14 @@ export function LoginForm() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
-              <SubmitButton label="Verify" />
+              <SubmitButton label={t("totpVerify")} />
               <div className="text-sm text-center text-muted-foreground">
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
                   className="font-bold uppercase tracking-[0.12em] text-foreground hover:text-accent"
                 >
-                  Cancel
+                  {t("totpCancel")}
                 </button>
               </div>
             </CardFooter>
@@ -157,7 +158,7 @@ export function LoginForm() {
 
   return (
     <AuthShell
-      eyebrow="KCLUB ACCESS"
+      eyebrow={t("accessEyebrow")}
       title={t("loginTitle")}
       subtitle={t("loginSubtitle")}
     >
