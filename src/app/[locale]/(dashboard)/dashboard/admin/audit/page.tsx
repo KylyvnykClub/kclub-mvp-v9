@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { getAuditLogsAction } from "@/actions/admin-audit";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -19,7 +21,13 @@ export default async function AdminAuditPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    actor?: string;
+    target?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -35,8 +43,8 @@ export default async function AdminAuditPage({
     redirect(`/${locale}/dashboard`);
   }
 
-  const { q } = await searchParams;
-  const logs = await getAuditLogsAction(q);
+  const filters = await searchParams;
+  const logs = await getAuditLogsAction(filters);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,19 +57,37 @@ export default async function AdminAuditPage({
 
       <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
         <div className="p-4 border-b border-border/50">
-          <form className="flex space-x-2 max-w-sm">
-            <input
+          <form className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_10rem_10rem_auto]">
+            <Input
               name="q"
-              defaultValue={q}
+              defaultValue={filters.q}
               placeholder={t("searchPlaceholder")}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
-            >
+            <Input
+              name="actor"
+              defaultValue={filters.actor}
+              placeholder={t("actorPlaceholder")}
+            />
+            <Input
+              name="target"
+              defaultValue={filters.target}
+              placeholder={t("targetPlaceholder")}
+            />
+            <Input
+              name="dateFrom"
+              type="date"
+              defaultValue={filters.dateFrom}
+              aria-label={t("dateFrom")}
+            />
+            <Input
+              name="dateTo"
+              type="date"
+              defaultValue={filters.dateTo}
+              aria-label={t("dateTo")}
+            />
+            <Button type="submit" className="h-10 rounded-none">
               {t("search")}
-            </button>
+            </Button>
           </form>
         </div>
 

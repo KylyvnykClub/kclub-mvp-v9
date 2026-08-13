@@ -11,8 +11,7 @@ export async function getSupportMetricsAction() {
   if (!session?.member) throw new Error("Unauthorized");
 
   const actor = buildActor(session.member);
-  // Reusing "read company" permission as a proxy for support dashboard access
-  if (!can(actor, "read", "company")) {
+  if (!can(actor, "read", "moderation")) {
     throw new Error("Unauthorized");
   }
 

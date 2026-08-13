@@ -33,7 +33,7 @@ function loadMessages(locale: string): Map<string, string> {
   return flattenKeys(JSON.parse(raw) as Record<string, unknown>);
 }
 
-describe("i18n: localisation completeness (testing.md §4)", () => {
+describe("i18n: localisation completeness (FR-090, testing.md §4)", () => {
   const allKeys = new Set<string>();
   const perLocale = new Map<string, Map<string, string>>();
 
@@ -65,6 +65,34 @@ describe("i18n: localisation completeness (testing.md §4)", () => {
           value.trim().length,
           `${locale}.${key} is empty`,
         ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("message files do not contain mojibake or placeholder corruption", () => {
+    const corruptedCodePoints = new Set([
+      0x00c2, // Â
+      0x00d0, // Ð
+      0x00d1, // Ñ
+      0x00e2, // â
+      0xfffd, // replacement character
+    ]);
+
+    for (const locale of LOCALES) {
+      const messages = perLocale.get(locale)!;
+      for (const [key, value] of messages) {
+        const hasCorruptedChar = [...value].some((char) =>
+          corruptedCodePoints.has(char.codePointAt(0)!),
+        );
+
+        expect(
+          hasCorruptedChar,
+          `${locale}.${key} contains mojibake: ${value}`,
+        ).toBe(false);
+        expect(
+          value,
+          `${locale}.${key} contains replacement placeholders`,
+        ).not.toMatch(/\?{3,}/);
       }
     }
   });

@@ -15,7 +15,7 @@ export async function getAdminDashboardMetricsAction() {
   if (!session?.member) throw new Error("Unauthorized");
 
   const actor = buildActor(session.member);
-  if (!can(actor, "read", "audit_log")) {
+  if (!can(actor, "read", "finance_dashboard")) {
     throw new Error("Unauthorized");
   }
 

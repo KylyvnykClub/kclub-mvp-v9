@@ -8,21 +8,21 @@
 
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
-|T-5.1|Move from Phase 4: English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|—|1.5d|open|
+|T-5.1|Move from Phase 4: English versions of all nine legal documents as `{id}.en.mdx`, authoritative flag on EN per FR-093|—|—|1.5d|done 2026-08-13 — user confirmed the shared Google Drive folder contains the approved Russian legal source documents; the nine base `.mdx` files were regenerated as clean Russian non-authoritative source translations, nine `{id}.en.mdx` files were added as authoritative English translations, and FR-093 constraint coverage now proves English authoritative coverage plus mojibake/Word-metadata hygiene|
 |T-5.2|Staff authentication with TOTP enforcement (second factor mandatory for `staff_*` roles)|FR-080|—|2d|DONE|
-|T-5.3|Support Dashboard: total members, active members, new members (7d), companies/referrals awaiting moderation|FR-081|T-5.2|1d|open|
-|T-5.4|Admin Dashboard: 30d revenue, active subscriptions by type, renewals due (7d), 50 recent payments, revenue by country (map)|FR-082|T-5.2|2d|open|
-|T-5.5|Member Directory & Admin: find members (phone/serial/name), view history, block/unblock with reason|FR-083, FR-084|T-5.2|2d|open|
-|T-5.6|Reference Data Management: manage business categories, countries, and cities (with deletion constraints)|FR-085|T-5.2|1d|open|
-|T-5.7|Staff Management: `staff_owner` can create/disable staff accounts and manage roles|FR-086|T-5.2|1.5d|open|
-|T-5.8|Immutable Audit Log: record mutating actions, searchable by actor/target/date, uneditable|FR-087, FR-088|T-5.2|2d|open|
-|T-5.9|Security & Privacy: exclude console from marketing domain/indexing, implement GDPR data export for members|FR-089, FR-094|T-5.2|1.5d|open|
+|T-5.3|Support Dashboard: total members, active members, new members (7d), companies/referrals awaiting moderation|FR-081|T-5.2|1d|done 2026-08-13 — `/dashboard/admin/support` renders real support metrics, gates access through `read moderation`, excludes staff accounts from member counts, and has integration coverage for member/moderation counters|
+|T-5.4|Admin Dashboard: 30d revenue, active subscriptions by type, renewals due (7d), 50 recent payments, revenue by country (map)|FR-082|T-5.2|2d|done 2026-08-13 — finance dashboard is `staff_admin+`, keeps Stripe-sourced 30d revenue/recent payments/country revenue, renders a world-map visualization plus Recharts country bars, and has integration coverage for subscription split and 7d renewal metrics|
+|T-5.5|Member Directory & Admin: find members (phone/serial/name), view history, block/unblock with reason|FR-083, FR-084|T-5.2|2d|done 2026-08-13 — member directory now supports merged name/phone/card-serial search, excludes staff accounts, lets `staff_support` view member cards/subscriptions/activity history, keeps block/unblock/card mutations `staff_admin+`, requires reasons for status changes, and writes before/after audit metadata|
+|T-5.6|Reference Data Management: manage business categories, countries, and cities (with deletion constraints)|FR-085|T-5.2|1d|done 2026-08-13 — staff_moderator+ reference-data screen now creates/toggles/deletes business categories, countries, and cities; deletes are blocked when companies or child cities reference the row; all mutations audit before/after metadata and are covered by route/RBAC/audit constraints plus integration tests|
+|T-5.7|Staff Management: `staff_owner` can create/disable staff accounts and manage roles|FR-086|T-5.2|1.5d|done 2026-08-13 — `/dashboard/admin/staff` is owner-only, creates staff accounts with temporary passwords, disables/re-enables staff accounts, changes staff roles, blocks self role/status changes, terminates sessions on disable, audits every mutation, and is covered by route/RBAC/audit constraints plus integration tests|
+|T-5.8|Immutable Audit Log: record mutating actions, searchable by actor/target/date, uneditable|FR-087, FR-088|T-5.2|2d|done 2026-08-13 — audit log remains append-only at DB permission level, full journal access is `staff_owner` only, `/dashboard/admin/audit` now supports free-text, actor, target, and date-range filters, and integration coverage proves append-only permissions plus actor/target/date search|
+|T-5.9|Security & Privacy: exclude console from marketing domain/indexing, implement GDPR data export for members|FR-089, FR-094|T-5.2|1.5d|done 2026-08-13 — dashboard/admin surfaces carry noindex metadata and export APIs emit `X-Robots-Tag`; robots disallows admin/API paths; member export is machine-readable, redacts password/session/card/TOTP secrets, includes profile/cards/subscriptions/companies/referrals/legal/session metadata/deletion requests, and `staff_owner` can export any member with an audit record|
 
 **Total: ~14.5 focused days.**
 
 ## 2. Tasks that need explaining
 
-**T-5.1** was originally T-4.2 but was deferred to Phase 5 because it was blocked awaiting English source texts from client counsel.
+**T-5.1** was originally T-4.2 but was deferred to Phase 5 because it was blocked awaiting legal source confirmation. On 2026-08-13 the approved Russian legal documents were provided from Google Drive and translated into authoritative English MDX; the translation remains traceable to the approved Russian source pack.
 
 **T-5.2** adds TOTP support to `better-auth` for staff roles. Regular members do not use TOTP (they use phone/SMS).
 
@@ -34,16 +34,16 @@
 
 The §6.1 criterion, decomposed:
 
-- [ ] Staff can sign in with TOTP; without TOTP, sign-in is rejected
-- [ ] Dashboards render accurate statistics and finance data (with map)
-- [ ] Staff can search for members, view their cards/subscriptions, and block/unblock them
-- [ ] Moderators can manage categories, countries, and cities safely
-- [ ] Owners can create and manage other staff accounts
-- [ ] All mutating actions are recorded in the audit log, which is searchable and immutable
-- [ ] Data export works
-- [ ] T-5.1 (Legal translations) is completed
-- [ ] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass
-- [ ] `pnpm verify` passes
+- [x] Staff can sign in with TOTP; without TOTP, sign-in is rejected
+- [x] Dashboards render accurate statistics and finance data (with map)
+- [x] Staff can search for members, view their cards/subscriptions, and block/unblock them
+- [x] Moderators can manage categories, countries, and cities safely
+- [x] Owners can create and manage other staff accounts
+- [x] All mutating actions are recorded in the audit log, which is searchable and immutable
+- [x] Data export works
+- [x] T-5.1 (Legal translations) is completed
+- [x] `python tools/check-plan.py --strict` and `python tools/check-docs.py --strict` pass
+- [x] `pnpm verify` passes
 
 ## 4. Demo script
 

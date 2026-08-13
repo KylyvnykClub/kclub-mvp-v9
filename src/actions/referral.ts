@@ -2,7 +2,7 @@
 
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
-import { findActiveSubscriptionByPrice } from "@/data/billing";
+import { findActiveVipSubscription } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import {
   findReferralWithRecipientCompany,
@@ -13,12 +13,12 @@ import {
   listReferralsSince,
   listSentReferrals,
   respondToReferral,
+  setMemberReferralPermission,
   setReferralModeration,
 } from "@/data/referrals";
 import { getCurrentMember } from "./session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
-import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -44,9 +44,7 @@ export async function createReferralAction(
 
   const parsed = referralSchema.parse(data);
 
-  const vipPriceId = configuredCheckoutPriceId("vip");
-
-  const vipSub = await findActiveSubscriptionByPrice(db, member.id, vipPriceId);
+  const vipSub = await findActiveVipSubscription(db, member.id);
   const actor = buildActor({
     id: member.id,
     role: vipSub ? "member_vip" : "member",
@@ -153,6 +151,49 @@ export async function moderateReferralAction(
   revalidatePath("/dashboard/admin/referrals");
 }
 
+export async function barReferralSenderAction(
+  senderId: string,
+  barred: boolean,
+  reason: string,
+) {
+  const current = await getCurrentMember();
+  const member = current?.member;
+  if (!member) {
+    throw new Error("Unauthorized");
+  }
+
+  const actor = buildActor(member);
+  if (!can(actor, "block", "referral")) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!reason) {
+    throw new Error("Reason is required to change referral sending access");
+  }
+
+  const updated = await setMemberReferralPermission(db, senderId, !barred);
+  if (!updated) {
+    throw new Error("Member not found");
+  }
+
+  await appendAuditEntry(db, {
+    actorId: member.id,
+    actorType: member.role,
+    action: barred ? "bar_referral_sender" : "unbar_referral_sender",
+    subjectType: "member",
+    subjectId: senderId,
+    meta: {
+      reason,
+      before: { canSendReferrals: barred },
+      after: { canSendReferrals: updated.canSendReferrals },
+    },
+    ip: "unknown",
+  });
+
+  revalidatePath("/dashboard/admin/referrals");
+  revalidatePath("/dashboard/admin/members");
+}
+
 export async function respondToReferralAction(
   referralId: string,
   action: "accept" | "decline",
@@ -172,6 +213,20 @@ export async function respondToReferralAction(
 
   // FR-075: Immediately delete contact details on decline
   await respondToReferral(db, referralId, newStatus, action === "decline");
+
+  await appendAuditEntry(db, {
+    actorId: member.id,
+    actorType: member.role,
+    action: `respond_referral_${action}`,
+    subjectType: "referral",
+    subjectId: referralId,
+    meta: {
+      before: { status: referral.status },
+      after: { status: newStatus },
+      redactedContactDetails: action === "decline",
+    },
+    ip: "unknown",
+  });
 
   revalidatePath("/dashboard/referrals");
 }

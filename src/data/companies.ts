@@ -1,7 +1,15 @@
-import { and, asc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, or, sql } from "drizzle-orm";
 
 import type { DbClient } from "./db";
-import { businessCategories, companies, subscriptions } from "./schema";
+import {
+  businessCategories,
+  cities,
+  companies,
+  countries,
+  subscriptions,
+} from "./schema";
+
+const PUBLISHABLE_LISTING_STATUSES = ["active", "past_due"];
 
 export async function listActiveCategoryBlocks(db: DbClient) {
   const rows = await db.query.businessCategories.findMany({
@@ -44,6 +52,34 @@ export async function listAllCategories(db: DbClient) {
   });
 }
 
+function countValue(row: { value: number } | undefined): number {
+  return row?.value ?? 0;
+}
+
+export async function createBusinessCategory(
+  db: DbClient,
+  input: { block: string; category: string; subcategory: string },
+) {
+  const [nextIdRow] = await db
+    .select({
+      value: sql<number>`coalesce(max(${businessCategories.id}), 0) + 1`,
+    })
+    .from(businessCategories);
+
+  const [category] = await db
+    .insert(businessCategories)
+    .values({
+      id: nextIdRow?.value ?? 1,
+      block: input.block,
+      category: input.category,
+      subcategory: input.subcategory,
+      status: "ACTIVE",
+    })
+    .returning();
+
+  return category!;
+}
+
 export async function setCategoryStatus(
   db: DbClient,
   categoryId: number,
@@ -53,6 +89,146 @@ export async function setCategoryStatus(
     .update(businessCategories)
     .set({ status })
     .where(eq(businessCategories.id, categoryId));
+}
+
+export async function deleteBusinessCategory(db: DbClient, categoryId: number) {
+  const [usage] = await db
+    .select({ value: count() })
+    .from(companies)
+    .where(eq(companies.businessCategoryId, categoryId));
+
+  if (countValue(usage) > 0) {
+    throw new Error("Cannot delete a category that is referenced by companies");
+  }
+
+  await db
+    .delete(businessCategories)
+    .where(eq(businessCategories.id, categoryId));
+}
+
+export async function listCountries(db: DbClient) {
+  return db.query.countries.findMany({
+    orderBy: [asc(countries.name)],
+    with: {
+      cities: {
+        orderBy: [asc(cities.name)],
+      },
+    },
+  });
+}
+
+export async function createCountry(
+  db: DbClient,
+  input: { code: string; name: string },
+) {
+  const [country] = await db
+    .insert(countries)
+    .values({
+      code: input.code.toUpperCase(),
+      name: input.name,
+      status: "ACTIVE",
+    })
+    .returning();
+
+  return country!;
+}
+
+export async function setCountryStatus(
+  db: DbClient,
+  code: string,
+  status: string,
+) {
+  await db
+    .update(countries)
+    .set({ status })
+    .where(eq(countries.code, code.toUpperCase()));
+}
+
+export async function deleteCountry(db: DbClient, code: string) {
+  const country = await db.query.countries.findFirst({
+    where: eq(countries.code, code.toUpperCase()),
+  });
+  if (!country) return;
+
+  const [companyUsage] = await db
+    .select({ value: count() })
+    .from(companies)
+    .where(
+      or(
+        eq(companies.country, country.code),
+        ilike(companies.country, country.name),
+      ),
+    );
+
+  if (countValue(companyUsage) > 0) {
+    throw new Error("Cannot delete a country that is referenced by companies");
+  }
+
+  const [cityUsage] = await db
+    .select({ value: count() })
+    .from(cities)
+    .where(eq(cities.countryCode, country.code));
+
+  if (countValue(cityUsage) > 0) {
+    throw new Error("Cannot delete a country that is referenced by cities");
+  }
+
+  await db.delete(countries).where(eq(countries.code, country.code));
+}
+
+export async function createCity(
+  db: DbClient,
+  input: { countryCode: string; name: string },
+) {
+  const [city] = await db
+    .insert(cities)
+    .values({
+      countryCode: input.countryCode.toUpperCase(),
+      name: input.name,
+      status: "ACTIVE",
+    })
+    .returning();
+
+  return city!;
+}
+
+export async function setCityStatus(
+  db: DbClient,
+  cityId: number,
+  status: string,
+) {
+  await db.update(cities).set({ status }).where(eq(cities.id, cityId));
+}
+
+export async function deleteCity(db: DbClient, cityId: number) {
+  const city = await db.query.cities.findFirst({
+    where: eq(cities.id, cityId),
+    with: {
+      country: true,
+    },
+  });
+  if (!city) return;
+
+  const [companyUsage] = await db
+    .select({ value: count() })
+    .from(companies)
+    .where(
+      and(
+        ilike(companies.city, city.name),
+        city.country
+          ? or(
+              eq(companies.country, city.country.code),
+              ilike(companies.country, city.country.name),
+            )
+          : undefined,
+      ),
+    );
+
+  if (countValue(companyUsage) > 0) {
+    throw new Error("Cannot delete a city that is referenced by companies");
+  }
+
+  await db.delete(cities).where(eq(cities.id, cityId));
 }
 
 export async function companySlugExists(
@@ -78,7 +254,7 @@ export async function listCompanyIdsWithActiveSubscription(
   const rows = await db
     .select({ companyId: subscriptions.companyId })
     .from(subscriptions)
-    .where(eq(subscriptions.status, "active"));
+    .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES));
 
   return rows.map((s) => s.companyId).filter((id): id is string => id !== null);
 }

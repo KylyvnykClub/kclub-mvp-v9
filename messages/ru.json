@@ -40,7 +40,15 @@
     "registerLink": "Создать аккаунт",
     "forgotPassword": "Забыли пароль?",
     "invalidCredentials": "Неверный номер телефона или пароль",
-    "accountBlocked": "Аккаунт не активен"
+    "accountBlocked": "Аккаунт не активен",
+    "accessEyebrow": "Доступ KCLUB",
+    "totpSetupTitle": "Настройте 2FA",
+    "totpTitle": "Двухфакторная защита",
+    "totpSetupSubtitle": "Отсканируйте QR-код в приложении-аутентификаторе",
+    "totpSubtitle": "Введите код из приложения-аутентификатора",
+    "totpCodeLabel": "Код аутентификатора",
+    "totpVerify": "Подтвердить",
+    "totpCancel": "Отмена"
   },
   "register": {
     "title": "Вступить в KCLUB",
@@ -139,7 +147,19 @@
     "closeNavigation": "Закрыть навигацию",
     "dataPrivacy": "Конфиденциальность данных",
     "dataPrivacyDesc": "Вы можете скачать копию ваших личных данных для соответствия GDPR.",
-    "exportData": "Экспорт моих данных"
+    "exportData": "Экспорт моих данных",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountDesc": "Запросите удаление аккаунта. Активные подписки показаны ниже; выберите, отменить или сохранить каждую подписку до принятия запроса.",
+    "deleteVipSubscription": "VIP-подписка",
+    "deleteListingSubscription": "Подписка на размещение: {name}",
+    "deleteSubscriptionCancel": "Отменить эту подписку перед удалением",
+    "deleteSubscriptionKeep": "Сохранить эту подписку после запроса на удаление",
+    "deleteNoActiveSubscriptions": "Нет активных подписок, требующих решения.",
+    "deleteAccountConfirm": "Я понимаю, что это запускает удаление аккаунта и завершает текущий сеанс.",
+    "deleteAccountButton": "Запросить удаление",
+    "deleteAccountSubmitting": "Отправка запроса...",
+    "deleteAccountFailed": "Не удалось запросить удаление аккаунта",
+    "navAdminStaff": "Управление персоналом"
   },
   "card": {
     "membershipCard": "Карта участника",
@@ -590,7 +610,12 @@
       "accepted": "Принято",
       "declined": "Отклонено партнером",
       "expired": "Истекло время"
-    }
+    },
+    "barReasonRequired": "Укажите причину перед изменением доступа к отправке рефералов",
+    "barredToast": "Отправителю запрещено отправлять рефералы",
+    "unbarredToast": "Отправитель снова может отправлять рефералы",
+    "barSender": "Запретить отправителя",
+    "unbarSender": "Разрешить отправителя"
   },
   "billing": {
     "title": "Членство и оплата",
@@ -639,7 +664,8 @@
     "joinCta": "Вступить в клуб",
     "representedBy": "Компанию представляет:",
     "managerRole": "Менеджер",
-    "memberFallback": "Участник"
+    "memberFallback": "Участник",
+    "eyebrow": "Каталог партнёров"
   },
   "company": {
     "registerTitle": "Зарегистрировать компанию",
@@ -696,15 +722,23 @@
       "noCards": "Нет карт",
       "statusBlocked": "Заблокирован",
       "statusActive": "Активен",
+      "statusPendingDeletion": "Ожидает удаления",
       "manage": "Управлять",
+      "view": "Просмотр",
       "manageTitle": "Управление участником: {name}",
       "manageDescription": "Управление статусом участника и картами.",
+      "viewDescription": "Просмотр карт, подписок и недавней активности участника.",
       "statusSection": "Статус",
       "accountStatus": "Статус аккаунта:",
-      "reasonLabel": "Причина (обязательна для блокировки или отзыва)",
+      "reasonLabel": "Причина (обязательно)",
       "reasonPlaceholder": "Нарушение условий...",
       "unblock": "Разблокировать участника",
       "block": "Заблокировать участника",
+      "subscriptionsSection": "Подписки",
+      "vipSubscription": "VIP-подписка участника",
+      "listingSubscription": "Подписка на размещение: {name}",
+      "periodEnds": "Текущий период заканчивается:",
+      "noSubscriptionsFound": "Подписки не найдены.",
       "cardsSection": "Карты",
       "tierLabel": "Уровень",
       "revoke": "Отозвать",
@@ -713,12 +747,17 @@
       "tierFree": "Стандарт",
       "tierVip": "VIP",
       "issue": "Выпустить",
+      "historySection": "История активности",
+      "noHistoryFound": "История активности не найдена.",
       "reasonRequiredBlock": "Для блокировки участника нужна причина",
+      "reasonRequiredStatus": "Для изменения статуса участника нужна причина",
       "unblocked": "Участник разблокирован",
       "blocked": "Участник заблокирован",
       "reasonRequiredRevoke": "Для отзыва карты нужна причина",
       "cardRevoked": "Карта отозвана",
-      "cardIssued": "Выпущена новая карта"
+      "cardIssued": "Выпущена новая карта",
+      "dataExportSection": "Экспорт данных",
+      "exportData": "Экспортировать данные участника"
     },
     "companies": {
       "title": "Модерация компаний",
@@ -738,17 +777,37 @@
       "actionFailed": "Ошибка: {error}"
     },
     "categories": {
-      "title": "Бизнес-категории",
-      "description": "Управляйте таксономией бизнес-категорий, используемой при регистрации компании.",
+      "title": "Справочники",
+      "description": "Управляйте бизнес-категориями, странами и городами для регистрации и каталога.",
+      "categoriesTitle": "Бизнес-категории",
+      "categoriesDescription": "Создавайте, приостанавливайте или удаляйте строки таксономии. Удаление блокируется, если строка используется компаниями.",
+      "countriesTitle": "Страны",
+      "countriesDescription": "Поддерживайте коды и названия стран для поддерживаемых рынков.",
+      "citiesTitle": "Города",
+      "citiesDescription": "Храните варианты городов по странам; удаление блокируется, если город используется компаниями.",
       "colId": "ID",
       "colBlock": "Блок",
       "colCategory": "Категория",
       "colSubcategory": "Подкатегория",
       "colStatus": "Статус",
       "colActions": "Действия",
+      "colCode": "Код",
+      "colName": "Название",
+      "colCountry": "Страна",
+      "blockPlaceholder": "Блок",
+      "categoryPlaceholder": "Категория",
+      "subcategoryPlaceholder": "Подкатегория",
+      "countryCode": "Код",
+      "countryName": "Название страны",
+      "selectCountry": "Выберите страну",
+      "cityName": "Название города",
+      "create": "Создать",
+      "delete": "Удалить",
       "toggle": "Переключить",
-      "statusActive": "АКТИВНА",
-      "statusInactive": "НЕАКТИВНА"
+      "noCountries": "Стран пока нет.",
+      "noCities": "Городов пока нет.",
+      "statusActive": "Активно",
+      "statusInactive": "Неактивно"
     },
     "flags": {
       "title": "Функциональные флаги",
@@ -796,7 +855,39 @@
       "colAction": "Действие",
       "colSubject": "Объект",
       "colDetails": "Детали",
-      "noResults": "Записи не найдены."
+      "noResults": "Записи не найдены.",
+      "actorPlaceholder": "Тип или ID автора",
+      "targetPlaceholder": "Тип или ID объекта",
+      "dateFrom": "Дата с",
+      "dateTo": "Дата по"
+    },
+    "staff": {
+      "title": "Управление персоналом",
+      "description": "Создавайте staff-аккаунты, отключайте или включайте доступ и управляйте ролями.",
+      "displayName": "Имя",
+      "phone": "Телефон",
+      "country": "Страна",
+      "language": "Язык",
+      "temporaryPassword": "Временный пароль",
+      "create": "Создать сотрудника",
+      "colName": "Имя",
+      "colPhone": "Телефон",
+      "colRole": "Роль",
+      "colStatus": "Статус",
+      "colActions": "Действия",
+      "saveRole": "Сохранить роль",
+      "disable": "Отключить",
+      "enable": "Включить",
+      "self": "??",
+      "noResults": "Staff-аккаунтов пока нет.",
+      "statusActive": "Активен",
+      "statusDisabled": "Отключён",
+      "roles": {
+        "staff_support": "Поддержка",
+        "staff_moderator": "Модератор",
+        "staff_admin": "Админ",
+        "staff_owner": "Владелец"
+      }
     }
   }
 }

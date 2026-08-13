@@ -36,32 +36,43 @@ describe("can", () => {
   it("member can read own profile and card", () => {
     expect(can(member, "read", "own_profile")).toBe(true);
     expect(can(member, "update", "own_profile")).toBe(true);
+    expect(can(member, "delete", "own_profile")).toBe(true);
     expect(can(member, "read", "own_card")).toBe(true);
   });
 
   it("staff_support can read members but not block", () => {
     expect(can(support, "read", "member")).toBe(true);
     expect(can(support, "block", "member")).toBe(false);
+    expect(can(support, "read", "finance_dashboard")).toBe(false);
   });
 
   it("staff_moderator can approve companies", () => {
     expect(can(moderator, "approve", "company")).toBe(true);
     expect(can(moderator, "reject", "company")).toBe(true);
+    expect(can(moderator, "block", "referral")).toBe(true);
+    expect(can(moderator, "manage_reference_data", "reference_data")).toBe(
+      true,
+    );
   });
 
   it("staff_admin can block members and publish companies", () => {
     expect(can(admin, "block", "member")).toBe(true);
     expect(can(admin, "publish", "company")).toBe(true);
     expect(can(admin, "revoke", "card")).toBe(true);
+    expect(can(admin, "read", "finance_dashboard")).toBe(true);
+    expect(can(admin, "read", "audit_log")).toBe(false);
   });
 
   it("staff_admin cannot manage staff", () => {
     expect(can(admin, "manage_staff", "staff_user")).toBe(false);
   });
 
-  it("staff_owner can manage staff and flags", () => {
+  it("staff_owner can manage staff, flags, and plan prices", () => {
     expect(can(staffOwner, "manage_staff", "staff_user")).toBe(true);
     expect(can(staffOwner, "manage_flags", "feature_flag")).toBe(true);
+    expect(can(staffOwner, "manage_prices", "plan_price")).toBe(true);
+    expect(can(staffOwner, "read", "audit_log")).toBe(true);
+    expect(can(staffOwner, "export_data", "member")).toBe(true);
   });
 
   it("system can create and update subscriptions", () => {

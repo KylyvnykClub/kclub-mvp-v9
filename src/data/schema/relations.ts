@@ -7,9 +7,12 @@ import { profiles } from "./profiles";
 import { tags, profileTags } from "./tags";
 import { companies } from "./companies";
 import { businessCategories } from "./business-categories";
+import { cities } from "./cities";
 import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
 import { referrals } from "./referrals";
+import { accountDeletionRequests } from "./account-deletion-requests";
+import { countries } from "./countries";
 
 export const membersRelations = relations(members, ({ one, many }) => ({
   sessions: many(sessions),
@@ -26,6 +29,7 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   }),
   subscriptions: many(subscriptions),
   sentReferrals: many(referrals),
+  accountDeletionRequests: many(accountDeletionRequests),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -116,6 +120,17 @@ export const businessCategoriesRelations = relations(
   }),
 );
 
+export const countriesRelations = relations(countries, ({ many }) => ({
+  cities: many(cities),
+}));
+
+export const citiesRelations = relations(cities, ({ one }) => ({
+  country: one(countries, {
+    fields: [cities.countryCode],
+    references: [countries.code],
+  }),
+}));
+
 export const referralsRelations = relations(referrals, ({ one }) => ({
   sender: one(members, {
     fields: [referrals.senderId],
@@ -130,3 +145,13 @@ export const referralsRelations = relations(referrals, ({ one }) => ({
     references: [members.id],
   }),
 }));
+
+export const accountDeletionRequestsRelations = relations(
+  accountDeletionRequests,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [accountDeletionRequests.memberId],
+      references: [members.id],
+    }),
+  }),
+);

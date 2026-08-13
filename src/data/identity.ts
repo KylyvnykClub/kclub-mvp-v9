@@ -152,6 +152,13 @@ export async function deleteSessionByToken(
   await db.delete(sessions).where(sessionTokenLookup(token));
 }
 
+export async function deleteSessionsByMemberId(
+  db: DbClient,
+  memberId: string,
+): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.memberId, memberId));
+}
+
 export async function upgradeSessionTx(
   db: DbClient,
   token: string,

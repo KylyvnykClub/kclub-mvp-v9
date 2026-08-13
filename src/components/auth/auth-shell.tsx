@@ -25,18 +25,18 @@ export function AuthShell({
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      <div className="kclub-shell grid min-h-screen items-center gap-10 py-10 lg:grid-cols-[0.8fr_1fr] lg:py-14">
+      <div className="kclub-shell relative grid min-h-screen items-center gap-10 py-10 lg:grid-cols-[0.8fr_1fr] lg:py-14">
         <section className="hidden border-l border-accent pl-6 lg:block">
           <Link
             href={homeHref}
-            className="inline-flex items-center gap-3 text-xs font-black uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+            className="absolute left-0 top-10 inline-flex items-center gap-3 text-xs font-extralight uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring lg:top-14"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             {tLegal("backToHome")}
           </Link>
           <Link
             href={homeHref}
-            className="mt-10 inline-flex items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+            className="inline-flex items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             aria-label="KYLYVNYK CLUB"
           >
             <Image

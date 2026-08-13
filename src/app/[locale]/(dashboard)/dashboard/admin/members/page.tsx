@@ -34,9 +34,11 @@ export default async function AdminMembersPage({
   }
 
   const actor = buildActor(session.member);
-  if (!can(actor, "block", "member")) {
+  if (!can(actor, "read", "member")) {
     redirect(`/${locale}/dashboard`);
   }
+  const canManageMembers = can(actor, "block", "member");
+  const canExportMembers = can(actor, "export_data", "member");
 
   const { q } = await searchParams;
   const membersList = await getMembersListAction(q);
@@ -123,6 +125,10 @@ export default async function AdminMembersPage({
                   <TableCell>
                     {m.status === "blocked" ? (
                       <Badge variant="destructive">{t("statusBlocked")}</Badge>
+                    ) : m.status === "pending_deletion" ? (
+                      <Badge variant="secondary">
+                        {t("statusPendingDeletion")}
+                      </Badge>
                     ) : (
                       <Badge className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30">
                         {t("statusActive")}
@@ -130,7 +136,11 @@ export default async function AdminMembersPage({
                     )}
                   </TableCell>
                   <TableCell>
-                    <MemberManagementDialog member={m} />
+                    <MemberManagementDialog
+                      member={m}
+                      canManage={canManageMembers}
+                      canExport={canExportMembers}
+                    />
                   </TableCell>
                 </TableRow>
               ))

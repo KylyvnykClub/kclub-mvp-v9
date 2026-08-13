@@ -9,6 +9,10 @@ import {
   BILLING_NOTIFICATION_TOPIC,
   reconcileSubscription,
 } from "@/modules/billing/projection";
+import {
+  BILLING_RECONCILIATION_ALERT_TOPIC,
+  type ReconciliationAlertPayload,
+} from "@/modules/billing/reconciliation";
 import { sendPaymentFailedEmail } from "@/modules/notifications/email";
 import { authorizeCronRequest } from "@/modules/platform";
 
@@ -37,6 +41,7 @@ export interface DrainResult {
   stale: number;
   deleted: number;
   notified: number;
+  alerted: number;
   failed: number;
 }
 
@@ -58,10 +63,18 @@ export async function GET(req: Request) {
     stale: 0,
     deleted: 0,
     notified: 0,
+    alerted: 0,
     failed: 0,
   };
 
   for (const entry of entries) {
+    if (entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC) {
+      processReconciliationAlert(entry.payload as ReconciliationAlertPayload);
+      result.alerted += 1;
+      await markProcessed(db, entry.id);
+      continue;
+    }
+
     if (entry.topic === BILLING_NOTIFICATION_TOPIC) {
       try {
         await processNotification(entry.payload as NotificationPayload);
@@ -111,6 +124,17 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({ success: true, ...result });
+}
+
+function processReconciliationAlert(payload: ReconciliationAlertPayload): void {
+  console.error(
+    `[billing-reconciliation] divergence for ${payload.stripeSubscriptionId}: ${payload.differences
+      .map(
+        (d) =>
+          `${d.field} local=${d.local ?? "<null>"} stripe=${d.stripe ?? "<null>"}`,
+      )
+      .join(", ")}`,
+  );
 }
 
 async function processNotification(

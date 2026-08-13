@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
@@ -8,6 +9,19 @@ import { buildActor } from "@/domain/actor";
 type Props = {
   children: ReactNode;
   params: Promise<{ locale: string }>;
+};
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
 };
 
 export default async function DashboardLayout({ children, params }: Props) {

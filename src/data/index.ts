@@ -29,18 +29,40 @@ export {
 export type { RegisterMemberInput } from "./identity";
 export {
   findCardByMemberId,
+  findCardById,
   findCardPublicByToken,
+  findMemberAdminById,
   insertCard,
+  listMemberActivityHistory,
   revokeCardById,
   searchMembers,
   searchMembersByCardSerial,
   setMemberStatus,
+  withMemberActivityHistory,
 } from "./members";
-export type { MemberAdminView } from "./members";
+export {
+  createStaffMember,
+  findStaffMemberById,
+  listStaffMembers,
+  setStaffMemberRole,
+  setStaffMemberStatus,
+} from "./staff";
+export type { StaffMemberView, StaffStatus } from "./staff";
+export type {
+  MemberAdminDirectoryView,
+  MemberAdminView,
+  MemberAuditHistoryEntry,
+} from "./members";
 export { findProfileByMemberId, upsertProfile } from "./profiles";
 export type { ProfileUpdate, ProfileView, SocialLinks } from "./profiles";
 export {
   companySlugExists,
+  createBusinessCategory,
+  createCity,
+  createCountry,
+  deleteBusinessCategory,
+  deleteCity,
+  deleteCountry,
   findApprovedCompanyBySlug,
   insertCompany,
   listActiveCategoriesByBlock,
@@ -51,10 +73,13 @@ export {
   listApprovedCompaniesWithSubscriptionsByOwner,
   listCompaniesByOwner,
   listCompanyIdsWithActiveSubscription,
+  listCountries,
   listPendingCompanies,
   listShowcaseCompanies,
   setCategoryStatus,
+  setCityStatus,
   setCompanyModerationStatus,
+  setCountryStatus,
 } from "./companies";
 export type {
   PartnerCompanyView,

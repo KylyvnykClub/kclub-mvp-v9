@@ -3,7 +3,7 @@
     "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
     "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
     "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
-    "loading": "Loading\u00e2\u20ac\u00a6",
+    "loading": "Loading…",
     "error": "Something went wrong",
     "notFound": "Page not found",
     "back": "Back",
@@ -40,7 +40,15 @@
     "registerLink": "Create account",
     "forgotPassword": "Forgot password?",
     "invalidCredentials": "Invalid phone number or password",
-    "accountBlocked": "Account is not active"
+    "accountBlocked": "Account is not active",
+    "accessEyebrow": "KCLUB ACCESS",
+    "totpSetupTitle": "Set up 2FA",
+    "totpTitle": "Two-factor auth",
+    "totpSetupSubtitle": "Scan this QR code with your authenticator app",
+    "totpSubtitle": "Enter the code from your authenticator app",
+    "totpCodeLabel": "Authenticator code",
+    "totpVerify": "Verify",
+    "totpCancel": "Cancel"
   },
   "register": {
     "title": "Join KCLUB",
@@ -84,7 +92,7 @@
       "uk": "Ukrainian",
       "ru": "Russian"
     },
-    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms \u00c2\u00a729\u00e2\u20ac\u201c30)</terms>",
+    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
     "ageLabel": "I confirm that I am 18 years of age or older"
   },
   "dashboard": {
@@ -139,7 +147,19 @@
     "closeNavigation": "Close navigation",
     "dataPrivacy": "Data Privacy",
     "dataPrivacyDesc": "You can download a copy of your personal data for GDPR compliance.",
-    "exportData": "Export My Data"
+    "exportData": "Export My Data",
+    "deleteAccount": "Delete account",
+    "deleteAccountDesc": "Request account deletion. Active subscriptions are shown below; choose whether each one should be cancelled or kept before the request is accepted.",
+    "deleteVipSubscription": "VIP membership subscription",
+    "deleteListingSubscription": "Listing subscription: {name}",
+    "deleteSubscriptionCancel": "Cancel this subscription before deletion",
+    "deleteSubscriptionKeep": "Keep this subscription active after deletion request",
+    "deleteNoActiveSubscriptions": "No active subscriptions require a decision.",
+    "deleteAccountConfirm": "I understand this starts account deletion and signs me out.",
+    "deleteAccountButton": "Request deletion",
+    "deleteAccountSubmitting": "Requesting deletion...",
+    "deleteAccountFailed": "Could not request account deletion",
+    "navAdminStaff": "Staff"
   },
   "card": {
     "membershipCard": "Membership Card",
@@ -241,7 +261,7 @@
           "copy": "Members, partners, and warm introductions."
         }
       },
-      "flagsMarquee": "Members from every region, including \u00e2\u20ac\u201d"
+      "flagsMarquee": "Members from every region, including —"
     },
     "stats": {
       "members": "Members",
@@ -285,7 +305,7 @@
       "steps": [
         {
           "title": "Apply",
-          "description": "Submit your membership application in a few minutes \u00e2\u20ac\u201d no paperwork, just your details."
+          "description": "Submit your membership application in a few minutes — no paperwork, just your details."
         },
         {
           "title": "Get Verified",
@@ -530,7 +550,7 @@
       "refundPolicy": "Refund Policy",
       "disclaimer": "Disclaimer",
       "contactUs": "Contact Us",
-      "copyright": "\u00c2\u00a9 All rights reserved."
+      "copyright": "© All rights reserved."
     },
     "partners": {
       "eyebrow": "Trusted Elite Brands",
@@ -590,7 +610,12 @@
       "accepted": "Accepted",
       "declined": "Declined",
       "expired": "Expired"
-    }
+    },
+    "barReasonRequired": "Please provide a reason before changing referral sending access",
+    "barredToast": "Sender barred from sending referrals",
+    "unbarredToast": "Sender can send referrals again",
+    "barSender": "Bar sender",
+    "unbarSender": "Unbar sender"
   },
   "billing": {
     "title": "Membership & Billing",
@@ -639,7 +664,8 @@
     "joinCta": "Join the Club",
     "representedBy": "Company is represented by:",
     "managerRole": "Manager",
-    "memberFallback": "Member"
+    "memberFallback": "Member",
+    "eyebrow": "Partner directory"
   },
   "company": {
     "registerTitle": "Register Company",
@@ -696,15 +722,23 @@
       "noCards": "No cards",
       "statusBlocked": "Blocked",
       "statusActive": "Active",
+      "statusPendingDeletion": "Pending deletion",
       "manage": "Manage",
+      "view": "View",
       "manageTitle": "Manage Member: {name}",
       "manageDescription": "Administer member status and cards.",
+      "viewDescription": "View member cards, subscriptions, and recent activity.",
       "statusSection": "Status",
       "accountStatus": "Account Status:",
-      "reasonLabel": "Reason (Required for blocking or revoking)",
+      "reasonLabel": "Reason (required)",
       "reasonPlaceholder": "Violation of terms...",
       "unblock": "Unblock Member",
       "block": "Block Member",
+      "subscriptionsSection": "Subscriptions",
+      "vipSubscription": "VIP membership subscription",
+      "listingSubscription": "Listing subscription: {name}",
+      "periodEnds": "Current period ends:",
+      "noSubscriptionsFound": "No subscriptions found.",
       "cardsSection": "Cards",
       "tierLabel": "Tier",
       "revoke": "Revoke",
@@ -713,12 +747,17 @@
       "tierFree": "Free",
       "tierVip": "VIP",
       "issue": "Issue",
+      "historySection": "Activity history",
+      "noHistoryFound": "No activity history found.",
       "reasonRequiredBlock": "Reason is required to block a member",
+      "reasonRequiredStatus": "Reason is required to change member status",
       "unblocked": "Member unblocked",
       "blocked": "Member blocked",
       "reasonRequiredRevoke": "Reason is required to revoke a card",
       "cardRevoked": "Card revoked",
-      "cardIssued": "New card issued"
+      "cardIssued": "New card issued",
+      "dataExportSection": "Data export",
+      "exportData": "Export member data"
     },
     "companies": {
       "title": "Company Moderation",
@@ -738,15 +777,35 @@
       "actionFailed": "Error: {error}"
     },
     "categories": {
-      "title": "Business Categories",
-      "description": "Manage the taxonomy of business categories used during company registration.",
+      "title": "Reference Data",
+      "description": "Manage business categories, countries, and cities used across registration and the directory.",
+      "categoriesTitle": "Business Categories",
+      "categoriesDescription": "Create, pause, or remove taxonomy rows. Deletion is blocked while companies use a row.",
+      "countriesTitle": "Countries",
+      "countriesDescription": "Maintain country codes and names for supported markets.",
+      "citiesTitle": "Cities",
+      "citiesDescription": "Keep city options grouped by country and protected when used by companies.",
       "colId": "ID",
       "colBlock": "Block",
       "colCategory": "Category",
       "colSubcategory": "Subcategory",
       "colStatus": "Status",
       "colActions": "Actions",
+      "colCode": "Code",
+      "colName": "Name",
+      "colCountry": "Country",
+      "blockPlaceholder": "Block",
+      "categoryPlaceholder": "Category",
+      "subcategoryPlaceholder": "Subcategory",
+      "countryCode": "Code",
+      "countryName": "Country name",
+      "selectCountry": "Select country",
+      "cityName": "City name",
+      "create": "Create",
+      "delete": "Delete",
       "toggle": "Toggle",
+      "noCountries": "No countries yet.",
+      "noCities": "No cities yet.",
       "statusActive": "ACTIVE",
       "statusInactive": "INACTIVE"
     },
@@ -796,7 +855,39 @@
       "colAction": "Action",
       "colSubject": "Subject",
       "colDetails": "Details",
-      "noResults": "No audit logs found."
+      "noResults": "No audit logs found.",
+      "actorPlaceholder": "Actor type or ID",
+      "targetPlaceholder": "Target type or ID",
+      "dateFrom": "Date from",
+      "dateTo": "Date to"
+    },
+    "staff": {
+      "title": "Staff Management",
+      "description": "Create staff accounts, disable or re-enable access, and manage staff roles.",
+      "displayName": "Display name",
+      "phone": "Phone",
+      "country": "Country",
+      "language": "Language",
+      "temporaryPassword": "Temporary password",
+      "create": "Create staff",
+      "colName": "Name",
+      "colPhone": "Phone",
+      "colRole": "Role",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "saveRole": "Save role",
+      "disable": "Disable",
+      "enable": "Re-enable",
+      "self": "You",
+      "noResults": "No staff accounts found.",
+      "statusActive": "ACTIVE",
+      "statusDisabled": "DISABLED",
+      "roles": {
+        "staff_support": "Support",
+        "staff_moderator": "Moderator",
+        "staff_admin": "Admin",
+        "staff_owner": "Owner"
+      }
     }
   }
 }

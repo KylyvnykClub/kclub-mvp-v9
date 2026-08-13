@@ -412,7 +412,15 @@
     "registerLink": "Створити обліковий запис",
     "forgotPassword": "Забули пароль?",
     "invalidCredentials": "Невірний номер телефону або пароль",
-    "accountBlocked": "Обліковий запис неактивний"
+    "accountBlocked": "Обліковий запис неактивний",
+    "accessEyebrow": "Доступ KCLUB",
+    "totpSetupTitle": "Налаштуйте 2FA",
+    "totpTitle": "Двофакторний захист",
+    "totpSetupSubtitle": "Відскануйте QR-код у застосунку-аутентифікаторі",
+    "totpSubtitle": "Введіть код із застосунку-аутентифікатора",
+    "totpCodeLabel": "Код аутентифікатора",
+    "totpVerify": "Підтвердити",
+    "totpCancel": "Скасувати"
   },
   "register": {
     "title": "Приєднатися до KCLUB",
@@ -511,7 +519,19 @@
     "saveProfile": "Зберегти профіль",
     "dataPrivacy": "Конфіденційність даних",
     "dataPrivacyDesc": "Ви можете завантажити копію своїх персональних даних для відповідності GDPR.",
-    "exportData": "Експортувати мої дані"
+    "exportData": "Експортувати мої дані",
+    "deleteAccount": "Видалити акаунт",
+    "deleteAccountDesc": "Запросіть видалення акаунта. Активні підписки показані нижче; виберіть, скасувати чи зберегти кожну підписку до прийняття запиту.",
+    "deleteVipSubscription": "VIP-підписка",
+    "deleteListingSubscription": "Підписка на розміщення: {name}",
+    "deleteSubscriptionCancel": "Скасувати цю підписку перед видаленням",
+    "deleteSubscriptionKeep": "Зберегти цю підписку після запиту на видалення",
+    "deleteNoActiveSubscriptions": "Немає активних підписок, що потребують рішення.",
+    "deleteAccountConfirm": "Я розумію, що це запускає видалення акаунта та завершує поточний сеанс.",
+    "deleteAccountButton": "Запросити видалення",
+    "deleteAccountSubmitting": "Надсилання запиту...",
+    "deleteAccountFailed": "Не вдалося запросити видалення акаунта",
+    "navAdminStaff": "Керування персоналом"
   },
   "card": {
     "membershipCard": "Карта учасника",
@@ -590,7 +610,12 @@
       "accepted": "Прийнято",
       "declined": "Відхилено партнером",
       "expired": "Час вийшов"
-    }
+    },
+    "barReasonRequired": "Вкажіть причину перед зміною доступу до надсилання рефералів",
+    "barredToast": "Відправнику заборонено надсилати реферали",
+    "unbarredToast": "Відправник знову може надсилати реферали",
+    "barSender": "Заборонити відправника",
+    "unbarSender": "Дозволити відправника"
   },
   "billing": {
     "title": "Членство та оплата",
@@ -639,7 +664,8 @@
     "joinCta": "Приєднатися до клубу",
     "representedBy": "Компанію представляє:",
     "managerRole": "Менеджер",
-    "memberFallback": "Учасник"
+    "memberFallback": "Учасник",
+    "eyebrow": "Каталог партнерів"
   },
   "company": {
     "registerTitle": "Зареєструвати компанію",
@@ -696,15 +722,23 @@
       "noCards": "Немає карток",
       "statusBlocked": "Заблокований",
       "statusActive": "Активний",
+      "statusPendingDeletion": "Очікує видалення",
       "manage": "Керувати",
+      "view": "Перегляд",
       "manageTitle": "Керування учасником: {name}",
       "manageDescription": "Керування статусом учасника та картками.",
+      "viewDescription": "Перегляд карток, підписок і нещодавньої активності учасника.",
       "statusSection": "Статус",
       "accountStatus": "Статус облікового запису:",
-      "reasonLabel": "Причина (обов'язкова для блокування або відкликання)",
+      "reasonLabel": "Причина (обов'язково)",
       "reasonPlaceholder": "Порушення умов...",
       "unblock": "Розблокувати учасника",
       "block": "Заблокувати учасника",
+      "subscriptionsSection": "Підписки",
+      "vipSubscription": "VIP-підписка учасника",
+      "listingSubscription": "Підписка на розміщення: {name}",
+      "periodEnds": "Поточний період завершується:",
+      "noSubscriptionsFound": "Підписок не знайдено.",
       "cardsSection": "Картки",
       "tierLabel": "Рівень",
       "revoke": "Відкликати",
@@ -713,12 +747,17 @@
       "tierFree": "Стандарт",
       "tierVip": "VIP",
       "issue": "Випустити",
+      "historySection": "Історія активності",
+      "noHistoryFound": "Історію активності не знайдено.",
       "reasonRequiredBlock": "Для блокування учасника потрібна причина",
+      "reasonRequiredStatus": "Для зміни статусу учасника потрібна причина",
       "unblocked": "Учасника розблоковано",
       "blocked": "Учасника заблоковано",
       "reasonRequiredRevoke": "Для відкликання картки потрібна причина",
       "cardRevoked": "Картку відкликано",
-      "cardIssued": "Випущено нову картку"
+      "cardIssued": "Випущено нову картку",
+      "dataExportSection": "Експорт даних",
+      "exportData": "Експортувати дані учасника"
     },
     "companies": {
       "title": "Модерація компаній",
@@ -738,17 +777,37 @@
       "actionFailed": "Помилка: {error}"
     },
     "categories": {
-      "title": "Бізнес-категорії",
-      "description": "Керуйте таксономією бізнес-категорій, що використовується при реєстрації компанії.",
+      "title": "Довідники",
+      "description": "Керуйте бізнес-категоріями, країнами та містами для реєстрації й каталогу.",
+      "categoriesTitle": "Бізнес-категорії",
+      "categoriesDescription": "Створюйте, призупиняйте або видаляйте рядки таксономії. Видалення блокується, якщо рядок використовується компаніями.",
+      "countriesTitle": "Країни",
+      "countriesDescription": "Підтримуйте коди й назви країн для підтримуваних ринків.",
+      "citiesTitle": "Міста",
+      "citiesDescription": "Тримайте варіанти міст за країнами; видалення блокується, якщо місто використовується компаніями.",
       "colId": "ID",
       "colBlock": "Блок",
       "colCategory": "Категорія",
       "colSubcategory": "Підкатегорія",
       "colStatus": "Статус",
       "colActions": "Дії",
+      "colCode": "Код",
+      "colName": "Назва",
+      "colCountry": "Країна",
+      "blockPlaceholder": "Блок",
+      "categoryPlaceholder": "Категорія",
+      "subcategoryPlaceholder": "Підкатегорія",
+      "countryCode": "Код",
+      "countryName": "Назва країни",
+      "selectCountry": "Оберіть країну",
+      "cityName": "Назва міста",
+      "create": "Створити",
+      "delete": "Видалити",
       "toggle": "Перемкнути",
-      "statusActive": "АКТИВНА",
-      "statusInactive": "НЕАКТИВНА"
+      "noCountries": "Країн поки немає.",
+      "noCities": "Міст поки немає.",
+      "statusActive": "Активно",
+      "statusInactive": "Неактивно"
     },
     "flags": {
       "title": "Функціональні прапорці",
@@ -796,7 +855,39 @@
       "colAction": "Дія",
       "colSubject": "Об'єкт",
       "colDetails": "Деталі",
-      "noResults": "Записів аудиту не знайдено."
+      "noResults": "Записів аудиту не знайдено.",
+      "actorPlaceholder": "Тип або ID автора",
+      "targetPlaceholder": "Тип або ID об'єкта",
+      "dateFrom": "Дата з",
+      "dateTo": "Дата до"
+    },
+    "staff": {
+      "title": "Керування персоналом",
+      "description": "Створюйте staff-акаунти, вимикайте або вмикайте доступ і керуйте ролями.",
+      "displayName": "Ім'я",
+      "phone": "Телефон",
+      "country": "Країна",
+      "language": "Мова",
+      "temporaryPassword": "Тимчасовий пароль",
+      "create": "Створити співробітника",
+      "colName": "Ім'я",
+      "colPhone": "Телефон",
+      "colRole": "Роль",
+      "colStatus": "Статус",
+      "colActions": "Дії",
+      "saveRole": "Зберегти роль",
+      "disable": "Вимкнути",
+      "enable": "Увімкнути",
+      "self": "??",
+      "noResults": "Staff-акаунтів поки немає.",
+      "statusActive": "Активний",
+      "statusDisabled": "Вимкнений",
+      "roles": {
+        "staff_support": "Підтримка",
+        "staff_moderator": "Модератор",
+        "staff_admin": "Адмін",
+        "staff_owner": "Власник"
+      }
     }
   }
 }

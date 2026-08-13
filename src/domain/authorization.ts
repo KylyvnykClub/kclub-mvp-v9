@@ -16,8 +16,11 @@ export type Action =
   | "revoke"
   | "reissue"
   | "send_referral"
+  | "export_data"
+  | "manage_reference_data"
   | "manage_staff"
-  | "manage_flags";
+  | "manage_flags"
+  | "manage_prices";
 
 export type Subject =
   | "marketing"
@@ -34,9 +37,12 @@ export type Subject =
   | "subscription"
   | "card"
   | "moderation"
+  | "finance_dashboard"
+  | "reference_data"
   | "audit_log"
   | "staff_user"
-  | "feature_flag";
+  | "feature_flag"
+  | "plan_price";
 
 type Rule = (actor: Actor) => boolean;
 
@@ -52,6 +58,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   { action: "read", subject: "own_profile", check: (a) => a.type === "member" },
   {
     action: "update",
+    subject: "own_profile",
+    check: (a) => a.type === "member",
+  },
+  {
+    action: "delete",
     subject: "own_profile",
     check: (a) => a.type === "member",
   },
@@ -126,7 +137,17 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "read",
     subject: "audit_log",
-    check: (a) => staffAtLeast(a, "staff_support"),
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    action: "export_data",
+    subject: "member",
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    action: "read",
+    subject: "finance_dashboard",
+    check: (a) => staffAtLeast(a, "staff_admin"),
   },
 
   // Staff moderator: approve/reject
@@ -148,6 +169,16 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "reject",
     subject: "referral",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+  {
+    action: "block",
+    subject: "referral",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+  {
+    action: "manage_reference_data",
+    subject: "reference_data",
     check: (a) => staffAtLeast(a, "staff_moderator"),
   },
 
@@ -192,6 +223,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "manage_flags",
     subject: "feature_flag",
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    action: "manage_prices",
+    subject: "plan_price",
     check: (a) => isStaff(a) && a.role === "staff_owner",
   },
 
