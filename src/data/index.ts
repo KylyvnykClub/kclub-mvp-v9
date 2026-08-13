@@ -29,14 +29,22 @@ export {
 export type { RegisterMemberInput } from "./identity";
 export {
   findCardByMemberId,
+  findCardById,
   findCardPublicByToken,
+  findMemberAdminById,
   insertCard,
+  listMemberActivityHistory,
   revokeCardById,
   searchMembers,
   searchMembersByCardSerial,
   setMemberStatus,
+  withMemberActivityHistory,
 } from "./members";
-export type { MemberAdminView } from "./members";
+export type {
+  MemberAdminDirectoryView,
+  MemberAdminView,
+  MemberAuditHistoryEntry,
+} from "./members";
 export { findProfileByMemberId, upsertProfile } from "./profiles";
 export type { ProfileUpdate, ProfileView, SocialLinks } from "./profiles";
 export {

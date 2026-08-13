@@ -3,7 +3,7 @@
     "partners": "{count, plural, =0 {no partners} one {# partner} other {# partners}}",
     "members": "{count, plural, =0 {no members} one {# member} other {# members}}",
     "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
-    "loading": "Loading\u00e2\u20ac\u00a6",
+    "loading": "Loadingâ€¦",
     "error": "Something went wrong",
     "notFound": "Page not found",
     "back": "Back",
@@ -84,7 +84,7 @@
       "uk": "Ukrainian",
       "ru": "Russian"
     },
-    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms \u00c2\u00a729\u00e2\u20ac\u201c30)</terms>",
+    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms Â§29â€“30)</terms>",
     "ageLabel": "I confirm that I am 18 years of age or older"
   },
   "dashboard": {
@@ -252,7 +252,7 @@
           "copy": "Members, partners, and warm introductions."
         }
       },
-      "flagsMarquee": "Members from every region, including \u00e2\u20ac\u201d"
+      "flagsMarquee": "Members from every region, including â€”"
     },
     "stats": {
       "members": "Members",
@@ -296,7 +296,7 @@
       "steps": [
         {
           "title": "Apply",
-          "description": "Submit your membership application in a few minutes \u00e2\u20ac\u201d no paperwork, just your details."
+          "description": "Submit your membership application in a few minutes â€” no paperwork, just your details."
         },
         {
           "title": "Get Verified",
@@ -541,7 +541,7 @@
       "refundPolicy": "Refund Policy",
       "disclaimer": "Disclaimer",
       "contactUs": "Contact Us",
-      "copyright": "\u00c2\u00a9 All rights reserved."
+      "copyright": "Â© All rights reserved."
     },
     "partners": {
       "eyebrow": "Trusted Elite Brands",
@@ -707,15 +707,23 @@
       "noCards": "No cards",
       "statusBlocked": "Blocked",
       "statusActive": "Active",
+      "statusPendingDeletion": "Pending deletion",
       "manage": "Manage",
+      "view": "View",
       "manageTitle": "Manage Member: {name}",
       "manageDescription": "Administer member status and cards.",
+      "viewDescription": "View member cards, subscriptions, and recent activity.",
       "statusSection": "Status",
       "accountStatus": "Account Status:",
-      "reasonLabel": "Reason (Required for blocking or revoking)",
+      "reasonLabel": "Reason (required)",
       "reasonPlaceholder": "Violation of terms...",
       "unblock": "Unblock Member",
       "block": "Block Member",
+      "subscriptionsSection": "Subscriptions",
+      "vipSubscription": "VIP membership subscription",
+      "listingSubscription": "Listing subscription: {name}",
+      "periodEnds": "Current period ends:",
+      "noSubscriptionsFound": "No subscriptions found.",
       "cardsSection": "Cards",
       "tierLabel": "Tier",
       "revoke": "Revoke",
@@ -724,7 +732,10 @@
       "tierFree": "Free",
       "tierVip": "VIP",
       "issue": "Issue",
+      "historySection": "Activity history",
+      "noHistoryFound": "No activity history found.",
       "reasonRequiredBlock": "Reason is required to block a member",
+      "reasonRequiredStatus": "Reason is required to change member status",
       "unblocked": "Member unblocked",
       "blocked": "Member blocked",
       "reasonRequiredRevoke": "Reason is required to revoke a card",

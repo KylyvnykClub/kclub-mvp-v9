@@ -3,11 +3,15 @@
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
 import {
+  findCardById,
+  findMemberAdminById,
   insertCard,
   revokeCardById,
   searchMembers,
   searchMembersByCardSerial,
   setMemberStatus,
+  withMemberActivityHistory,
+  type MemberAdminView,
 } from "@/data/members";
 import { getCurrentMember } from "@/actions/session";
 import {
@@ -36,15 +40,19 @@ export async function getMembersListAction(query: string = "") {
   const session = await getCurrentMember();
   requireAuthorized(session?.member, "read", "member");
 
-  const result = await searchMembers(db, query || undefined);
+  const textMatches = await searchMembers(db, query || undefined);
 
-  // Card serial lives in a relation, so fall back to a serial search when
-  // the member search found nothing.
-  if (query && result.length === 0) {
-    return searchMembersByCardSerial(db, query);
+  if (!query) {
+    return withMemberActivityHistory(db, textMatches);
   }
 
-  return result;
+  const serialMatches = await searchMembersByCardSerial(db, query);
+  const merged = new Map<string, MemberAdminView>();
+  for (const member of [...textMatches, ...serialMatches]) {
+    merged.set(member.id, member);
+  }
+
+  return withMemberActivityHistory(db, [...merged.values()]);
 }
 
 export async function blockMemberAction(
@@ -59,11 +67,18 @@ export async function blockMemberAction(
     "member",
   );
 
-  if (blocked && !reason) {
-    throw new Error("Reason is required when blocking a member");
+  if (!reason) {
+    throw new Error("Reason is required when changing member status");
   }
 
-  await setMemberStatus(db, memberId, blocked ? "blocked" : "active");
+  const before = await findMemberAdminById(db, memberId);
+  const updated = await setMemberStatus(
+    db,
+    memberId,
+    blocked ? "blocked" : "active",
+  );
+
+  if (!updated) throw new Error("Member not found");
 
   // FR-087: Audit log
   await appendAuditEntry(db, {
@@ -72,7 +87,11 @@ export async function blockMemberAction(
     action: blocked ? "block_member" : "unblock_member",
     subjectType: "member",
     subjectId: memberId,
-    meta: { reason, blocked },
+    meta: {
+      reason,
+      before: { status: before?.status ?? null },
+      after: { status: updated.status },
+    },
   });
 }
 
@@ -93,6 +112,9 @@ export async function revokeCardAction(cardId: string, reason: string) {
     throw new Error("Reason is required to revoke a card");
   }
 
+  const before = await findCardById(db, cardId);
+  if (!before) throw new Error("Card not found");
+
   const existingCard = await revokeCardById(db, cardId);
 
   if (!existingCard) throw new Error("Card not found");
@@ -104,7 +126,11 @@ export async function revokeCardAction(cardId: string, reason: string) {
     action: "revoke_card",
     subjectType: "card",
     subjectId: cardId,
-    meta: { reason },
+    meta: {
+      reason,
+      before: { status: before.status },
+      after: { status: existingCard.status },
+    },
   });
 
   return existingCard;
@@ -116,6 +142,8 @@ export async function reissueCardAction(
 ) {
   const session = await getCurrentMember();
   const member = requireAuthorized(session?.member, "reissue", "card");
+  const targetMember = await findMemberAdminById(db, memberId);
+  if (!targetMember) throw new Error("Member not found");
 
   const newCard = await insertCard(db, {
     memberId,
@@ -129,6 +157,14 @@ export async function reissueCardAction(
     action: "issue_card",
     subjectType: "card",
     subjectId: newCard.id,
+    meta: {
+      before: null,
+      after: {
+        memberId,
+        tier: newCard.tier,
+        status: newCard.status,
+      },
+    },
   });
 
   return newCard;

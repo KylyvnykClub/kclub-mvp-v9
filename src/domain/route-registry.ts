@@ -166,7 +166,7 @@ const staticRoutes: RouteEntry[] = [
   {
     method: "GET",
     path: "/:locale/dashboard/admin/members",
-    action: "block",
+    action: "read",
     subject: "member",
     mutating: false,
     staffOnly: true,

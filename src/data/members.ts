@@ -1,9 +1,16 @@
 import { randomUUID } from "node:crypto";
-import { eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 
 import type { DbClient } from "./db";
-import { cards, companies, members, subscriptions } from "./schema";
+import { auditLog, cards, companies, members, subscriptions } from "./schema";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
+
+const CLUB_MEMBER_ROLES = [
+  "member",
+  "member_vip",
+  "partner_owner",
+  "user",
+] as const;
 
 function cardTokenLookup(token: string) {
   const tokenHash = hashCardToken(token);
@@ -24,6 +31,12 @@ export async function findCardByMemberId(db: DbClient, memberId: string) {
   };
 }
 
+export async function findCardById(db: DbClient, cardId: string) {
+  return db.query.cards.findFirst({
+    where: eq(cards.id, cardId),
+  });
+}
+
 export async function findCardPublicByToken(db: DbClient, token: string) {
   const rows = await db
     .select({
@@ -42,7 +55,7 @@ export async function findCardPublicByToken(db: DbClient, token: string) {
 }
 
 export async function searchMembers(db: DbClient, query?: string) {
-  const conditions = query
+  const textConditions = query
     ? or(
         ilike(members.displayName, `%${query}%`),
         ilike(members.phone, `%${query}%`),
@@ -50,10 +63,16 @@ export async function searchMembers(db: DbClient, query?: string) {
     : undefined;
 
   return db.query.members.findMany({
-    where: conditions,
+    where: textConditions
+      ? and(inArray(members.role, CLUB_MEMBER_ROLES), textConditions)
+      : inArray(members.role, CLUB_MEMBER_ROLES),
     with: {
       cards: true,
-      subscriptions: true,
+      subscriptions: {
+        with: {
+          company: true,
+        },
+      },
       profile: true,
     },
     limit: 50,
@@ -61,6 +80,24 @@ export async function searchMembers(db: DbClient, query?: string) {
 }
 
 export type MemberAdminView = Awaited<ReturnType<typeof searchMembers>>[number];
+
+export async function findMemberAdminById(db: DbClient, memberId: string) {
+  return db.query.members.findFirst({
+    where: and(
+      eq(members.id, memberId),
+      inArray(members.role, CLUB_MEMBER_ROLES),
+    ),
+    with: {
+      cards: true,
+      subscriptions: {
+        with: {
+          company: true,
+        },
+      },
+      profile: true,
+    },
+  });
+}
 
 export async function searchMembersByCardSerial(
   db: DbClient,
@@ -72,7 +109,11 @@ export async function searchMembersByCardSerial(
       member: {
         with: {
           cards: true,
-          subscriptions: true,
+          subscriptions: {
+            with: {
+              company: true,
+            },
+          },
           profile: true,
         },
       },
@@ -81,15 +122,67 @@ export async function searchMembersByCardSerial(
 
   return cardMatches
     .map((c) => c.member)
-    .filter((m): m is MemberAdminView => m !== null && m !== undefined);
+    .filter(
+      (m): m is MemberAdminView =>
+        m !== null &&
+        m !== undefined &&
+        CLUB_MEMBER_ROLES.includes(
+          m.role as (typeof CLUB_MEMBER_ROLES)[number],
+        ),
+    );
+}
+
+export type MemberAuditHistoryEntry = typeof auditLog.$inferSelect;
+
+export type MemberAdminDirectoryView = MemberAdminView & {
+  activityHistory: MemberAuditHistoryEntry[];
+};
+
+export async function listMemberActivityHistory(
+  db: DbClient,
+  member: MemberAdminView,
+) {
+  const subjectIds = [
+    member.id,
+    ...member.cards.map((card) => card.id),
+    ...member.subscriptions.map((subscription) => subscription.id),
+  ];
+
+  return db.query.auditLog.findMany({
+    where: inArray(auditLog.subjectId, subjectIds),
+    orderBy: [desc(auditLog.createdAt)],
+    limit: 20,
+  });
+}
+
+export async function withMemberActivityHistory(
+  db: DbClient,
+  rows: MemberAdminView[],
+): Promise<MemberAdminDirectoryView[]> {
+  return Promise.all(
+    rows.map(async (member) => ({
+      ...member,
+      activityHistory: await listMemberActivityHistory(db, member),
+    })),
+  );
 }
 
 export async function setMemberStatus(
   db: DbClient,
   memberId: string,
   status: "active" | "blocked",
-): Promise<void> {
-  await db.update(members).set({ status }).where(eq(members.id, memberId));
+): Promise<MemberAdminView | null> {
+  const [member] = await db
+    .update(members)
+    .set({ status })
+    .where(
+      and(eq(members.id, memberId), inArray(members.role, CLUB_MEMBER_ROLES)),
+    )
+    .returning();
+
+  if (!member) return null;
+
+  return (await findMemberAdminById(db, member.id)) ?? null;
 }
 
 export async function revokeCardById(db: DbClient, cardId: string) {
