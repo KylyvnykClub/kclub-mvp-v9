@@ -15,3 +15,5 @@ export * from "./companies";
 export * from "./stripe-customers";
 export * from "./subscriptions";
 export * from "./processed-webhooks";
+export * from "./plan-prices";
+export * from "./account-deletion-requests";

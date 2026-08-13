@@ -4,7 +4,10 @@ import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
 import { listCompaniesByOwner } from "@/data/companies";
-import { listSubscriptionsByMember } from "@/data/billing";
+import {
+  listActiveSubscriptionsForDeletion,
+  listSubscriptionsByMember,
+} from "@/data/billing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +15,7 @@ import { EditProfileForm } from "@/components/profile/edit-profile-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { CardQr } from "./_components/card-qr";
+import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -41,6 +45,18 @@ export default async function ProfilePage({ params }: Props) {
   const myCompanies = await listCompaniesByOwner(db, member.id);
 
   const mySubscriptions = await listSubscriptionsByMember(db, member.id);
+  const deletionSubscriptions = await listActiveSubscriptionsForDeletion(
+    db,
+    member.id,
+  ).then((subscriptions) =>
+    subscriptions.map((subscription) => ({
+      id: subscription.id,
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      company: subscription.company
+        ? { name: subscription.company.name }
+        : null,
+    })),
+  );
 
   const memberSince = member.createdAt
     ? new Intl.DateTimeFormat(locale, {
@@ -259,6 +275,17 @@ export default async function ProfilePage({ params }: Props) {
                 >
                   {tDashboard("exportData")}
                 </a>
+              </CardContent>
+            </Card>
+
+            <Card className="max-w-2xl rounded-none border-destructive/40 bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em] text-destructive">
+                  {tDashboard("deleteAccount")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AccountDeletionForm subscriptions={deletionSubscriptions} />
               </CardContent>
             </Card>
           </div>

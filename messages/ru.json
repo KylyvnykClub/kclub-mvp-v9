@@ -139,7 +139,18 @@
     "closeNavigation": "Закрыть навигацию",
     "dataPrivacy": "Конфиденциальность данных",
     "dataPrivacyDesc": "Вы можете скачать копию ваших личных данных для соответствия GDPR.",
-    "exportData": "Экспорт моих данных"
+    "exportData": "Экспорт моих данных",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountDesc": "Запросите удаление аккаунта. Активные подписки показаны ниже; выберите, отменить или сохранить каждую подписку до принятия запроса.",
+    "deleteVipSubscription": "VIP-подписка",
+    "deleteListingSubscription": "Подписка на размещение: {name}",
+    "deleteSubscriptionCancel": "Отменить эту подписку перед удалением",
+    "deleteSubscriptionKeep": "Сохранить эту подписку после запроса на удаление",
+    "deleteNoActiveSubscriptions": "Нет активных подписок, требующих решения.",
+    "deleteAccountConfirm": "Я понимаю, что это запускает удаление аккаунта и завершает текущий сеанс.",
+    "deleteAccountButton": "Запросить удаление",
+    "deleteAccountSubmitting": "Отправка запроса...",
+    "deleteAccountFailed": "Не удалось запросить удаление аккаунта"
   },
   "card": {
     "membershipCard": "Карта участника",

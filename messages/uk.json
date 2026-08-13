@@ -511,7 +511,18 @@
     "saveProfile": "Зберегти профіль",
     "dataPrivacy": "Конфіденційність даних",
     "dataPrivacyDesc": "Ви можете завантажити копію своїх персональних даних для відповідності GDPR.",
-    "exportData": "Експортувати мої дані"
+    "exportData": "Експортувати мої дані",
+    "deleteAccount": "Видалити акаунт",
+    "deleteAccountDesc": "Запросіть видалення акаунта. Активні підписки показані нижче; виберіть, скасувати чи зберегти кожну підписку до прийняття запиту.",
+    "deleteVipSubscription": "VIP-підписка",
+    "deleteListingSubscription": "Підписка на розміщення: {name}",
+    "deleteSubscriptionCancel": "Скасувати цю підписку перед видаленням",
+    "deleteSubscriptionKeep": "Зберегти цю підписку після запиту на видалення",
+    "deleteNoActiveSubscriptions": "Немає активних підписок, що потребують рішення.",
+    "deleteAccountConfirm": "Я розумію, що це запускає видалення акаунта та завершує поточний сеанс.",
+    "deleteAccountButton": "Запросити видалення",
+    "deleteAccountSubmitting": "Надсилання запиту...",
+    "deleteAccountFailed": "Не вдалося запросити видалення акаунта"
   },
   "card": {
     "membershipCard": "Карта учасника",

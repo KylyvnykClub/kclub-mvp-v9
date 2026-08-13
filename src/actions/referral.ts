@@ -2,7 +2,7 @@
 
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
-import { findActiveSubscriptionByPrice } from "@/data/billing";
+import { findActiveVipSubscription } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import {
   findReferralWithRecipientCompany,
@@ -18,7 +18,6 @@ import {
 import { getCurrentMember } from "./session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
-import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -44,9 +43,7 @@ export async function createReferralAction(
 
   const parsed = referralSchema.parse(data);
 
-  const vipPriceId = configuredCheckoutPriceId("vip");
-
-  const vipSub = await findActiveSubscriptionByPrice(db, member.id, vipPriceId);
+  const vipSub = await findActiveVipSubscription(db, member.id);
   const actor = buildActor({
     id: member.id,
     role: vipSub ? "member_vip" : "member",

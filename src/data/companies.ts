@@ -3,6 +3,8 @@ import { and, asc, eq, ilike, inArray, or } from "drizzle-orm";
 import type { DbClient } from "./db";
 import { businessCategories, companies, subscriptions } from "./schema";
 
+const PUBLISHABLE_LISTING_STATUSES = ["active", "past_due"];
+
 export async function listActiveCategoryBlocks(db: DbClient) {
   const rows = await db.query.businessCategories.findMany({
     where: eq(businessCategories.status, "ACTIVE"),
@@ -78,7 +80,7 @@ export async function listCompanyIdsWithActiveSubscription(
   const rows = await db
     .select({ companyId: subscriptions.companyId })
     .from(subscriptions)
-    .where(eq(subscriptions.status, "active"));
+    .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES));
 
   return rows.map((s) => s.companyId).filter((id): id is string => id !== null);
 }

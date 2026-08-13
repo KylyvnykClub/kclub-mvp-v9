@@ -290,6 +290,23 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    method: "POST",
+    path: "action:requestAccountDeletionAction",
+    action: "delete",
+    subject: "own_profile",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:setPlanPriceAction",
+    action: "manage_prices",
+    subject: "plan_price",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
     method: "GET",
     path: "/api/export/member",
     action: "read",
@@ -316,6 +333,14 @@ const staticRoutes: RouteEntry[] = [
   {
     method: "GET",
     path: "/api/cron/subscription-lapse",
+    action: "update",
+    subject: "subscription",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "GET",
+    path: "/api/cron/billing-reconciliation",
     action: "update",
     subject: "subscription",
     mutating: true,

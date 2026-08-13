@@ -139,7 +139,18 @@
     "closeNavigation": "Close navigation",
     "dataPrivacy": "Data Privacy",
     "dataPrivacyDesc": "You can download a copy of your personal data for GDPR compliance.",
-    "exportData": "Export My Data"
+    "exportData": "Export My Data",
+    "deleteAccount": "Delete account",
+    "deleteAccountDesc": "Request account deletion. Active subscriptions are shown below; choose whether each one should be cancelled or kept before the request is accepted.",
+    "deleteVipSubscription": "VIP membership subscription",
+    "deleteListingSubscription": "Listing subscription: {name}",
+    "deleteSubscriptionCancel": "Cancel this subscription before deletion",
+    "deleteSubscriptionKeep": "Keep this subscription active after deletion request",
+    "deleteNoActiveSubscriptions": "No active subscriptions require a decision.",
+    "deleteAccountConfirm": "I understand this starts account deletion and signs me out.",
+    "deleteAccountButton": "Request deletion",
+    "deleteAccountSubmitting": "Requesting deletion...",
+    "deleteAccountFailed": "Could not request account deletion"
   },
   "card": {
     "membershipCard": "Membership Card",

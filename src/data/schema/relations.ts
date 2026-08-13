@@ -10,6 +10,7 @@ import { businessCategories } from "./business-categories";
 import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
 import { referrals } from "./referrals";
+import { accountDeletionRequests } from "./account-deletion-requests";
 
 export const membersRelations = relations(members, ({ one, many }) => ({
   sessions: many(sessions),
@@ -26,6 +27,7 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   }),
   subscriptions: many(subscriptions),
   sentReferrals: many(referrals),
+  accountDeletionRequests: many(accountDeletionRequests),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -130,3 +132,13 @@ export const referralsRelations = relations(referrals, ({ one }) => ({
     references: [members.id],
   }),
 }));
+
+export const accountDeletionRequestsRelations = relations(
+  accountDeletionRequests,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [accountDeletionRequests.memberId],
+      references: [members.id],
+    }),
+  }),
+);

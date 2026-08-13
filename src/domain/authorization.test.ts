@@ -36,6 +36,7 @@ describe("can", () => {
   it("member can read own profile and card", () => {
     expect(can(member, "read", "own_profile")).toBe(true);
     expect(can(member, "update", "own_profile")).toBe(true);
+    expect(can(member, "delete", "own_profile")).toBe(true);
     expect(can(member, "read", "own_card")).toBe(true);
   });
 
@@ -59,9 +60,10 @@ describe("can", () => {
     expect(can(admin, "manage_staff", "staff_user")).toBe(false);
   });
 
-  it("staff_owner can manage staff and flags", () => {
+  it("staff_owner can manage staff, flags, and plan prices", () => {
     expect(can(staffOwner, "manage_staff", "staff_user")).toBe(true);
     expect(can(staffOwner, "manage_flags", "feature_flag")).toBe(true);
+    expect(can(staffOwner, "manage_prices", "plan_price")).toBe(true);
   });
 
   it("system can create and update subscriptions", () => {

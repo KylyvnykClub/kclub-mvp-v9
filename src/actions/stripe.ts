@@ -15,7 +15,7 @@ import {
   checkoutIdempotencyKey,
   type CheckoutPlan,
 } from "@/modules/billing/checkout";
-import { configuredCheckoutPriceId } from "@/modules/billing/prices";
+import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -114,7 +114,7 @@ async function createSubscriptionCheckout(params: {
 export async function createVipCheckoutAction() {
   await createSubscriptionCheckout({
     plan: "vip",
-    priceId: configuredCheckoutPriceId("vip"),
+    priceId: await checkoutPriceIdForPlan(db, "vip"),
   });
 }
 
@@ -135,7 +135,7 @@ export async function createCheckoutSessionAction(companyId: string) {
 
   await createSubscriptionCheckout({
     plan: "listing",
-    priceId: configuredCheckoutPriceId("listing"),
+    priceId: await checkoutPriceIdForPlan(db, "listing"),
     companyId,
   });
 }

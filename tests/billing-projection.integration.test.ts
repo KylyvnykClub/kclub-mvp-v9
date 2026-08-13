@@ -8,9 +8,32 @@ import {
   BILLING_OUTBOX_TOPIC,
   BILLING_NOTIFICATION_TOPIC,
 } from "@/modules/billing/projection.js";
-import { findLapsedSubscriptions, processWebhookOnce } from "@/data/billing.js";
+import {
+  BILLING_RECONCILIATION_ALERT_TOPIC,
+  reconcileLocalSubscriptions,
+  type ReconciliationAlertPayload,
+} from "@/modules/billing/reconciliation.js";
+import {
+  listApprovedCompaniesByIds,
+  listCompanyIdsWithActiveSubscription,
+  listShowcaseCompanies,
+  type PartnerCompanyView,
+} from "@/data/companies.js";
+import {
+  findLapsedSubscriptions,
+  findSubscriptionByStripeId,
+  listAllSubscriptions,
+  type AnySubscriptionRow,
+  processWebhookOnce,
+  setSubscriptionStatus,
+} from "@/data/billing.js";
 import { enqueueOutbox, countPending, drainOutbox } from "@/data/outbox.js";
-import { cards, members } from "@/data/schema/index.js";
+import {
+  businessCategories,
+  cards,
+  companies,
+  members,
+} from "@/data/schema/index.js";
 
 /**
  * The integration harness uses the node-postgres driver, while the data layer
@@ -81,6 +104,67 @@ async function cardTierOf(db: DbClient, memberId: string) {
     .from(cards)
     .where(eq(cards.memberId, memberId));
   return rows[0]?.tier;
+}
+
+async function visibleCompanyIds(db: DbClient): Promise<string[]> {
+  const ids = await listCompanyIdsWithActiveSubscription(db);
+  if (ids.length === 0) return [];
+
+  const companies = await listApprovedCompaniesByIds(db, ids);
+  return companies.map((company: PartnerCompanyView) => company.id);
+}
+
+function subscriptionFixtureFromRow(
+  row: AnySubscriptionRow,
+  overrides: Partial<Stripe.Subscription> = {},
+): Stripe.Subscription {
+  return subscriptionFixture(row.memberId, {
+    id: row.stripeSubscriptionId,
+    customer: row.stripeCustomerId,
+    status: row.status,
+    metadata: {
+      memberId: row.memberId,
+      ...(row.companyId ? { companyId: row.companyId } : {}),
+    },
+    items: {
+      data: [
+        {
+          price: { id: row.priceId },
+          current_period_start: Math.floor(
+            row.currentPeriodStart.getTime() / 1000,
+          ),
+          current_period_end: Math.floor(row.currentPeriodEnd.getTime() / 1000),
+        } as Stripe.SubscriptionItem,
+      ],
+    } as Stripe.ApiList<Stripe.SubscriptionItem>,
+    cancel_at_period_end: row.cancelAtPeriodEnd !== null,
+    cancel_at: row.cancelAtPeriodEnd
+      ? Math.floor(row.cancelAtPeriodEnd.getTime() / 1000)
+      : null,
+    canceled_at: row.canceledAt
+      ? Math.floor(row.canceledAt.getTime() / 1000)
+      : null,
+    ...overrides,
+  });
+}
+
+async function mirroredStripeFetcher(
+  db: DbClient,
+  overrides: Record<string, Partial<Stripe.Subscription>> = {},
+) {
+  const rows = await listAllSubscriptions(db);
+  const fixtures = new Map(
+    rows.map((row) => [
+      row.stripeSubscriptionId,
+      subscriptionFixtureFromRow(row, overrides[row.stripeSubscriptionId]),
+    ]),
+  );
+
+  return (subscriptionId: string): Promise<Stripe.Subscription> => {
+    const subscription = fixtures.get(subscriptionId);
+    if (!subscription) return Promise.reject(new ResourceMissingError());
+    return Promise.resolve(subscription);
+  };
 }
 
 describe("billing projection (ADR 0004)", () => {
@@ -584,5 +668,464 @@ describe("billing grace period (FR-056)", () => {
 
     expect(result).toBe("applied");
     expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+});
+
+describe("listing subscription projection (FR-051)", () => {
+  async function seedCategory(db: DbClient) {
+    const id = Math.floor(100_000 + Math.random() * 900_000);
+    await db.insert(businessCategories).values({
+      id,
+      block: "Services",
+      category: "Consulting",
+      subcategory: `Billing ${id}`,
+    });
+    return id;
+  }
+
+  async function seedCompany(db: DbClient, ownerId: string) {
+    const categoryId = await seedCategory(db);
+    const [company] = await db
+      .insert(companies)
+      .values({
+        ownerId,
+        businessCategoryId: categoryId,
+        name: "Test Listing Co",
+        slug: `listing-${crypto.randomUUID()}`,
+        moderationStatus: "approved",
+      })
+      .returning();
+    return company!.id;
+  }
+
+  /** Fixture with companyId in metadata — a listing subscription. */
+  function listingFixture(
+    memberId: string,
+    companyId: string,
+    overrides: Partial<Stripe.Subscription> = {},
+  ): Stripe.Subscription {
+    return subscriptionFixture(memberId, {
+      metadata: { memberId, companyId },
+      ...overrides,
+    });
+  }
+
+  it("FR-051: listing subscription stores companyId on the subscription row", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    expect(result).toBe("applied");
+    const row = await findSubscriptionByStripeId(db, subscriptionId);
+    expect(row).toBeDefined();
+    expect(row!.companyId).toBe(companyId);
+    expect(row!.memberId).toBe(memberId);
+  });
+
+  it("FR-051: a listing subscription does not change the member's card tier", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    expect(await cardTierOf(db, memberId)).toBe("free");
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    // Card tier must remain free — listing subscriptions do not grant VIP.
+    expect(await cardTierOf(db, memberId)).toBe("free");
+  });
+
+  it("FR-051: a cancelled listing subscription does not demote an existing VIP tier", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const vipSubId = `sub_${crypto.randomUUID()}`;
+    const listingSubId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    // Member already has a VIP subscription.
+    await reconcileSubscription(
+      db,
+      () => Promise.resolve(subscriptionFixture(memberId, { id: vipSubId })),
+      vipSubId,
+      EPOCH,
+    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+
+    // Active listing subscription — no tier change.
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: listingSubId }),
+        ),
+      listingSubId,
+      EPOCH,
+    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+
+    // Listing subscription cancelled — tier must stay vip (not demoted to free).
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, {
+            id: listingSubId,
+            status: "canceled",
+          }),
+        ),
+      listingSubId,
+      EPOCH + 60,
+    );
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+  });
+});
+
+describe("listing lifecycle projection (FR-055)", () => {
+  async function seedCategory(db: DbClient) {
+    const id = Math.floor(100_000 + Math.random() * 900_000);
+    await db.insert(businessCategories).values({
+      id,
+      block: "Services",
+      category: "Consulting",
+      subcategory: `Lifecycle ${id}`,
+    });
+    return id;
+  }
+
+  async function seedCompany(
+    db: DbClient,
+    ownerId: string,
+    moderationStatus: "approved" | "pending" | "rejected" = "approved",
+  ) {
+    const categoryId = await seedCategory(db);
+    const [company] = await db
+      .insert(companies)
+      .values({
+        ownerId,
+        businessCategoryId: categoryId,
+        name: "Lifecycle Listing Co",
+        slug: `lifecycle-${crypto.randomUUID()}`,
+        moderationStatus,
+      })
+      .returning();
+    return company!.id;
+  }
+
+  function listingFixture(
+    memberId: string,
+    companyId: string,
+    overrides: Partial<Stripe.Subscription> = {},
+  ): Stripe.Subscription {
+    return subscriptionFixture(memberId, {
+      metadata: { memberId, companyId },
+      ...overrides,
+    });
+  }
+
+  it("FR-044/FR-055: approval plus an active listing subscription publishes the company", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    expect(await visibleCompanyIds(db)).not.toContain(companyId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    expect(await visibleCompanyIds(db)).toContain(companyId);
+  });
+
+  it("FR-044: an unapproved company is not published even with an active listing subscription", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId, "pending");
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    expect(await visibleCompanyIds(db)).not.toContain(companyId);
+  });
+
+  it("FR-055/FR-056: past_due keeps the listing published during payment grace", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+
+    const result = await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, {
+            id: subscriptionId,
+            status: "past_due",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 60,
+    );
+
+    expect(result).toBe("applied");
+    expect(await visibleCompanyIds(db)).toContain(companyId);
+  });
+
+  it("FR-055: a lapsed listing subscription unpublishes and recovery republishes", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+    expect(await visibleCompanyIds(db)).toContain(companyId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, {
+            id: subscriptionId,
+            status: "unpaid",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 14 * 86_400,
+    );
+    expect(await visibleCompanyIds(db)).not.toContain(companyId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, {
+            id: subscriptionId,
+            status: "active",
+          }),
+        ),
+      subscriptionId,
+      EPOCH + 14 * 86_400 + 60,
+    );
+    expect(await visibleCompanyIds(db)).toContain(companyId);
+  });
+
+  it("FR-055: deleted listing subscriptions are excluded from showcase publication", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+    const companyId = await seedCompany(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          listingFixture(memberId, companyId, { id: subscriptionId }),
+        ),
+      subscriptionId,
+      EPOCH,
+    );
+    await reconcileSubscription(
+      db,
+      () => Promise.reject(new ResourceMissingError()),
+      subscriptionId,
+      EPOCH + 60,
+    );
+
+    const ids = await listCompanyIdsWithActiveSubscription(db);
+    const showcased =
+      ids.length > 0 ? await listShowcaseCompanies(db, ids, 6) : [];
+
+    expect(showcased.map((company) => company.id)).not.toContain(companyId);
+  });
+});
+
+describe("billing reconciliation (FR-058)", () => {
+  it("does not alert when the local projection matches Stripe", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+
+    const fetcher = await mirroredStripeFetcher(db);
+    const total = (await listAllSubscriptions(db)).length;
+    const result = await reconcileLocalSubscriptions(db, fetcher);
+
+    expect(result).toEqual({
+      checked: total,
+      matched: total,
+      divergences: 0,
+    });
+    const alerts = await drainOutbox(db, 10);
+    expect(
+      alerts.some(
+        (entry) => entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC,
+      ),
+    ).toBe(false);
+  });
+
+  it("alerts on divergence and does not repair local subscription state", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+    await setSubscriptionStatus(db, subscriptionId, "canceled");
+
+    const total = (await listAllSubscriptions(db)).length;
+    const fetcher = await mirroredStripeFetcher(db, {
+      [subscriptionId]: { status: "active" },
+    });
+    const result = await reconcileLocalSubscriptions(db, fetcher);
+
+    expect(result).toEqual({
+      checked: total,
+      matched: total - 1,
+      divergences: 1,
+    });
+
+    const localAfter = await findSubscriptionByStripeId(db, subscriptionId);
+    expect(localAfter?.status).toBe("canceled");
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+
+    const alerts = await drainOutbox(db, 10);
+    const alert = alerts.find(
+      (entry) =>
+        entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC &&
+        (entry.payload as ReconciliationAlertPayload).stripeSubscriptionId ===
+          subscriptionId,
+    );
+    expect(alert).toBeDefined();
+
+    const payload = alert!.payload as ReconciliationAlertPayload;
+    expect(payload.stripeSubscriptionId).toBe(subscriptionId);
+    expect(payload.memberId).toBe(memberId);
+    expect(payload.differences).toContainEqual({
+      field: "status",
+      local: "canceled",
+      stripe: "active",
+    });
+  });
+
+  it("alerts when Stripe no longer has a locally non-deleted subscription", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(subscriptionFixture(memberId, { id: subscriptionId })),
+      subscriptionId,
+      EPOCH,
+    );
+
+    const total = (await listAllSubscriptions(db)).length;
+    const fetcher = await mirroredStripeFetcher(db);
+    const result = await reconcileLocalSubscriptions(db, (id) =>
+      id === subscriptionId
+        ? Promise.reject(new ResourceMissingError())
+        : fetcher(id),
+    );
+
+    expect(result).toEqual({
+      checked: total,
+      matched: total - 1,
+      divergences: 1,
+    });
+
+    const localAfter = await findSubscriptionByStripeId(db, subscriptionId);
+    expect(localAfter?.status).toBe("active");
+
+    const alerts = await drainOutbox(db, 10);
+    const alert = alerts.find(
+      (entry) =>
+        entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC &&
+        (entry.payload as ReconciliationAlertPayload).stripeSubscriptionId ===
+          subscriptionId,
+    );
+    expect(alert).toBeDefined();
+
+    const payload = alert!.payload as ReconciliationAlertPayload;
+    expect(payload.differences).toContainEqual({
+      field: "status",
+      local: "active",
+      stripe: "deleted",
+    });
   });
 });

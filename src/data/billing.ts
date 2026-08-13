@@ -1,4 +1,4 @@
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte } from "drizzle-orm";
 
 import type { Db, DbClient, DbTx } from "./db";
 import {
@@ -43,6 +43,33 @@ export type SubscriptionRow = Awaited<
   ReturnType<typeof listSubscriptionsByMember>
 >[number];
 
+export async function listAllSubscriptions(db: DbClient) {
+  return db.query.subscriptions.findMany();
+}
+
+export type AnySubscriptionRow = Awaited<
+  ReturnType<typeof listAllSubscriptions>
+>[number];
+
+const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "past_due"];
+
+export async function listActiveSubscriptionsForDeletion(
+  db: DbClient,
+  memberId: string,
+) {
+  return db.query.subscriptions.findMany({
+    where: and(
+      eq(subscriptions.memberId, memberId),
+      inArray(subscriptions.status, ACTIVE_SUBSCRIPTION_STATUSES),
+    ),
+    with: { company: true },
+  });
+}
+
+export type DeletionSubscriptionRow = Awaited<
+  ReturnType<typeof listActiveSubscriptionsForDeletion>
+>[number];
+
 export async function findActiveSubscriptionByPrice(
   db: DbClient,
   memberId: string,
@@ -53,6 +80,19 @@ export async function findActiveSubscriptionByPrice(
       eq(subscriptions.memberId, memberId),
       eq(subscriptions.status, "active"),
       eq(subscriptions.priceId, priceId),
+    ),
+  });
+}
+
+export async function findActiveVipSubscription(
+  db: DbClient,
+  memberId: string,
+) {
+  return db.query.subscriptions.findFirst({
+    where: and(
+      eq(subscriptions.memberId, memberId),
+      isNull(subscriptions.companyId),
+      eq(subscriptions.status, "active"),
     ),
   });
 }

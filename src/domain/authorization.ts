@@ -17,7 +17,8 @@ export type Action =
   | "reissue"
   | "send_referral"
   | "manage_staff"
-  | "manage_flags";
+  | "manage_flags"
+  | "manage_prices";
 
 export type Subject =
   | "marketing"
@@ -36,7 +37,8 @@ export type Subject =
   | "moderation"
   | "audit_log"
   | "staff_user"
-  | "feature_flag";
+  | "feature_flag"
+  | "plan_price";
 
 type Rule = (actor: Actor) => boolean;
 
@@ -52,6 +54,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   { action: "read", subject: "own_profile", check: (a) => a.type === "member" },
   {
     action: "update",
+    subject: "own_profile",
+    check: (a) => a.type === "member",
+  },
+  {
+    action: "delete",
     subject: "own_profile",
     check: (a) => a.type === "member",
   },
@@ -192,6 +199,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "manage_flags",
     subject: "feature_flag",
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    action: "manage_prices",
+    subject: "plan_price",
     check: (a) => isStaff(a) && a.role === "staff_owner",
   },
 
