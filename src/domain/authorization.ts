@@ -35,6 +35,7 @@ export type Subject =
   | "subscription"
   | "card"
   | "moderation"
+  | "finance_dashboard"
   | "audit_log"
   | "staff_user"
   | "feature_flag"
@@ -134,6 +135,11 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     action: "read",
     subject: "audit_log",
     check: (a) => staffAtLeast(a, "staff_support"),
+  },
+  {
+    action: "read",
+    subject: "finance_dashboard",
+    check: (a) => staffAtLeast(a, "staff_admin"),
   },
 
   // Staff moderator: approve/reject

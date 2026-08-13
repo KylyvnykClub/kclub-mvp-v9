@@ -43,6 +43,7 @@ describe("can", () => {
   it("staff_support can read members but not block", () => {
     expect(can(support, "read", "member")).toBe(true);
     expect(can(support, "block", "member")).toBe(false);
+    expect(can(support, "read", "finance_dashboard")).toBe(false);
   });
 
   it("staff_moderator can approve companies", () => {
@@ -54,6 +55,7 @@ describe("can", () => {
     expect(can(admin, "block", "member")).toBe(true);
     expect(can(admin, "publish", "company")).toBe(true);
     expect(can(admin, "revoke", "card")).toBe(true);
+    expect(can(admin, "read", "finance_dashboard")).toBe(true);
   });
 
   it("staff_admin cannot manage staff", () => {

@@ -135,7 +135,7 @@ const staticRoutes: RouteEntry[] = [
     method: "GET",
     path: "/:locale/dashboard/admin",
     action: "read",
-    subject: "audit_log",
+    subject: "finance_dashboard",
     mutating: false,
     staffOnly: true,
   },
