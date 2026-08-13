@@ -143,7 +143,7 @@ const staticRoutes: RouteEntry[] = [
     method: "GET",
     path: "/:locale/dashboard/admin/support",
     action: "read",
-    subject: "company",
+    subject: "moderation",
     mutating: false,
     staffOnly: true,
   },

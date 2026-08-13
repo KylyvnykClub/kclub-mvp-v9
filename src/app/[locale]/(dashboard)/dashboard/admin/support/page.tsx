@@ -29,7 +29,7 @@ export default async function AdminSupportPage({
   }
 
   const actor = buildActor(session.member);
-  if (!can(actor, "read", "company")) {
+  if (!can(actor, "read", "moderation")) {
     redirect(`/${locale}/dashboard`);
   }
 

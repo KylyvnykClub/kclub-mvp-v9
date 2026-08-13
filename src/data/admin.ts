@@ -1,6 +1,22 @@
-import { and, count, eq, gte, isNotNull, isNull, lte } from "drizzle-orm";
+import {
+  and,
+  count,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+} from "drizzle-orm";
 import type { DbClient } from "./db";
 import { companies, members, referrals, subscriptions } from "./schema";
+
+const CLUB_MEMBER_ROLES = [
+  "member",
+  "member_vip",
+  "partner_owner",
+  "user",
+] as const;
 
 function countValue(row: { value: number } | undefined): number {
   return row?.value ?? 0;
@@ -50,13 +66,19 @@ export async function getAdminDashboardMetrics(db: DbClient) {
 export async function getAdminSupportMetrics(db: DbClient) {
   const [totalMembersResult] = await db
     .select({ value: count() })
-    .from(members);
+    .from(members)
+    .where(inArray(members.role, CLUB_MEMBER_ROLES));
   const totalMembers = countValue(totalMembersResult);
 
   const [activeMembersResult] = await db
     .select({ value: count() })
     .from(members)
-    .where(eq(members.status, "active"));
+    .where(
+      and(
+        inArray(members.role, CLUB_MEMBER_ROLES),
+        eq(members.status, "active"),
+      ),
+    );
   const activeMembers = countValue(activeMembersResult);
 
   const sevenDaysAgo = new Date();
@@ -64,7 +86,12 @@ export async function getAdminSupportMetrics(db: DbClient) {
   const [newMembersResult] = await db
     .select({ value: count() })
     .from(members)
-    .where(gte(members.createdAt, sevenDaysAgo));
+    .where(
+      and(
+        inArray(members.role, CLUB_MEMBER_ROLES),
+        gte(members.createdAt, sevenDaysAgo),
+      ),
+    );
   const newMembers = countValue(newMembersResult);
 
   const [pendingCompaniesResult] = await db
