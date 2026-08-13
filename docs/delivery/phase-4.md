@@ -38,14 +38,12 @@ message without granting any entitlement, fix the hardcoded `/en/` in
 direct navigation to the success URL does not change the card tier.
 
 **T-4.2 is a translation task.** The nine legal documents were published in
-`content/legal/*.mdx` with Russian bodies (the only text supplied by the
-client's counsel). FR-093 requires "the English version marked authoritative".
-The MDX pipeline already supports per-locale files: `{id}.en.mdx` is served when
-`locale=en`, falling back to the authoritative `{id}.mdx`. The EN files carry
-`authoritative: true` in frontmatter; the RU base files are updated to
-`authoritative: false`. Machine translation of ~4 000 lines of legal text; the
-risk is translation quality for legally significant terms — flagged for later
-review by counsel.
+`content/legal/*.mdx` with Russian bodies. FR-093 requires "the English version
+marked authoritative". The MDX pipeline already supports per-locale files:
+`{id}.en.mdx` is served when `locale=en`, falling back to `{id}.mdx`. The task
+was closed in Phase 5 on 2026-08-13 after the user confirmed the shared Google
+Drive folder contains the approved Russian source pack; the base RU files are
+non-authoritative and the generated EN files are authoritative.
 
 **T-4.3 extends the existing `tools/seed.ts`.** The seed script already creates
 Stripe products/prices and feature flags. The beta seed adds companies (with
