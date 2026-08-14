@@ -12,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfileForm } from "@/components/profile/edit-profile-form";
+import { PersonalInfoForm } from "@/components/profile/personal-info-form";
+import { PhoneChangeForm } from "@/components/profile/phone-change-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { CardQr } from "./_components/card-qr";
@@ -93,6 +95,9 @@ export default async function ProfilePage({ params }: Props) {
           <TabsTrigger value="billing">{tDashboard("tabBilling")}</TabsTrigger>
           <TabsTrigger value="companies">
             {tDashboard("tabCompanies")}
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            {tDashboard("tabSettings")}
           </TabsTrigger>
           <TabsTrigger value="edit">{tDashboard("tabEditProfile")}</TabsTrigger>
         </TabsList>
@@ -243,6 +248,36 @@ export default async function ProfilePage({ params }: Props) {
             companies={myCompanies}
             subscriptions={mySubscriptions}
           />
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <div className="space-y-6">
+            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
+                  {tDashboard("personalInfo")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PersonalInfoForm
+                  displayName={member.displayName}
+                  language={member.language || locale}
+                  country={member.country}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
+                  {tDashboard("changePhoneTitle")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PhoneChangeForm maskedPhone={maskPhone(member.phone)} />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="edit">

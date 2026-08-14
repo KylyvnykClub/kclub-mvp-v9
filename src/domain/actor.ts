@@ -86,6 +86,7 @@ export function normalizeRole(role: CompatiblePersistedRole): PersistedRole {
 export function buildActor(member: {
   id: string;
   role: CompatiblePersistedRole;
+  companyIds?: string[];
 }): Actor {
   const role = normalizeRole(member.role);
 
@@ -97,12 +98,11 @@ export function buildActor(member: {
     };
   }
 
-  // Note: partner_owner will require injecting companyIds in the future
   if (role === "partner_owner") {
     return {
       type: "partner_owner",
       id: member.id,
-      companyIds: [],
+      companyIds: member.companyIds ?? [],
     };
   }
 

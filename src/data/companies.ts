@@ -231,6 +231,31 @@ export async function deleteCity(db: DbClient, cityId: number) {
   await db.delete(cities).where(eq(cities.id, cityId));
 }
 
+export async function validateCityBelongsToCountry(
+  db: DbClient,
+  cityName: string,
+  countryInput: string,
+): Promise<boolean> {
+  const city = await db.query.cities.findFirst({
+    where: and(ilike(cities.name, cityName), eq(cities.status, "ACTIVE")),
+    with: { country: true },
+  });
+
+  if (!city) return true;
+
+  const countryUpper = countryInput.toUpperCase();
+  return (
+    city.countryCode.toUpperCase() === countryUpper ||
+    (city.country?.name ?? "").toUpperCase() === countryUpper
+  );
+}
+
+export async function findCategoryById(db: DbClient, categoryId: number) {
+  return db.query.businessCategories.findFirst({
+    where: eq(businessCategories.id, categoryId),
+  });
+}
+
 export async function companySlugExists(
   db: DbClient,
   slug: string,
@@ -261,6 +286,7 @@ export async function listCompanyIdsWithActiveSubscription(
 
 export interface PartnerFilters {
   categoryId?: number;
+  block?: string;
   query?: string;
   country?: string;
   city?: string;
@@ -281,6 +307,17 @@ export async function listApprovedCompaniesByIds(
       conditions,
       eq(companies.businessCategoryId, filters.categoryId),
     );
+  } else if (filters?.block) {
+    const catIds = await db
+      .select({ id: businessCategories.id })
+      .from(businessCategories)
+      .where(eq(businessCategories.block, filters.block));
+    const ids2 = catIds.map((c) => c.id);
+    if (ids2.length > 0) {
+      conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
+    } else {
+      return [];
+    }
   }
 
   if (filters?.country) {
@@ -317,18 +354,20 @@ export type PartnerCompanyView = Awaited<
 export async function listShowcaseCompanies(
   db: DbClient,
   ids: string[],
-  limit: number,
+  type: "top" | "featured",
+  limit = 3,
 ) {
   return db.query.companies.findMany({
     where: and(
       eq(companies.moderationStatus, "approved"),
       inArray(companies.id, ids),
+      eq(companies.showcaseType, type),
     ),
     with: {
       businessCategory: true,
     },
     limit,
-    orderBy: [asc(companies.name)],
+    orderBy: [asc(companies.showcaseRank), asc(companies.name)],
   });
 }
 
@@ -388,6 +427,116 @@ export async function setCompanyModerationStatus(
       rejectionReason: reason,
       updatedAt: new Date(),
     })
+    .where(eq(companies.id, companyId));
+}
+
+export async function setCompanyShowcase(
+  db: DbClient,
+  companyId: string,
+  showcaseType: "none" | "top" | "featured",
+  showcaseRank: number,
+): Promise<void> {
+  await db
+    .update(companies)
+    .set({ showcaseType, showcaseRank, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+}
+
+export interface PendingChanges {
+  name?: string;
+  businessCategoryId?: number;
+  description?: string;
+  discount?: string;
+}
+
+export async function setCompanyPendingChanges(
+  db: DbClient,
+  companyId: string,
+  changes: PendingChanges,
+): Promise<void> {
+  await db
+    .update(companies)
+    .set({ pendingChanges: changes, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+}
+
+export async function applyCompanyPendingChanges(
+  db: DbClient,
+  companyId: string,
+): Promise<void> {
+  const company = await db.query.companies.findFirst({
+    where: eq(companies.id, companyId),
+  });
+  if (!company?.pendingChanges) return;
+
+  const changes = company.pendingChanges as PendingChanges;
+  const updates: Record<string, unknown> = {
+    pendingChanges: null,
+    updatedAt: new Date(),
+  };
+
+  if (changes.name !== undefined) updates.name = changes.name;
+  if (changes.businessCategoryId !== undefined)
+    updates.businessCategoryId = changes.businessCategoryId;
+  if (changes.description !== undefined)
+    updates.description = changes.description;
+  if (changes.discount !== undefined) updates.discount = changes.discount;
+
+  await db.update(companies).set(updates).where(eq(companies.id, companyId));
+}
+
+export async function clearCompanyPendingChanges(
+  db: DbClient,
+  companyId: string,
+): Promise<void> {
+  await db
+    .update(companies)
+    .set({ pendingChanges: null, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+}
+
+export async function listCompaniesWithPendingChanges(db: DbClient) {
+  return db.query.companies.findMany({
+    where: and(
+      eq(companies.moderationStatus, "approved"),
+      sql`${companies.pendingChanges} IS NOT NULL`,
+    ),
+    with: {
+      businessCategory: true,
+      owner: {
+        columns: {
+          id: true,
+          displayName: true,
+        },
+      },
+    },
+    orderBy: [asc(companies.updatedAt)],
+  });
+}
+
+export async function findCompanyById(db: DbClient, companyId: string) {
+  return db.query.companies.findFirst({
+    where: eq(companies.id, companyId),
+  });
+}
+
+export async function updateCompanyFields(
+  db: DbClient,
+  companyId: string,
+  fields: Partial<{
+    name: string;
+    description: string | null;
+    discount: string | null;
+    contactEmail: string | null;
+    contactPhone: string | null;
+    website: string | null;
+    country: string | null;
+    city: string | null;
+  }>,
+): Promise<void> {
+  await db
+    .update(companies)
+    .set({ ...fields, updatedAt: new Date() })
     .where(eq(companies.id, companyId));
 }
 

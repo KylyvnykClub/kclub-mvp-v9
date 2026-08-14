@@ -233,6 +233,53 @@ export async function insertCard(
   return card!;
 }
 
+export async function updateMemberPersonalInfo(
+  db: DbClient,
+  memberId: string,
+  data: {
+    displayName: string;
+    language: string;
+    country: string;
+  },
+) {
+  const [updated] = await db
+    .update(members)
+    .set({
+      displayName: data.displayName,
+      language: data.language,
+      country: data.country,
+    })
+    .where(eq(members.id, memberId))
+    .returning();
+
+  return updated ?? null;
+}
+
+export async function updateMemberPhone(
+  db: DbClient,
+  memberId: string,
+  newPhone: string,
+) {
+  const [updated] = await db
+    .update(members)
+    .set({ phone: newPhone })
+    .where(eq(members.id, memberId))
+    .returning();
+
+  return updated ?? null;
+}
+
+export async function findMemberLanguage(
+  db: DbClient,
+  memberId: string,
+): Promise<string | null> {
+  const row = await db.query.members.findFirst({
+    where: eq(members.id, memberId),
+    columns: { language: true },
+  });
+  return row?.language ?? null;
+}
+
 export async function getMemberExportData(db: DbClient, memberId: string) {
   const memberData = await db.query.members.findFirst({
     where: eq(members.id, memberId),

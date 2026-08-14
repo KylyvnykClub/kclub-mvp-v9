@@ -7,6 +7,15 @@ import { can } from "@/domain/authorization";
 import { ModerateActions } from "./_components/moderate-actions";
 import { Badge } from "@/components/ui/badge";
 
+function formatAge(createdAt: Date): string {
+  const diffMs = Date.now() - createdAt.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 1) return "<1h";
+  if (diffHours < 24) return `${diffHours}h`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d`;
+}
+
 export default async function AdminCompaniesPage({
   params,
 }: {
@@ -79,6 +88,10 @@ export default async function AdminCompaniesPage({
                         <span className="text-accent">{company.discount}</span>
                       </p>
                     )}
+                    <p>
+                      <strong>{t("ageLabel")}</strong>{" "}
+                      {formatAge(company.createdAt)}
+                    </p>
                   </div>
                   {company.description && (
                     <p className="text-sm mt-2 max-w-2xl line-clamp-2">
