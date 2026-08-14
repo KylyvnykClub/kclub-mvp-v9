@@ -144,6 +144,8 @@ Enforced by lint, not by good intentions:
 - No database call outside `src/data`. SQL exists in exactly one layer.
 - `src/domain` imports neither React nor HTTP. If it knows about a `Request`, it
   is in the wrong place.
+- A `'use server'` file exports async functions and nothing else. Every export
+  becomes a callable endpoint; a shared constant goes in a plain module.
 
 ---
 
