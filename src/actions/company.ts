@@ -30,12 +30,11 @@ import { getCurrentMember } from "./session";
 import { isFeatureEnabled } from "./feature-flags";
 import { buildActor } from "@/domain/actor";
 import { assertCan, can } from "@/domain/authorization";
+import { COMPANY_MODERATION_TOPIC } from "@/modules/moderation/outbox";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
-
-export const COMPANY_MODERATION_TOPIC = "company.moderation";
 
 const PROHIBITED_CATEGORY_KEYWORDS = [
   "gambling",

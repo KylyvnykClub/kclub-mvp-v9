@@ -16,13 +16,15 @@ import {
   type ReconciliationAlertPayload,
 } from "@/modules/billing/reconciliation";
 import {
+  COMPANY_MODERATION_TOPIC,
+  type CompanyModerationPayload,
+} from "@/modules/moderation/outbox";
+import {
   sendPaymentFailedEmail,
   sendCompanyApprovedEmail,
   sendCompanyRejectedEmail,
 } from "@/modules/notifications/email";
 import { authorizeCronRequest } from "@/modules/platform";
-
-const COMPANY_MODERATION_TOPIC = "company.moderation";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 const fetchSubscription = stripe.subscriptions.retrieve.bind(stripe);
@@ -40,12 +42,6 @@ interface NotificationPayload {
   subscriptionId?: string;
   customerId?: string;
   attemptCount?: number;
-}
-
-interface CompanyModerationPayload {
-  companyId?: string;
-  status?: string;
-  reason?: string | null;
 }
 
 /** Result of the drain, for observability. */
