@@ -91,7 +91,7 @@ during an incident.
 |Level|Use for|Example|
 |-|-|-|
 |ERROR|A human must look, and something is broken on our side|Stripe projection failed after the final retry; a migration failed; an outbound call's circuit breaker opened|
-|WARN|Unexpected but handled, and worth a trend|Rate limit triggered; reconciliation repaired a divergence; a retry succeeded on the second attempt; a Twilio verification failed for the fifth time on one number|
+|WARN|Unexpected but handled, and worth a trend|Rate limit triggered; reconciliation reported a divergence; a retry succeeded on the second attempt; a Twilio verification failed for the fifth time on one number|
 |INFO|Business events worth an audit trail, and request completion|`member.verified`, `company.published`, `referral.delivered`, `entitlement.granted`|
 |DEBUG|Diagnostics. Off in production, enabled per-request by a header only a staff session may set|Query plans, external request/response shapes with values redacted|
 
