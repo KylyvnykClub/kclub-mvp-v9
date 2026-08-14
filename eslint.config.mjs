@@ -82,6 +82,7 @@ export default tseslint.config(
       "kclub/no-cross-module-internals": "error",
       "kclub/no-db-outside-data": "error",
       "kclub/no-framework-in-domain": "error",
+      "kclub/no-non-async-export-in-use-server": "error",
     },
   },
 
