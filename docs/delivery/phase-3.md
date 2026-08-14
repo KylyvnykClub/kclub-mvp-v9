@@ -74,22 +74,22 @@ an existing subscription is never touched.
 
 The §6.1 criterion, decomposed into checks that can be run:
 
-- [ ] A VIP subscription bought in CI against a Stripe test clock grants the card
+- [x] A VIP subscription bought in CI against a Stripe test clock grants the card
       `vip` tier via the projection worker, and a direct visit to the success URL
       grants nothing
-- [ ] A listing subscription bought per company publishes the company once active,
+- [x] A listing subscription bought per company publishes the company once active,
       and the same event delivered twice produces one entitlement
-- [ ] Advancing the test clock past the period end of a cancelled subscription
+- [x] Advancing the test clock past the period end of a cancelled subscription
       revokes access within 5 minutes
-- [ ] Advancing the clock through a failed payment shows the 14-day grace with
+- [x] Advancing the clock through a failed payment shows the 14-day grace with
       access kept, then revocation after grace expiry
-- [ ] A lapsed listing subscription unpublishes the company; recovery inside the
+- [x] A lapsed listing subscription unpublishes the company; recovery inside the
       grace period republishes it
-- [ ] The reconciliation job finds an intentionally injected divergence and alerts
+- [x] The reconciliation job finds an intentionally injected divergence and alerts
       without repairing it
-- [ ] The webhook endpoint returns 200 having written only an event row and an
+- [x] The webhook endpoint returns 200 having written only an event row and an
       outbox row
-- [ ] `python tools/check-plan.py --strict` and
+- [x] `python tools/check-plan.py --strict` and
       `python tools/check-docs.py --strict` pass
 
 ## 4. Demo script
