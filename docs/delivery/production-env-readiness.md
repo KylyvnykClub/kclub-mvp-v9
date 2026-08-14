@@ -66,8 +66,12 @@ Required external checks:
 
 Required external checks:
 
-- Confirm A2P 10DLC brand and campaign approval before sending production US SMS.
-- Confirm Fraud Guard, geographic permissions, and daily spend cap.
+- No A2P 10DLC brand or campaign registration is required: Verify sends from
+  Twilio's own registered sender pool
+  ([ADR 0010](../decisions/0010-no-own-a2p-registration-with-twilio-verify.md)).
+- Confirm Fraud Guard, geographic permissions, and daily spend cap. With no
+  registration gate in front of production traffic, these are the only controls
+  standing between the account and SMS-pumping fraud.
 - Confirm STOP/HELP handling and support contact wording.
 
 ## Billing: Stripe
@@ -143,7 +147,7 @@ Terraform currently provisions or wires:
 Terraform does not currently provision or wire:
 
 - `NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL`, or `BETTER_AUTH_SECRET`.
-- Twilio Verify credentials or A2P 10DLC proof.
+- Twilio Verify credentials.
 - Stripe secret, publishable key, webhook secret, products, or prices.
 - `CRON_SECRET`.
 - Inngest keys.

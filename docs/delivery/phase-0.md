@@ -98,6 +98,13 @@ checklist**: it must be approved before the first real US phone number receives 
 SMS, but it does not block any development or staging work. The risk entry in §4
 is updated accordingly.
 
+**Superseded 2026-08-13.** The registration was dropped from the pre-launch
+checklist entirely: Verify sends from Twilio's own registered sender pool, so
+there is no KCLUB sender to register
+([ADR 0010](../decisions/0010-no-own-a2p-registration-with-twilio-verify.md)).
+The paragraph above is left as written because it records what was believed at
+the time; the risk entry in §4 is annotated rather than removed.
+
 **T-0.5 — three decisions that belong to the client.** All three are already
 recorded as open; none can be answered by engineering:
 
@@ -192,7 +199,7 @@ decision for the client, and it will probably move work earlier rather than late
 
 |Risk|Signal|Response|
 |-|-|-|
-|A2P 10DLC registration rejected or slow (pre-launch)|No approval two weeks before launch|Escalate to the client. Dev and staging use console-logged codes and are not affected; only production sign-up is blocked|
+|~~A2P 10DLC registration rejected or slow (pre-launch)~~ — closed 2026-08-13, does not apply ([ADR 0010](../decisions/0010-no-own-a2p-registration-with-twilio-verify.md))|~~No approval two weeks before launch~~|No KCLUB sender exists to register; Verify sends from Twilio's pool. What replaces this risk is delivery degradation with no campaign dashboard to diagnose from — mitigated by the recurring Verify smoke test|
 |A blocking client decision in T-0.5 does not arrive|No answer by the phase gate|Phase 1 does not start. Do not begin identity work against an unresolved directory constraint — that is the most expensive possible rework|
 |Constraint suites are written to pass rather than to catch|They have never been seen to fail|Each suite ships with a deliberately broken case, run once, in the same commit|
 |CI exceeds the 15-minute budget on an empty project|Pipeline over 10 minutes at T-0.16|Fix now. It only grows, and past twenty minutes changes get batched, which produces exactly the large unreviewable diffs the process avoids|
