@@ -37,6 +37,40 @@ const GRACE_EXPIRY_BODIES: Record<Locale, (name: string) => string> = {
     `Привіт, ${name}!\n\nМи не змогли списати оплату за KYLYVNYK CLUB після кількох спроб. Ваш VIP-доступ буде вимкнено, якщо ви не оновите спосіб оплати.\n\nБудь ласка, перейдіть до розділу оплати в особистому кабінеті, щоб оновити картку.\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+const COMPANY_APPROVED_SUBJECTS: Record<Locale, string> = {
+  en: "Your company has been approved on KYLYVNYK CLUB",
+  ru: "Ваша компания одобрена на KYLYVNYK CLUB",
+  uk: "Вашу компанію схвалено на KYLYVNYK CLUB",
+};
+
+const COMPANY_APPROVED_BODIES: Record<Locale, (companyName: string) => string> =
+  {
+    en: (companyName) =>
+      `Congratulations!\n\nYour company "${companyName}" has been approved and is now live in the KYLYVNYK CLUB Partner Catalogue.\n\nMembers can now discover your business and access your offers.\n\nBest,\nKYLYVNYK CLUB`,
+    ru: (companyName) =>
+      `Поздравляем!\n\nВаша компания «${companyName}» одобрена и теперь доступна в Каталоге партнёров KYLYVNYK CLUB.\n\nУчастники клуба теперь могут найти ваш бизнес и воспользоваться вашими предложениями.\n\nС уважением,\nKYLYVNYK CLUB`,
+    uk: (companyName) =>
+      `Вітаємо!\n\nВашу компанію «${companyName}» схвалено, і тепер вона доступна в Каталозі партнерів KYLYVNYK CLUB.\n\nУчасники клубу тепер можуть знайти ваш бізнес та скористатися вашими пропозиціями.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+  };
+
+const COMPANY_REJECTED_SUBJECTS: Record<Locale, string> = {
+  en: "Your company submission was not approved",
+  ru: "Ваша заявка на компанию не одобрена",
+  uk: "Вашу заявку на компанію не схвалено",
+};
+
+const COMPANY_REJECTED_BODIES: Record<
+  Locale,
+  (companyName: string, reason: string) => string
+> = {
+  en: (companyName, reason) =>
+    `Hello,\n\nYour company "${companyName}" was not approved for the KYLYVNYK CLUB Partner Catalogue.\n\nReason: ${reason}\n\nYou may update your listing and resubmit.\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (companyName, reason) =>
+    `Здравствуйте!\n\nВаша компания «${companyName}» не была одобрена для Каталога партнёров KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nВы можете обновить данные и подать заявку повторно.\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (companyName, reason) =>
+    `Доброго дня!\n\nВашу компанію «${companyName}» не було схвалено для Каталогу партнерів KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nВи можете оновити дані та подати заявку повторно.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 export interface SendEmailParams {
   to: string;
   displayName: string;
@@ -50,6 +84,31 @@ export async function sendPaymentFailedEmail(
     params.to,
     PAYMENT_FAILED_SUBJECTS[params.locale],
     PAYMENT_FAILED_BODIES[params.locale](params.displayName),
+  );
+}
+
+export async function sendCompanyApprovedEmail(params: {
+  to: string;
+  companyName: string;
+  locale: Locale;
+}): Promise<boolean> {
+  return sendEmail(
+    params.to,
+    COMPANY_APPROVED_SUBJECTS[params.locale],
+    COMPANY_APPROVED_BODIES[params.locale](params.companyName),
+  );
+}
+
+export async function sendCompanyRejectedEmail(params: {
+  to: string;
+  companyName: string;
+  reason: string;
+  locale: Locale;
+}): Promise<boolean> {
+  return sendEmail(
+    params.to,
+    COMPANY_REJECTED_SUBJECTS[params.locale],
+    COMPANY_REJECTED_BODIES[params.locale](params.companyName, params.reason),
   );
 }
 

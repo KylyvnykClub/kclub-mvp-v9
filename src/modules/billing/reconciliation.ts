@@ -13,6 +13,12 @@ export type ReconciliationDifference = {
   stripe: string | null;
 };
 
+type ComparableSubscriptionField = {
+  field: string;
+  local: string | null;
+  stripe: string | null;
+};
+
 export interface ReconciliationAlertPayload {
   stripeSubscriptionId: string;
   memberId: string;
@@ -119,18 +125,49 @@ function compareSubscription(
     canceledAt: dateToSecondString(local.canceledAt),
   };
 
-  const differences: ReconciliationDifference[] = [];
-  for (const field of Object.keys(expected) as Array<keyof typeof expected>) {
-    if (actual[field] !== expected[field]) {
-      differences.push({
-        field,
-        local: actual[field],
-        stripe: expected[field],
-      });
-    }
-  }
+  return diffFields([
+    { field: "memberId", local: actual.memberId, stripe: expected.memberId },
+    { field: "companyId", local: actual.companyId, stripe: expected.companyId },
+    {
+      field: "stripeCustomerId",
+      local: actual.stripeCustomerId,
+      stripe: expected.stripeCustomerId,
+    },
+    { field: "status", local: actual.status, stripe: expected.status },
+    { field: "priceId", local: actual.priceId, stripe: expected.priceId },
+    {
+      field: "currentPeriodStart",
+      local: actual.currentPeriodStart,
+      stripe: expected.currentPeriodStart,
+    },
+    {
+      field: "currentPeriodEnd",
+      local: actual.currentPeriodEnd,
+      stripe: expected.currentPeriodEnd,
+    },
+    {
+      field: "cancelAtPeriodEnd",
+      local: actual.cancelAtPeriodEnd,
+      stripe: expected.cancelAtPeriodEnd,
+    },
+    {
+      field: "canceledAt",
+      local: actual.canceledAt,
+      stripe: expected.canceledAt,
+    },
+  ]);
+}
 
-  return differences;
+function diffFields(
+  fields: ComparableSubscriptionField[],
+): ReconciliationDifference[] {
+  return fields
+    .filter((field) => field.local !== field.stripe)
+    .map((field) => ({
+      field: field.field,
+      local: field.local,
+      stripe: field.stripe,
+    }));
 }
 
 function epochToSecondString(value: number | null | undefined): string | null {

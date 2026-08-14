@@ -992,8 +992,11 @@ describe("listing lifecycle projection (FR-055)", () => {
     );
 
     const ids = await listCompanyIdsWithActiveSubscription(db);
-    const showcased =
-      ids.length > 0 ? await listShowcaseCompanies(db, ids, 6) : [];
+    const showcasedTop =
+      ids.length > 0 ? await listShowcaseCompanies(db, ids, "top", 3) : [];
+    const showcasedFeatured =
+      ids.length > 0 ? await listShowcaseCompanies(db, ids, "featured", 3) : [];
+    const showcased = [...showcasedTop, ...showcasedFeatured];
 
     expect(showcased.map((company) => company.id)).not.toContain(companyId);
   });

@@ -1,4 +1,5 @@
 import {
+  jsonb,
   pgTable,
   varchar,
   text,
@@ -14,6 +15,12 @@ export const moderationStatusEnum = pgEnum("moderation_status", [
   "pending",
   "approved",
   "rejected",
+]);
+
+export const showcaseTypeEnum = pgEnum("showcase_type", [
+  "none",
+  "top",
+  "featured",
 ]);
 
 export const companies = pgTable("companies", {
@@ -46,4 +53,11 @@ export const companies = pgTable("companies", {
     .default("approved")
     .notNull(),
   rejectionReason: text("rejection_reason"),
+
+  // Showcase
+  showcaseType: showcaseTypeEnum("showcase_type").default("none").notNull(),
+  showcaseRank: integer("showcase_rank").default(0).notNull(),
+
+  // Pending owner edits awaiting re-moderation (FR-045)
+  pendingChanges: jsonb("pending_changes"),
 });

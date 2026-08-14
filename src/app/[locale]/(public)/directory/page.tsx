@@ -1,11 +1,11 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { getPartnersListAction } from "@/actions/company";
+import { getPartnersListAction, getBlocksAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { isFeatureEnabled } from "@/actions/feature-flags";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, BadgeCheck, MapPin, Search } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, Filter, MapPin, Search } from "lucide-react";
 
 export async function generateMetadata({
   params,
@@ -25,7 +25,12 @@ export default async function CatalogueDirectoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; country?: string; city?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    country?: string;
+    city?: string;
+    block?: string;
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -40,8 +45,11 @@ export default async function CatalogueDirectoryPage({
     }
   }
 
-  const { q, country, city } = await searchParams;
-  const partners = await getPartnersListAction({ query: q, country, city });
+  const { q, country, city, block } = await searchParams;
+  const [partners, blocks] = await Promise.all([
+    getPartnersListAction({ query: q, country, city, block }),
+    getBlocksAction(),
+  ]);
 
   return (
     <main className="border-b border-border bg-background">
@@ -65,7 +73,7 @@ export default async function CatalogueDirectoryPage({
       </section>
 
       <section className="kclub-shell py-10 sm:py-12">
-        <form className="grid gap-px border border-border bg-border lg:grid-cols-[1.5fr_0.75fr_0.75fr_auto]">
+        <form className="grid gap-px border border-border bg-border lg:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr_auto]">
           <label className="group flex min-h-20 flex-col justify-center bg-background px-4 py-3 transition-colors focus-within:bg-muted/50 sm:px-5">
             <span className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
               <Search className="size-3.5" aria-hidden="true" />
@@ -78,6 +86,24 @@ export default async function CatalogueDirectoryPage({
               className="h-8 w-full bg-transparent text-base font-medium outline-none placeholder:text-muted-foreground/60"
               placeholder={t("searchPlaceholder")}
             />
+          </label>
+          <label className="group flex min-h-20 flex-col justify-center bg-background px-4 py-3 transition-colors focus-within:bg-muted/50 sm:px-5">
+            <span className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              <Filter className="size-3.5" aria-hidden="true" />
+              {t("categoryPlaceholder")}
+            </span>
+            <select
+              name="block"
+              defaultValue={block || ""}
+              className="h-8 w-full bg-transparent text-base font-medium outline-none"
+            >
+              <option value="">{t("allCategories")}</option>
+              {blocks.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="group flex min-h-20 flex-col justify-center bg-background px-4 py-3 transition-colors focus-within:bg-muted/50 sm:px-5">
             <span className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">

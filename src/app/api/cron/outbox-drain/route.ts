@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/data/db";
 import { findMemberByStripeCustomerId } from "@/data/billing";
+import { findCompanyById } from "@/data/companies";
+import { findMemberLanguage } from "@/data/members";
 import { drainOutbox, markProcessed } from "@/data/outbox";
 import { env } from "@/env";
 import {
@@ -13,8 +15,14 @@ import {
   BILLING_RECONCILIATION_ALERT_TOPIC,
   type ReconciliationAlertPayload,
 } from "@/modules/billing/reconciliation";
-import { sendPaymentFailedEmail } from "@/modules/notifications/email";
+import {
+  sendPaymentFailedEmail,
+  sendCompanyApprovedEmail,
+  sendCompanyRejectedEmail,
+} from "@/modules/notifications/email";
 import { authorizeCronRequest } from "@/modules/platform";
+
+const COMPANY_MODERATION_TOPIC = "company.moderation";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 const fetchSubscription = stripe.subscriptions.retrieve.bind(stripe);
@@ -32,6 +40,12 @@ interface NotificationPayload {
   subscriptionId?: string;
   customerId?: string;
   attemptCount?: number;
+}
+
+interface CompanyModerationPayload {
+  companyId?: string;
+  status?: string;
+  reason?: string | null;
 }
 
 /** Result of the drain, for observability. */
@@ -85,6 +99,22 @@ export async function GET(req: Request) {
         const message =
           error instanceof Error ? error.message : "Unknown error";
         console.error(`[billing-notification] failed: ${message}`);
+      }
+      continue;
+    }
+
+    if (entry.topic === COMPANY_MODERATION_TOPIC) {
+      try {
+        await processCompanyModeration(
+          entry.payload as CompanyModerationPayload,
+        );
+        result.notified += 1;
+        await markProcessed(db, entry.id);
+      } catch (error) {
+        result.failed += 1;
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(`[company-moderation] notification failed: ${message}`);
       }
       continue;
     }
@@ -168,4 +198,41 @@ async function processNotification(
     displayName: member.displayName,
     locale,
   });
+}
+
+async function processCompanyModeration(
+  payload: CompanyModerationPayload,
+): Promise<void> {
+  if (!payload.companyId || !payload.status) return;
+
+  const company = await findCompanyById(db, payload.companyId);
+  if (!company || !company.contactEmail) {
+    console.warn(
+      `[company-moderation] no company or contact email for ${payload.companyId}`,
+    );
+    return;
+  }
+
+  const ownerLanguage = await findMemberLanguage(db, company.ownerId);
+
+  const locale = (
+    ownerLanguage && ["en", "ru", "uk"].includes(ownerLanguage)
+      ? ownerLanguage
+      : "en"
+  ) as "en" | "ru" | "uk";
+
+  if (payload.status === "approved") {
+    await sendCompanyApprovedEmail({
+      to: company.contactEmail,
+      companyName: company.name,
+      locale,
+    });
+  } else if (payload.status === "rejected") {
+    await sendCompanyRejectedEmail({
+      to: company.contactEmail,
+      companyName: company.name,
+      reason: payload.reason ?? "Not specified",
+      locale,
+    });
+  }
 }

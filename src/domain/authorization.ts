@@ -98,7 +98,7 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "update",
     subject: "own_company",
-    check: (a) => a.type === "partner_owner",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
   },
 
   // VIP: referrals
