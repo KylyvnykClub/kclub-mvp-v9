@@ -65,6 +65,7 @@ that the folder cannot be trusted.
 |[0007](0007-staff-identities-separate.md)|Keep staff identities entirely separate from member identities|Accepted|2026-08-02|
 |[0008](0008-durable-background-jobs-with-inngest.md)|Run background work on Inngest, fed by a transactional outbox in PostgreSQL|Accepted|2026-08-02|
 |[0009](0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire the client's contact data|Accepted|2026-08-02|
+|[0010](0010-no-own-a2p-registration-with-twilio-verify.md)|Send verification codes through Twilio Verify's registered sender pool, without our own A2P 10DLC registration|Accepted|2026-08-13|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

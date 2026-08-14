@@ -34,12 +34,17 @@ the four exhaustive suites in
 [testing.md §3](../testing.md#3-what-must-be-tested), and those suites are built
 in phase 0.
 
-**What does not get faster:** A2P 10DLC registration, Stripe test-clock
-verification, the client's legal decisions, the moderation dry-run, the
-penetration test, and localisation review by native speakers. Code production
-accelerates; none of these do. **The critical path is therefore made of
-non-code items,** and the plan is sequenced around them rather than around
-implementation effort.
+**What does not get faster:** Stripe test-clock verification, the client's legal
+decisions, the moderation dry-run, the penetration test, and localisation review
+by native speakers. Code production accelerates; none of these do. **The
+critical path is therefore made of non-code items,** and the plan is sequenced
+around them rather than around implementation effort.
+
+The longest of them used to be A2P 10DLC registration — one to three weeks,
+rejectable, and blocking sign-up. It left the critical path on 2026-08-13 when
+it turned out not to apply: Twilio Verify sends from its own registered pool, so
+there is no KCLUB sender to register
+([ADR 0010](../decisions/0010-no-own-a2p-registration-with-twilio-verify.md)).
 
 ---
 

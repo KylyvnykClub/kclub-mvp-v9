@@ -290,7 +290,7 @@ ambiguity for international members.
 |-|-|-|
 |GDPR / UK GDPR|Members will be resident in the EU and the UK|Lawful basis, data subject access and erasure, breach notification within 72 hours, processing agreements with every sub-processor, Standard Contractual Clauses for US transfer. Client has elected not to appoint an Art. 27 representative. **The supplied legal pack has no GDPR section** — the design implements these controls against a policy that does not yet promise them|
 |CCPA/CPRA (California)|US market focus; California residents|Notice at collection, right to know/delete, "do not sell or share" — we sell no data, but the notice is still required|
-|TCPA and CTIA messaging principles (US)|We send SMS to US numbers|Express consent captured at sign-up, opt-out honoured, A2P 10DLC brand and campaign registration before any production SMS|
+|TCPA and CTIA messaging principles (US)|We send SMS to US numbers|Express consent captured at sign-up, opt-out honoured. No A2P 10DLC registration of our own: verification codes are sent from Twilio Verify's registered sender pool, so there is no KCLUB sender to register — see [decisions/0010-no-own-a2p-registration-with-twilio-verify.md](decisions/0010-no-own-a2p-registration-with-twilio-verify.md). Any SMS that is not a verification code would leave Verify and bring the registration back|
 |PCI-DSS SAQ-A|We take card payments|Satisfied by never touching card data: all entry happens in Stripe-hosted Checkout and Portal — see [decisions/0004-stripe-billing-as-system-of-record.md](decisions/0004-stripe-billing-as-system-of-record.md)|
 |Florida law, binding individual arbitration, class-action waiver|The operator elected them in Terms §28–30|Enforceability in the US depends on conspicuous disclosure and affirmative assent — hence FR-097. Also removes the option of a small-claims-style dispute path|
 |US automatic-renewal statutes (California ARL and equivalents)|Subscriptions auto-renew and the primary market is the US|Pre-purchase disclosure, affirmative consent, online cancellation, and in several states a renewal reminder. Terms §11 disclaims notice; the states do not — see [legal-alignment.md](legal-alignment.md#c-08-auto-renewal-without-prior-notice-is-a-us-regulatory-exposure)|
@@ -349,7 +349,7 @@ phase's backend is being verified.
 
 |Assumption|If it turns out false|
 |-|-|
-|SMS to US numbers is deliverable at acceptable cost and latency once A2P 10DLC registration completes|Registration takes 1–3 weeks and can be rejected; sign-up is blocked entirely. Mitigation: start registration in phase 0, before any code depends on it|
+|SMS to US numbers is deliverable at acceptable cost and latency through Twilio Verify's sender pool|Delivery and routing are Twilio's to fix, and we have no campaign dashboard of our own to diagnose from. Mitigation: a recurring smoke test sends one real code to a team number, so degradation is noticed before members report it|
 |A phone number is a durable identifier for our members|Recycled and changed numbers create account-takeover and lockout cases. We accept manual, support-driven recovery; if volume exceeds ~5 cases/week the client must accept a recovery email as an optional second channel|
 |Members will accept SMS verification rather than abandoning sign-up|Typical drop-off at an SMS step is 10–25%. If measured drop-off exceeds 30%, the phone-only constraint must be revisited with the client|
 |The club operates as a single legal entity in one country, invoicing in USD|Multi-entity operation changes the Stripe account structure and the tax position, and would require reworking the finance reporting in FR-082|
@@ -383,7 +383,9 @@ phase's backend is being verified.
       ([observability.md §9](observability.md#9-runbooks))
 - [ ] Legal pages published and versioned, and their acceptance recorded at
       registration
-- [ ] A2P 10DLC campaign approved and production SMS sending verified
+- [ ] Production SMS delivery verified end to end through Twilio Verify — a real
+      code sent to and accepted from an allowlisted number, with Fraud Guard,
+      geographic permissions and the daily spend cap confirmed
 
 ---
 

@@ -128,8 +128,12 @@ dashboard, or rehearsal evidence.
      hardcoded or corrupted text that static checks miss.
    - `AC-09` / `AC-10`: rehearse restore and paging runbooks; record elapsed
      time and corrections.
-   - `AC-06` / `AC-08` / `AC-12`: schedule the external WCAG audit, penetration
-     test, and Twilio A2P production SMS approval/smoke.
+   - `AC-06` / `AC-08`: schedule the external WCAG audit and penetration test.
+   - `AC-12`: run the production SMS smoke through Twilio Verify to an
+     allowlisted number, and confirm Fraud Guard, geographic permissions and the
+     daily spend cap. **Updated 2026-08-13** — this row no longer waits on A2P
+     10DLC approval; the registration does not apply
+     ([ADR 0010](../decisions/0010-no-own-a2p-registration-with-twilio-verify.md)).
 
 4. Keep the baseline green after every slice:
 

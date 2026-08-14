@@ -324,7 +324,7 @@ integration breaks on a Sunday.
 |Service|Test approach|Sandbox credentials|Contract verification|
 |-|-|-|-|
 |Stripe|Test mode plus **test clocks** in integration tests; the Stripe CLI forwards real test-mode webhooks locally. The full lifecycle — subscribe, renew, fail, dun, recover, cancel, lapse — runs in CI against Stripe's own test environment, not a mock|1Password, injected into CI as a secret|The pinned API version is asserted at boot; a fixture recorded from the live API is diffed weekly against the sandbox to catch drift|
-|Twilio Verify|Twilio test credentials with magic numbers in integration tests; a mock in unit tests; in preview and staging, SMS is sent only to an allowlist of team numbers|1Password|A weekly smoke test sends one real code to a team number in staging — the only way to prove the A2P registration is still live|
+|Twilio Verify|Twilio test credentials with magic numbers in integration tests; a mock in unit tests; in preview and staging, SMS is sent only to an allowlist of team numbers|1Password|A weekly smoke test sends one real code to a team number in staging — with no campaign dashboard of our own ([decisions/0010](decisions/0010-no-own-a2p-registration-with-twilio-verify.md)), this is the only standing proof that production delivery still works|
 |Resend|Redirected to a team address in every non-production environment|1Password|Visual check of each template per release|
 |R2|MinIO in Docker locally and in CI; the real bucket in staging|—|Same S3 client, so the contract is the SDK's|
 |Redis|Real Redis in Docker; never mocked, because the behaviour under expiry is the thing being tested|—|—|

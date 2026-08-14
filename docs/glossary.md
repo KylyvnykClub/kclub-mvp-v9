@@ -115,7 +115,7 @@ variation.
 |OTP|One-time password|The 6-digit SMS code|
 |TOTP|Time-based one-time password|The authenticator app code, required for staff|
 |E.164|ITU-T E.164|The international phone number format we store, e.g. `+14155550123`|
-|A2P 10DLC|Application-to-person, 10-digit long code|The US carrier registration required before sending SMS|
+|A2P 10DLC|Application-to-person, 10-digit long code|The US carrier registration required to send SMS from numbers you own. KCLUB does not hold one and does not need one — codes leave from Twilio Verify's pool ([decisions/0010](decisions/0010-no-own-a2p-registration-with-twilio-verify.md))|
 |MoR|Merchant of record|The entity legally selling the subscription. Here: us, not Stripe|
 |RSC|React Server Component|The default rendering mode|
 |SLO / RPO / RTO|Service level objective / recovery point objective / recovery time objective|[reliability.md](reliability.md)|
