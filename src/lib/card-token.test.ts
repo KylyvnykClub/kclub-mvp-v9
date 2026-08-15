@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createCardPublicToken, hashCardToken } from "./card-token";
 
-describe("card token derivation", () => {
-  it("derives a stable public token without returning the card id alone", () => {
+describe("card token derivation (FR-022)", () => {
+  it("FR-022: derives a stable public token without returning the card id alone", () => {
     const cardId = "00000000-0000-4000-8000-000000000001";
     const token = createCardPublicToken(cardId, "secret");
 
@@ -11,7 +11,7 @@ describe("card token derivation", () => {
     expect(token).not.toBe(cardId);
   });
 
-  it("changes derived public tokens when the signing secret changes", () => {
+  it("FR-022: changes derived public tokens when the signing secret changes", () => {
     const cardId = "00000000-0000-4000-8000-000000000001";
 
     expect(createCardPublicToken(cardId, "one")).not.toBe(

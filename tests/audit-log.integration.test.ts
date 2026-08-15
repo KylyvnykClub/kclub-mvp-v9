@@ -22,8 +22,8 @@ async function expectPermissionDenied(
   }
 }
 
-describe("audit_log", () => {
-  it("appends an entry and returns id + timestamp", async () => {
+describe("audit_log (FR-087, FR-088)", () => {
+  it("FR-087: appends an entry and returns id + timestamp", async () => {
     const db = getTestDb();
     const result = await appendAuditEntry(db, {
       actorType: "staff",
@@ -62,7 +62,7 @@ describe("audit_log", () => {
     expect((row.rows[0] as { actor_id: string | null }).actor_id).toBeNull();
   });
 
-  it("searches by actor, target, and date range", async () => {
+  it("FR-088: searches by actor, target, and date range", async () => {
     const db = testDbClient();
     await appendAuditEntry(db, {
       actorType: "staff_owner",
@@ -124,7 +124,7 @@ describe("audit_log", () => {
       }
     });
 
-    it("app_rw role CANNOT UPDATE audit_log", async () => {
+    it("FR-088: app_rw role CANNOT UPDATE audit_log", async () => {
       const client = getTestClient();
 
       await client.query(
@@ -138,7 +138,7 @@ describe("audit_log", () => {
       );
     });
 
-    it("app_rw role CANNOT DELETE from audit_log", async () => {
+    it("FR-088: app_rw role CANNOT DELETE from audit_log", async () => {
       const client = getTestClient();
 
       await client.query(

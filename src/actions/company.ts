@@ -44,24 +44,11 @@ import {
   type CompanyDraftData,
   type CompanyStepNumber,
 } from "@/lib/company-form";
+import { isProhibitedCategory } from "@/lib/prohibited-categories";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
-
-const PROHIBITED_CATEGORY_KEYWORDS = [
-  "gambling",
-  "casino",
-  "cryptocurrency",
-  "crypto",
-  "token",
-  "weapons",
-  "firearms",
-  "adult",
-  "pornography",
-  "unlicensed financial",
-  "high-risk investment",
-];
 
 export async function getBlocksAction() {
   return listActiveCategoryBlocks(db);
@@ -112,17 +99,7 @@ export async function registerCompanyAction(
       return { success: false, error: "Invalid business category" };
     }
 
-    const categoryText = [
-      category.block,
-      category.category,
-      category.subcategory,
-    ]
-      .join(" ")
-      .toLowerCase();
-    const isProhibited = PROHIBITED_CATEGORY_KEYWORDS.some((kw) =>
-      categoryText.includes(kw),
-    );
-    if (isProhibited) {
+    if (isProhibitedCategory(category)) {
       return {
         success: false,
         error: "This business category is not permitted",
