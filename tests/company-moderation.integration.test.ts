@@ -87,37 +87,54 @@ async function seedCompany(
   return { company: company!, owner, category };
 }
 
-describe("FR-041: a submission is rejected when its city does not belong to its country", () => {
-  it("accepts a city that belongs to the selected country", async () => {
-    const db = testDbClient();
-    const country = await createCountry(db, { code: "PL", name: "Poland" });
-    await createCity(db, { countryCode: country.code, name: "Krakow" });
+/**
+ * Reference data is seeded by migration, so real ISO codes and real city names
+ * are already taken. These use the ISO 3166 user-assigned range (QM..QZ), which
+ * no seed will ever claim, and invented city names.
+ */
+const HOME = { code: "QM", name: "Homeland" };
+const ELSEWHERE = { code: "QN", name: "Elsewhere" };
+const HOME_CITY = "Testville";
 
-    expect(await validateCityBelongsToCountry(db, "Krakow", "Poland")).toBe(
+async function seedTwoCountriesAndACity(db: DbClient) {
+  const home = await createCountry(db, HOME);
+  await createCountry(db, ELSEWHERE);
+  await createCity(db, { countryCode: home.code, name: HOME_CITY });
+}
+
+describe("FR-041: a submission is rejected when its city does not belong to its country", () => {
+  it("accepts a city that belongs to the selected country, by name or by code", async () => {
+    const db = testDbClient();
+    await seedTwoCountriesAndACity(db);
+
+    expect(await validateCityBelongsToCountry(db, HOME_CITY, HOME.name)).toBe(
       true,
     );
-    expect(await validateCityBelongsToCountry(db, "Krakow", "PL")).toBe(true);
+    expect(await validateCityBelongsToCountry(db, HOME_CITY, HOME.code)).toBe(
+      true,
+    );
   });
 
   it("rejects a known city paired with the wrong country", async () => {
     const db = testDbClient();
-    const poland = await createCountry(db, { code: "PL", name: "Poland" });
-    await createCountry(db, { code: "DE", name: "Germany" });
-    await createCity(db, { countryCode: poland.code, name: "Krakow" });
+    await seedTwoCountriesAndACity(db);
 
-    expect(await validateCityBelongsToCountry(db, "Krakow", "Germany")).toBe(
-      false,
-    );
+    expect(
+      await validateCityBelongsToCountry(db, HOME_CITY, ELSEWHERE.name),
+    ).toBe(false);
   });
 
-  it("matches the city case-insensitively, so 'krakow' is not a different city", async () => {
+  it("matches the city case-insensitively, so a lowercase name is not a different city", async () => {
     const db = testDbClient();
-    const poland = await createCountry(db, { code: "PL", name: "Poland" });
-    await createCity(db, { countryCode: poland.code, name: "Krakow" });
+    await seedTwoCountriesAndACity(db);
 
-    expect(await validateCityBelongsToCountry(db, "krakow", "Germany")).toBe(
-      false,
-    );
+    expect(
+      await validateCityBelongsToCountry(
+        db,
+        HOME_CITY.toLowerCase(),
+        ELSEWHERE.name,
+      ),
+    ).toBe(false);
   });
 });
 
