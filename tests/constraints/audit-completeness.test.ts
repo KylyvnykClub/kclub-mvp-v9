@@ -35,7 +35,7 @@ describe("constraint: audit completeness", () => {
     expect(routes.length).toBeGreaterThan(0);
   });
 
-  it("every mutating staff route has a declared audit handler", () => {
+  it("FR-087: every mutating staff route has a declared audit handler", () => {
     const routes = getMutatingStaffRoutes();
     const unaudited: string[] = [];
 

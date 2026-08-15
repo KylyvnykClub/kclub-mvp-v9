@@ -84,7 +84,7 @@ describe("constraint: card data hygiene (FR-060)", () => {
     expect(content).not.toMatch(/expir/i);
   });
 
-  it("all checkout and portal actions use Stripe-hosted sessions (not custom forms)", () => {
+  it("FR-057/FR-060: all checkout and portal actions use Stripe-hosted sessions (not custom forms)", () => {
     const stripeActionsSource = readFileSync(
       join(__dirname, "../../src/actions/stripe.ts"),
       "utf-8",
@@ -105,7 +105,7 @@ describe("constraint: card data hygiene (FR-060)", () => {
     );
   });
 
-  it("checkout and portal routes are registered in the route registry", () => {
+  it("FR-057: checkout and portal routes are registered in the route registry", () => {
     const routes = getRegisteredRoutes();
     for (const actionPath of CHECKOUT_ACTION_PATHS) {
       const found = routes.some((r) => r.path === actionPath);
