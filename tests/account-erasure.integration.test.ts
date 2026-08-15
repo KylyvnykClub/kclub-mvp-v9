@@ -7,6 +7,7 @@ import {
   ERASED_DISPLAY_NAME,
   accountErasureCutoff,
   eraseMemberTx,
+  erasedPhone,
   findMembersDueForErasure,
 } from "@/data/account-erasure.js";
 import { createBusinessCategory } from "@/data/companies.js";
@@ -149,7 +150,24 @@ describe("FR-009: what the erasure destroys", () => {
     });
 
     expect(erased?.phone).not.toBe(phone);
-    expect(erased?.phone).toBe(`deleted:${member.id}`);
+    expect(erased?.phone).toBe(erasedPhone(member.id));
+    expect(erased!.phone.length).toBeLessThanOrEqual(20);
+  });
+
+  it("writes the same placeholder if the erasure is run twice", async () => {
+    const db = testDbClient();
+    const { member } = await seedMemberWithRequest(db, {
+      requestedDaysAgo: 31,
+    });
+
+    await eraseMemberTx(db, member.id, new Date());
+    await eraseMemberTx(db, member.id, new Date());
+
+    const erased = await db.query.members.findFirst({
+      where: eq(members.id, member.id),
+    });
+
+    expect(erased?.phone).toBe(erasedPhone(member.id));
   });
 
   it("destroys the password hash, the display name and the second factor", async () => {

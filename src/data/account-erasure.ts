@@ -25,6 +25,18 @@ export const ACCOUNT_ERASURE_DAYS = 30;
 /** What replaces a display name once the person behind it is gone. */
 export const ERASED_DISPLAY_NAME = "Deleted member";
 
+/**
+ * What replaces the phone number.
+ *
+ * `members.phone` is `varchar(20)` and unique, so the placeholder has to be
+ * short and collision-free. Sixteen hex characters of the member id give 64
+ * bits, and deriving it from the id keeps the erasure idempotent: running it
+ * twice writes the same value rather than a second one.
+ */
+export function erasedPhone(memberId: string): string {
+  return `del:${memberId.replace(/-/g, "").slice(0, 16)}`;
+}
+
 export function accountErasureCutoff(
   now: Date,
   days = ACCOUNT_ERASURE_DAYS,
@@ -88,7 +100,7 @@ export async function eraseMemberTx(
     await tx
       .update(members)
       .set({
-        phone: `deleted:${memberId}`,
+        phone: erasedPhone(memberId),
         passwordHash: "",
         displayName: ERASED_DISPLAY_NAME,
         totpSecret: null,
