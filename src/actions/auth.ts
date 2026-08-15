@@ -2,6 +2,7 @@
 
 import { cookies, headers } from "next/headers";
 import { IdentityService, verifyTurnstileToken } from "@/modules/identity";
+import { localeCookieOptions } from "@/lib/locale-cookie";
 import { z } from "zod";
 import { getLegalDocument } from "@/lib/mdx";
 import {
@@ -51,6 +52,26 @@ const registerSchema = z.object({
  * version fails registration; the recorded version is always the one the
  * member saw at submit time.
  */
+/**
+ * FR-091: make the member's saved language the locale from now on.
+ *
+ * next-intl reads this cookie ahead of `Accept-Language`, so writing it here is
+ * what puts a stated preference above a browser default. Called wherever the
+ * preference becomes known or changes; a value we no longer publish is ignored
+ * rather than written back.
+ */
+async function rememberPreferredLocale(language: unknown): Promise<void> {
+  const options = localeCookieOptions(language);
+  if (!options) return;
+
+  const cookieStore = await cookies();
+  cookieStore.set(options.name, options.value, {
+    maxAge: options.maxAge,
+    sameSite: options.sameSite,
+    path: options.path,
+  });
+}
+
 async function consentVersionsMatch(
   consents: ConsentAcceptance[],
 ): Promise<boolean> {
@@ -137,6 +158,7 @@ export async function registerAction(formData: FormData) {
         path: "/",
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
+      await rememberPreferredLocale(data.language);
       return { success: true };
     } else {
       return { success: false, error: result.error };
@@ -178,6 +200,7 @@ export async function loginAction(formData: FormData) {
         path: "/",
         maxAge: 60 * 15, // 15 minutes for partial session
       });
+      await rememberPreferredLocale(result.language);
       return {
         success: true,
         requiresTotp: true,
@@ -194,6 +217,7 @@ export async function loginAction(formData: FormData) {
         path: "/",
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
+      await rememberPreferredLocale(result.language);
       return { success: true };
     } else {
       return { success: false, error: result.error };
