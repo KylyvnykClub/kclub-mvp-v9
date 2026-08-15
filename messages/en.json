@@ -926,5 +926,14 @@
         "staff_owner": "Owner"
       }
     }
+  },
+  "sessions": {
+    "title": "Active sessions",
+    "intro": "The devices signed in to your account. If you do not recognise one, end it.",
+    "loading": "Loading your sessions...",
+    "currentBadge": "This device",
+    "lastSeen": "Last used {when}",
+    "endSession": "End session",
+    "endAllOthers": "{count, plural, one {End the other session} other {End all # other sessions}}"
   }
 }

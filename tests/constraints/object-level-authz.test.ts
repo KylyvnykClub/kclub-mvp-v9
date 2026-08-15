@@ -23,6 +23,7 @@ const ownSubjects = [
   "own_company",
   "own_subscription",
   "own_card",
+  "own_session",
 ] as const;
 
 const member1: Actor = { type: "member", id: "m1", role: "member" };
