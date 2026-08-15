@@ -1,4 +1,11 @@
-import { pgTable, text, varchar, pgEnum, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  pgEnum,
+  boolean,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
 
 export const memberStatusEnum = pgEnum("member_status", [
@@ -43,4 +50,12 @@ export const members = pgTable("members", {
 
   // Role tracking
   role: memberRoleEnum("role").notNull().default("member"),
+
+  /**
+   * FR-009: set when the 30-day erasure has run. The row survives so payment
+   * and audit records keep a valid foreign key (data-storage.md §4); what it
+   * still holds - internal id, country, registration month - is enough for
+   * revenue reporting and insufficient to identify a person.
+   */
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
