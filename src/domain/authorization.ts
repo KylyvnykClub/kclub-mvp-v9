@@ -29,6 +29,7 @@ export type Subject =
   | "own_company"
   | "own_subscription"
   | "own_card"
+  | "own_session"
   | "own_referral"
   | "card_verification"
   | "referral"
@@ -67,6 +68,16 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     check: (a) => a.type === "member",
   },
   { action: "read", subject: "own_card", check: (a) => a.type === "member" },
+
+  // FR-007: a member sees their own sessions and may end any of them. Staff
+  // are excluded on purpose - ending someone else's session is `block member`,
+  // which is audited; this one is not, because it acts only on the actor.
+  { action: "read", subject: "own_session", check: (a) => a.type === "member" },
+  {
+    action: "delete",
+    subject: "own_session",
+    check: (a) => a.type === "member",
+  },
   {
     action: "read",
     subject: "own_subscription",

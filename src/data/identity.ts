@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq, or } from "drizzle-orm";
+import { and, desc, eq, ne, or } from "drizzle-orm";
 
 import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
@@ -157,6 +157,66 @@ export async function deleteSessionsByMemberId(
   memberId: string,
 ): Promise<void> {
   await db.delete(sessions).where(eq(sessions.memberId, memberId));
+}
+
+/**
+ * The member's own sessions, for the screen that lets them end one (FR-007).
+ *
+ * The token is deliberately not selected. This list exists to be rendered, and
+ * a session token that reaches a template is a session token that can leak;
+ * a session is ended by its id, which is not a credential.
+ */
+export async function listSessionsByMemberId(db: DbClient, memberId: string) {
+  return db
+    .select({
+      id: sessions.id,
+      userAgent: sessions.userAgent,
+      ipAddress: sessions.ipAddress,
+      lastSeenAt: sessions.lastSeenAt,
+      createdAt: sessions.createdAt,
+      isPartialSession: sessions.isPartialSession,
+    })
+    .from(sessions)
+    .where(eq(sessions.memberId, memberId))
+    .orderBy(desc(sessions.lastSeenAt));
+}
+
+export type MemberSessionView = Awaited<
+  ReturnType<typeof listSessionsByMemberId>
+>[number];
+
+/**
+ * End one session, but only if it belongs to this member.
+ *
+ * The member id is part of the WHERE clause rather than checked beforehand:
+ * a guessed session id from another account then deletes nothing instead of
+ * relying on a check somebody could later move or forget.
+ */
+export async function deleteSessionByIdForMember(
+  db: DbClient,
+  memberId: string,
+  sessionId: string,
+): Promise<number> {
+  const deleted = await db
+    .delete(sessions)
+    .where(and(eq(sessions.id, sessionId), eq(sessions.memberId, memberId)))
+    .returning({ id: sessions.id });
+
+  return deleted.length;
+}
+
+/** End every session except the one making the request ("sign out everywhere else"). */
+export async function deleteOtherSessionsForMember(
+  db: DbClient,
+  memberId: string,
+  keepSessionId: string,
+): Promise<number> {
+  const deleted = await db
+    .delete(sessions)
+    .where(and(eq(sessions.memberId, memberId), ne(sessions.id, keepSessionId)))
+    .returning({ id: sessions.id });
+
+  return deleted.length;
 }
 
 export async function upgradeSessionTx(

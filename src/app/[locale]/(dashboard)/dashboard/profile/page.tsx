@@ -18,6 +18,7 @@ import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { CardQr } from "./_components/card-qr";
 import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
+import { ActiveSessions } from "@/components/profile/active-sessions";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -34,6 +35,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const tDashboard = await getTranslations("dashboard");
   const tCard = await getTranslations("card");
+  const tSessions = await getTranslations("sessions");
 
   const result = await getCurrentMember();
   if (!result || !result.member) {
@@ -275,6 +277,17 @@ export default async function ProfilePage({ params }: Props) {
               </CardHeader>
               <CardContent>
                 <PhoneChangeForm maskedPhone={maskPhone(member.phone)} />
+              </CardContent>
+            </Card>
+
+            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
+                  {tSessions("title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ActiveSessions locale={locale} />
               </CardContent>
             </Card>
           </div>
