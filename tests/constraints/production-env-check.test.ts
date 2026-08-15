@@ -10,9 +10,9 @@ const baseProductionEnv = {
   DATABASE_URL_DIRECT: "postgres://direct.example/kclub",
   BETTER_AUTH_SECRET: "production-secret",
   BETTER_AUTH_URL: "https://kclub.com",
-  TWILIO_ACCOUNT_SID: "AC123",
-  TWILIO_AUTH_TOKEN: "twilio-token",
-  TWILIO_VERIFY_SERVICE_SID: "VA123",
+  // Phone verification is postponed (ADR 0012), so Twilio is absent and
+  // Turnstile carries the registration bot gate instead.
+  TURNSTILE_SECRET_KEY: "turnstile-secret",
   STRIPE_SECRET_KEY: "sk_live_123",
   STRIPE_WEBHOOK_SECRET: "whsec_123",
   STRIPE_VIP_PRICE_ID: "price_vip",

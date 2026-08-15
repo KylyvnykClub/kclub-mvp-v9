@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
-import { IdentityService } from "@/modules/identity";
+import { IdentityService, verifyTurnstileToken } from "@/modules/identity";
 import { z } from "zod";
 import { getLegalDocument } from "@/lib/mdx";
 import {
@@ -34,7 +34,10 @@ const consentAcceptanceSchema = z.object({
 
 const registerSchema = z.object({
   phone: z.string().min(8).max(20),
-  code: z.string().min(6).max(6),
+  // Optional at the boundary because the code is only demanded when phone
+  // verification is enabled (ADR 0012); the service decides, not the form.
+  code: z.string().min(6).max(6).optional(),
+  turnstileToken: z.string().max(2048).optional(),
   password: z.string().min(8).max(100),
   displayName: z.string().min(2).max(255),
   country: z.string().length(2),
@@ -94,6 +97,22 @@ export async function registerAction(formData: FormData) {
       return {
         success: false,
         error: "Legal documents have been updated. Please review them again.",
+      };
+    }
+
+    // The bot gate runs before the account is created and before any password
+    // is hashed, so a rejected attempt costs nothing (ADR 0012).
+    const turnstile = await verifyTurnstileToken(
+      data.turnstileToken,
+      ipAddress,
+    );
+    if (!turnstile.ok) {
+      return {
+        success: false,
+        error:
+          turnstile.reason === "unavailable"
+            ? "Verification is temporarily unavailable. Please try again."
+            : "Please complete the verification challenge.",
       };
     }
 

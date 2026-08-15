@@ -11,6 +11,7 @@ import { generateTotpSecret, verifyTotpCode } from "./totp";
 import { checkVerificationCode, sendVerificationCode } from "./twilio";
 import { upgradeSessionTx } from "@/data/identity";
 import { logger } from "@/lib/logger";
+import { env } from "@/env";
 import { isStaffRole, normalizeRole } from "@/domain/actor";
 
 function isPhoneUniquenessError(error: unknown) {
@@ -30,6 +31,12 @@ export class IdentityService {
    * created after the code is verified (FR-004), so no junk records.
    */
   static async requestPhoneVerification(phone: string): Promise<boolean> {
+    if (!env.server.AUTH_PHONE_VERIFICATION_ENABLED) {
+      // Nothing to send while SMS is postponed. Reported as "not sent" rather
+      // than as an error, so the caller can move straight to the form.
+      return false;
+    }
+
     const existing = await findMemberByPhone(db, phone);
 
     if (existing) {
@@ -45,7 +52,7 @@ export class IdentityService {
    */
   static async registerMember(params: {
     phone: string;
-    code: string;
+    code?: string;
     passwordPlain: string;
     displayName: string;
     country: string;
@@ -54,9 +61,20 @@ export class IdentityService {
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
   }): Promise<{ success: boolean; sessionToken?: string; error?: string }> {
-    const isCodeValid = await checkVerificationCode(params.phone, params.code);
-    if (!isCodeValid) {
-      return { success: false, error: "Invalid or expired verification code" };
+    // ADR 0012: while phone verification is postponed the SMS code is not
+    // requested, not sent and not checked. The flag is the single place that
+    // decides, so turning Twilio back on is one environment variable.
+    if (env.server.AUTH_PHONE_VERIFICATION_ENABLED) {
+      const isCodeValid = await checkVerificationCode(
+        params.phone,
+        params.code ?? "",
+      );
+      if (!isCodeValid) {
+        return {
+          success: false,
+          error: "Invalid or expired verification code",
+        };
+      }
     }
 
     const passwordHash = await hashPassword(params.passwordPlain);

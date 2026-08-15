@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getLegalDocument } from "@/lib/mdx";
+import { env } from "@/env";
 import { RegisterFlow } from "./_components/register-flow";
 
 export async function generateMetadata({
@@ -29,6 +30,8 @@ export default async function RegisterPage({
     <RegisterFlow
       termsVersion={terms?.version ?? null}
       privacyVersion={privacy?.version ?? null}
+      phoneVerificationEnabled={env.server.AUTH_PHONE_VERIFICATION_ENABLED}
+      turnstileSiteKey={env.client.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null}
     />
   );
 }
