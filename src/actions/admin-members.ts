@@ -2,6 +2,7 @@
 
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
+import { deleteSessionsByMemberId } from "@/data/identity";
 import {
   findCardById,
   findMemberAdminById,
@@ -80,6 +81,15 @@ export async function blockMemberAction(
   );
 
   if (!updated) throw new Error("Member not found");
+
+  // FR-010: every session of a blocked member must be terminated. A blocked
+  // member already fails findActiveSessionByToken, so this is the second half
+  // of the guarantee - without it the rows outlive the block and start working
+  // again the moment the member is unblocked. Staff blocking already does this
+  // (actions/staff.ts); members were the gap.
+  if (blocked) {
+    await deleteSessionsByMemberId(db, memberId);
+  }
 
   // FR-087: Audit log
   await appendAuditEntry(db, {
