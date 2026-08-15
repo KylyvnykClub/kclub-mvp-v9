@@ -34,6 +34,7 @@ trust it. The rules below exist to make drift visible early.
 |[data-storage.md](data-storage.md)|Data model, retention, backup|Engineering|`docs/`|
 |[integration.md](integration.md)|External contracts|Engineering|`docs/`|
 |[observability.md](observability.md)|Monitoring and alerting|Engineering, on-call|`docs/`|
+|[operations.md](operations.md)|Where each thing is managed: staff console, scheduled jobs, vendor dashboards, commands|Engineering, on-call|`docs/`|
 |[testing.md](testing.md)|Quality strategy and gates|Engineering|`docs/`|
 |[legal-alignment.md](legal-alignment.md)|Where the executed legal documents and the design disagree, and who decides|Client, counsel, engineering|`docs/` — temporary; delete when every row closes|
 |Legal pack (nine documents, v1.0, effective 2026-07-01)|What the club has promised in writing|Members, partners, counsel|[policy/](policy/) — currently `.doc` binaries; to be converted to versioned MDX, see [legal-alignment.md §3](legal-alignment.md#3-defects-inside-the-legal-pack)|

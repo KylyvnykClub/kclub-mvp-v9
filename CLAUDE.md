@@ -111,6 +111,7 @@ Do not read all of `docs/` for every task. Read the rows that apply.
 |Stripe, Twilio, Resend, R2|[integration.md](docs/integration.md)|
 |What to test and how|[testing.md](docs/testing.md)|
 |Alerts, SLOs, incidents|[reliability.md](docs/reliability.md), [observability.md](docs/observability.md)|
+|Where something is managed or run|[operations.md](docs/operations.md) — console, cron, vendors, commands|
 |A choice that is hard to reverse|[decisions/](docs/decisions/) — read the relevant record, then write a new one|
 
 ---
