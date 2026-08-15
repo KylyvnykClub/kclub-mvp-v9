@@ -133,6 +133,8 @@ export class IdentityService {
     setupTotp?: boolean;
     totpUri?: string;
     totpSecret?: string;
+    /** FR-091: the saved preference, so the caller can make it the locale. */
+    language?: string;
     error?: string;
   }> {
     const member = await findMemberByPhone(db, params.phone);
@@ -167,7 +169,12 @@ export class IdentityService {
 
     if (requiresTotp) {
       if (member.totpEnabled) {
-        return { success: true, sessionToken, requiresTotp: true };
+        return {
+          success: true,
+          sessionToken,
+          requiresTotp: true,
+          language: member.language,
+        };
       } else {
         const { secret, uri } = generateTotpSecret();
         return {
@@ -177,11 +184,12 @@ export class IdentityService {
           setupTotp: true,
           totpSecret: secret,
           totpUri: uri,
+          language: member.language,
         };
       }
     }
 
-    return { success: true, sessionToken };
+    return { success: true, sessionToken, language: member.language };
   }
 
   /**

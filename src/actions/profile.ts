@@ -13,6 +13,7 @@ import { upsertProfile, type SocialLinks } from "@/data/profiles";
 import { updateMemberPersonalInfo, updateMemberPhone } from "@/data/members";
 import { findMemberByPhone } from "@/data/identity";
 import { appendAuditEntry } from "@/data/audit-log";
+import { localeCookieOptions } from "@/lib/locale-cookie";
 import { getCurrentMember } from "@/actions/session";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
@@ -105,6 +106,20 @@ export async function updatePersonalInfoAction(
     });
 
     await updateMemberPersonalInfo(db, auth.member.id, data);
+
+    // FR-091: the saved preference is the first source of the locale, so a
+    // change to it has to reach the cookie next-intl reads - otherwise the
+    // member sets Russian and keeps being served whatever their browser asks
+    // for.
+    const localeCookie = localeCookieOptions(data.language);
+    if (localeCookie) {
+      const cookieStore = await cookies();
+      cookieStore.set(localeCookie.name, localeCookie.value, {
+        maxAge: localeCookie.maxAge,
+        sameSite: localeCookie.sameSite,
+        path: localeCookie.path,
+      });
+    }
 
     revalidatePath("/dashboard/profile");
     return { success: true };
