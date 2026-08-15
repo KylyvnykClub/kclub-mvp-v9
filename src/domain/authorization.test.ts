@@ -17,11 +17,11 @@ describe("can", () => {
     expect(can(guest, "read", "marketing")).toBe(true);
   });
 
-  it("guest cannot read catalogue", () => {
+  it("FR-030: guest cannot read catalogue", () => {
     expect(can(guest, "read", "catalogue")).toBe(false);
   });
 
-  it("member can read catalogue", () => {
+  it("FR-030: member can read catalogue", () => {
     expect(can(member, "read", "catalogue")).toBe(true);
   });
 

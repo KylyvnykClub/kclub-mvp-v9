@@ -49,6 +49,10 @@ PHASE_FILE_RE = re.compile(r"^phase-(\d+)\.md$")
 
 TEST_DIRS = ("src", "tests", "e2e")
 TEST_FILE_RE = re.compile(r"\.(test|spec)\.[jt]sx?$")
+# testing.md §8: "Tests name the FR in their titles, so an untested requirement
+# is greppable". Only a describe/it title counts - an id in a comment or an
+# import path says nothing about what is asserted.
+TEST_TITLE_RE = re.compile(r"\b(?:describe|it|test)\s*\(")
 
 
 def strip_fences(body):
@@ -147,7 +151,12 @@ def parse_tasks(body, phase, errors):
 
 
 def collect_test_references():
-    """Every FR id named by a test file, and how many test files were seen."""
+    """Every FR id named in a test title, and how many test files were seen.
+
+    Only describe/it/test titles count. Scanning whole files instead would let a
+    requirement be "covered" by an id in a comment, which is how a coverage
+    number stops meaning anything.
+    """
     referenced, seen = set(), 0
     for top in TEST_DIRS:
         base = os.path.join(REPO_ROOT, top)
@@ -161,7 +170,9 @@ def collect_test_references():
                 seen += 1
                 path = os.path.join(folder, name)
                 with open(path, encoding="utf-8", errors="replace") as handle:
-                    referenced.update(FR_ID_RE.findall(handle.read()))
+                    for line in handle:
+                        if TEST_TITLE_RE.search(line):
+                            referenced.update(FR_ID_RE.findall(line))
     return referenced, seen
 
 
