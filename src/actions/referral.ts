@@ -16,6 +16,12 @@ import {
   setMemberReferralPermission,
   setReferralModeration,
 } from "@/data/referrals";
+import {
+  REFERRAL_DAILY_LIMIT,
+  REFERRAL_PER_RECIPIENT_DAILY_LIMIT,
+  checkReferralLimits,
+  referralWindowStart,
+} from "@/lib/referral-limits";
 import { getCurrentMember } from "./session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
@@ -71,23 +77,23 @@ export async function createReferralAction(
     );
   }
 
-  // FR-073: Rate limiting
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-  const recentReferrals = await listReferralsSince(db, member.id, oneDayAgo);
-
-  if (recentReferrals.length >= 10) {
-    throw new Error(
-      "You have reached your limit of 10 referrals per 24 hours.",
-    );
-  }
-
-  const recentToRecipient = recentReferrals.filter(
-    (r) => r.recipientCompanyId === parsed.recipientCompanyId,
+  // FR-073: rolling-window limits, 10 a day and 3 to any one company.
+  const recentReferrals = await listReferralsSince(
+    db,
+    member.id,
+    referralWindowStart(new Date()),
   );
-  if (recentToRecipient.length >= 3) {
+
+  const breach = checkReferralLimits(
+    recentReferrals,
+    parsed.recipientCompanyId,
+  );
+
+  if (breach.exceeded) {
     throw new Error(
-      "You have reached your limit of 3 referrals per 24 hours to this company.",
+      breach.limit === "daily"
+        ? `You have reached your limit of ${REFERRAL_DAILY_LIMIT} referrals per 24 hours.`
+        : `You have reached your limit of ${REFERRAL_PER_RECIPIENT_DAILY_LIMIT} referrals per 24 hours to this company.`,
     );
   }
 

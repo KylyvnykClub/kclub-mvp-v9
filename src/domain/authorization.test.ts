@@ -25,11 +25,11 @@ describe("can", () => {
     expect(can(member, "read", "catalogue")).toBe(true);
   });
 
-  it("member cannot send referrals", () => {
+  it("FR-070: member cannot send referrals", () => {
     expect(can(member, "send_referral", "referral")).toBe(false);
   });
 
-  it("vip can send referrals", () => {
+  it("FR-070: vip can send referrals", () => {
     expect(can(vip, "send_referral", "referral")).toBe(true);
   });
 
