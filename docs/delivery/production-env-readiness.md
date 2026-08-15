@@ -54,17 +54,42 @@ Required external checks:
 |`ADMIN_BOOTSTRAP_OWNER_PASSWORD`|Launch only|Owner-approved bootstrap record|Confirm one-time use, strong value, and removal after staff owner setup.|
 |`TOTP_ENCRYPTION_KEY`|Yes when staff TOTP secrets are stored|1Password to Vercel env|Confirm key length and rotation owner before enabling staff login for production.|
 |`AUTH_DEV_PHONE_BYPASS_ENABLED`|No|Development only|Must be unset or `false` in preview and production.|
+|`AUTH_PHONE_VERIFICATION_ENABLED`|No — postponed|Deployment decision|Currently `false` ([ADR 0012](../decisions/0012-postpone-phone-verification-turnstile-gate.md)). Setting it to `true` makes the three Twilio keys mandatory at boot, so provision them in the same change.|
 |`E2E_TEST_SECRET`|Preview only|CI secret|Must not be set in production unless an explicit production smoke route requires it.|
 
-## SMS: Twilio Verify
+## Bot defense: Cloudflare Turnstile
+
+While phone verification is postponed, Turnstile is the only cost a bot pays to
+create a member account ([ADR 0012](../decisions/0012-postpone-phone-verification-turnstile-gate.md)).
+`src/env.schema.ts` refuses to boot a production deployment that has neither.
 
 |Key|Required for production|Source of truth|Verification|
 |-|-|-|-|
-|`TWILIO_ACCOUNT_SID`|Yes|Twilio console|Confirm account is the intended live account, not a trial or test project.|
-|`TWILIO_AUTH_TOKEN`|Yes|Twilio console|Rotate before launch and store only in Vercel and 1Password.|
-|`TWILIO_VERIFY_SERVICE_SID`|Yes|Twilio Verify service|Send and verify a production SMS to an allowlisted owner number.|
+|`TURNSTILE_SECRET_KEY`|Yes while phone verification is off|Cloudflare dashboard|Confirm the widget and the secret belong to the same Turnstile site, and that the site's allowed hostnames include the production domain.|
+|`NEXT_PUBLIC_TURNSTILE_SITE_KEY`|Yes while phone verification is off|Cloudflare dashboard|Load `/register` and confirm the challenge renders; a missing site key silently renders nothing.|
 
 Required external checks:
+
+- Register once against production and confirm the attempt is rejected when the
+  challenge is not solved.
+- Confirm the widget renders in all three locales.
+
+## SMS: Twilio Verify — postponed
+
+**Not required for launch.** Phone verification is switched off
+([ADR 0012](../decisions/0012-postpone-phone-verification-turnstile-gate.md)); the
+keys below are optional at boot and unused while
+`AUTH_PHONE_VERIFICATION_ENABLED` is `false`. This section stays because the
+decision is a postponement, not a removal — everything here applies again the
+day the flag is turned on.
+
+|Key|Required for production|Source of truth|Verification|
+|-|-|-|-|
+|`TWILIO_ACCOUNT_SID`|Only when phone verification is on|Twilio console|Confirm account is the intended live account, not a trial or test project.|
+|`TWILIO_AUTH_TOKEN`|Only when phone verification is on|Twilio console|Rotate before launch and store only in Vercel and 1Password.|
+|`TWILIO_VERIFY_SERVICE_SID`|Only when phone verification is on|Twilio Verify service|Send and verify a production SMS to an allowlisted owner number.|
+
+External checks, when it is turned back on:
 
 - No A2P 10DLC brand or campaign registration is required: Verify sends from
   Twilio's own registered sender pool

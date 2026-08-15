@@ -36,9 +36,22 @@ export const serverSchema = z
     TOTP_ENCRYPTION_KEY: z.string().optional(),
 
     // ── SMS — Twilio Verify ─────────────────────────────────
-    TWILIO_ACCOUNT_SID: z.string().min(1),
-    TWILIO_AUTH_TOKEN: z.string().min(1),
-    TWILIO_VERIFY_SERVICE_SID: z.string().min(1),
+    // Optional while phone verification is postponed (ADR 0012). Required
+    // again, and enforced below, the moment AUTH_PHONE_VERIFICATION_ENABLED
+    // is turned back on.
+    TWILIO_ACCOUNT_SID: z.string().optional(),
+    TWILIO_AUTH_TOKEN: z.string().optional(),
+    TWILIO_VERIFY_SERVICE_SID: z.string().optional(),
+
+    /**
+     * Whether registration demands an SMS code (FR-002). Off by default while
+     * Twilio is postponed; Cloudflare Turnstile carries the anti-abuse load in
+     * the meantime (ADR 0012).
+     */
+    AUTH_PHONE_VERIFICATION_ENABLED: z
+      .enum(["true", "false", ""])
+      .default("")
+      .transform((v) => v === "true"),
 
     // ── Billing — Stripe ────────────────────────────────────
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
@@ -91,6 +104,39 @@ export const serverSchema = z
         code: "custom",
         path: ["CRON_SECRET"],
         message: "CRON_SECRET is required in production",
+      });
+    }
+
+    // Turning phone verification back on without credentials would fail at the
+    // first registration rather than at boot, which is the wrong end.
+    if (env.AUTH_PHONE_VERIFICATION_ENABLED) {
+      for (const key of [
+        "TWILIO_ACCOUNT_SID",
+        "TWILIO_AUTH_TOKEN",
+        "TWILIO_VERIFY_SERVICE_SID",
+      ] as const) {
+        if (!env[key]) {
+          ctx.addIssue({
+            code: "custom",
+            path: [key],
+            message: `${key} is required when AUTH_PHONE_VERIFICATION_ENABLED is true`,
+          });
+        }
+      }
+    }
+
+    // With SMS postponed, Turnstile is the only thing standing between a bot
+    // and an unlimited supply of member accounts. Fail closed in production.
+    if (
+      env.VERCEL_ENV === "production" &&
+      !env.AUTH_PHONE_VERIFICATION_ENABLED &&
+      !env.TURNSTILE_SECRET_KEY
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["TURNSTILE_SECRET_KEY"],
+        message:
+          "TURNSTILE_SECRET_KEY is required in production while phone verification is disabled",
       });
     }
   });

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 
 import {
@@ -59,9 +60,14 @@ type AuthActionResult = {
 export function RegisterFlow({
   termsVersion,
   privacyVersion,
+  phoneVerificationEnabled,
+  turnstileSiteKey,
 }: {
   termsVersion: string | null;
   privacyVersion: string | null;
+  /** ADR 0012: false while Twilio is postponed, which removes the code step. */
+  phoneVerificationEnabled: boolean;
+  turnstileSiteKey: string | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -107,6 +113,15 @@ export function RegisterFlow({
   const [phoneState, submitPhone] = useActionState(
     async (_prevState: AuthActionResult, formData: FormData) => {
       const p = formData.get("phone") as string;
+
+      // With SMS postponed there is no code to request and no code screen to
+      // show; the applicant goes straight to the profile step.
+      if (!phoneVerificationEnabled) {
+        setPhone(p);
+        setStep(3);
+        return { success: true, sent: false };
+      }
+
       const res = await requestPhoneVerificationAction(formData);
       if (res?.success) {
         setPhone(p);
@@ -120,7 +135,14 @@ export function RegisterFlow({
   const [registerState, submitRegister] = useActionState(
     async (_prevState: AuthActionResult, formData: FormData) => {
       formData.append("phone", phone);
-      formData.append("code", code);
+      if (phoneVerificationEnabled) {
+        formData.append("code", code);
+      }
+      // Cloudflare injects this input next to the widget inside the form.
+      const turnstileToken = formData.get("cf-turnstile-response");
+      if (typeof turnstileToken === "string") {
+        formData.append("turnstileToken", turnstileToken);
+      }
       formData.append(
         "consents",
         JSON.stringify(
@@ -154,7 +176,7 @@ export function RegisterFlow({
       <Card className="w-full rounded-none border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-4 border-b border-border p-6 sm:p-8">
           <div className="mb-2 flex justify-center gap-2">
-            {[1, 2, 3].map((s) => (
+            {(phoneVerificationEnabled ? [1, 2, 3] : [1, 3]).map((s) => (
               <div
                 key={s}
                 className={`h-1 w-10 transition-colors ${
@@ -414,6 +436,8 @@ export function RegisterFlow({
                   </Label>
                 </div>
               </div>
+
+              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
               {registerState?.error && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
