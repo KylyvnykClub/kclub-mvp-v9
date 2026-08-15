@@ -721,7 +721,16 @@
     "submit": "Register Company",
     "moderationPending": "Pending",
     "moderationApproved": "Approved",
-    "moderationRejected": "Rejected"
+    "moderationRejected": "Rejected",
+    "stepOf": "Step {current} of {total}",
+    "progressLabel": "Submission progress",
+    "draftLoading": "Loading your application...",
+    "draftSaving": "Saving...",
+    "next": "Next",
+    "back": "Back",
+    "reviewSection": "Review and confirm",
+    "reviewNote": "Check your answers. Nothing is charged yet - your application is reviewed within 1-3 business days.",
+    "notProvided": "Not provided"
   },
   "admin": {
     "members": {

@@ -175,6 +175,7 @@ security control first and a cost control second.
 |`phone_verification` rows|90 days|Hard delete|Abuse investigation window|
 |`member_session`|30 days idle, 90 days absolute|Hard delete|Session policy in [security.md §2](security.md#2-authentication-and-authorization)|
 |Membership card|Life of the member; revoked cards retained 24 months|Retain revoked record, destroy the QR token immediately on revocation|Fraud investigation|
+|Company application draft (`company_drafts`)|90 days from the last edit|Hard delete by the retention sweep; deleted immediately on submission, and cascaded on member deletion|Minimisation — an abandoned application is not a company|
 |Company, unpublished by owner|12 months|Anonymise owner link, retain the moderation history|Moderation integrity|
 |Referral **client contact details**|Until accepted, declined, expired (14 days), or rejected — then 24 hours|Hard delete of the encrypted contact column; the referral shell is retained|Minimisation; the client is not our user ([decisions/0009](decisions/0009-referral-data-minimisation.md))|
 |Referral shell (who referred whom, when, outcome)|24 months|Hard delete|Abuse and dispute handling|

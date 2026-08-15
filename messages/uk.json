@@ -721,7 +721,16 @@
     "submit": "Зареєструвати компанію",
     "moderationPending": "На модерації",
     "moderationApproved": "Схвалена",
-    "moderationRejected": "Відхилена"
+    "moderationRejected": "Відхилена",
+    "stepOf": "Крок {current} з {total}",
+    "progressLabel": "Прогрес заявки",
+    "draftLoading": "Завантажуємо вашу заявку...",
+    "draftSaving": "Зберігаємо...",
+    "next": "Далі",
+    "back": "Назад",
+    "reviewSection": "Перевірка та підтвердження",
+    "reviewNote": "Перевірте відповіді. Оплата поки не стягується — заявку розглянуть протягом 1–3 робочих днів.",
+    "notProvided": "Не вказано"
   },
   "admin": {
     "members": {
