@@ -29,9 +29,21 @@ function cardTokenLookup(token: string) {
   return or(eq(cards.tokenHash, tokenHash), eq(cards.token, token));
 }
 
+/**
+ * The member's current card.
+ *
+ * A member can hold more than one card row once a card has been reissued, so
+ * the order matters: a valid card wins over a revoked one, and the newest wins
+ * among equals. Without it, which card the dashboard shows after a reissue
+ * would be whatever the planner happened to return.
+ */
 export async function findCardByMemberId(db: DbClient, memberId: string) {
   const card = await db.query.cards.findFirst({
     where: eq(cards.memberId, memberId),
+    orderBy: (table, { asc, desc }) => [
+      asc(table.status),
+      desc(table.issuedAt),
+    ],
   });
 
   if (!card) return null;
@@ -194,6 +206,24 @@ export async function setMemberStatus(
   if (!member) return null;
 
   return (await findMemberAdminById(db, member.id)) ?? null;
+}
+
+/**
+ * Revoke every valid card a member holds, and return them.
+ *
+ * FR-025: a reissue must invalidate the previous QR token immediately. The
+ * token is derived from the card id and cannot be withdrawn, so revoking the
+ * row is what makes the old QR read as revoked at the verification page.
+ */
+export async function revokeValidCardsByMemberId(
+  db: DbClient,
+  memberId: string,
+) {
+  return db
+    .update(cards)
+    .set({ status: "revoked" })
+    .where(and(eq(cards.memberId, memberId), eq(cards.status, "valid")))
+    .returning();
 }
 
 export async function revokeCardById(db: DbClient, cardId: string) {

@@ -7,6 +7,7 @@ import {
   findMemberAdminById,
   insertCard,
   revokeCardById,
+  revokeValidCardsByMemberId,
   searchMembers,
   searchMembersByCardSerial,
   setMemberStatus,
@@ -145,6 +146,12 @@ export async function reissueCardAction(
   const targetMember = await findMemberAdminById(db, memberId);
   if (!targetMember) throw new Error("Member not found");
 
+  // FR-025: the previous QR token must stop working the moment a new card is
+  // issued. The token is derived from the card id and cannot be withdrawn, so
+  // the old rows are revoked - a stale QR then verifies as revoked rather than
+  // as a second live card.
+  const revoked = await revokeValidCardsByMemberId(db, memberId);
+
   const newCard = await insertCard(db, {
     memberId,
     serial: generateSerial(),
@@ -158,7 +165,9 @@ export async function reissueCardAction(
     subjectType: "card",
     subjectId: newCard.id,
     meta: {
-      before: null,
+      before: {
+        revokedCardIds: revoked.map((card) => card.id),
+      },
       after: {
         memberId,
         tier: newCard.tier,
