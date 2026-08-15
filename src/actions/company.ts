@@ -26,11 +26,24 @@ import {
   validateCityBelongsToCountry,
   type PartnerFilters,
 } from "@/data/companies";
+import {
+  deleteCompanyDraft,
+  findCompanyDraftByOwner,
+  upsertCompanyDraft,
+} from "@/data/company-drafts";
 import { getCurrentMember } from "./session";
 import { isFeatureEnabled } from "./feature-flags";
 import { buildActor } from "@/domain/actor";
 import { assertCan, can } from "@/domain/authorization";
 import { COMPANY_MODERATION_TOPIC } from "@/modules/moderation/outbox";
+import {
+  COMPANY_STEP_SCHEMAS,
+  companyDraftDataSchema,
+  isCompanyStep,
+  registerCompanySchema,
+  type CompanyDraftData,
+  type CompanyStepNumber,
+} from "@/lib/company-form";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -64,33 +77,6 @@ export async function getSubcategoriesByCategoryAction(
 ) {
   return listActiveSubcategories(db, block, category);
 }
-
-const registerCompanySchema = z.object({
-  name: z
-    .string()
-    .min(2, "Company name must be at least 2 characters")
-    .max(255),
-  legalName: z.string().max(255).optional(),
-  taxId: z.string().max(50).optional(),
-  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  description: z.string().max(1000).optional(),
-  businessCategoryId: z.coerce
-    .number()
-    .int()
-    .positive("Please select a business category"),
-
-  discount: z.string().max(255).optional(),
-  logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  contactEmail: z
-    .string()
-    .email("Must be a valid email")
-    .optional()
-    .or(z.literal("")),
-  contactPhone: z.string().max(50).optional(),
-
-  country: z.string().min(2, "Country is required").max(100),
-  city: z.string().min(2, "City is required").max(100),
-});
 
 export type CompanyFormState = { success: boolean; error?: string };
 
@@ -188,12 +174,118 @@ export async function registerCompanyAction(
       moderationStatus: "pending",
     });
 
+    // The application is now a company; the draft has served its purpose.
+    await deleteCompanyDraft(db, auth.member.id);
+
     return { success: true };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "An unexpected error occurred";
     return { success: false, error: message };
   }
+}
+
+export type CompanyDraftState = { success: boolean; error?: string };
+
+export type CompanyDraftSnapshot = {
+  step: CompanyStepNumber;
+  data: CompanyDraftData;
+};
+
+/**
+ * Save one completed step of the submission form (FR-040).
+ *
+ * Only the fields belonging to `step` are validated here - the applicant has
+ * not filled the later ones in yet, and rejecting a draft for that would defeat
+ * the point of saving it. The full schema is enforced on submission.
+ */
+export async function saveCompanyDraftAction(
+  step: number,
+  values: Record<string, string>,
+): Promise<CompanyDraftState> {
+  try {
+    const auth = await getCurrentMember();
+    if (!auth?.member) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const actor = buildActor(auth.member);
+    assertCan(actor, "create", "own_company");
+
+    if (!isCompanyStep(step)) {
+      return { success: false, error: "Unknown step" };
+    }
+
+    const stepSchema =
+      COMPANY_STEP_SCHEMAS[step as keyof typeof COMPANY_STEP_SCHEMAS];
+    if (stepSchema) {
+      const parsedStep = stepSchema.safeParse(values);
+      if (!parsedStep.success) {
+        return { success: false, error: parsedStep.error.issues[0]?.message };
+      }
+    }
+
+    // Merge over what is already stored so a save of step 2 does not wipe the
+    // answers given in step 1.
+    const existing = await findCompanyDraftByOwner(db, auth.member.id);
+    const previous = existing
+      ? (companyDraftDataSchema.safeParse(existing.data).data ?? {})
+      : {};
+    const merged = companyDraftDataSchema.safeParse({ ...previous, ...values });
+
+    await upsertCompanyDraft(
+      db,
+      auth.member.id,
+      step,
+      merged.success ? merged.data : previous,
+    );
+
+    return { success: true };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+    return { success: false, error: message };
+  }
+}
+
+/** Resume point for the submission form, or null when there is no draft. */
+export async function getCompanyDraftAction(): Promise<CompanyDraftSnapshot | null> {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return null;
+  }
+
+  const actor = buildActor(auth.member);
+  if (!can(actor, "create", "own_company")) {
+    return null;
+  }
+
+  const draft = await findCompanyDraftByOwner(db, auth.member.id);
+  if (!draft) {
+    return null;
+  }
+
+  const parsed = companyDraftDataSchema.safeParse(draft.data);
+
+  return {
+    step: isCompanyStep(draft.step) ? draft.step : 1,
+    data: parsed.success ? parsed.data : {},
+  };
+}
+
+/** Abandon an application deliberately, rather than waiting for retention. */
+export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "create", "own_company");
+
+  await deleteCompanyDraft(db, auth.member.id);
+
+  return { success: true };
 }
 
 export async function getPartnersListAction(filters?: PartnerFilters) {

@@ -66,6 +66,7 @@ that the folder cannot be trusted.
 |[0008](0008-durable-background-jobs-with-inngest.md)|Run background work on Inngest, fed by a transactional outbox in PostgreSQL|Accepted|2026-08-02|
 |[0009](0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire the client's contact data|Accepted|2026-08-02|
 |[0010](0010-no-own-a2p-registration-with-twilio-verify.md)|Send verification codes through Twilio Verify's registered sender pool, without our own A2P 10DLC registration|Accepted|2026-08-13|
+|[0011](0011-company-drafts-in-their-own-table.md)|Keep company application drafts in their own table, not as companies with a `draft` status|Accepted|2026-08-15|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
