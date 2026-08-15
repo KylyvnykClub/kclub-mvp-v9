@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 
 import type { DbClient } from "@/data/db.js";
@@ -24,6 +24,11 @@ import { getTestDb } from "./setup/integration-setup.js";
 function testDbClient(): DbClient {
   return getTestDb() as unknown as DbClient;
 }
+
+// Registration issues a card, and the card token is derived from this secret.
+beforeAll(() => {
+  process.env["BETTER_AUTH_SECRET"] ??= "integration-identity-secret";
+});
 
 let seq = 0;
 
