@@ -49,8 +49,11 @@ export const companies = pgTable("companies", {
   contactPhone: varchar("contact_phone", { length: 50 }),
 
   // Moderation
+  // FR-042: a submission must not be visible before approval. The default is
+  // the safe end of the enum, so an insert path that forgets this column
+  // queues the company for moderation rather than publishing it.
   moderationStatus: moderationStatusEnum("moderation_status")
-    .default("approved")
+    .default("pending")
     .notNull(),
   rejectionReason: text("rejection_reason"),
 
