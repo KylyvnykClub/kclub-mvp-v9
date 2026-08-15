@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/data/db";
+import { appendAuditEntry } from "@/data/audit-log";
+import {
+  eraseMemberTx,
+  findMembersDueForErasure,
+} from "@/data/account-erasure";
 import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
@@ -9,6 +14,8 @@ import { authorizeCronRequest } from "@/modules/platform";
 
 export interface RetentionResult {
   companyDraftsDeleted: number;
+  accountsErased: number;
+  accountErasuresFailed: number;
 }
 
 /**
@@ -27,13 +34,50 @@ export async function GET(req: Request) {
   const unauthorized = authorizeCronRequest(req, env.server.CRON_SECRET);
   if (unauthorized) return unauthorized;
 
+  const now = new Date();
+
   const companyDraftsDeleted = await deleteExpiredCompanyDrafts(
     db,
-    new Date(),
+    now,
     COMPANY_DRAFT_RETENTION_DAYS,
   );
 
-  const result: RetentionResult = { companyDraftsDeleted };
+  // FR-009: the 30-day clock on a deletion request runs out here.
+  const due = await findMembersDueForErasure(db, now);
+  let accountsErased = 0;
+  let accountErasuresFailed = 0;
+
+  for (const { memberId, requestedAt } of due) {
+    try {
+      await eraseMemberTx(db, memberId, now);
+      accountsErased += 1;
+
+      // data-storage.md §4 step 8: the audit log records that an erasure
+      // occurred, by internal id only - never by anything it just destroyed.
+      await appendAuditEntry(db, {
+        actorType: "system",
+        action: "member.erased",
+        subjectType: "member",
+        subjectId: memberId,
+        meta: {
+          requestedAt: requestedAt.toISOString(),
+          erasedAt: now.toISOString(),
+        },
+      });
+    } catch (error) {
+      accountErasuresFailed += 1;
+      const message = error instanceof Error ? error.message : "Unknown error";
+      // No member id in the message: this line goes to a log with a 30-day
+      // life, and the erasure is the point.
+      console.error(`[retention] account erasure failed: ${message}`);
+    }
+  }
+
+  const result: RetentionResult = {
+    companyDraftsDeleted,
+    accountsErased,
+    accountErasuresFailed,
+  };
 
   return NextResponse.json({ success: true, ...result });
 }
