@@ -63,11 +63,12 @@ lives in [`vercel.json`](../vercel.json).
 |`/api/cron/subscription-lapse`|every 2 minutes|Revokes access once a paid period has ended|
 |`/api/cron/billing-reconciliation`|02:17 UTC daily|Compares local subscription rows against Stripe and alerts on divergence, without repairing|
 |`/api/cron/retention`|03:41 UTC daily|Deletes abandoned company drafts after 90 days, and runs the 30-day account erasure|
-|`/api/cron/referrals`|**not scheduled**|See the warning below|
+|`/api/cron/referrals`|hourly at :11|Expires delivered referrals past 14 days and deletes the client contact details they hold (FR-077)|
 
-> **`/api/cron/referrals` is not in `vercel.json`.** The route exists and
-> nothing invokes it in production. If referral expiry (FR-077, 14 days) is
-> what it performs, it has never run. This is recorded and not yet resolved.
+`tests/constraints/cron-schedule-coverage.test.ts` fails if a route under
+`src/app/api/cron/` has no schedule, or a schedule has no route. That suite
+exists because `/api/cron/referrals` spent its whole life unscheduled: written,
+tested, and never once invoked in production.
 
 **Account erasure is partial.** The retention job performs the database half of
 the procedure in
