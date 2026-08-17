@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import pg from "pg";
 import type { Db, DbClient } from "@/data/db.js";
 import {
   findActiveSubscriptionByPrice,
@@ -116,5 +117,33 @@ describe("plan price management (FR-059)", () => {
       .from(subscriptions)
       .where(eq(subscriptions.memberId, member.id));
     expect(rows).toEqual([{ priceId: "price_vip_old" }]);
+  });
+});
+
+describe("integration test harness: nested db.transaction() does not leak", () => {
+  it("keeps setActivePlanPrice's write invisible to a second, independent connection", async () => {
+    const db = testDbClient();
+    const owner = await seedMember(db);
+    const stripePriceId = `price_leak_check_${crypto.randomUUID()}`;
+
+    // setActivePlanPrice opens its own db.transaction() internally. If that
+    // nested transaction ever silently commits the outer per-test
+    // transaction (the bug this test guards against), this write becomes
+    // visible outside the test's own connection before afterEach runs.
+    await setActivePlanPrice(testDb(), "vip", stripePriceId, owner.id);
+
+    const outsideClient = new pg.Client({
+      connectionString: process.env["TEST_DATABASE_URL"],
+    });
+    await outsideClient.connect();
+    try {
+      const result = await outsideClient.query(
+        "SELECT 1 FROM plan_prices WHERE stripe_price_id = $1",
+        [stripePriceId],
+      );
+      expect(result.rows).toHaveLength(0);
+    } finally {
+      await outsideClient.end();
+    }
   });
 });
