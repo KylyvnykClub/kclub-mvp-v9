@@ -162,7 +162,12 @@ describe("referral lifecycle (FR-074, FR-075, FR-077, FR-078)", () => {
       expiresAt: new Date(Date.now() - 60_000),
     });
 
-    await expect(expireOverdueReferrals(db, new Date())).resolves.toBe(2);
+    // Asserted as a floor, not an exact count: expireOverdueReferrals sweeps
+    // the whole table, not just this test's rows, so it can only be pinned
+    // to >= the referrals this test itself put in an overdue state.
+    await expect(
+      expireOverdueReferrals(db, new Date()),
+    ).resolves.toBeGreaterThanOrEqual(2);
 
     const expiredRow = await db.query.referrals.findFirst({
       where: (table, { eq }) => eq(table.id, expired.id),
