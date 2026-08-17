@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { DbClient } from "@/data/db.js";
 import {
-  expireDeliveredReferrals,
+  expireOverdueReferrals,
   insertReferral,
   listReceivedReferralsForCompanies,
   respondToReferral,
   setMemberReferralPermission,
+  setReferralModeration,
 } from "@/data/referrals.js";
 import {
   businessCategories,
@@ -147,12 +148,69 @@ describe("referral lifecycle (FR-074, FR-075, FR-077, FR-078)", () => {
       expiresAt: new Date(Date.now() - 60_000),
     });
 
-    await expect(expireDeliveredReferrals(db, new Date())).resolves.toBe(1);
+    // A referral staff never moderated is just as "not acted on" as one
+    // that was delivered and never answered - it must expire too.
+    const neverModerated = await insertReferral(db, {
+      senderId: sender.id,
+      recipientCompanyId: recipientCompany.id,
+      clientName: "Unmoderated Client",
+      contactChannel: "unmoderated@example.com",
+      serviceNeeded: "Unmoderated service",
+      status: "pending_review",
+      consentAttested: true,
+      consentTimestamp: new Date(),
+      expiresAt: new Date(Date.now() - 60_000),
+    });
+
+    await expect(expireOverdueReferrals(db, new Date())).resolves.toBe(2);
+
     const expiredRow = await db.query.referrals.findFirst({
       where: (table, { eq }) => eq(table.id, expired.id),
     });
     expect(expiredRow?.status).toBe("expired");
     expect(expiredRow?.contactChannel).toBeNull();
+
+    const neverModeratedRow = await db.query.referrals.findFirst({
+      where: (table, { eq }) => eq(table.id, neverModerated.id),
+    });
+    expect(neverModeratedRow?.status).toBe("expired");
+    expect(neverModeratedRow?.contactChannel).toBeNull();
+    expect(neverModeratedRow?.clientName).toBe("[Deleted due to expiration]");
+  });
+
+  it("redacts client contact details when staff rejects a referral (FR-077, ADR-0009)", async () => {
+    const db = testDbClient();
+    const sender = await seedMember(db, "100006");
+    const recipientOwner = await seedMember(db, "100007");
+    const recipientCompany = await seedCompany(db, recipientOwner.id, "100003");
+    const moderator = await seedMember(db, "100008");
+
+    const referral = await insertReferral(db, {
+      senderId: sender.id,
+      recipientCompanyId: recipientCompany.id,
+      clientName: "Rejected Client",
+      contactChannel: "rejected@example.com",
+      serviceNeeded: "Rejected service",
+      status: "pending_review",
+      consentAttested: true,
+      consentTimestamp: new Date(),
+      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    });
+
+    await setReferralModeration(
+      db,
+      referral.id,
+      "rejected",
+      moderator.id,
+      "Not a genuine client introduction",
+    );
+
+    const rejectedRow = await db.query.referrals.findFirst({
+      where: (table, { eq }) => eq(table.id, referral.id),
+    });
+    expect(rejectedRow?.status).toBe("rejected");
+    expect(rejectedRow?.contactChannel).toBeNull();
+    expect(rejectedRow?.clientName).toBe("[Deleted]");
   });
 
   it("bars and unbars a sender from sending referrals", async () => {
