@@ -38,6 +38,9 @@ export async function setReferralModeration(
       moderatorId,
       moderationReason: reason,
       updatedAt: new Date(),
+      ...(status === "rejected"
+        ? { contactChannel: null, clientName: "[Deleted]" }
+        : {}),
     })
     .where(eq(referrals.id, referralId));
 }
@@ -153,10 +156,13 @@ export async function listCompanyIdsByOwner(
 }
 
 /**
- * FR-077: expire delivered referrals past their expiry and delete the
- * contact details in the same statement.
+ * FR-077: expire referrals not acted on within 14 days and delete the
+ * contact details in the same statement. Covers both `delivered` (sent to
+ * the recipient, who never accepted or declined) and `pending_review`
+ * (staff never moderated it) - both are "not acted on", and neither is a
+ * terminal state on its own.
  */
-export async function expireDeliveredReferrals(
+export async function expireOverdueReferrals(
   db: DbClient,
   now: Date,
 ): Promise<number> {
@@ -166,9 +172,14 @@ export async function expireDeliveredReferrals(
       status: "expired",
       contactChannel: null,
       clientName: "[Deleted due to expiration]",
-      updatedAt: new Date(),
+      updatedAt: now,
     })
-    .where(and(eq(referrals.status, "delivered"), lt(referrals.expiresAt, now)))
+    .where(
+      and(
+        inArray(referrals.status, ["delivered", "pending_review"]),
+        lt(referrals.expiresAt, now),
+      ),
+    )
     .returning({ id: referrals.id });
 
   return expired.length;

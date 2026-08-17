@@ -63,7 +63,7 @@ lives in [`vercel.json`](../vercel.json).
 |`/api/cron/subscription-lapse`|every 2 minutes|Revokes access once a paid period has ended|
 |`/api/cron/billing-reconciliation`|02:17 UTC daily|Compares local subscription rows against Stripe and alerts on divergence, without repairing|
 |`/api/cron/retention`|03:41 UTC daily|Deletes abandoned company drafts after 90 days, and runs the 30-day account erasure|
-|`/api/cron/referrals`|hourly at :11|Expires delivered referrals past 14 days and deletes the client contact details they hold (FR-077)|
+|`/api/cron/referrals`|hourly at :11|Expires referrals not acted on within 14 days - delivered and never answered, or never moderated - and deletes the client contact details they hold (FR-077)|
 
 `tests/constraints/cron-schedule-coverage.test.ts` fails if a route under
 `src/app/api/cron/` has no schedule, or a schedule has no route. That suite

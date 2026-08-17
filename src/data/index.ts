@@ -99,7 +99,7 @@ export {
 } from "./billing";
 export type { SubscriptionRow, SubscriptionUpsert } from "./billing";
 export {
-  expireDeliveredReferrals,
+  expireOverdueReferrals,
   findReferralWithRecipientCompany,
   insertReferral,
   listCompanyIdsByOwner,
