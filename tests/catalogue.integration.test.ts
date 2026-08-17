@@ -20,10 +20,8 @@ import { getTestDb } from "./setup/integration-setup.js";
  * list - a company that is unapproved, or unpaid, is not in the catalogue no
  * matter what is asked for.
  *
- * FR-032 (search ranked by relevance) and FR-036 (400 ms p95) are deliberately
- * not claimed here. Search is currently an unranked ILIKE rather than the
- * full-text search ADR 0006 specifies, and a latency target is a measurement,
- * not an assertion.
+ * FR-036 (400 ms p95) is deliberately not claimed here - a latency target is
+ * a measurement, not an assertion.
  */
 
 function testDbClient(): DbClient {
@@ -242,6 +240,68 @@ describe("catalogue search: substring matching on name and description", () => {
 
     const visible = await listApprovedCompaniesByIds(db, [target, other], {
       query: "кава",
+    });
+
+    expect(visible.map((row) => row.id)).toEqual([target]);
+  });
+});
+
+describe("FR-032: search results ranked by relevance", () => {
+  it("ranks a name match above a description-only match", async () => {
+    const db = testDbClient();
+    const nameMatch = await seedPartner(db, {
+      name: "Blue Bottle Coffee",
+      description: "Third-wave roastery and tasting room",
+    });
+    const descriptionMatch = await seedPartner(db, {
+      name: "Anonymous Ltd",
+      description: "The best coffee in town, roasted daily",
+    });
+
+    const visible = await listApprovedCompaniesByIds(
+      db,
+      [descriptionMatch, nameMatch],
+      { query: "coffee" },
+    );
+
+    expect(visible.map((row) => row.id)).toEqual([nameMatch, descriptionMatch]);
+  });
+
+  it("ranks a name match above a description-only match in Ukrainian", async () => {
+    const db = testDbClient();
+    const nameMatch = await seedPartner(db, {
+      name: "Кава Хаус",
+      description: "Смачна випічка щодня",
+    });
+    const descriptionMatch = await seedPartner(db, {
+      name: "Інша компанія",
+      description: "Смачна кава щодня",
+    });
+
+    const visible = await listApprovedCompaniesByIds(
+      db,
+      [descriptionMatch, nameMatch],
+      { query: "кава" },
+    );
+
+    expect(visible.map((row) => row.id)).toEqual([nameMatch, descriptionMatch]);
+  });
+
+  it("tolerates a near-miss on the name via trigram similarity", async () => {
+    const db = testDbClient();
+    const target = await seedPartner(db, {
+      name: "Coffee Corner",
+      description: "Neighbourhood espresso bar",
+    });
+    const other = await seedPartner(db, {
+      name: "Iron Gym",
+      description: "Strength training studio",
+    });
+
+    // Missing the final "e" - no shared lexeme with "coffee", so this only
+    // matches through similarity(), not websearch_to_tsquery().
+    const visible = await listApprovedCompaniesByIds(db, [target, other], {
+      query: "Coffe Corner",
     });
 
     expect(visible.map((row) => row.id)).toEqual([target]);
