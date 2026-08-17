@@ -109,5 +109,7 @@ Run against staging with Stripe test mode, in this order:
 - RU/UK locale as default — the beta is English-only; other locales remain
   accessible but are not verified.
 - Billing lifecycle automation (lapse, grace, reconciliation) — phase 3 scope.
-- Wallet passes (FR-026, FR-027) — phase 1 scope, not needed for beta.
+- Wallet passes (FR-027) — phase 1 scope, not needed for beta. (FR-026, the
+  60-second tier-change guarantee, is a different requirement and is
+  implemented - see phase-1.md T-1.8.)
 - Account deletion and phone number change — phase 1 scope (T-1.7 partial).
