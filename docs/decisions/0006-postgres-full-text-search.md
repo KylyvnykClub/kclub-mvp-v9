@@ -84,6 +84,19 @@ or Russian, which will show first.
 exchange for one fewer system. We accept it knowingly, and we instrument the
 zero-result ratio so the trade is visible rather than assumed.
 
+## Implementation note (2026-08-17)
+
+This decision named "a per-language text search configuration" without
+pinning down which one. PostgreSQL ships no built-in `ukrainian` text search
+configuration, and a company's name/description is one mixed-language field
+per row with no language marker to switch on - so a single `tsvector` column
+cannot dispatch to a different config per row. The implementation uses
+`simple` (tokenises and lowercases, no stemming) uniformly for all three
+languages: it trades away stemming equally across en/ru/uk rather than
+leaving Ukrainian uniquely worse, which reads as the more faithful version of
+this decision's own accepted trade-off. `pg_trgm` similarity on `name` covers
+the typo/prefix tolerance a stemmed config would otherwise help with.
+
 ## Revisit if
 
 - The catalogue exceeds roughly 100,000 published companies

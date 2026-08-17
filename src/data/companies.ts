@@ -1,4 +1,14 @@
-import { and, asc, count, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import {
@@ -329,21 +339,36 @@ export async function listApprovedCompaniesByIds(
   }
 
   if (filters?.query) {
+    const q = filters.query;
+    // FR-032 / ADR 0006: search_vector is a trigger-maintained tsvector, not
+    // part of the Drizzle schema (see db/migrations/20260817090000). "simple"
+    // has no stemming, so en/ru/uk are matched the same way rather than
+    // Ukrainian alone being weaker. similarity() falls back for near-misses
+    // (typos, prefixes) that don't share a whole lexeme with the query.
     conditions = and(
       conditions,
       or(
-        ilike(companies.name, `%${filters.query}%`),
-        ilike(companies.description, `%${filters.query}%`),
+        sql`"companies"."search_vector" @@ websearch_to_tsquery('simple', ${q})`,
+        sql`similarity(lower("companies"."name"), lower(${q})) > 0.2`,
       ),
     );
   }
+
+  const orderBy = filters?.query
+    ? [
+        desc(sql`
+          ts_rank("companies"."search_vector", websearch_to_tsquery('simple', ${filters.query}))
+          + similarity(lower("companies"."name"), lower(${filters.query})) * 0.3
+        `),
+      ]
+    : [asc(companies.name)];
 
   return db.query.companies.findMany({
     where: conditions,
     with: {
       businessCategory: true,
     },
-    orderBy: [asc(companies.name)],
+    orderBy,
   });
 }
 
