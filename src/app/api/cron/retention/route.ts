@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
 import {
@@ -10,7 +11,10 @@ import {
   deleteExpiredCompanyDrafts,
 } from "@/data/company-drafts";
 import { env } from "@/env";
+import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
 import { authorizeCronRequest } from "@/modules/platform";
+
+const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
 export interface RetentionResult {
   companyDraftsDeleted: number;
@@ -49,6 +53,17 @@ export async function GET(req: Request) {
 
   for (const { memberId, requestedAt } of due) {
     try {
+      // data-storage.md §4 step 4, before the database half: a member with
+      // no Stripe Customer at all makes this a no-op.
+      await eraseStripeCustomerForMember(
+        db,
+        {
+          cancelSubscription: (id) => stripe.subscriptions.cancel(id),
+          deleteCustomer: (id) => stripe.customers.del(id),
+        },
+        memberId,
+      );
+
       await eraseMemberTx(db, memberId, now);
       accountsErased += 1;
 

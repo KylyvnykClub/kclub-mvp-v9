@@ -10,6 +10,7 @@ import {
   erasedPhone,
   findMembersDueForErasure,
 } from "@/data/account-erasure.js";
+import { insertStripeCustomerMapping } from "@/data/billing.js";
 import { createBusinessCategory } from "@/data/companies.js";
 import { registerMemberTx } from "@/data/identity.js";
 import { findCardPublicByToken } from "@/data/members.js";
@@ -20,7 +21,9 @@ import {
   members,
   referrals,
   sessions,
+  subscriptions,
 } from "@/data/schema/index.js";
+import { eraseStripeCustomerForMember } from "@/modules/billing/erasure.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 /**
@@ -292,6 +295,87 @@ describe("FR-009: what the erasure destroys", () => {
     expect(sent[0]?.clientName).toBe(ERASED_DISPLAY_NAME);
     expect(sent[0]?.contactChannel).toBeNull();
     expect(sent[0]?.note).toBeNull();
+  });
+});
+
+function fakeStripeDeps() {
+  const cancelled: string[] = [];
+  const deleted: string[] = [];
+  return {
+    deps: {
+      cancelSubscription: (id: string) => {
+        cancelled.push(id);
+        return Promise.resolve();
+      },
+      deleteCustomer: (id: string) => {
+        deleted.push(id);
+        return Promise.resolve();
+      },
+    },
+    cancelled,
+    deleted,
+  };
+}
+
+describe("FR-009: the Stripe Customer is deleted through the API (data-storage.md §4 step 4)", () => {
+  it("does nothing for a member who never subscribed to anything", async () => {
+    const db = testDbClient();
+    const { member } = await seedMemberWithRequest(db);
+    const { deps, cancelled, deleted } = fakeStripeDeps();
+
+    await eraseStripeCustomerForMember(db, deps, member.id);
+
+    expect(cancelled).toEqual([]);
+    expect(deleted).toEqual([]);
+  });
+
+  it("deletes the customer directly when there is no active subscription", async () => {
+    const db = testDbClient();
+    const { member } = await seedMemberWithRequest(db);
+    const stripeCustomerId = `cus_${crypto.randomUUID()}`;
+    await insertStripeCustomerMapping(db, member.id, stripeCustomerId);
+    const { deps, cancelled, deleted } = fakeStripeDeps();
+
+    await eraseStripeCustomerForMember(db, deps, member.id);
+
+    expect(cancelled).toEqual([]);
+    expect(deleted).toEqual([stripeCustomerId]);
+  });
+
+  it("cancels every active or past-due subscription before deleting the customer", async () => {
+    const db = testDbClient();
+    const { member } = await seedMemberWithRequest(db);
+    const stripeCustomerId = `cus_${crypto.randomUUID()}`;
+    await insertStripeCustomerMapping(db, member.id, stripeCustomerId);
+
+    const active = `sub_active_${crypto.randomUUID()}`;
+    const pastDue = `sub_pastdue_${crypto.randomUUID()}`;
+    const alreadyCancelled = `sub_cancelled_${crypto.randomUUID()}`;
+
+    for (const [stripeSubscriptionId, status] of [
+      [active, "active"],
+      [pastDue, "past_due"],
+      [alreadyCancelled, "canceled"],
+    ] as const) {
+      await db.insert(subscriptions).values({
+        stripeSubscriptionId,
+        memberId: member.id,
+        stripeCustomerId,
+        status,
+        priceId: "price_vip",
+        currentPeriodStart: new Date("2026-08-01T00:00:00Z"),
+        currentPeriodEnd: new Date("2026-09-01T00:00:00Z"),
+      });
+    }
+
+    const { deps, cancelled, deleted } = fakeStripeDeps();
+
+    await eraseStripeCustomerForMember(db, deps, member.id);
+
+    // Only the not-yet-terminal subscriptions are cancelled - a subscription
+    // already canceled in Stripe would error if cancelled again.
+    expect(cancelled.sort()).toEqual([active, pastDue].sort());
+    expect(deleted).toEqual([stripeCustomerId]);
   });
 });
 
