@@ -83,10 +83,15 @@ export async function findMembersDueForErasure(
  * than an un-erased one, because nothing would tell the next run which half
  * still needed doing.
  *
- * Deliberately NOT done here, because each needs an external call or a product
- * decision of its own: deleting the Stripe Customer, deleting R2 images,
- * disposing of owned companies, and clearing the notification log
- * (data-storage.md §4, steps 4 and 5).
+ * Deliberately NOT done here: deleting the Stripe Customer and cancelling any
+ * active subscriptions - which is what actually unpublishes a live company
+ * listing, since catalogue visibility is projected from subscription status,
+ * not a flag on the company - is an external call, handled by
+ * `eraseStripeCustomerForMember` (src/modules/billing/erasure.ts) before this
+ * runs. Still outstanding: deleting R2 images and clearing the notification
+ * log (data-storage.md §4, steps 5 and part of step 3) - neither is buildable
+ * yet, because no R2 upload pipeline or notification log table exists
+ * anywhere in this codebase.
  */
 export async function eraseMemberTx(
   db: DbClient,
