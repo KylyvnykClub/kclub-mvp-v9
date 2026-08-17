@@ -151,7 +151,7 @@ thought about.
 |-|-|
 |Fixtures / factories|Typed factories per entity with sensible defaults and explicit overrides (`aMember({ tier: 'vip' })`). Every test states only the fields it cares about, so a schema change breaks the factory rather than four hundred tests|
 |Database per test run|One PostgreSQL container per CI job, one schema per worker; preview environments get a Neon branch created from the schema|
-|Isolation between tests|Each test runs in a transaction that is rolled back afterwards. Tests that must commit (outbox dispatch, `SKIP LOCKED` behaviour) truncate their tables instead and are marked serial|
+|Isolation between tests|Each test runs in a transaction that is rolled back afterwards, held open via `tests/setup/integration-setup.ts` so application code's own nested `db.transaction()` calls resolve through drizzle's savepoint-based nesting rather than committing the outer transaction early. No test currently needs to commit across connections; if one ever does (outbox dispatch, `SKIP LOCKED` behaviour), it will need its own truncate-based, serial-marked exception - not yet implemented|
 |Parallel execution|Yes, one worker per core, one schema each. A test that fails only in parallel is a test that shares state, and that is a bug in the test|
 |Time and randomness|Both injected. A clock is a dependency, never `Date.now()` in domain code; UUIDs and tokens come from an injectable source. Every test is deterministic — a suite that fails one run in fifty is a suite people learn to re-run|
 |Timezones|CI runs the suite twice: once in UTC and once in `Pacific/Auckland`. A billing boundary bug that only appears across the date line is otherwise found by a member in New Zealand|
@@ -161,6 +161,11 @@ thought about.
 (the whole point of choosing it); Twilio, Resend and R2 are mocked at the network
 boundary with MSW in integration tests and are sandboxed in staging. Details in
 [integration.md §8](integration.md#8-testing-integrations).
+
+**Manual savepoints in a test:** a test that needs a raw `SAVEPOINT` against
+`getTestClient()` (e.g. to assert on a permission failure without losing
+earlier fixtures) must give it a name of its own choosing, not `sp1`, `sp2`,
+etc. - those are reserved by drizzle's own nested-transaction numbering.
 
 ---
 
