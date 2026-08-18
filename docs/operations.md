@@ -110,8 +110,8 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 
 |Command|Use|
 |-|-|
-|`pnpm verify`|Typecheck, lint, format, i18n, unit tests — the gate before any commit|
-|`pnpm build`|Production build; catches compiler rules `verify` does not|
+|`pnpm verify`|Typecheck, lint, format, i18n, unit tests, production build — the gate before any commit|
+|`pnpm build`|Production build alone; already included in `pnpm verify`, useful standalone when iterating on build-only errors|
 |`pnpm test:integration`|Integration suite; needs Docker for Testcontainers|
 |`pnpm db:migrate`|Apply migrations|
 |`pnpm db:updownup`|Prove a migration reverses cleanly|

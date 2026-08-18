@@ -32,7 +32,7 @@
     "test:unit": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit && pnpm build",
     "prepare": "husky"
   },
   "dependencies": {
