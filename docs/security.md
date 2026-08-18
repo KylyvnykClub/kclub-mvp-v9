@@ -232,8 +232,8 @@ calendar reminder, and immediately when anyone with access leaves.
 |Security headers|`Content-Security-Policy` (nonce-based, `frame-ancestors 'none'`, `base-uri 'none'`, `form-action 'self' checkout.stripe.com`), `Strict-Transport-Security` with preload, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` denying camera, microphone, geolocation and payment, `Cross-Origin-Opener-Policy: same-origin`|
 |CORS policy|No cross-origin API access is permitted. The application serves its own frontend; there is no browser client on another origin, so there is no `Access-Control-Allow-Origin` header to widen. Webhook endpoints are server-to-server and need none|
 |Clickjacking|`frame-ancestors 'none'`; the staff console additionally sets `X-Frame-Options: DENY` for older agents|
-|Enumeration|Sign-in, password reset and registration return the same response and take the same time whether or not the number is known. The card verification page returns the same shape for unknown, revoked and valid tokens|
-|Bots|Cloudflare Turnstile on registration and password reset, invisible unless the request looks automated. Chosen over reCAPTCHA to avoid sending visitor data to an advertising company|
+|Enumeration|Sign-in and registration return the same response and take the same time whether or not the number is known. The card verification page returns the same shape for unknown, revoked and valid tokens. Password reset has no implementation yet (accepted gap, [requirements.md §9](requirements.md#9-open-questions)) — this constraint applies to whatever reset flow is eventually built|
+|Bots|Cloudflare Turnstile on registration, invisible unless the request looks automated. Chosen over reCAPTCHA to avoid sending visitor data to an advertising company. Password reset has no implementation yet to gate|
 
 ---
 

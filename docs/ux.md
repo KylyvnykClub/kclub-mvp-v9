@@ -68,7 +68,7 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Register — profile|Finish in one screen|authenticated, unverified profile|Name, language, country. Three fields, no more|
 |Sign in|Return|public||
 |Sign in — device challenge|Prove an unrecognised device|public|Appears only when the device is unknown|
-|Forgot password|Recover|public|Code to the number, then a new password|
+|Forgot password|Recover|public|Not implemented — FR-006's SMS proof has no second channel while `AUTH_PHONE_VERIFICATION_ENABLED` is off (ADR 0012). The control on the sign-in screen is rendered disabled, not linked, until requirements.md §9's open question is answered|
 |Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
 **Member area (`kclub.com/app`)**
