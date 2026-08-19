@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-19
 > **Write when:** the first external dependency is added.
 
 Everything this system talks to, and the contract for each conversation — both
@@ -16,13 +16,13 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |Service|Used for|Critical?|Without it|Owner|
 |-|-|-|-|-|
 |**Stripe**|Subscriptions, checkout, invoices, customer portal, card storage|Yes|No new subscriptions and no renewals. Existing entitlements survive, because they are local. Revenue stops|Owner|
-|**Twilio Verify**|SMS one-time codes for registration, password reset and device challenges|Yes|Nobody can register or reset a password. Existing members sign in normally|Tech lead|
+|**Twilio Verify**|SMS one-time codes for registration and device challenges — postponed, currently unused while `AUTH_PHONE_VERIFICATION_ENABLED` is `false` ([ADR 0012](decisions/0012-postpone-phone-verification-turnstile-gate.md))|No, while postponed|Nothing — registration uses Cloudflare Turnstile instead. Password reset is unbuilt regardless of this dependency ([ADR 0015](decisions/0015-password-reset-deferred-to-client.md))|Tech lead|
 |**Twilio Messaging**|Transactional SMS to members without an email address|No|Notifications fall back to in-product state|Tech lead|
 |**Neon**|The primary database|Yes|Total outage of everything dynamic|Tech lead|
 |**Vercel**|Hosting, CDN, TLS, build and deploy|Yes|Total outage|Tech lead|
 |**Upstash Redis**|Rate limits, quotas, facet counts|No|Degrades to durable counting; limits become slower, never absent|Tech lead|
 |**Inngest**|Durable background jobs and scheduling|No, for correctness; yes, for timeliness|Entitlements lag and notifications queue. Nothing is lost — the outbox is in PostgreSQL|Tech lead|
-|**Cloudflare R2**|Partner images|No|Placeholder images; the catalogue works|Tech lead|
+|**Cloudflare R2**|Nightly PostgreSQL logical dump ([data-storage.md §5](data-storage.md#5-backup-and-recovery)) — not used for partner images ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|No|A missed nightly dump; point-in-time recovery from Neon is unaffected|Tech lead|
 |**Cloudflare DNS + Turnstile**|DNS, bot mitigation on registration|Yes (DNS)|DNS failure is a total outage; Turnstile failure fails open with tighter rate limits|Owner|
 |**Resend**|Transactional email|No|Email queues; in-product state is authoritative|Tech lead|
 |**Sentry / Axiom / Better Stack**|Errors, logs and metrics, uptime and status page|No|We are blind but serving. Blindness during an incident is bad enough to alert on separately|Tech lead|
@@ -123,15 +123,11 @@ one-time code — email is not a verification channel in this product.
 
 ### 2.4 Cloudflare R2
 
-|Aspect|Detail|
-|-|-|
-|Purpose|Storage of partner logos and cover images|
-|Protocol|S3-compatible REST, `@aws-sdk/client-s3`|
-|Authentication|Access key pair, scoped to one bucket|
-|Operations used|`PutObject` (server-side, after re-encoding), `DeleteObject`, presigned `GET` for private originals|
-|Timeout|10 s|
-|Retry policy|3 attempts; uploads are idempotent because the key is content-addressed|
-|Notes|Uploads never go browser-direct. Every image passes through our server for magic-byte validation, re-encoding and EXIF stripping ([security.md §6](security.md#6-application-security-controls)) — a presigned browser upload would skip all three|
+Not an application-facing integration. R2 holds the nightly PostgreSQL logical
+dump only ([data-storage.md §5](data-storage.md#5-backup-and-recovery)),
+written by a scheduled job rather than called from request-serving code.
+Partner logos are a member-supplied external URL, not an upload to R2 or
+anywhere else KCLUB controls ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
 
 ### 2.5 Upstash Redis and Inngest
 

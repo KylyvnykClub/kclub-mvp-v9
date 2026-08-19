@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-19
 > **Write when:** before the first production deploy — §1 and §4 sooner.
 
 What we protect, who we protect it from, and the concrete measures in place.
@@ -44,7 +44,7 @@ alongside [architecture.md](architecture.md) and
 |Broken object-level authorization (member A reads member B's company, subscription or referral)|External, authenticated|Privacy breach|M|Ownership filters applied inside repository functions rather than at call sites; an automated test enumerates every route with a second member's identifiers and asserts 404/403|
 |Referral feature used for spam or harvesting|Member|Regulatory and reputational|M|VIP + published company required to send; quotas per sender and per recipient; moderation before delivery; contact details hidden until acceptance; staff can bar a sender|
 |Denial of service / scraping of the catalogue|External|Availability, and partner data harvested|M|Catalogue is authenticated only; Vercel edge rate limits; per-account request budget; Cloudflare in front of DNS|
-|Malicious file upload disguised as a partner logo|Member|Stored XSS or malware distribution|L|Content-type and magic-byte validation; re-encode every image server-side; serve from a separate origin with `Content-Disposition` and a restrictive CSP; never execute or interpret an uploaded file|
+|Partner logo points at inappropriate or malicious content after moderation approves it|Member|Reputational; browser-side exposure to whatever the linked host serves|L|Partner logos are member-supplied external URLs, not files uploaded to KCLUB storage — the browser fetches them directly, never our server, so there is no server-side upload surface. Moderation reviews the URL's content at approval time only; a partner can swap the linked image afterwards, closed by a staff report rather than a technical control ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|
 |Supply-chain compromise of an npm dependency|External|Total, and quiet|L|Lockfile committed and verified; automated advisory scanning; a 3-day cool-off before adopting a brand-new major; CI has no access to production secrets|
 |Backup exfiltration|External|Total|L|Backups in a separate vendor, region and credential set; additionally age-encrypted with a key held outside the cloud|
 
@@ -227,7 +227,7 @@ calendar reminder, and immediately when anyone with access leaves.
 |Insecure direct object references|Ownership filters inside repository functions; every identifier exposed to a client is a UUIDv7, never a sequence; an automated test replays the whole route table with a second member's identifiers and asserts no data is returned|
 |Input validation|Zod schemas at every boundary — Server Actions, Route Handlers, webhook bodies, environment variables. The same schema runs in the browser for user experience and on the server for safety; the server never trusts that the browser ran it|
 |Output encoding|React for HTML; explicit JSON serialisation for API responses; `Content-Type` always set; no template string ever builds markup|
-|File upload handling|Images only (`image/jpeg`, `image/png`, `image/webp`), 5 MB cap, magic-byte check in addition to declared content type, re-encoded server-side with `sharp` (which strips EXIF, including GPS coordinates from a partner's phone photo), stored under a random key, served from a separate origin with `Content-Disposition: inline` and `X-Content-Type-Options: nosniff`. SVG is rejected outright — it is a script container|
+|File upload handling|Not applicable — there is no file upload anywhere in the product. Partner logos are a member-supplied external URL, fetched by the browser directly rather than uploaded to KCLUB storage ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|
 |Rate limiting / brute force|Sliding-window limits in Redis at three layers: per IP at the edge, per account on authentication, per business action (SMS requests, referrals, verification lookups). Failed sign-ins escalate delay per account: 3 → 1 s, 5 → 30 s, 10 → 15 min lockout with a notification to the member|
 |Security headers|`Content-Security-Policy` (nonce-based, `frame-ancestors 'none'`, `base-uri 'none'`, `form-action 'self' checkout.stripe.com`), `Strict-Transport-Security` with preload, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` denying camera, microphone, geolocation and payment, `Cross-Origin-Opener-Policy: same-origin`|
 |CORS policy|No cross-origin API access is permitted. The application serves its own frontend; there is no browser client on another origin, so there is no `Access-Control-Allow-Origin` header to widen. Webhook endpoints are server-to-server and need none|

@@ -396,6 +396,6 @@ Questions raised by the legal pack are tracked separately in
 
 |Question|Owner|Needed by|
 |-|-|-|
-|What identity proof does support accept to restore an account when the phone number is gone?|Client|Before public launch|
+|What identity proof does support accept to restore an account when the phone number is gone?|Client|Before public launch. **Blocks password reset, which stays unbuilt until this is answered ([ADR 0015](decisions/0015-password-reset-deferred-to-client.md))**|
 |Who is on call after launch, and under what arrangement?|Client|Before public launch|
-|Do offer restrictions (validity, territory, booking required, minimum order) become structured fields? Partner Rules §7 binds the partner to what is published, so free text is a dispute waiting to happen|Client + tech lead|Before phase 2 ends|
+|Do offer restrictions (validity, territory, booking required, minimum order) become structured fields? Partner Rules §7 binds the partner to what is published, so free text is a dispute waiting to happen|Client + tech lead|**Overdue** — was needed before phase 2 ended; phase 2 shipped with offer restrictions as free text, unresolved|

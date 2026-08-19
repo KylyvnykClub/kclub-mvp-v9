@@ -2,7 +2,7 @@
 
 > **Status:** Draft
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-12
+> **Last updated:** 2026-08-19
 > **Write when:** before promoting the first production deployment.
 
 This checklist is the production and preview provisioning gate. It is grounded
@@ -149,10 +149,10 @@ Required external checks:
 |-|-|-|-|
 |`RESEND_API_KEY`|Optional for private beta|Resend dashboard|If enabled, send a transactional test email and confirm sender domain authentication.|
 |`EMAIL_FROM`|Yes if email is enabled|Resend verified domain|Confirm the domain aligns with published contact/legal addresses.|
-|`R2_ACCOUNT_ID`|Optional until uploads are enabled|Cloudflare dashboard|Required before partner media uploads go live.|
-|`R2_ACCESS_KEY_ID`|Optional until uploads are enabled|Cloudflare R2 token|Use a bucket-scoped token only.|
-|`R2_SECRET_ACCESS_KEY`|Optional until uploads are enabled|Cloudflare R2 token|Store only in Vercel and 1Password.|
-|`R2_BUCKET_NAME`|Optional until uploads are enabled|Terraform or Cloudflare R2|Terraform currently wires this from `cloudflare_r2_bucket.media.name`.|
+|`R2_ACCOUNT_ID`|Not needed — media uploads are not built and not currently planned ([ADR 0013](../decisions/0013-partner-logos-as-external-urls.md))|Cloudflare dashboard|Revisit only if that ADR is revisited.|
+|`R2_ACCESS_KEY_ID`|Not needed — see `R2_ACCOUNT_ID`|Cloudflare R2 token|—|
+|`R2_SECRET_ACCESS_KEY`|Not needed — see `R2_ACCOUNT_ID`|Cloudflare R2 token|—|
+|`R2_BUCKET_NAME`|Required for the nightly backup dump only ([data-storage.md §5](../data-storage.md#5-backup-and-recovery)), not for media|Terraform or Cloudflare R2|Terraform currently wires this from `cloudflare_r2_bucket.media.name`.|
 |`TURNSTILE_SECRET_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Required before enabling Turnstile verification server-side.|
 |`NEXT_PUBLIC_TURNSTILE_SITE_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Must match `TURNSTILE_SECRET_KEY`.|
 |`SENTRY_DSN`|Optional for private beta|Sentry project|If omitted, Sentry initialization is deferred and guarded.|

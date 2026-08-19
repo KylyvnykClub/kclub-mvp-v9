@@ -374,6 +374,11 @@ shaped it without leaving the page.
 |[0008](decisions/0008-durable-background-jobs-with-inngest.md)|Durable background jobs with Inngest, fed by a transactional outbox|Accepted|
 |[0009](decisions/0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire client contact data|Accepted|
 |[0010](decisions/0010-no-own-a2p-registration-with-twilio-verify.md)|Verification codes go through Twilio Verify's registered sender pool; no KCLUB A2P 10DLC registration|Accepted|
+|[0011](decisions/0011-company-drafts-in-their-own-table.md)|Company application drafts live in their own table, not as companies with a `draft` status|Accepted|
+|[0012](decisions/0012-postpone-phone-verification-turnstile-gate.md)|SMS phone verification postponed; registration gated by Cloudflare Turnstile instead|Accepted|
+|[0013](decisions/0013-partner-logos-as-external-urls.md)|Partner logos are member-supplied external URLs, not uploaded files|Accepted|
+|[0014](decisions/0014-no-notification-log-table.md)|No dedicated notification log table|Accepted|
+|[0015](decisions/0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Accepted|
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-08-19
 > **Write when:** the first schema exists.
 
 What data the system holds, where it lives, how it changes shape over time, and
@@ -80,9 +80,9 @@ account inherit staff scope.
    │ entitlement  │  what the subscription unlocks *here*
    └──────────────┘
 
-   ┌────────────┐   ┌───────────┐   ┌─────────┐   ┌────────────────────┐
-   │ staff_user │──▶│ audit_log │   │ outbox  │   │ notification_log   │
-   │ role, totp │   │ append-only│  └─────────┘   └────────────────────┘
+   ┌────────────┐   ┌───────────┐   ┌─────────┐
+   │ staff_user │──▶│ audit_log │   │ outbox  │
+   │ role, totp │   │ append-only│  └─────────┘
    └────────────┘   └───────────┘
 ```
 
@@ -107,7 +107,6 @@ account inherit staff scope.
 |`staff_user`|An employee of the club|1:N audit entries|4 → 12|
 |`audit_log`|What a staff user or the system changed|N:1 actor|2,000 → 150,000/year|
 |`outbox`|Committed intent to do something outside the transaction|—|drained continuously|
-|`notification_log`|What we sent, to whom, in which language|N:1 member|3,000 → 200,000/year|
 
 **Conventions applied to every table:** `id` is a UUIDv7 (time-ordered, so
 b-tree inserts stay local and an id does not leak a sequence count);
@@ -124,7 +123,7 @@ adding a value to a native enum in a zero-downtime migration is awkward.
 |-|-|-|-|
 |Primary database (PostgreSQL 17, Neon)|Everything above|Yes, for everything except subscriptions|The domain is relational and the money is transactional. It also absorbs three jobs — search, queue outbox, and JSON diffs in the audit log — that would otherwise each be a separate service to operate|
 |Cache (Upstash Redis)|Rate-limit and quota counters, SMS send counters, catalogue facet counts, verification-page lookup counters|No|Needs atomic counters with expiry at the edge of the request, which PostgreSQL can do but not cheaply at every request|
-|Object storage (Cloudflare R2)|Partner logos and cover images|Yes, for the bytes; the key lives in `company`|Images do not belong in a database, and R2 charges nothing for egress|
+|Object storage (Cloudflare R2)|Nightly PostgreSQL logical dump only ([§5](#5-backup-and-recovery)); not used for partner images|N/A for images|Partner logos are a member-supplied external URL, not a KCLUB-hosted upload ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|
 |Search index|—|—|Not applicable — search is a `tsvector` column inside the primary database, see [decisions/0006-postgres-full-text-search.md](decisions/0006-postgres-full-text-search.md)|
 |Stripe|Subscriptions, invoices, customers, cards|**Yes** — ours is a projection|We are legally and practically better off not being the record of what someone was charged|
 |Twilio Verify|In-flight verification codes|Yes, while in flight|We deliberately never store a code, so a database compromise cannot approve a verification|
@@ -182,7 +181,6 @@ security control first and a cost control second.
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
 |Application logs|30 days|Automatic expiry in Axiom|Cost and minimisation|
-|Notification log (recipient, template, language, outcome — never the body)|12 months|Hard delete|Deliverability debugging|
 |Database backups|30 days point-in-time, 12 monthly snapshots|Automatic expiry|Recovery window|
 
 **Soft vs. hard delete.** Soft delete (`deleted_at`) is used only where a
@@ -202,19 +200,20 @@ to end — a deletion that stops at the primary database is not a deletion:
 3. On day 30 an Inngest job runs the erasure: anonymise the member row; delete
    sessions, trusted devices, verification records and the card's QR token;
    delete or anonymise owned companies (unpublishing any that are live);
-   hard-delete any referral contact data they submitted; delete their entry from
-   the notification log.
+   hard-delete any referral contact data they submitted. There is no
+   notification log to clear ([ADR 0014](decisions/0014-no-notification-log-table.md))
+   and no KCLUB-hosted company image to delete — logos are external URLs the
+   member supplied, not files we stored ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
 4. Stripe: the Customer object is deleted through the API, which removes the
    payment method and the billing address. Invoices remain in Stripe, as
    required by tax law and stated in the Privacy Policy.
-5. R2: images uploaded for their companies are deleted by key.
-6. Axiom: log records are not individually deletable; they expire at 30 days
+5. Axiom: log records are not individually deletable; they expire at 30 days
    and contain a `member_id`, never a phone number or a name. Stated in the
    Privacy Policy.
-7. Backups: not rewritten. The erasure is re-applied automatically if a backup
+6. Backups: not rewritten. The erasure is re-applied automatically if a backup
    is ever restored, by a post-restore job in the runbook. This is the standard
    position and it is documented for the regulator rather than glossed over.
-8. The audit log records that an erasure occurred, by internal id only.
+7. The audit log records that an erasure occurred, by internal id only.
 
 **Anonymisation.** After erasure a member row keeps: internal id, country,
 registration month, tier history and subscription linkage. That is enough for
@@ -228,7 +227,6 @@ revenue reporting and cohort counts and insufficient to identify a person.
 |-|-|-|-|-|-|
 |PostgreSQL (Neon)|Continuous WAL, point-in-time restore|Continuous|30 days|`us-east-1`|Yes, AES-256 at rest|
 |PostgreSQL logical dump|`pg_dump` to R2, written by a scheduled job|Nightly 03:15 UTC|12 monthly, 30 daily|Cloudflare R2, `eu-central-1`, **separate account and separate credentials from production**|Yes, and additionally age-encrypted with a key held only in 1Password|
-|Cloudflare R2 (images)|Object versioning|Continuous|30 days|Same bucket|Yes|
 |Stripe|Vendor-managed; not ours to back up|—|—|—|—|
 |Secrets|1Password vault with its own recovery|Continuous|—|—|Yes|
 
@@ -281,7 +279,7 @@ hypothesis.
 |Change a price|Strong locally, then propagated|New `price` row with `effective_from`; the Stripe Price object is created by the same job, and the local row is not marked active until Stripe confirms|
 |Read your own write after a mutation|Strong|All reads go to the primary. When a read replica is added, member-area reads that follow a mutation in the same request stay pinned to the primary|
 
-**Cross-store writes.** Three exist, and each uses the outbox rather than a
+**Cross-store writes.** Two exist, and each uses the outbox rather than a
 best-effort call inside a transaction:
 
 - Database + Stripe (creating a Checkout session, cancelling a subscription):
@@ -290,10 +288,6 @@ best-effort call inside a transaction:
   subscriptions.
 - Database + Twilio: no transaction spans them. A code is requested before any
   durable state exists, so a failure leaves nothing to compensate.
-- Database + R2: the object is uploaded to a temporary key first and the
-  database row commits with the final key; an orphan-object sweep runs weekly.
-  An orphaned object costs a fraction of a cent; a database row pointing at a
-  missing object is a broken page.
 
 **Read replicas:** none at launch. When added, they serve the staff console's
 analytical queries and the marketing showcase only. Member-area reads stay on
@@ -343,7 +337,7 @@ volume in [requirements.md §5.3](requirements.md#53-scalability).
 |Known expensive queries|The finance dashboard's revenue-by-country aggregation (FR-082) — scans `payment` for a month and joins `member`; capped by a materialised daily rollup refreshed hourly. The catalogue's combined filter + full-text query — kept under 400 ms by the composite index plus the GIN index, verified in CI against a 10,000-row fixture with `EXPLAIN` assertions|
 |Slow query monitoring|`pg_stat_statements` sampled hourly into a dashboard; any statement whose mean exceeds 200 ms raises a warning; Neon's own slow-query log at 500 ms. See [observability.md](observability.md)|
 |Connection pooling|Neon's pooled endpoint (PgBouncer, transaction mode) is the only endpoint the application uses; the direct endpoint is reserved for migrations. Serverless functions must never hold a session-mode connection, and prepared statements are disabled accordingly|
-|Archiving of old rows|`audit_log`, `payment` and `notification_log` are partitioned by month once any exceeds 5 million rows; partitions older than the retention period are detached and dropped rather than deleted row by row|
+|Archiving of old rows|`audit_log` and `payment` are partitioned by month once either exceeds 5 million rows; partitions older than the retention period are detached and dropped rather than deleted row by row|
 |Scaling plan|Vertical first (Neon autoscaling compute, currently 1–4 CU) → read replica for the staff console and marketing → partition the three growth tables by month → only then consider anything else. Sharding is not in this plan and should not be added to it without a decision record explaining what changed|
 
 ---
