@@ -221,8 +221,10 @@ from subscription.updated`.
 - Never commit a secret. Never paste one into a prompt either.
 - Read the file before editing it. Search for existing usage before adding a
   second way to do the same thing.
-- `pnpm verify` (typecheck + lint + unit + integration) before claiming anything
-  works. `python tools/check-docs.py` and `python tools/check-plan.py` before
+- `pnpm verify` (typecheck + lint + format + i18n + unit tests + build) before
+  claiming anything works. Integration tests (`pnpm test:integration`) are
+  separate — they need Docker for Testcontainers and are not part of `verify`.
+  `python tools/check-docs.py` and `python tools/check-plan.py` before
   closing a task.
 
 ---

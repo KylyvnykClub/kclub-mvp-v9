@@ -2,7 +2,7 @@
 
 > **Status:** Draft
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-15
+> **Last updated:** 2026-08-19
 > **Write when:** as soon as there is something to operate.
 
 Where each thing is managed, and by whom. This is a map, not a runbook — a
@@ -70,13 +70,16 @@ lives in [`vercel.json`](../vercel.json).
 exists because `/api/cron/referrals` spent its whole life unscheduled: written,
 tested, and never once invoked in production.
 
-**Account erasure is partial.** The retention job performs the database half of
-the procedure in
-[data-storage.md §4](data-storage.md#4-retention-and-deletion) — anonymising the
-member row, destroying sessions and card tokens, clearing referral contact
-details — and writes an audit entry. It does **not** delete the Stripe Customer,
-delete R2 images, dispose of owned companies, or clear the notification log.
-Its `accountsErased` count is not a claim that those happened.
+**Account erasure.** The retention job performs the database half of the
+procedure in [data-storage.md §4](data-storage.md#4-retention-and-deletion) —
+anonymising the member row, destroying sessions and card tokens, clearing
+referral contact details — and writes an audit entry.
+`eraseStripeCustomerForMember` deletes the Stripe Customer and cancels any
+active subscription first, which is also what unpublishes a live company
+listing (catalogue visibility projects from subscription status, not a flag
+on the company). There is no R2 image or notification log entry to clear by
+design ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md),
+[ADR 0014](decisions/0014-no-notification-log-table.md)).
 
 ## 4. Health
 
@@ -110,8 +113,8 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 
 |Command|Use|
 |-|-|
-|`pnpm verify`|Typecheck, lint, format, i18n, unit tests — the gate before any commit|
-|`pnpm build`|Production build; catches compiler rules `verify` does not|
+|`pnpm verify`|Typecheck, lint, format, i18n, unit tests, production build — the gate before any commit|
+|`pnpm build`|Production build alone; already included in `pnpm verify`, useful standalone when iterating on build-only errors|
 |`pnpm test:integration`|Integration suite; needs Docker for Testcontainers|
 |`pnpm db:migrate`|Apply migrations|
 |`pnpm db:updownup`|Prove a migration reverses cleanly|

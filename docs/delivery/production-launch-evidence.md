@@ -2,7 +2,7 @@
 
 > **Status:** Draft
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-12
+> **Last updated:** 2026-08-19
 > **Write when:** continuously from private-beta hardening until production promotion.
 
 This is the production launch ledger. It converts
@@ -26,7 +26,7 @@ or reviewed artifact.
 
 |ID|Acceptance criterion|Status|Current evidence|Missing evidence / next action|
 |-|-|-|-|-|
-|`AC-01`|All **M** functional requirements implemented, each with an automated test referencing its FR ID.|`blocked`|`python tools/check-plan.py --strict` currently passes, and the unit/integration suites run locally.|Confirm every M requirement is implemented in the live product, not only claimed by a task. Keep `check-plan.py --strict` green after each implementation PR.|
+|`AC-01`|All **M** functional requirements implemented, each with an automated test referencing its FR ID.|`blocked`|Every M requirement now has a written decision behind it: implemented and tested, or a named, dated gap. The single unresolved M requirement is FR-006 (password reset), deliberately unbuilt pending the client's answer to `requirements.md §9` ([ADR 0015](../decisions/0015-password-reset-deferred-to-client.md)). `python tools/check-plan.py --strict` passes, and the unit/integration suites run locally.|Genuinely blocked, not a coverage gap: cannot close until the client answers the account-recovery question. Keep `check-plan.py --strict` green after each implementation PR.|
 |`AC-02`|Non-functional targets in §5 measured and met, with the measurement recorded.|`blocked`|Reliability and performance targets are documented in [requirements.md §5](../requirements.md#5-non-functional-requirements) and [reliability.md](../reliability.md).|Run and attach load, latency, availability, SMS delivery, and entitlement freshness measurements.|
 |`AC-03`|Full billing lifecycle verified against Stripe test clocks: subscribe, renew, fail, recover, cancel, lapse, duplicate and out-of-order webhooks.|`blocked`|Billing projection integration tests exist; production env checklist names Stripe keys, prices, webhook, and lifecycle proof.|Run Stripe test-clock lifecycle evidence end to end and attach CI or staging results.|
 |`AC-04`|Card verification discloses nothing beyond FR-023, confirmed by reviewing the actual HTTP response body.|`in_progress`|Card token hashing tests are present; `identity-card-tokens.integration.test.ts` asserts the public verification DTO exposes only FR-023 fields, and the public route exists at `/[locale]/card/[token]`.|Capture valid, revoked, and unknown token HTTP responses from preview and review the raw bodies before marking complete.|

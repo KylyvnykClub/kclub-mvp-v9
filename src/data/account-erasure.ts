@@ -88,10 +88,9 @@ export async function findMembersDueForErasure(
  * listing, since catalogue visibility is projected from subscription status,
  * not a flag on the company - is an external call, handled by
  * `eraseStripeCustomerForMember` (src/modules/billing/erasure.ts) before this
- * runs. Still outstanding: deleting R2 images and clearing the notification
- * log (data-storage.md §4, steps 5 and part of step 3) - neither is buildable
- * yet, because no R2 upload pipeline or notification log table exists
- * anywhere in this codebase.
+ * runs. Deleting R2 images and clearing a notification log are not part of
+ * this procedure: neither R2 uploads nor a notification log exist by design
+ * (ADR 0013, ADR 0014), so there is nothing there to erase.
  */
 export async function eraseMemberTx(
   db: DbClient,
