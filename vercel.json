@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/outbox-drain",
-      "schedule": "* * * * *"
+      "schedule": "5 0 * * *"
     },
     {
       "path": "/api/cron/subscription-lapse",
-      "schedule": "*/2 * * * *"
+      "schedule": "35 0 * * *"
     },
     {
       "path": "/api/cron/billing-reconciliation",
@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/referrals",
-      "schedule": "11 * * * *"
+      "schedule": "11 1 * * *"
     }
   ]
 }
