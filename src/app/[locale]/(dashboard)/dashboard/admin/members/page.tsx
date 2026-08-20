@@ -12,20 +12,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { MemberManagementDialog } from "./_components/member-management-dialog";
+import { MEMBER_ADMIN_STATUSES } from "@/data/members";
+import { AdminSearchInput } from "../_components/admin-search-input";
+import { AdminFilterChips } from "../_components/admin-filter-chips";
+import { AdminPagination } from "../_components/admin-pagination";
+import { StatusBadge, memberStatusTone } from "../_components/status-badge";
+import { MemberDetailSheet } from "./_components/member-detail-sheet";
+
+const STATUS_LABEL_KEYS = {
+  active: "statusActive",
+  blocked: "statusBlocked",
+  pending_deletion: "statusPendingDeletion",
+} as const;
 
 export default async function AdminMembersPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations("admin.members");
+  const tShell = await getTranslations("admin.shell");
   const tCard = await getTranslations("card");
 
   const session = await getCurrentMember();
@@ -40,35 +51,51 @@ export default async function AdminMembersPage({
   const canManageMembers = can(actor, "block", "member");
   const canExportMembers = can(actor, "export_data", "member");
 
-  const { q } = await searchParams;
-  const membersList = await getMembersListAction(q);
+  const { q, status, page } = await searchParams;
+  const list = await getMembersListAction({ query: q, status, page });
+  const totalPages = Math.max(1, Math.ceil(list.total / list.pageSize));
+
+  const buildHref = (target: number) => {
+    const query = new URLSearchParams();
+    if (q) query.set("q", q);
+    if (status) query.set("status", status);
+    if (target > 1) query.set("page", String(target));
+    const search = query.toString();
+    return search
+      ? `/${locale}/dashboard/admin/members?${search}`
+      : `/${locale}/dashboard/admin/members`;
+  };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl space-y-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">{t("description")}</p>
+        <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
 
-      <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-border/50">
-          <form className="flex space-x-2 max-w-sm">
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder={t("searchPlaceholder")}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
-            >
-              {t("search")}
-            </button>
-          </form>
+      <div className="space-y-4 rounded-lg border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <AdminSearchInput
+            defaultValue={q}
+            placeholder={t("searchPlaceholder")}
+            submitLabel={t("search")}
+          />
+          <p className="text-xs font-medium text-muted-foreground">
+            {t("totalCount", { count: list.total })}
+          </p>
         </div>
+
+        <AdminFilterChips
+          paramName="status"
+          allLabel={tShell("filterAll")}
+          options={MEMBER_ADMIN_STATUSES.map((value) => ({
+            value,
+            label: t(STATUS_LABEL_KEYS[value]),
+            count: list.statusCounts[value],
+          }))}
+        />
 
         <Table>
           <TableHeader>
@@ -76,67 +103,67 @@ export default async function AdminMembersPage({
               <TableHead>{t("colDisplayName")}</TableHead>
               <TableHead>{t("colPhone")}</TableHead>
               <TableHead>{t("colCards")}</TableHead>
+              <TableHead>{t("colJoined")}</TableHead>
               <TableHead>{t("colStatus")}</TableHead>
               <TableHead>{t("colActions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {membersList.length === 0 ? (
+            {list.rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
-                  className="text-center text-muted-foreground py-8"
+                  colSpan={6}
+                  className="py-8 text-center text-muted-foreground"
                 >
                   {t("noResults")}
                 </TableCell>
               </TableRow>
             ) : (
-              membersList.map((m) => (
+              list.rows.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell className="font-medium">
                     {m.displayName || t("notAvailable")}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{m.phone}</TableCell>
                   <TableCell>
-                    {m.cards && m.cards.length > 0 ? (
-                      <div className="flex flex-col space-y-1">
+                    {m.cards.length > 0 ? (
+                      <div className="flex flex-col gap-1">
                         {m.cards.map((c) => (
-                          <span key={c.id} className="text-xs">
-                            {c.serial}{" "}
-                            <Badge
-                              variant={
-                                c.status === "valid" ? "default" : "secondary"
+                          <span
+                            key={c.id}
+                            className="flex items-center gap-2 text-xs"
+                          >
+                            <span className="font-mono">{c.serial}</span>
+                            <StatusBadge
+                              tone={
+                                c.status === "valid" ? "positive" : "negative"
                               }
-                              className="text-[10px] ml-1"
-                            >
-                              {c.status === "valid"
-                                ? tCard("statusValid")
-                                : tCard("statusRevoked")}
-                            </Badge>
+                              label={
+                                c.status === "valid"
+                                  ? tCard("statusValid")
+                                  : tCard("statusRevoked")
+                              }
+                            />
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-muted-foreground">
                         {t("noCards")}
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    {m.status === "blocked" ? (
-                      <Badge variant="destructive">{t("statusBlocked")}</Badge>
-                    ) : m.status === "pending_deletion" ? (
-                      <Badge variant="secondary">
-                        {t("statusPendingDeletion")}
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30">
-                        {t("statusActive")}
-                      </Badge>
-                    )}
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(m.createdAt).toLocaleDateString(locale)}
                   </TableCell>
                   <TableCell>
-                    <MemberManagementDialog
+                    <StatusBadge
+                      tone={memberStatusTone(m.status)}
+                      label={t(STATUS_LABEL_KEYS[m.status])}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <MemberDetailSheet
                       member={m}
                       canManage={canManageMembers}
                       canExport={canExportMembers}
@@ -147,6 +174,21 @@ export default async function AdminMembersPage({
             )}
           </TableBody>
         </Table>
+
+        <AdminPagination
+          page={list.page}
+          totalPages={totalPages}
+          buildHref={buildHref}
+          labels={{
+            previous: tShell("previous"),
+            next: tShell("next"),
+            summary: tShell("pageSummary", {
+              page: list.page,
+              totalPages,
+              total: list.total,
+            }),
+          }}
+        />
       </div>
     </div>
   );

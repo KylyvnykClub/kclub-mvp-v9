@@ -11,7 +11,8 @@ export function AdminPagination({
   page: number;
   totalPages: number;
   buildHref: (page: number) => string;
-  labels: { previous: string; next: string; pageOf: string };
+  /** `summary` arrives already formatted - the caller owns the interpolation. */
+  labels: { previous: string; next: string; summary: string };
 }) {
   if (totalPages <= 1) return null;
 
@@ -21,9 +22,7 @@ export function AdminPagination({
   return (
     <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
       <p className="text-xs font-medium text-muted-foreground">
-        {labels.pageOf
-          .replace("{page}", String(page))
-          .replace("{total}", String(totalPages))}
+        {labels.summary}
       </p>
       <div className="flex items-center gap-2">
         <Button
