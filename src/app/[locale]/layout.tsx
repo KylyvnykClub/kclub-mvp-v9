@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import { fontBody, fontHeading } from "@/app/fonts";
 import { PwaRegister } from "@/components/pwa-register";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 import "../globals.css";
 
@@ -63,6 +64,10 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider>
           <ThemeProvider>
             {children}
+            {/* Mounted once for the whole app: toast() is called from four
+                client components (member and staff alike) and every one of
+                them was a silent no-op without a Toaster in the tree. */}
+            <Toaster />
             <PwaRegister />
           </ThemeProvider>
         </NextIntlClientProvider>

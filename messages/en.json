@@ -750,6 +750,12 @@
       "contentAccess": "Content & Access",
       "rolesPermissions": "Roles & Permissions"
     },
+    "shell": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageSummary": "Page {page} of {totalPages} · {total} total",
+      "filterAll": "All"
+    },
     "members": {
       "title": "Member & Card Administration",
       "description": "View members, block accounts, and revoke or reissue membership cards.",
@@ -800,7 +806,24 @@
       "cardRevoked": "Card revoked",
       "cardIssued": "New card issued",
       "dataExportSection": "Data export",
-      "exportData": "Export member data"
+      "exportData": "Export member data",
+      "tabInfo": "Info",
+      "tabSettings": "Settings",
+      "colJoined": "Joined",
+      "totalCount": "{count} members",
+      "overviewSection": "Member",
+      "phoneLabel": "Phone",
+      "countryLabel": "Country",
+      "languageLabel": "Language",
+      "joinedLabel": "Registered",
+      "profileCompleteness": "Profile completeness",
+      "profileCompletenessValue": "{percent}% complete",
+      "missingLabel": "Missing:",
+      "fieldBio": "Bio",
+      "fieldIndustry": "Industry",
+      "fieldLocation": "Location",
+      "fieldAvatarUrl": "Avatar",
+      "fieldTotpEnabled": "Two-factor authentication"
     },
     "companies": {
       "title": "Company Moderation",

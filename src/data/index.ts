@@ -28,18 +28,21 @@ export {
 } from "./identity";
 export type { RegisterMemberInput } from "./identity";
 export {
+  countMembers,
+  countMembersByStatus,
   findCardByMemberId,
   findCardById,
   findCardPublicByToken,
   findMemberAdminById,
   insertCard,
   listMemberActivityHistory,
+  MEMBER_ADMIN_STATUSES,
   revokeCardById,
   searchMembers,
-  searchMembersByCardSerial,
   setMemberStatus,
   withMemberActivityHistory,
 } from "./members";
+export type { MemberAdminFilters, MemberAdminStatus } from "./members";
 export {
   createStaffMember,
   findStaffMemberById,

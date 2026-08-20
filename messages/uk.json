@@ -750,6 +750,12 @@
       "contentAccess": "Контент і доступи",
       "rolesPermissions": "Ролі та доступи"
     },
+    "shell": {
+      "previous": "Назад",
+      "next": "Далі",
+      "pageSummary": "Сторінка {page} з {totalPages} · усього {total}",
+      "filterAll": "Усі"
+    },
     "members": {
       "title": "Адміністрування учасників та карт",
       "description": "Переглядайте учасників, блокуйте облікові записи, відкликайте та перевипускайте картки.",
@@ -800,7 +806,24 @@
       "cardRevoked": "Картку відкликано",
       "cardIssued": "Випущено нову картку",
       "dataExportSection": "Експорт даних",
-      "exportData": "Експортувати дані учасника"
+      "exportData": "Експортувати дані учасника",
+      "tabInfo": "Профіль",
+      "tabSettings": "Керування",
+      "colJoined": "Реєстрація",
+      "totalCount": "Усього учасників: {count}",
+      "overviewSection": "Учасник",
+      "phoneLabel": "Телефон",
+      "countryLabel": "Країна",
+      "languageLabel": "Мова",
+      "joinedLabel": "Дата реєстрації",
+      "profileCompleteness": "Заповненість профілю",
+      "profileCompletenessValue": "Заповнено на {percent}%",
+      "missingLabel": "Не заповнено:",
+      "fieldBio": "Про себе",
+      "fieldIndustry": "Галузь",
+      "fieldLocation": "Місто",
+      "fieldAvatarUrl": "Аватар",
+      "fieldTotpEnabled": "Двофакторна автентифікація"
     },
     "companies": {
       "title": "Модерація компаній",

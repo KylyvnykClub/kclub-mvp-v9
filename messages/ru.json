@@ -750,6 +750,12 @@
       "contentAccess": "Контент и доступы",
       "rolesPermissions": "Роли и доступы"
     },
+    "shell": {
+      "previous": "Назад",
+      "next": "Вперёд",
+      "pageSummary": "Страница {page} из {totalPages} · всего {total}",
+      "filterAll": "Все"
+    },
     "members": {
       "title": "Администрирование участников и карт",
       "description": "Просматривайте участников, блокируйте аккаунты, отзывайте и перевыпускайте карты.",
@@ -800,7 +806,24 @@
       "cardRevoked": "Карта отозвана",
       "cardIssued": "Выпущена новая карта",
       "dataExportSection": "Экспорт данных",
-      "exportData": "Экспортировать данные участника"
+      "exportData": "Экспортировать данные участника",
+      "tabInfo": "Профиль",
+      "tabSettings": "Управление",
+      "colJoined": "Регистрация",
+      "totalCount": "Всего участников: {count}",
+      "overviewSection": "Участник",
+      "phoneLabel": "Телефон",
+      "countryLabel": "Страна",
+      "languageLabel": "Язык",
+      "joinedLabel": "Дата регистрации",
+      "profileCompleteness": "Заполненность профиля",
+      "profileCompletenessValue": "Заполнено на {percent}%",
+      "missingLabel": "Не заполнено:",
+      "fieldBio": "О себе",
+      "fieldIndustry": "Отрасль",
+      "fieldLocation": "Город",
+      "fieldAvatarUrl": "Аватар",
+      "fieldTotpEnabled": "Двухфакторная аутентификация"
     },
     "companies": {
       "title": "Модерация компаний",
