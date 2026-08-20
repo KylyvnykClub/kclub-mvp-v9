@@ -5,6 +5,7 @@
     "days": "{count, plural, =0 {нет дней} one {# день} few {# дня} many {# дней} other {# дней}}",
     "loading": "Загрузка…",
     "error": "Что-то пошло не так",
+    "tryAgain": "Попробовать снова",
     "notFound": "Страница не найдена",
     "back": "Назад",
     "submit": "Отправить",
@@ -733,6 +734,22 @@
     "notProvided": "Не указано"
   },
   "admin": {
+    "nav": {
+      "consoleLabel": "Панель администратора",
+      "openNavigation": "Открыть навигацию",
+      "comingSoon": "Скоро",
+      "overview": "Обзор",
+      "users": "Пользователи",
+      "companies": "Компании",
+      "introductions": "Представления клиентов",
+      "support": "Поддержка",
+      "categories": "Категории",
+      "staff": "Сотрудники",
+      "flags": "Флаги",
+      "audit": "Журнал аудита",
+      "contentAccess": "Контент и доступы",
+      "rolesPermissions": "Роли и доступы"
+    },
     "members": {
       "title": "Администрирование участников и карт",
       "description": "Просматривайте участников, блокируйте аккаунты, отзывайте и перевыпускайте карты.",
@@ -867,8 +884,11 @@
     "dashboard": {
       "title": "Дашборд администратора",
       "description": "Обзор финансовых показателей и подписок.",
-      "revenue30d": "Доход за 30 дней",
-      "last30Days": "За последние 30 дней",
+      "revenue": "Выручка",
+      "lastNDays": "За последние {days} дн.",
+      "period7": "7Д",
+      "period30": "30Д",
+      "period90": "90Д",
       "activeVip": "Активные VIP подписки",
       "activeCompany": "Активные подписки компаний",
       "renewalsDue": "Ожидаемые продления",
@@ -879,8 +899,15 @@
       "unknownCustomer": "Неизвестный клиент",
       "viewReceipt": "Чек",
       "revenueByCountry": "Доход по странам",
-      "revenueByCountryDesc": "Распределение дохода за последние 30 дней",
-      "noData": "Нет данных"
+      "revenueByCountryDesc": "Распределение дохода за выбранный период",
+      "noData": "Нет данных",
+      "registrationsTitle": "Регистрации",
+      "registrationsDesc": "Новые участники и компании по дням",
+      "membersSeriesLabel": "Участники",
+      "companiesSeriesLabel": "Компании",
+      "queueTitle": "Компании, ожидающие проверки",
+      "queueEmpty": "Нет заявок на проверку",
+      "viewAll": "Смотреть все"
     },
     "audit": {
       "title": "Аудит",

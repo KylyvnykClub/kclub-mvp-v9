@@ -5,6 +5,7 @@
     "days": "{count, plural, =0 {no days} one {# day} other {# days}}",
     "loading": "Loading…",
     "error": "Something went wrong",
+    "tryAgain": "Try again",
     "notFound": "Page not found",
     "back": "Back",
     "submit": "Submit",
@@ -733,6 +734,22 @@
     "notProvided": "Not provided"
   },
   "admin": {
+    "nav": {
+      "consoleLabel": "Admin Console",
+      "openNavigation": "Open navigation",
+      "comingSoon": "Coming soon",
+      "overview": "Overview",
+      "users": "Users",
+      "companies": "Companies",
+      "introductions": "Client Introductions",
+      "support": "Support",
+      "categories": "Categories",
+      "staff": "Staff",
+      "flags": "Flags",
+      "audit": "Audit Log",
+      "contentAccess": "Content & Access",
+      "rolesPermissions": "Roles & Permissions"
+    },
     "members": {
       "title": "Member & Card Administration",
       "description": "View members, block accounts, and revoke or reissue membership cards.",
@@ -867,8 +884,11 @@
     "dashboard": {
       "title": "Admin Dashboard",
       "description": "Overview of financial metrics and subscriptions.",
-      "revenue30d": "30-Day Revenue",
-      "last30Days": "Last 30 days",
+      "revenue": "Revenue",
+      "lastNDays": "Last {days} days",
+      "period7": "7D",
+      "period30": "30D",
+      "period90": "90D",
       "activeVip": "Active VIP Subscriptions",
       "activeCompany": "Active Company Subscriptions",
       "renewalsDue": "Renewals Due",
@@ -879,8 +899,15 @@
       "unknownCustomer": "Unknown Customer",
       "viewReceipt": "View Receipt",
       "revenueByCountry": "Revenue by Country",
-      "revenueByCountryDesc": "Revenue distribution from the last 30 days",
-      "noData": "No data available"
+      "revenueByCountryDesc": "Revenue distribution for the selected period",
+      "noData": "No data available",
+      "registrationsTitle": "Registrations",
+      "registrationsDesc": "New members and companies per day",
+      "membersSeriesLabel": "Members",
+      "companiesSeriesLabel": "Companies",
+      "queueTitle": "Companies Awaiting Review",
+      "queueEmpty": "Nothing pending review",
+      "viewAll": "View all"
     },
     "audit": {
       "title": "Audit Logs",

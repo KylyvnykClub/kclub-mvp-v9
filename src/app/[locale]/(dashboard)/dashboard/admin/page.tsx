@@ -1,9 +1,14 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
-import { getAdminDashboardMetricsAction } from "@/actions/admin-dashboard";
+import {
+  getAdminDashboardMetricsAction,
+  type DashboardPeriodDays,
+} from "@/actions/admin-dashboard";
+import { getPendingCompaniesAction } from "@/actions/company";
 import {
   Card,
   CardContent,
@@ -11,13 +16,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { DollarSign, Clock, Users, Activity } from "lucide-react";
 import { FinanceCountryChart } from "./_components/finance-country-chart";
+import { RegistrationsChart } from "./_components/registrations-chart";
+import { KpiCard } from "./_components/kpi-card";
+import { ModerateActions } from "./companies/_components/moderate-actions";
+import { cn } from "@/lib/utils";
+
+const PERIODS: DashboardPeriodDays[] = [7, 30, 90];
+
+function PeriodSwitcher({
+  active,
+  locale,
+  labels,
+}: {
+  active: DashboardPeriodDays;
+  locale: string;
+  labels: Record<DashboardPeriodDays, string>;
+}) {
+  return (
+    <div className="inline-flex rounded-md border border-border p-0.5">
+      {PERIODS.map((days) => (
+        <Link
+          key={days}
+          href={`/${locale}/dashboard/admin?days=${days}`}
+          className={cn(
+            "rounded px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] transition-colors",
+            days === active
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {labels[days]}
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 export default async function AdminDashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ days?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -33,80 +76,102 @@ export default async function AdminDashboardPage({
     redirect(`/${locale}/dashboard`);
   }
 
-  const metrics = await getAdminDashboardMetricsAction();
+  const { days: rawDays } = await searchParams;
+  const days: DashboardPeriodDays = PERIODS.includes(
+    Number(rawDays) as DashboardPeriodDays,
+  )
+    ? (Number(rawDays) as DashboardPeriodDays)
+    : 30;
+
+  const [metrics, pendingCompanies] = await Promise.all([
+    getAdminDashboardMetricsAction(days),
+    getPendingCompaniesAction(),
+  ]);
+  const queue = (pendingCompanies.data ?? []).slice(0, 5);
+
+  const currencyFormatter = (value: number) =>
+    value.toLocaleString(locale, { style: "currency", currency: "USD" });
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
+            {t("title")}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{t("description")}</p>
+        </div>
+        <PeriodSwitcher
+          active={days}
+          locale={locale}
+          labels={{ 7: t("period7"), 30: t("period30"), 90: t("period90") }}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          label={t("revenue")}
+          value={currencyFormatter(metrics.revenue)}
+          icon={DollarSign}
+          footnote={t("lastNDays", { days })}
+          sparklineValues={metrics.revenueSparkline}
+        />
+        <KpiCard
+          label={t("activeVip")}
+          value={String(metrics.activeVip)}
+          icon={Users}
+        />
+        <KpiCard
+          label={t("activeCompany")}
+          value={String(metrics.activeCompany)}
+          icon={Activity}
+        />
+        <KpiCard
+          label={t("renewalsDue")}
+          value={String(metrics.renewalsDue)}
+          icon={Clock}
+          footnote={t("next7Days")}
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("revenue30d")}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle>{t("registrationsTitle")}</CardTitle>
+            <CardDescription>{t("registrationsDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {metrics.revenue30d.toLocaleString(locale, {
-                style: "currency",
-                currency: "USD",
-              })}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("last30Days")}
-            </p>
+            <RegistrationsChart
+              data={metrics.registrationsByDay}
+              locale={locale}
+              membersLabel={t("membersSeriesLabel")}
+              companiesLabel={t("companiesSeriesLabel")}
+            />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("activeVip")}
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle>{t("revenueByCountry")}</CardTitle>
+            <CardDescription>{t("revenueByCountryDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.activeVip}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("activeCompany")}
-            </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.activeCompany}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("renewalsDue")}
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics.renewalsDue}</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("next7Days")}
-            </p>
+            {Object.keys(metrics.revenueByCountry).length === 0 ? (
+              <div className="py-4 text-center text-muted-foreground">
+                {t("noData")}
+              </div>
+            ) : (
+              <FinanceCountryChart
+                revenueByCountry={metrics.revenueByCountry}
+                locale={locale}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-1">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
           <CardHeader>
             <CardTitle>{t("recentPayments")}</CardTitle>
             <CardDescription>{t("recentPaymentsDesc")}</CardDescription>
@@ -158,21 +223,50 @@ export default async function AdminDashboardPage({
           </CardContent>
         </Card>
 
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>{t("revenueByCountry")}</CardTitle>
-            <CardDescription>{t("revenueByCountryDesc")}</CardDescription>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>{t("queueTitle")}</CardTitle>
+            </div>
+            <Link
+              href={`/${locale}/dashboard/admin/companies`}
+              className="text-xs font-bold uppercase tracking-[0.08em] text-accent hover:underline"
+            >
+              {t("viewAll")}
+            </Link>
           </CardHeader>
           <CardContent>
-            {Object.keys(metrics.revenueByCountry).length === 0 ? (
+            {queue.length === 0 ? (
               <div className="py-4 text-center text-muted-foreground">
-                {t("noData")}
+                {t("queueEmpty")}
               </div>
             ) : (
-              <FinanceCountryChart
-                revenueByCountry={metrics.revenueByCountry}
-                locale={locale}
-              />
+              <div className="divide-y divide-border/50">
+                {queue.map((company) => (
+                  <div
+                    key={company.id}
+                    className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate font-medium">{company.name}</p>
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 bg-muted/50 text-[10px] uppercase text-muted-foreground"
+                        >
+                          {company.businessCategory?.category}
+                        </Badge>
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {company.owner?.displayName}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <ModerateActions companyId={company.id} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>

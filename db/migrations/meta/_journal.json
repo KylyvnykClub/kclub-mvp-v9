@@ -5,92 +5,169 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1785828321732,
+      "when": 1785828321000,
       "tag": "20260804072521_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1785909055112,
-      "tag": "20260805055055_medical_wong",
+      "when": 1785841172000,
+      "tag": "20260804105932_platform_outbox_flags",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
-      "when": 1785933654316,
-      "tag": "20260805124054_legal_rhino",
+      "when": 1785852000000,
+      "tag": "20260804140000_audit_log",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "7",
-      "when": 1785935357493,
-      "tag": "20260805130917_overrated_mandarin",
+      "when": 1785909055000,
+      "tag": "20260805055055_medical_wong",
       "breakpoints": true
     },
     {
       "idx": 4,
       "version": "7",
-      "when": 1785957226582,
-      "tag": "20260805191346_ancient_nocturne",
+      "when": 1785933654000,
+      "tag": "20260805124054_legal_rhino",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "7",
-      "when": 1785959068227,
-      "tag": "20260805194428_faulty_mulholland_black",
+      "when": 1785935357000,
+      "tag": "20260805130917_overrated_mandarin",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "7",
-      "when": 1785960515629,
-      "tag": "20260805200835_long_next_avengers",
+      "when": 1785957226000,
+      "tag": "20260805191346_ancient_nocturne",
       "breakpoints": true
     },
     {
       "idx": 7,
       "version": "7",
-      "when": 1785963889884,
-      "tag": "20260805210449_secret_chat",
+      "when": 1785959068000,
+      "tag": "20260805194428_faulty_mulholland_black",
       "breakpoints": true
     },
     {
       "idx": 8,
       "version": "7",
-      "when": 1786014012315,
-      "tag": "20260806110012_orange_virginia_dare",
+      "when": 1785960515000,
+      "tag": "20260805200835_long_next_avengers",
       "breakpoints": true
     },
     {
       "idx": 9,
       "version": "7",
-      "when": 1786175750464,
-      "tag": "20260808075550_quick_vertigo",
+      "when": 1785963889000,
+      "tag": "20260805210449_secret_chat",
       "breakpoints": true
     },
     {
       "idx": 10,
       "version": "7",
-      "when": 1786456199298,
-      "tag": "20260811134959_hash_session_tokens",
+      "when": 1786014012000,
+      "tag": "20260806110012_orange_virginia_dare",
       "breakpoints": true
     },
     {
       "idx": 11,
+      "version": "7",
+      "when": 1786175750000,
+      "tag": "20260808075550_quick_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786456199000,
+      "tag": "20260811134959_hash_session_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
       "version": "7",
       "when": 1786465200000,
       "tag": "20260811162000_hash_card_tokens",
       "breakpoints": true
     },
     {
-      "idx": 12,
+      "idx": 14,
       "version": "7",
       "when": 1786532400000,
       "tag": "20260812110000_member_role_domain_contract",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1786626900000,
+      "tag": "20260813131500_plan_prices",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1786631400000,
+      "tag": "20260813143000_account_deletion_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1786635000000,
+      "tag": "20260813153000_reference_countries_cities",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1786723200000,
+      "tag": "20260814160000_company_showcase_rank",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1786723800000,
+      "tag": "20260814161000_company_pending_changes",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1786784400000,
+      "tag": "20260815090000_company_drafts",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1786785000000,
+      "tag": "20260815091000_company_moderation_default_pending",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1786816800000,
+      "tag": "20260815180000_member_deleted_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1786957200000,
+      "tag": "20260817090000_company_search_vector",
       "breakpoints": true
     }
   ]

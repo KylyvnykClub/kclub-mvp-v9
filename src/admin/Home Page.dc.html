@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#8E8E8C; }
+  * { box-sizing: border-box; }
+  a { color: inherit; text-decoration: none; }
+  a:hover { color: #B08D57; }
+</style>
+<link rel="stylesheet" href="_ds/modernist-30bd1f09-478e-4f43-8afa-3effd7b0f7e7/styles.css">
+<script src="_ds/modernist-30bd1f09-478e-4f43-8afa-3effd7b0f7e7/_ds_bundle.js"></script>
+</helmet>
+
+<section style="padding:64px 64px 0; display:flex; flex-direction:column; gap:28px; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <div style="display:flex; align-items:baseline; gap:16px; color:#1a1a19;">
+    <span style="font-size:13px; letter-spacing:.22em; text-transform:uppercase;">Turn 02 — Modernist</span>
+    <span style="font-size:13px; opacity:.6;">same page on the bound design system: Archivo, 2px rules, red accent, zero radius</span>
+  </div>
+
+  <div id="2a" style="width:1440px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; color:#1a1a19;">
+      <span style="display:inline-block; padding:5px 10px; border:1px solid rgba(26,26,25,.45); font-size:12px; letter-spacing:.18em; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">2A</span>
+      <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase;">Modernist — modular grid, ink on ground</span>
+    </div>
+
+    <div style="background:var(--color-bg); color:var(--color-text); font-family:var(--font-body);">
+
+      <div class="nav" style="display:flex; align-items:center; justify-content:space-between; padding:0 var(--space-8); height:72px;">
+        <div class="nav-brand" style="display:flex; align-items:center; gap:var(--space-3);">
+          <span style="width:14px; height:14px; background:var(--color-accent); display:block;"></span>
+          <span style="font-family:var(--font-heading); font-weight:800; font-size:18px; letter-spacing:.06em;">KCLUB</span>
+        </div>
+        <nav style="display:flex; gap:var(--space-8); font-size:13px; font-weight:600; letter-spacing:.04em;">
+          <a href="#2a">About</a>
+          <a href="#2a">Membership</a>
+          <a href="#2a">Directory</a>
+          <a href="#2a">Partners</a>
+          <a href="#2a">Contact</a>
+        </nav>
+        <div style="display:flex; align-items:center; gap:var(--space-6);">
+          <span style="font-size:13px; font-weight:600; color:var(--color-neutral-700);">EN / RU</span>
+          <a class="btn btn-secondary" href="#2a" style="white-space:nowrap;">Request access</a>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="display:grid; grid-template-columns:2fr 1fr;">
+        <div style="padding:var(--space-8) var(--space-8) 0; border-right:2px solid var(--color-divider);">
+          <div style="display:flex; align-items:center; gap:var(--space-3); font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">
+            <span style="width:24px; height:2px; background:var(--color-accent); display:block;"></span>
+            <span>Private membership club — est. 2021</span>
+          </div>
+          <h1 style="font-family:var(--font-heading); font-weight:800; font-size:88px; line-height:.94; letter-spacing:-.03em; text-transform:uppercase; margin:var(--space-8) 0 0; max-width:840px;">Private access for global professionals</h1>
+          <p style="margin:var(--space-8) 0 0; max-width:560px; font-size:18px; line-height:1.55; color:var(--color-neutral-800);">A curated network of verified founders, operators and investors. Membership is by introduction, and every profile is confirmed before approval.</p>
+          <div style="display:flex; gap:var(--space-3); padding:var(--space-8) 0;">
+            <a class="btn btn-primary" href="#2a" style="white-space:nowrap;">Apply for membership</a>
+            <a class="btn btn-secondary" href="#2a" style="white-space:nowrap;">Explore the club</a>
+          </div>
+        </div>
+        <div class="grayscale" style="position:relative; background:var(--color-surface); background-image:repeating-linear-gradient(90deg, rgba(32,30,29,.10) 0 1px, transparent 1px 14px); min-height:560px;">
+          <div style="position:absolute; left:var(--space-6); bottom:var(--space-6); font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-neutral-700);">photograph — members at a roundtable, b/w, 480×560</div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr);">
+        <div style="padding:var(--space-6) var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-family:var(--font-heading); font-weight:800; font-size:44px; line-height:1;">1200<span style="color:var(--color-accent);">+</span></div>
+          <div style="margin-top:var(--space-2); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-700);">Verified members</div>
+        </div>
+        <div style="padding:var(--space-6) var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-family:var(--font-heading); font-weight:800; font-size:44px; line-height:1;">12</div>
+          <div style="margin-top:var(--space-2); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-700);">Countries</div>
+        </div>
+        <div style="padding:var(--space-6) var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-family:var(--font-heading); font-weight:800; font-size:44px; line-height:1;">340<span style="color:var(--color-accent);">+</span></div>
+          <div style="margin-top:var(--space-2); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-700);">Introductions made</div>
+        </div>
+        <div style="padding:var(--space-6) var(--space-8);">
+          <div style="font-family:var(--font-heading); font-weight:800; font-size:44px; line-height:1;">5</div>
+          <div style="margin-top:var(--space-2); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-700);">Years active</div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr;">
+        <div style="padding:var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">01 — About</div>
+          <h2 style="font-family:var(--font-heading); font-weight:800; font-size:46px; line-height:1.04; letter-spacing:-.02em; text-transform:uppercase; margin:var(--space-6) 0 0; max-width:440px;">An international community built on trust</h2>
+          <p style="margin:var(--space-6) 0 0; max-width:460px; font-size:16px; line-height:1.6; color:var(--color-neutral-800);">KCLUB brings together verified owners and executives who prefer to work through people they know. Introductions replace cold outreach; references replace advertising.</p>
+        </div>
+        <div style="padding:var(--space-8);">
+          <table class="table" style="width:100%;">
+            <tbody>
+              <tr><td style="font-weight:600;">Identity verification</td><td style="text-align:right; color:var(--color-neutral-700);">Mandatory</td></tr>
+              <tr><td style="font-weight:600;">Admission</td><td style="text-align:right; color:var(--color-neutral-700);">By referral</td></tr>
+              <tr><td style="font-weight:600;">Member data</td><td style="text-align:right; color:var(--color-neutral-700);">Never shared</td></tr>
+              <tr><td style="font-weight:600;">Review time</td><td style="text-align:right; color:var(--color-neutral-700);">Five working days</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="padding:var(--space-8);">
+        <div style="display:flex; align-items:flex-end; justify-content:space-between;">
+          <div>
+            <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">02 — Who it is for</div>
+            <h2 style="font-family:var(--font-heading); font-weight:800; font-size:46px; line-height:1.04; letter-spacing:-.02em; text-transform:uppercase; margin:var(--space-6) 0 0;">Three ways to belong</h2>
+          </div>
+          <a class="btn btn-ghost" href="#2a" style="white-space:nowrap;">Compare access</a>
+        </div>
+        <div style="margin-top:var(--space-8); display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-8);">
+          <div class="card">
+            <div class="grayscale" style="height:200px; background:var(--color-surface); background-image:repeating-linear-gradient(135deg, rgba(32,30,29,.10) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:var(--space-3);">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-neutral-700);">photo 420×300 b/w</span>
+            </div>
+            <div class="card-kicker" style="margin-top:var(--space-6);">Individuals</div>
+            <div class="card-title">Members</div>
+            <div class="card-body">A digital club card, access to the directory and warm introductions to people you would not reach otherwise.</div>
+          </div>
+          <div class="card">
+            <div class="grayscale" style="height:200px; background:var(--color-surface); background-image:repeating-linear-gradient(135deg, rgba(32,30,29,.10) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:var(--space-3);">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-neutral-700);">photo 420×300 b/w</span>
+            </div>
+            <div class="card-kicker" style="margin-top:var(--space-6);">Experts</div>
+            <div class="card-title">Professionals</div>
+            <div class="card-body">A verified profile, referrals from inside the club and a reputation that travels with your name.</div>
+          </div>
+          <div class="card">
+            <div class="grayscale" style="height:200px; background:var(--color-surface); background-image:repeating-linear-gradient(135deg, rgba(32,30,29,.10) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:var(--space-3);">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-neutral-700);">photo 420×300 b/w</span>
+            </div>
+            <div class="card-kicker" style="margin-top:var(--space-6);">Business</div>
+            <div class="card-title">Companies</div>
+            <div class="card-body">Partner placement in the directory, member offers and access to a qualified audience.</div>
+          </div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="display:grid; grid-template-columns:1fr 2fr;">
+        <div style="padding:var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">03 — Principles</div>
+          <h2 style="font-family:var(--font-heading); font-weight:800; font-size:46px; line-height:1.04; letter-spacing:-.02em; text-transform:uppercase; margin:var(--space-6) 0 0;">What we stand for</h2>
+        </div>
+        <div style="padding:var(--space-8);">
+          <div style="display:grid; grid-template-columns:48px 240px 1fr; gap:var(--space-6); padding:var(--space-4) 0; border-bottom:2px solid var(--color-divider); align-items:baseline;">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">01</span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em;">Trust</span>
+            <span style="font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Every member is confirmed before joining, and stays accountable to the club.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:48px 240px 1fr; gap:var(--space-6); padding:var(--space-4) 0; border-bottom:2px solid var(--color-divider); align-items:baseline;">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">02</span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em;">Mutual benefit</span>
+            <span style="font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Connections are made where both sides gain — never as a favour in one direction.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:48px 240px 1fr; gap:var(--space-6); padding:var(--space-4) 0; border-bottom:2px solid var(--color-divider); align-items:baseline;">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">03</span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em;">Quality over volume</span>
+            <span style="font-size:15px; line-height:1.55; color:var(--color-neutral-800);">We keep the club small enough that every name in it means something.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:48px 240px 1fr; gap:var(--space-6); padding:var(--space-4) 0; border-bottom:2px solid var(--color-divider); align-items:baseline;">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">04</span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em;">Confidentiality</span>
+            <span style="font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Contacts, deals and conversations stay inside the club unless a member says otherwise.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:48px 240px 1fr; gap:var(--space-6); padding:var(--space-4) 0; align-items:baseline;">
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">05</span>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; text-transform:uppercase; letter-spacing:.02em;">International growth</span>
+            <span style="font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Members in twelve countries open doors that local networks cannot.</span>
+          </div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="padding:var(--space-8);">
+        <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">04 — How it works</div>
+        <div style="margin-top:var(--space-8); display:grid; grid-template-columns:repeat(4, 1fr); gap:var(--space-8);">
+          <div style="border-top:2px solid var(--color-accent); padding-top:var(--space-4);">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-accent);">01</div>
+            <div style="margin-top:var(--space-4); font-family:var(--font-heading); font-weight:800; font-size:20px; text-transform:uppercase;">Apply</div>
+            <p style="margin:var(--space-2) 0 0; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Submit your profile and the referral that brought you here.</p>
+          </div>
+          <div style="border-top:2px solid var(--color-divider); padding-top:var(--space-4);">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-neutral-600);">02</div>
+            <div style="margin-top:var(--space-4); font-family:var(--font-heading); font-weight:800; font-size:20px; text-transform:uppercase;">Get verified</div>
+            <p style="margin:var(--space-2) 0 0; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">We confirm identity and business standing within five working days.</p>
+          </div>
+          <div style="border-top:2px solid var(--color-divider); padding-top:var(--space-4);">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-neutral-600);">03</div>
+            <div style="margin-top:var(--space-4); font-family:var(--font-heading); font-weight:800; font-size:20px; text-transform:uppercase;">Unlock access</div>
+            <p style="margin:var(--space-2) 0 0; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Receive your club card, the directory and partner privileges.</p>
+          </div>
+          <div style="border-top:2px solid var(--color-divider); padding-top:var(--space-4);">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:14px; color:var(--color-neutral-600);">04</div>
+            <div style="margin-top:var(--space-4); font-family:var(--font-heading); font-weight:800; font-size:20px; text-transform:uppercase;">Grow your network</div>
+            <p style="margin:var(--space-2) 0 0; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Request introductions and be introduced in return.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="padding:var(--space-8);">
+        <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent-700);">05 — Members</div>
+        <div style="margin-top:var(--space-8); display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--space-8);">
+          <div>
+            <p style="margin:0; font-family:var(--font-heading); font-weight:800; font-size:24px; line-height:1.24; letter-spacing:-.01em;">Two introductions in my first month turned into a partnership in Dubai.</p>
+            <div style="margin-top:var(--space-6); padding-top:var(--space-3); border-top:2px solid var(--color-divider); font-size:14px; font-weight:600;">Alexander M.</div>
+            <div style="margin-top:var(--space-1); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--color-neutral-700);">Logistics · UAE</div>
+          </div>
+          <div>
+            <p style="margin:0; font-family:var(--font-heading); font-weight:800; font-size:24px; line-height:1.24; letter-spacing:-.01em;">The verification is strict, and that is exactly why I trust every profile here.</p>
+            <div style="margin-top:var(--space-6); padding-top:var(--space-3); border-top:2px solid var(--color-divider); font-size:14px; font-weight:600;">Marina K.</div>
+            <div style="margin-top:var(--space-1); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--color-neutral-700);">Private equity · Cyprus</div>
+          </div>
+          <div>
+            <p style="margin:0; font-family:var(--font-heading); font-weight:800; font-size:24px; line-height:1.24; letter-spacing:-.01em;">The directory is the only place I look before entering a new market.</p>
+            <div style="margin-top:var(--space-6); padding-top:var(--space-3); border-top:2px solid var(--color-divider); font-size:14px; font-weight:600;">Daniel R.</div>
+            <div style="margin-top:var(--space-1); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--color-neutral-700);">Manufacturing · Poland</div>
+          </div>
+        </div>
+      </div>
+      <div class="hr" style="margin:0;"></div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr;">
+        <div style="padding:var(--space-8); border-right:2px solid var(--color-divider);">
+          <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-neutral-700);">For individuals</div>
+          <h3 style="font-family:var(--font-heading); font-weight:800; font-size:30px; text-transform:uppercase; margin:var(--space-4) 0 0;">Become a member</h3>
+          <p style="margin:var(--space-3) 0 0; max-width:420px; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Annual membership, verified profile, directory access and personal introductions.</p>
+          <div style="margin-top:var(--space-6);"><a class="btn btn-primary" href="#2a" style="white-space:nowrap;">Join the club</a></div>
+        </div>
+        <div style="padding:var(--space-8);">
+          <div style="font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--color-neutral-700);">For companies</div>
+          <h3 style="font-family:var(--font-heading); font-weight:800; font-size:30px; text-transform:uppercase; margin:var(--space-4) 0 0;">Become a partner</h3>
+          <p style="margin:var(--space-3) 0 0; max-width:420px; font-size:15px; line-height:1.55; color:var(--color-neutral-800);">Place your company in the directory and offer terms members cannot get elsewhere.</p>
+          <div style="margin-top:var(--space-6);"><a class="btn btn-secondary" href="#2a" style="white-space:nowrap;">Register a company</a></div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-accent); color:var(--color-bg); padding:var(--space-8); display:grid; grid-template-columns:2fr 1fr; gap:var(--space-8); align-items:end;">
+        <h2 style="margin:0; font-family:var(--font-heading); font-weight:800; font-size:76px; line-height:.94; letter-spacing:-.03em; text-transform:uppercase;">Ready to join? Membership is by referral.</h2>
+        <div style="display:flex; flex-direction:column; gap:var(--space-6); align-items:flex-start;">
+          <p style="margin:0; font-size:16px; line-height:1.55;">Applications are reviewed weekly. Tell us who introduced you and what you are looking for.</p>
+          <a class="btn" href="#2a" style="background:var(--color-bg); color:var(--color-text); border-color:var(--color-bg); white-space:nowrap;">Request an invitation</a>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-8);">
+        <div style="display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:var(--space-8);">
+          <div>
+            <div style="display:flex; align-items:center; gap:var(--space-3);">
+              <span style="width:14px; height:14px; background:var(--color-accent); display:block;"></span>
+              <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; letter-spacing:.06em;">KCLUB</span>
+            </div>
+            <p style="margin:var(--space-4) 0 0; max-width:290px; font-size:14px; line-height:1.55; color:var(--color-neutral-700);">A private membership club for verified owners, executives and investors.</p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:var(--space-3); font-size:14px;">
+            <span style="font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-600);">Club</span>
+            <a href="#2a">About</a>
+            <a href="#2a">Membership</a>
+            <a href="#2a">Club card</a>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:var(--space-3); font-size:14px;">
+            <span style="font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-600);">Legal</span>
+            <a href="#2a">Privacy</a>
+            <a href="#2a">Terms</a>
+            <a href="#2a">Refunds</a>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:var(--space-3); font-size:14px;">
+            <span style="font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--color-neutral-600);">Contact</span>
+            <a href="#2a">members@kclub.com</a>
+            <a href="#2a">Telegram</a>
+            <a href="#2a">LinkedIn</a>
+          </div>
+        </div>
+        <div class="hr" style="margin:var(--space-8) 0 var(--space-4);"></div>
+        <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--color-neutral-700);">
+          <span>© 2026 KCLUB. All rights reserved.</span>
+          <span style="font-weight:600;">EN / RU</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:64px; display:flex; flex-direction:column; gap:28px; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <div style="display:flex; align-items:baseline; gap:16px; color:#1a1a19;">
+    <span style="font-size:13px; letter-spacing:.22em; text-transform:uppercase;">Turn 01 — Home page redesign</span>
+    <span style="font-size:13px; opacity:.6;">two directions, same information architecture</span>
+  </div>
+
+  <div style="display:flex; gap:64px; align-items:flex-start;">
+
+    <div id="1a" style="width:1440px; flex:0 0 1440px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; color:#1a1a19;">
+        <span style="display:inline-block; padding:5px 10px; border:1px solid rgba(26,26,25,.45); font-size:12px; letter-spacing:.18em; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">1A</span>
+        <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase;">Graphite — restrained dark, brass hairlines</span>
+      </div>
+
+      <div style="background:#0E0F10; color:#EDEBE7; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+
+        <header style="display:flex; align-items:center; justify-content:space-between; padding:0 56px; height:76px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:8px; height:8px; background:#B08D57; display:block;"></span>
+            <span style="font-size:15px; letter-spacing:.30em; text-transform:uppercase;">Kclub</span>
+          </div>
+          <nav style="display:flex; gap:34px; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:rgba(237,235,231,.62);">
+            <a href="#1a" style="color:inherit;">About</a>
+            <a href="#1a" style="color:inherit;">Membership</a>
+            <a href="#1a" style="color:inherit;">Directory</a>
+            <a href="#1a" style="color:inherit;">Partners</a>
+            <a href="#1a" style="color:inherit;">Contact</a>
+          </nav>
+          <div style="display:flex; align-items:center; gap:22px;">
+            <span style="font-size:12px; letter-spacing:.16em; color:rgba(237,235,231,.5);">EN / RU</span>
+            <a href="#1a" style="border:1px solid rgba(255,255,255,.22); padding:11px 22px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:#EDEBE7;" style-hover="border-color:#B08D57; color:#B08D57;">Request access</a>
+          </div>
+        </header>
+
+        <div style="display:grid; grid-template-columns:1fr 520px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="padding:96px 56px 72px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:40px;">
+              <span style="width:28px; height:1px; background:#B08D57; display:block;"></span>
+              <span style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.55); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Private membership club</span>
+            </div>
+            <h1 style="margin:0; font-size:76px; line-height:1.02; font-weight:400; letter-spacing:-.02em; text-wrap:balance;">Private access<br>for global<br><span style="font-family:'Instrument Serif', Georgia, serif; font-style:italic; font-size:80px; color:#B08D57;">professionals</span></h1>
+            <p style="margin:36px 0 0; max-width:460px; font-size:17px; line-height:1.62; color:rgba(237,235,231,.62);">A curated network of verified founders, operators and investors. Membership is by introduction, and every profile is confirmed before approval.</p>
+            <div style="display:flex; gap:14px; margin-top:44px;">
+              <a href="#1a" style="background:#B08D57; color:#0E0F10; padding:15px 30px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#C29C61;">Apply for membership</a>
+              <a href="#1a" style="border:1px solid rgba(255,255,255,.2); padding:15px 30px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.85);" style-hover="border-color:rgba(255,255,255,.5); color:#EDEBE7;">Explore the club</a>
+            </div>
+          </div>
+          <div style="position:relative; background:#101112; display:flex; align-items:flex-end; padding:0;">
+            <div style="position:absolute; inset:0; background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 48px);"></div>
+            <div style="position:relative; padding:40px 40px 34px; width:100%;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; letter-spacing:.14em; color:rgba(237,235,231,.42); text-transform:uppercase;">image — members at a private roundtable, 1040×1200</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="padding:34px 40px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:34px; letter-spacing:-.01em;">1 200<span style="color:#B08D57;">+</span></div>
+            <div style="margin-top:8px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.5);">Verified members</div>
+          </div>
+          <div style="padding:34px 40px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:34px; letter-spacing:-.01em;">12</div>
+            <div style="margin-top:8px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.5);">Countries</div>
+          </div>
+          <div style="padding:34px 40px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:34px; letter-spacing:-.01em;">340<span style="color:#B08D57;">+</span></div>
+            <div style="margin-top:8px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.5);">Introductions made</div>
+          </div>
+          <div style="padding:34px 40px;">
+            <div style="font-size:34px; letter-spacing:-.01em;">5</div>
+            <div style="margin-top:8px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.5);">Years active</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="padding:84px 56px;">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">01 — About</div>
+            <h2 style="margin:26px 0 0; font-size:40px; line-height:1.14; font-weight:400; letter-spacing:-.015em; max-width:420px;">An international community built on trust</h2>
+            <p style="margin:26px 0 0; max-width:440px; font-size:16px; line-height:1.65; color:rgba(237,235,231,.62);">KCLUB brings together verified owners and executives who prefer to work through people they know. Introductions replace cold outreach; references replace advertising.</p>
+            <div style="margin-top:44px; display:grid; gap:0; border-top:1px solid rgba(255,255,255,.09); max-width:460px;">
+              <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09); font-size:14px;"><span>Identity verification</span><span style="color:rgba(237,235,231,.5);">Mandatory</span></div>
+              <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09); font-size:14px;"><span>Admission</span><span style="color:rgba(237,235,231,.5);">By referral</span></div>
+              <div style="display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09); font-size:14px;"><span>Member data</span><span style="color:rgba(237,235,231,.5);">Never shared</span></div>
+            </div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,.09); background:#101112; position:relative; min-height:520px;">
+            <div style="position:absolute; inset:0; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 1px, transparent 1px 12px);"></div>
+            <div style="position:absolute; left:40px; bottom:34px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; letter-spacing:.14em; color:rgba(237,235,231,.42); text-transform:uppercase;">image — handshake / city skyline, 720×520</div>
+          </div>
+        </div>
+
+        <div style="padding:84px 56px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <div>
+              <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">02 — Who it is for</div>
+              <h2 style="margin:22px 0 0; font-size:40px; line-height:1.14; font-weight:400; letter-spacing:-.015em;">Three ways to belong</h2>
+            </div>
+            <a href="#1a" style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:#B08D57; border-bottom:1px solid rgba(176,141,87,.5); padding-bottom:4px;">Compare access</a>
+          </div>
+          <div style="margin-top:52px; display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:rgba(255,255,255,.09);">
+            <div style="background:#0E0F10; padding:36px 32px 34px;">
+              <div style="height:150px; background:#101112; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 10px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; color:rgba(237,235,231,.4); text-transform:uppercase;">portrait 420×300</span>
+              </div>
+              <div style="margin-top:26px; font-size:19px;">Members</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">A digital club card, access to the directory and warm introductions to people you would not reach otherwise.</p>
+            </div>
+            <div style="background:#0E0F10; padding:36px 32px 34px;">
+              <div style="height:150px; background:#101112; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 10px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; color:rgba(237,235,231,.4); text-transform:uppercase;">portrait 420×300</span>
+              </div>
+              <div style="margin-top:26px; font-size:19px;">Professionals</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">A verified profile, referrals from inside the club and a reputation that travels with your name.</p>
+            </div>
+            <div style="background:#0E0F10; padding:36px 32px 34px;">
+              <div style="height:150px; background:#101112; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 10px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; color:rgba(237,235,231,.4); text-transform:uppercase;">portrait 420×300</span>
+              </div>
+              <div style="margin-top:26px; font-size:19px;">Companies</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Partner placement in the directory, member offers and access to a qualified audience.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:360px 1fr; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="padding:84px 40px 84px 56px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">03 — Principles</div>
+            <h2 style="margin:22px 0 0; font-size:40px; line-height:1.14; font-weight:400; letter-spacing:-.015em;">What we stand for</h2>
+          </div>
+          <div style="padding:84px 56px 84px 48px;">
+            <div style="display:grid;">
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.09); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">01</span>
+                <span style="font-size:17px;">Trust</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Every member is confirmed before joining, and stays accountable to the club.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.09); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">02</span>
+                <span style="font-size:17px;">Mutual benefit</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Connections are made where both sides gain — never as a favour in one direction.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.09); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">03</span>
+                <span style="font-size:17px;">Quality over volume</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">We keep the club small enough that every name in it means something.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.09); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">04</span>
+                <span style="font-size:17px;">Confidentiality</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Contacts, deals and conversations stay inside the club unless a member says otherwise.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid rgba(255,255,255,.09); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">05</span>
+                <span style="font-size:17px;">International growth</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Members in twelve countries open doors that local networks cannot.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:84px 56px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">04 — How it works</div>
+          <div style="margin-top:44px; display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:rgba(255,255,255,.09);">
+            <div style="background:#0E0F10; padding:30px 28px 34px; border-top:1px solid #B08D57;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#B08D57;">01</div>
+              <div style="margin-top:18px; font-size:18px;">Apply</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Submit your profile and the referral that brought you here.</p>
+            </div>
+            <div style="background:#0E0F10; padding:30px 28px 34px; border-top:1px solid rgba(255,255,255,.14);">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(237,235,231,.5);">02</div>
+              <div style="margin-top:18px; font-size:18px;">Get verified</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">We confirm identity and business standing within five working days.</p>
+            </div>
+            <div style="background:#0E0F10; padding:30px 28px 34px; border-top:1px solid rgba(255,255,255,.14);">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(237,235,231,.5);">03</div>
+              <div style="margin-top:18px; font-size:18px;">Unlock access</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Receive your club card, the directory and partner privileges.</p>
+            </div>
+            <div style="background:#0E0F10; padding:30px 28px 34px; border-top:1px solid rgba(255,255,255,.14);">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(237,235,231,.5);">04</div>
+              <div style="margin-top:18px; font-size:18px;">Grow your network</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.6; color:rgba(237,235,231,.58);">Request introductions and be introduced in return.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="padding:72px 56px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">For individuals</div>
+            <h3 style="margin:20px 0 0; font-size:28px; font-weight:400; letter-spacing:-.01em;">Become a member</h3>
+            <p style="margin:14px 0 0; max-width:400px; font-size:15px; line-height:1.62; color:rgba(237,235,231,.6);">Annual membership, verified profile, directory access and personal introductions.</p>
+            <a href="#1a" style="display:inline-block; margin-top:32px; background:#B08D57; color:#0E0F10; padding:14px 28px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#C29C61;">Join the club</a>
+          </div>
+          <div style="padding:72px 56px;">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">For companies</div>
+            <h3 style="margin:20px 0 0; font-size:28px; font-weight:400; letter-spacing:-.01em;">Become a partner</h3>
+            <p style="margin:14px 0 0; max-width:400px; font-size:15px; line-height:1.62; color:rgba(237,235,231,.6);">Place your company in the directory and offer terms members cannot get elsewhere.</p>
+            <a href="#1a" style="display:inline-block; margin-top:32px; border:1px solid rgba(255,255,255,.22); color:#EDEBE7; padding:14px 28px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="border-color:#B08D57; color:#B08D57;">Register a company</a>
+          </div>
+        </div>
+
+        <div style="padding:84px 56px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">05 — Members</div>
+          <div style="margin-top:44px; display:grid; grid-template-columns:repeat(3, 1fr); gap:40px;">
+            <div style="border-top:1px solid rgba(255,255,255,.14); padding-top:26px;">
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:22px; line-height:1.42; color:rgba(237,235,231,.9);">Two introductions in my first month turned into a partnership in Dubai.</p>
+              <div style="margin-top:24px; font-size:13px; letter-spacing:.04em;">Alexander M.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45);">Logistics · UAE</div>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,.14); padding-top:26px;">
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:22px; line-height:1.42; color:rgba(237,235,231,.9);">The verification is strict, and that is exactly why I trust every profile here.</p>
+              <div style="margin-top:24px; font-size:13px; letter-spacing:.04em;">Marina K.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45);">Private equity · Cyprus</div>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,.14); padding-top:26px;">
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:22px; line-height:1.42; color:rgba(237,235,231,.9);">The directory is the only place I look before entering a new market.</p>
+              <div style="margin-top:24px; font-size:13px; letter-spacing:.04em;">Daniel R.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45);">Manufacturing · Poland</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:96px 56px; border-bottom:1px solid rgba(255,255,255,.09);">
+          <div>
+            <h2 style="margin:0; font-size:48px; line-height:1.08; font-weight:400; letter-spacing:-.02em;">Ready to join?<br><span style="font-family:'Instrument Serif', Georgia, serif; font-style:italic; color:#B08D57;">Membership is by referral.</span></h2>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:26px; padding-left:60px; border-left:1px solid rgba(255,255,255,.09);">
+            <p style="margin:0; max-width:380px; font-size:16px; line-height:1.62; color:rgba(237,235,231,.62);">Applications are reviewed weekly. Tell us who introduced you and what you are looking for.</p>
+            <a href="#1a" style="background:#B08D57; color:#0E0F10; padding:15px 32px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#C29C61;">Request an invitation</a>
+          </div>
+        </div>
+
+        <footer style="padding:56px 56px 40px;">
+          <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:40px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="width:8px; height:8px; background:#B08D57; display:block;"></span>
+                <span style="font-size:14px; letter-spacing:.30em; text-transform:uppercase;">Kclub</span>
+              </div>
+              <p style="margin:18px 0 0; max-width:280px; font-size:13px; line-height:1.62; color:rgba(237,235,231,.5);">A private membership club for verified owners, executives and investors.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(237,235,231,.6);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.35);">Club</span>
+              <a href="#1a" style="color:inherit;">About</a>
+              <a href="#1a" style="color:inherit;">Membership</a>
+              <a href="#1a" style="color:inherit;">Club card</a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(237,235,231,.6);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.35);">Legal</span>
+              <a href="#1a" style="color:inherit;">Privacy</a>
+              <a href="#1a" style="color:inherit;">Terms</a>
+              <a href="#1a" style="color:inherit;">Refunds</a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(237,235,231,.6);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(237,235,231,.35);">Contact</span>
+              <a href="#1a" style="color:inherit;">members@kclub.com</a>
+              <a href="#1a" style="color:inherit;">Telegram</a>
+              <a href="#1a" style="color:inherit;">LinkedIn</a>
+            </div>
+          </div>
+          <div style="margin-top:48px; padding-top:22px; border-top:1px solid rgba(255,255,255,.09); display:flex; justify-content:space-between; font-size:12px; color:rgba(237,235,231,.38);">
+            <span>© 2026 KCLUB. All rights reserved.</span>
+            <span style="letter-spacing:.18em;">EN / RU</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <div id="1b" style="width:1440px; flex:0 0 1440px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; color:#1a1a19;">
+        <span style="display:inline-block; padding:5px 10px; border:1px solid rgba(26,26,25,.45); font-size:12px; letter-spacing:.18em; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">1B</span>
+        <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase;">Ivory — light, editorial, bronze accent</span>
+      </div>
+
+      <div style="background:#F5F3EE; color:#16181A; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+
+        <header style="display:flex; align-items:center; justify-content:space-between; padding:0 56px; height:76px; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:8px; height:8px; background:#8A6A3B; display:block;"></span>
+            <span style="font-size:15px; letter-spacing:.30em; text-transform:uppercase;">Kclub</span>
+          </div>
+          <nav style="display:flex; gap:34px; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:rgba(22,24,26,.62);">
+            <a href="#1b" style="color:inherit;">About</a>
+            <a href="#1b" style="color:inherit;">Membership</a>
+            <a href="#1b" style="color:inherit;">Directory</a>
+            <a href="#1b" style="color:inherit;">Partners</a>
+            <a href="#1b" style="color:inherit;">Contact</a>
+          </nav>
+          <div style="display:flex; align-items:center; gap:22px;">
+            <span style="font-size:12px; letter-spacing:.16em; color:rgba(22,24,26,.5);">EN / RU</span>
+            <a href="#1b" style="border:1px solid rgba(22,24,26,.25); padding:11px 22px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:#16181A;" style-hover="border-color:#8A6A3B; color:#8A6A3B;">Request access</a>
+          </div>
+        </header>
+
+        <div style="padding:112px 56px 0; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="width:28px; height:1px; background:#8A6A3B; display:block;"></span>
+            <span style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.55); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Private membership club · est. 2021</span>
+          </div>
+          <h1 style="margin:44px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:104px; line-height:.98; letter-spacing:-.02em; max-width:1100px;">Private access for global professionals</h1>
+          <div style="display:grid; grid-template-columns:1fr 420px; gap:80px; align-items:end; padding:56px 0 64px;">
+            <p style="margin:0; max-width:520px; font-size:18px; line-height:1.6; color:rgba(22,24,26,.66);">A curated network of verified founders, operators and investors. Membership is by introduction, and every profile is confirmed before approval.</p>
+            <div style="display:flex; gap:14px; justify-content:flex-end;">
+              <a href="#1b" style="background:#16181A; color:#F5F3EE; padding:15px 30px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#8A6A3B;">Apply for membership</a>
+              <a href="#1b" style="border:1px solid rgba(22,24,26,.25); padding:15px 30px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:#16181A;" style-hover="border-color:#16181A;">Explore the club</a>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:420px; position:relative; border-bottom:1px solid rgba(22,24,26,.14); background:#EAE7E0; background-image:repeating-linear-gradient(90deg, rgba(22,24,26,.06) 0 1px, transparent 1px 14px);">
+          <div style="position:absolute; left:56px; bottom:28px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(22,24,26,.45);">image — full-bleed members photograph, 1440×420</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="padding:36px 40px; border-right:1px solid rgba(22,24,26,.14);">
+            <div style="font-family:'Instrument Serif', Georgia, serif; font-size:40px; line-height:1;">1 200<span style="color:#8A6A3B;">+</span></div>
+            <div style="margin-top:10px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.5);">Verified members</div>
+          </div>
+          <div style="padding:36px 40px; border-right:1px solid rgba(22,24,26,.14);">
+            <div style="font-family:'Instrument Serif', Georgia, serif; font-size:40px; line-height:1;">12</div>
+            <div style="margin-top:10px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.5);">Countries</div>
+          </div>
+          <div style="padding:36px 40px; border-right:1px solid rgba(22,24,26,.14);">
+            <div style="font-family:'Instrument Serif', Georgia, serif; font-size:40px; line-height:1;">340<span style="color:#8A6A3B;">+</span></div>
+            <div style="margin-top:10px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.5);">Introductions made</div>
+          </div>
+          <div style="padding:36px 40px;">
+            <div style="font-family:'Instrument Serif', Georgia, serif; font-size:40px; line-height:1;">5</div>
+            <div style="margin-top:10px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.5);">Years active</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="padding:88px 56px; border-right:1px solid rgba(22,24,26,.14);">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">01 — About</div>
+            <h2 style="margin:26px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:46px; line-height:1.1; letter-spacing:-.01em; max-width:440px;">An international community built on trust</h2>
+            <p style="margin:26px 0 0; max-width:450px; font-size:16px; line-height:1.68; color:rgba(22,24,26,.66);">KCLUB brings together verified owners and executives who prefer to work through people they know. Introductions replace cold outreach; references replace advertising.</p>
+          </div>
+          <div style="padding:88px 56px;">
+            <div style="border-top:1px solid rgba(22,24,26,.14);">
+              <div style="display:flex; justify-content:space-between; padding:20px 0; border-bottom:1px solid rgba(22,24,26,.14); font-size:15px;"><span>Identity verification</span><span style="color:rgba(22,24,26,.5);">Mandatory</span></div>
+              <div style="display:flex; justify-content:space-between; padding:20px 0; border-bottom:1px solid rgba(22,24,26,.14); font-size:15px;"><span>Admission</span><span style="color:rgba(22,24,26,.5);">By referral</span></div>
+              <div style="display:flex; justify-content:space-between; padding:20px 0; border-bottom:1px solid rgba(22,24,26,.14); font-size:15px;"><span>Member data</span><span style="color:rgba(22,24,26,.5);">Never shared</span></div>
+              <div style="display:flex; justify-content:space-between; padding:20px 0; border-bottom:1px solid rgba(22,24,26,.14); font-size:15px;"><span>Review time</span><span style="color:rgba(22,24,26,.5);">Five working days</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:88px 56px; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <div>
+              <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">02 — Who it is for</div>
+              <h2 style="margin:22px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:46px; line-height:1.1;">Three ways to belong</h2>
+            </div>
+            <a href="#1b" style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:#8A6A3B; border-bottom:1px solid rgba(138,106,59,.5); padding-bottom:4px;">Compare access</a>
+          </div>
+          <div style="margin-top:52px; display:grid; grid-template-columns:repeat(3, 1fr); gap:32px;">
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:28px;">
+              <div style="height:180px; background:#EAE7E0; background-image:repeating-linear-gradient(135deg, rgba(22,24,26,.06) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(22,24,26,.45);">portrait 420×300</span>
+              </div>
+              <div style="margin-top:24px; font-size:20px;">Members</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">A digital club card, access to the directory and warm introductions to people you would not reach otherwise.</p>
+            </div>
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:28px;">
+              <div style="height:180px; background:#EAE7E0; background-image:repeating-linear-gradient(135deg, rgba(22,24,26,.06) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(22,24,26,.45);">portrait 420×300</span>
+              </div>
+              <div style="margin-top:24px; font-size:20px;">Professionals</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">A verified profile, referrals from inside the club and a reputation that travels with your name.</p>
+            </div>
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:28px;">
+              <div style="height:180px; background:#EAE7E0; background-image:repeating-linear-gradient(135deg, rgba(22,24,26,.06) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:14px;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(22,24,26,.45);">portrait 420×300</span>
+              </div>
+              <div style="margin-top:24px; font-size:20px;">Companies</div>
+              <p style="margin:12px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">Partner placement in the directory, member offers and access to a qualified audience.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#16181A; color:#F5F3EE; padding:88px 56px;">
+          <div style="display:grid; grid-template-columns:360px 1fr; gap:48px;">
+            <div>
+              <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(245,243,238,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">03 — Principles</div>
+              <h2 style="margin:22px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:46px; line-height:1.1;">What we stand for</h2>
+            </div>
+            <div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:22px 0; border-top:1px solid rgba(245,243,238,.16); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#C49A5B;">01</span>
+                <span style="font-size:17px;">Trust</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(245,243,238,.6);">Every member is confirmed before joining, and stays accountable to the club.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:22px 0; border-top:1px solid rgba(245,243,238,.16); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#C49A5B;">02</span>
+                <span style="font-size:17px;">Mutual benefit</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(245,243,238,.6);">Connections are made where both sides gain — never as a favour in one direction.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:22px 0; border-top:1px solid rgba(245,243,238,.16); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#C49A5B;">03</span>
+                <span style="font-size:17px;">Quality over volume</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(245,243,238,.6);">We keep the club small enough that every name in it means something.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:22px 0; border-top:1px solid rgba(245,243,238,.16); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#C49A5B;">04</span>
+                <span style="font-size:17px;">Confidentiality</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(245,243,238,.6);">Contacts, deals and conversations stay inside the club unless a member says otherwise.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:56px 220px 1fr; gap:24px; padding:22px 0; border-top:1px solid rgba(245,243,238,.16); border-bottom:1px solid rgba(245,243,238,.16); align-items:baseline;">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#C49A5B;">05</span>
+                <span style="font-size:17px;">International growth</span>
+                <span style="font-size:14px; line-height:1.6; color:rgba(245,243,238,.6);">Members in twelve countries open doors that local networks cannot.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:88px 56px; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">04 — How it works</div>
+          <div style="margin-top:44px; display:grid; grid-template-columns:repeat(4, 1fr); gap:32px;">
+            <div style="border-top:1px solid #8A6A3B; padding-top:24px;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#8A6A3B;">01</div>
+              <div style="margin-top:16px; font-size:19px;">Apply</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">Submit your profile and the referral that brought you here.</p>
+            </div>
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:24px;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(22,24,26,.5);">02</div>
+              <div style="margin-top:16px; font-size:19px;">Get verified</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">We confirm identity and business standing within five working days.</p>
+            </div>
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:24px;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(22,24,26,.5);">03</div>
+              <div style="margin-top:16px; font-size:19px;">Unlock access</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">Receive your club card, the directory and partner privileges.</p>
+            </div>
+            <div style="border-top:1px solid rgba(22,24,26,.2); padding-top:24px;">
+              <div style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:rgba(22,24,26,.5);">04</div>
+              <div style="margin-top:16px; font-size:19px;">Grow your network</div>
+              <p style="margin:10px 0 0; font-size:14px; line-height:1.65; color:rgba(22,24,26,.62);">Request introductions and be introduced in return.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:88px 56px; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">05 — Members</div>
+          <div style="margin-top:44px; display:grid; grid-template-columns:repeat(3, 1fr); gap:48px;">
+            <div>
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:24px; line-height:1.4;">Two introductions in my first month turned into a partnership in Dubai.</p>
+              <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(22,24,26,.14); font-size:13px;">Alexander M.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(22,24,26,.45);">Logistics · UAE</div>
+            </div>
+            <div>
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:24px; line-height:1.4;">The verification is strict, and that is exactly why I trust every profile here.</p>
+              <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(22,24,26,.14); font-size:13px;">Marina K.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(22,24,26,.45);">Private equity · Cyprus</div>
+            </div>
+            <div>
+              <p style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-size:24px; line-height:1.4;">The directory is the only place I look before entering a new market.</p>
+              <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(22,24,26,.14); font-size:13px;">Daniel R.</div>
+              <div style="margin-top:5px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(22,24,26,.45);">Manufacturing · Poland</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(22,24,26,.14);">
+          <div style="padding:76px 56px; border-right:1px solid rgba(22,24,26,.14);">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">For individuals</div>
+            <h3 style="margin:20px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:32px;">Become a member</h3>
+            <p style="margin:14px 0 0; max-width:400px; font-size:15px; line-height:1.65; color:rgba(22,24,26,.64);">Annual membership, verified profile, directory access and personal introductions.</p>
+            <a href="#1b" style="display:inline-block; margin-top:32px; background:#16181A; color:#F5F3EE; padding:14px 28px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#8A6A3B;">Join the club</a>
+          </div>
+          <div style="padding:76px 56px;">
+            <div style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:rgba(22,24,26,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">For companies</div>
+            <h3 style="margin:20px 0 0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:32px;">Become a partner</h3>
+            <p style="margin:14px 0 0; max-width:400px; font-size:15px; line-height:1.65; color:rgba(22,24,26,.64);">Place your company in the directory and offer terms members cannot get elsewhere.</p>
+            <a href="#1b" style="display:inline-block; margin-top:32px; border:1px solid rgba(22,24,26,.25); color:#16181A; padding:14px 28px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="border-color:#8A6A3B; color:#8A6A3B;">Register a company</a>
+          </div>
+        </div>
+
+        <div style="padding:104px 56px; display:grid; grid-template-columns:1fr 420px; gap:80px; align-items:end;">
+          <h2 style="margin:0; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:68px; line-height:1.02; letter-spacing:-.02em;">Ready to join? Membership is by referral.</h2>
+          <div style="display:flex; flex-direction:column; gap:24px; align-items:flex-start;">
+            <p style="margin:0; font-size:16px; line-height:1.65; color:rgba(22,24,26,.64);">Applications are reviewed weekly. Tell us who introduced you and what you are looking for.</p>
+            <a href="#1b" style="background:#16181A; color:#F5F3EE; padding:15px 32px; font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;" style-hover="background:#8A6A3B;">Request an invitation</a>
+          </div>
+        </div>
+
+        <footer style="border-top:1px solid rgba(22,24,26,.14); padding:56px 56px 40px;">
+          <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:40px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="width:8px; height:8px; background:#8A6A3B; display:block;"></span>
+                <span style="font-size:14px; letter-spacing:.30em; text-transform:uppercase;">Kclub</span>
+              </div>
+              <p style="margin:18px 0 0; max-width:280px; font-size:13px; line-height:1.65; color:rgba(22,24,26,.55);">A private membership club for verified owners, executives and investors.</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(22,24,26,.65);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.4);">Club</span>
+              <a href="#1b" style="color:inherit;">About</a>
+              <a href="#1b" style="color:inherit;">Membership</a>
+              <a href="#1b" style="color:inherit;">Club card</a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(22,24,26,.65);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.4);">Legal</span>
+              <a href="#1b" style="color:inherit;">Privacy</a>
+              <a href="#1b" style="color:inherit;">Terms</a>
+              <a href="#1b" style="color:inherit;">Refunds</a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:rgba(22,24,26,.65);">
+              <span style="font-size:11px; letter-spacing:.20em; text-transform:uppercase; white-space:nowrap; flex:0 0 auto; color:rgba(22,24,26,.4);">Contact</span>
+              <a href="#1b" style="color:inherit;">members@kclub.com</a>
+              <a href="#1b" style="color:inherit;">Telegram</a>
+              <a href="#1b" style="color:inherit;">LinkedIn</a>
+            </div>
+          </div>
+          <div style="margin-top:48px; padding-top:22px; border-top:1px solid rgba(22,24,26,.14); display:flex; justify-content:space-between; font-size:12px; color:rgba(22,24,26,.45);">
+            <span>© 2026 KCLUB. All rights reserved.</span>
+            <span style="letter-spacing:.18em;">EN / RU</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+</body>
+</html>

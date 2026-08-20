@@ -379,6 +379,7 @@
     "days": "{count, plural, =0 {немає днів} one {# день} few {# дні} many {# днів} other {# днів}}",
     "loading": "Завантаження…",
     "error": "Щось пішло не так",
+    "tryAgain": "Спробувати ще раз",
     "notFound": "Сторінку не знайдено",
     "back": "Назад",
     "submit": "Відправити",
@@ -733,6 +734,22 @@
     "notProvided": "Не вказано"
   },
   "admin": {
+    "nav": {
+      "consoleLabel": "Панель адміністратора",
+      "openNavigation": "Відкрити навігацію",
+      "comingSoon": "Незабаром",
+      "overview": "Огляд",
+      "users": "Користувачі",
+      "companies": "Компанії",
+      "introductions": "Представлення клієнтів",
+      "support": "Підтримка",
+      "categories": "Категорії",
+      "staff": "Персонал",
+      "flags": "Прапорці",
+      "audit": "Журнал аудиту",
+      "contentAccess": "Контент і доступи",
+      "rolesPermissions": "Ролі та доступи"
+    },
     "members": {
       "title": "Адміністрування учасників та карт",
       "description": "Переглядайте учасників, блокуйте облікові записи, відкликайте та перевипускайте картки.",
@@ -867,8 +884,11 @@
     "dashboard": {
       "title": "Адмін-панель",
       "description": "Огляд фінансових показників і підписок.",
-      "revenue30d": "Дохід за 30 днів",
-      "last30Days": "Останні 30 днів",
+      "revenue": "Дохід",
+      "lastNDays": "За останні {days} дн.",
+      "period7": "7Д",
+      "period30": "30Д",
+      "period90": "90Д",
       "activeVip": "Активні VIP-підписки",
       "activeCompany": "Активні підписки компаній",
       "renewalsDue": "Очікувані поновлення",
@@ -879,8 +899,15 @@
       "unknownCustomer": "Невідомий клієнт",
       "viewReceipt": "Переглянути чек",
       "revenueByCountry": "Дохід за країнами",
-      "revenueByCountryDesc": "Розподіл доходу за останні 30 днів",
-      "noData": "Дані відсутні"
+      "revenueByCountryDesc": "Розподіл доходу за обраний період",
+      "noData": "Дані відсутні",
+      "registrationsTitle": "Реєстрації",
+      "registrationsDesc": "Нові учасники та компанії за днями",
+      "membersSeriesLabel": "Учасники",
+      "companiesSeriesLabel": "Компанії",
+      "queueTitle": "Компанії, що очікують перевірки",
+      "queueEmpty": "Немає заявок на перевірку",
+      "viewAll": "Переглянути всі"
     },
     "audit": {
       "title": "Журнал аудиту",

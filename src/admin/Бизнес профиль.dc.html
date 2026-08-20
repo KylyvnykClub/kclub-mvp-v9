@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#0E0F10; color:#EDEBE7; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#B08D57; text-decoration:none; }
+  a:hover { color:#C9A876; }
+  input { font-family:inherit; }
+  input::placeholder { color:rgba(237,235,231,.35); }
+  ::selection { background:rgba(176,141,87,.32); }
+</style>
+</helmet>
+
+<div style="min-height:100vh; display:flex; flex-direction:column; background:#0E0F10;">
+
+  <header style="display:flex; align-items:center; justify-content:space-between; padding:0 40px; height:72px; border-bottom:1px solid rgba(255,255,255,.09); position:sticky; top:0; background:#0E0F10; z-index:10;">
+    <div style="display:flex; align-items:center; gap:32px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="width:8px; height:8px; background:#B08D57; display:block;"></span>
+        <span style="font-size:14px; letter-spacing:.30em; text-transform:uppercase;">Kclub</span>
+      </div>
+      <span style="width:1px; height:26px; background:rgba(255,255,255,.09); display:block;"></span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <a href="Кабинет пользователя.dc.html" style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:rgba(237,235,231,.5); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Member account</a>
+        <span style="font-size:11px; color:rgba(237,235,231,.3);">/</span>
+        <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#EDEBE7; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Business account</span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:24px;">
+      <div style="display:flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,.12); padding:9px 14px; min-width:260px;">
+        <span style="font-size:12px; color:rgba(237,235,231,.4); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">⌕</span>
+        <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search offers and leads" style="flex:1; background:none; border:none; outline:none; color:#EDEBE7; font-size:13px;"/>
+      </div>
+      <span style="font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45);">EN / RU</span>
+      <div style="display:flex; align-items:center; gap:11px;">
+        <div style="width:32px; height:32px; background:repeating-linear-gradient(45deg,#1b1c1d 0 4px,#141516 4px 8px); display:flex; align-items:center; justify-content:center; font-size:11px; color:rgba(237,235,231,.6); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">MI</div>
+        <div>
+          <div style="font-size:12.5px; line-height:1.3;">Mercer Industrial</div>
+          <div style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#B08D57; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ planLabel }}</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div style="flex:1; display:flex; align-items:stretch;">
+
+    <aside style="width:248px; flex:none; border-right:1px solid rgba(255,255,255,.09); display:flex; flex-direction:column;">
+      <div style="padding:26px 24px 20px; border-bottom:1px solid rgba(255,255,255,.09);">
+        <div style="font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.4); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Business</div>
+        <div style="margin-top:12px; font-family:'Instrument Serif', Georgia, serif; font-size:25px; line-height:1.12;">Mercer Industrial Group</div>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+          <span style="width:6px; height:6px; background:{{ stateDot }}; display:block;"></span>
+          <span style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:{{ stateFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ stateLabel }}</span>
+        </div>
+        <div style="margin-top:8px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(237,235,231,.42); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">ID KB-1174 · UK</div>
+      </div>
+      <nav style="display:flex; flex-direction:column;">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+          <div onClick="{{ n.go }}" style="display:flex; align-items:center; gap:12px; padding:15px 24px; border-bottom:1px solid rgba(255,255,255,.06); cursor:pointer; background:{{ n.bg }}" style-hover="background:#131415">
+            <span style="width:16px; height:1px; background:{{ n.rule }}; display:block; flex:none;"></span>
+            <span style="flex:1; font-size:13px; letter-spacing:.04em; color:{{ n.fg }}">{{ n.label }}</span>
+            <span style="font-size:10.5px; letter-spacing:.1em; color:{{ n.badgeFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ n.badge }}</span>
+          </div>
+        </sc-for>
+      </nav>
+      <div style="margin-top:auto; padding:24px; border-top:1px solid rgba(255,255,255,.09);">
+        <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.4); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Profile completeness</div>
+        <div style="margin-top:12px; display:flex; align-items:baseline; gap:8px;">
+          <span style="font-family:'Instrument Serif', Georgia, serif; font-size:32px; line-height:1;">82</span>
+          <span style="font-size:12px; color:rgba(237,235,231,.5);">%</span>
+        </div>
+        <div style="margin-top:14px; height:1px; background:rgba(255,255,255,.12); position:relative;">
+          <span style="position:absolute; left:0; top:0; height:1px; width:82%; background:#B08D57; display:block;"></span>
+        </div>
+        <div style="margin-top:14px; font-size:12px; line-height:1.55; color:rgba(237,235,231,.5);">Add two case studies and a company photograph to reach 100%.</div>
+      </div>
+    </aside>
+
+    <main style="flex:1; min-width:0;">
+
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:34px 40px 26px; border-bottom:1px solid rgba(255,255,255,.09);">
+        <div>
+          <div style="font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.42); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ crumb }}</div>
+          <h1 style="margin:14px 0 0; font-size:34px; line-height:1.1; font-weight:400; letter-spacing:-.015em;">{{ title }}</h1>
+        </div>
+        <div style="display:flex; gap:12px; flex:none;">
+          <a href="#" style="border:1px solid rgba(255,255,255,.2); padding:13px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.85); white-space:nowrap;" style-hover="border-color:rgba(255,255,255,.5); color:#EDEBE7;">Preview listing</a>
+          <a href="#" style="background:#B08D57; color:#0E0F10; padding:13px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; white-space:nowrap;" style-hover="background:#C29C61;">Submit for review</a>
+        </div>
+      </div>
+
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); border-bottom:1px solid rgba(255,255,255,.09);">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="padding:26px 28px; border-right:1px solid rgba(255,255,255,.09);">
+                <div style="font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ k.label }}</div>
+                <div style="margin-top:16px; display:flex; align-items:baseline; gap:10px;">
+                  <span style="font-size:34px; line-height:1; letter-spacing:-.01em;">{{ k.value }}</span>
+                  <span style="font-size:11.5px; color:{{ k.deltaFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ k.delta }}</span>
+                </div>
+                <div style="margin-top:12px; font-size:12px; color:rgba(237,235,231,.5);">{{ k.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 440px; border-bottom:1px solid rgba(255,255,255,.09);">
+            <div style="padding:32px 40px; border-right:1px solid rgba(255,255,255,.09);">
+              <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Moderation status</div>
+              <div style="margin-top:22px; border:1px solid rgba(255,255,255,.12); padding:26px;">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
+                  <div>
+                    <div style="font-size:20px; line-height:1.25;">{{ modTitle }}</div>
+                    <p style="margin:12px 0 0; max-width:460px; font-size:13.5px; line-height:1.6; color:rgba(237,235,231,.6);">{{ modText }}</p>
+                  </div>
+                  <span style="flex:none; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; border:1px solid {{ stateFg }}; color:{{ stateFg }}; padding:8px 12px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; white-space:nowrap;">{{ stateLabel }}</span>
+                </div>
+                <div style="margin-top:24px; display:grid; grid-template-columns:repeat(4, 1fr); border-top:1px solid rgba(255,255,255,.09);">
+                  <sc-for list="{{ modSteps }}" as="m" hint-placeholder-count="4">
+                    <div style="padding:18px 16px 0; border-top:2px solid {{ m.bd }}; margin-top:-1px;">
+                      <div style="font-size:11px; color:{{ m.nFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ m.n }}</div>
+                      <div style="margin-top:10px; font-size:13.5px; color:{{ m.fg }}">{{ m.label }}</div>
+                      <div style="margin-top:6px; font-size:11.5px; color:rgba(237,235,231,.42); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ m.when }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="margin-top:38px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Needs your attention</div>
+              <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,.09);">
+                <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="4">
+                  <div style="display:grid; grid-template-columns:104px 1fr 150px 110px; gap:20px; align-items:center; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                    <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:{{ t.kindFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ t.kind }}</span>
+                    <span style="font-size:14.5px;">{{ t.title }}</span>
+                    <span style="font-size:12.5px; color:rgba(237,235,231,.5);">{{ t.meta }}</span>
+                    <a href="#" style="font-size:11px; letter-spacing:.18em; text-transform:uppercase; text-align:right;">{{ t.action }}</a>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:38px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Recent activity</div>
+              <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,.09);">
+                <sc-for list="{{ activity }}" as="a" hint-placeholder-count="5">
+                  <div style="display:grid; grid-template-columns:110px 1fr; gap:20px; padding:15px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                    <span style="font-size:11.5px; color:rgba(237,235,231,.42); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ a.when }}</span>
+                    <span style="font-size:14px; color:rgba(237,235,231,.78);">{{ a.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:32px;">
+              <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Directory listing</div>
+              <div style="margin-top:20px; border:1px solid rgba(255,255,255,.12); background:#121314;">
+                <div style="height:150px; background:#101112; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 1px, transparent 1px 12px); display:flex; align-items:flex-end; padding:14px; border-bottom:1px solid rgba(255,255,255,.09);">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:rgba(237,235,231,.4);">cover — production floor, 440×150</span>
+                </div>
+                <div style="padding:22px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <span style="font-size:17px;">Mercer Industrial Group</span>
+                    <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#B08D57; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ planLabel }}</span>
+                  </div>
+                  <div style="margin-top:8px; font-size:12.5px; color:rgba(237,235,231,.55);">Industrial equipment · London, United Kingdom</div>
+                  <p style="margin:16px 0 0; font-size:13.5px; line-height:1.6; color:rgba(237,235,231,.62);">Supply and servicing of production lines for mid-size manufacturers across Europe and the Gulf.</p>
+                  <div style="margin-top:18px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <sc-for list="{{ tags }}" as="t" hint-placeholder-count="4">
+                      <span style="border:1px solid rgba(255,255,255,.16); padding:6px 10px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(237,235,231,.6); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ t }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:34px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Placement</div>
+              <div style="margin-top:18px; border-top:1px solid rgba(255,255,255,.09);">
+                <sc-for list="{{ facts }}" as="f" hint-placeholder-count="6">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                    <span style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ f.k }}</span>
+                    <span style="font-size:13px; color:{{ f.fg }}; text-align:right;">{{ f.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:1fr 1fr;">
+          <div style="padding:32px 40px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Legal entity</div>
+            <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,.09);">
+              <sc-for list="{{ legalRows }}" as="p" hint-placeholder-count="8">
+                <div style="display:grid; grid-template-columns:190px 1fr 100px; gap:18px; align-items:center; padding:17px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                  <span style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.k }}</span>
+                  <span style="font-size:14px;">{{ p.v }}</span>
+                  <span style="justify-self:end; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ p.stFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.st }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:38px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Documents</div>
+            <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,.09);">
+              <sc-for list="{{ docs }}" as="d" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:1fr 130px 90px; gap:16px; align-items:center; padding:16px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                  <span style="font-size:13.5px;">{{ d.name }}</span>
+                  <span style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ d.sFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ d.status }}</span>
+                  <a href="#" style="font-size:11px; letter-spacing:.16em; text-transform:uppercase; text-align:right;">{{ d.action }}</a>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:32px 40px;">
+            <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Public profile</div>
+            <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,.09);">
+              <sc-for list="{{ publicRows }}" as="p" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:190px 1fr; gap:18px; align-items:baseline; padding:17px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                  <span style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.k }}</span>
+                  <span style="font-size:14px; line-height:1.55; color:rgba(237,235,231,.85);">{{ p.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:34px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Gallery</div>
+            <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+              <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="3">
+                <div style="height:120px; background:#101112; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 10px); border:1px solid rgba(255,255,255,.09); display:flex; align-items:flex-end; padding:10px;">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:rgba(237,235,231,.4);">{{ g }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <a href="#" style="display:inline-block; margin-top:26px; border:1px solid rgba(255,255,255,.2); padding:13px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.85); white-space:nowrap;" style-hover="border-color:#B08D57; color:#B08D57;">Edit public profile</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOffers }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; padding:22px 40px; border-bottom:1px solid rgba(255,255,255,.09); flex-wrap:wrap;">
+            <sc-for list="{{ offerChips }}" as="c" hint-placeholder-count="4">
+              <div onClick="{{ c.go }}" style="padding:10px 18px; border:1px solid {{ c.bd }}; background:{{ c.bg }}; color:{{ c.fg }}; font-size:11px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer; white-space:nowrap;">{{ c.label }}</div>
+            </sc-for>
+            <a href="#" style="margin-left:auto; background:#B08D57; color:#0E0F10; padding:11px 20px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; white-space:nowrap;" style-hover="background:#C29C61;">+ New offer</a>
+          </div>
+          <div style="padding:0 40px 40px;">
+            <div style="display:grid; grid-template-columns:2fr 1fr .9fr .8fr 120px; gap:20px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.14); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">
+              <div>Offer</div><div>Category</div><div>Member terms</div><div>Requests</div><div style="text-align:right;">Status</div>
+            </div>
+            <sc-for list="{{ offerRows }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid; grid-template-columns:2fr 1fr .9fr .8fr 120px; gap:20px; align-items:center; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09);" style-hover="background:#121314">
+                <div style="min-width:0;">
+                  <div style="font-size:14.5px;">{{ r.name }}</div>
+                  <div style="margin-top:4px; font-size:12px; color:rgba(237,235,231,.5);">{{ r.note }}</div>
+                </div>
+                <div style="font-size:13px; color:rgba(237,235,231,.72);">{{ r.cat }}</div>
+                <div style="font-size:13px; color:#B08D57;">{{ r.terms }}</div>
+                <div style="font-size:13px; color:rgba(237,235,231,.72); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.reqs }}</div>
+                <span style="justify-self:end; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:{{ r.sFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:0 40px 40px;">
+          <div style="display:grid; grid-template-columns:110px 1.3fr 1.3fr 1fr 130px; gap:20px; padding:22px 0 18px; border-bottom:1px solid rgba(255,255,255,.14); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">
+            <div>Ref</div><div>Client</div><div>Request</div><div>Received</div><div style="text-align:right;">Stage</div>
+          </div>
+          <sc-for list="{{ leadRows }}" as="r" hint-placeholder-count="6">
+            <div style="display:grid; grid-template-columns:110px 1.3fr 1.3fr 1fr 130px; gap:20px; align-items:center; padding:20px 0; border-bottom:1px solid rgba(255,255,255,.09);" style-hover="background:#121314">
+              <span style="font-size:12px; color:rgba(237,235,231,.5); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.ref }}</span>
+              <div>
+                <div style="font-size:14.5px;">{{ r.client }}</div>
+                <div style="margin-top:4px; font-size:12px; color:rgba(237,235,231,.5);">via {{ r.member }}</div>
+              </div>
+              <span style="font-size:13.5px; color:rgba(237,235,231,.75);">{{ r.need }}</span>
+              <span style="font-size:12.5px; color:rgba(237,235,231,.5); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.date }}</span>
+              <span style="justify-self:end; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; border:1px solid {{ r.sBd }}; color:{{ r.sFg }}; padding:7px 11px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; white-space:nowrap;">{{ r.stage }}</span>
+            </div>
+          </sc-for>
+          <div style="margin-top:40px; display:grid; grid-template-columns:1fr 1fr 1fr; border:1px solid rgba(255,255,255,.09);">
+            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="3">
+              <div style="padding:28px 30px; border-right:1px solid rgba(255,255,255,.09);">
+                <div style="font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ f.k }}</div>
+                <div style="margin-top:16px; font-family:'Instrument Serif', Georgia, serif; font-size:40px; line-height:1;">{{ f.v }}</div>
+                <div style="margin-top:12px; font-size:12.5px; color:rgba(237,235,231,.5);">{{ f.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:0 40px 40px;">
+          <div style="display:grid; grid-template-columns:1.6fr 1.2fr 1fr .9fr 110px; gap:20px; padding:22px 0 18px; border-bottom:1px solid rgba(255,255,255,.14); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">
+            <div>Person</div><div>Position</div><div>Access</div><div>Club member</div><div style="text-align:right;">Action</div>
+          </div>
+          <sc-for list="{{ teamRows }}" as="r" hint-placeholder-count="5">
+            <div style="display:grid; grid-template-columns:1.6fr 1.2fr 1fr .9fr 110px; gap:20px; align-items:center; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09);" style-hover="background:#121314">
+              <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+                <div style="width:34px; height:34px; flex:none; background:repeating-linear-gradient(45deg,#1b1c1d 0 4px,#141516 4px 8px); display:flex; align-items:center; justify-content:center; font-size:10.5px; color:rgba(237,235,231,.55); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.ini }}</div>
+                <div style="min-width:0;">
+                  <div style="font-size:14.5px;">{{ r.name }}</div>
+                  <div style="margin-top:4px; font-size:12px; color:rgba(237,235,231,.5); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.mail }}</div>
+                </div>
+              </div>
+              <div style="font-size:13px; color:rgba(237,235,231,.72);">{{ r.pos }}</div>
+              <div style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:{{ r.accFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ r.acc }}</div>
+              <div style="font-size:13px; color:rgba(237,235,231,.6);">{{ r.member }}</div>
+              <a href="#" style="font-size:11px; letter-spacing:.16em; text-transform:uppercase; text-align:right;">Manage</a>
+            </div>
+          </sc-for>
+          <div style="margin-top:32px; display:flex; gap:12px;">
+            <a href="#" style="background:#B08D57; color:#0E0F10; padding:13px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; white-space:nowrap;" style-hover="background:#C29C61;">Invite a colleague</a>
+            <a href="#" style="border:1px solid rgba(255,255,255,.2); padding:13px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.85); white-space:nowrap;" style-hover="border-color:rgba(255,255,255,.5); color:#EDEBE7;">Access rules</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVisibility }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:1fr 1fr;">
+          <div style="padding:32px 40px; border-right:1px solid rgba(255,255,255,.09);">
+            <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Visibility</div>
+            <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,.09);">
+              <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="5">
+                <div onClick="{{ t.go }}" style="display:flex; align-items:center; gap:20px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,.09); cursor:{{ t.cursor }}">
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:14px; color:{{ t.nameFg }}">{{ t.name }}</div>
+                    <div style="margin-top:5px; font-size:12.5px; color:rgba(237,235,231,.5);">{{ t.hint }}</div>
+                  </div>
+                  <div style="width:44px; height:18px; flex:none; border:1px solid {{ t.bd }}; display:flex; justify-content:{{ t.justify }}; padding:2px;">
+                    <span style="width:12px; height:12px; background:{{ t.knob }}; display:block;"></span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:20px; font-size:12px; line-height:1.6; color:{{ ruleFg }}">{{ ruleText }}</div>
+          </div>
+          <div style="padding:32px 40px;">
+            <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Placement plan</div>
+            <div style="margin-top:22px; display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+                <div style="border:1px solid {{ p.bd }}; background:{{ p.bg }}; padding:22px;">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px;">
+                    <span style="font-size:17px;">{{ p.name }}</span>
+                    <span style="font-size:13px; color:rgba(237,235,231,.6); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.price }}</span>
+                  </div>
+                  <div style="margin-top:12px; font-size:13px; line-height:1.6; color:rgba(237,235,231,.6);">{{ p.what }}</div>
+                  <div style="margin-top:14px; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:{{ p.tagFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.tag }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:32px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Listing performance</div>
+            <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,.09);">
+              <sc-for list="{{ perf }}" as="p" hint-placeholder-count="4">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.09);">
+                  <span style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.k }}</span>
+                  <span style="font-size:14px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ p.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBilling }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:1px solid rgba(255,255,255,.09);">
+            <div style="padding:30px 40px; border-right:1px solid rgba(255,255,255,.09);">
+              <div style="font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Placement</div>
+              <div style="margin-top:16px; font-family:'Instrument Serif', Georgia, serif; font-size:32px; line-height:1.05;">{{ planLabel }}</div>
+              <div style="margin-top:14px; font-size:13px; color:rgba(237,235,231,.55);">{{ planPrice }} · billed annually</div>
+            </div>
+            <div style="padding:30px 40px; border-right:1px solid rgba(255,255,255,.09);">
+              <div style="font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Paid until</div>
+              <div style="margin-top:16px; font-family:'Instrument Serif', Georgia, serif; font-size:32px; line-height:1.05;">30 Nov 2026</div>
+              <div style="margin-top:14px; font-size:13px; color:{{ payFg }}">{{ payState }}</div>
+            </div>
+            <div style="padding:30px 40px;">
+              <div style="font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Billing contact</div>
+              <div style="margin-top:16px; font-size:15px;">finance@mercer-ig.com</div>
+              <a href="#" style="display:inline-block; margin-top:16px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; border-bottom:1px solid rgba(176,141,87,.45); padding-bottom:4px;">Change contact</a>
+            </div>
+          </div>
+          <div style="padding:32px 40px 40px;">
+            <div style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">Invoices</div>
+            <div style="margin-top:22px; display:grid; grid-template-columns:150px 1fr 160px 120px 110px; gap:20px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,.14); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:rgba(237,235,231,.45); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">
+              <div>Number</div><div>Description</div><div>Date</div><div>Amount</div><div style="text-align:right;">Status</div>
+            </div>
+            <sc-for list="{{ invoices }}" as="i" hint-placeholder-count="5">
+              <div style="display:grid; grid-template-columns:150px 1fr 160px 120px 110px; gap:20px; align-items:center; padding:17px 0; border-bottom:1px solid rgba(255,255,255,.09);" style-hover="background:#121314">
+                <span style="font-size:12.5px; color:rgba(237,235,231,.6); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ i.no }}</span>
+                <span style="font-size:14px;">{{ i.desc }}</span>
+                <span style="font-size:12.5px; color:rgba(237,235,231,.5); font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ i.date }}</span>
+                <span style="font-size:14px; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ i.amount }}</span>
+                <span style="justify-self:end; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:{{ i.sFg }}; font-family:ui-monospace, SFMono-Regular, Menlo, monospace;">{{ i.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;plan&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Premium placement&quot;,&quot;options&quot;:[&quot;Basic placement&quot;,&quot;Featured placement&quot;,&quot;Premium placement&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Business&quot;},&quot;status&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Published&quot;,&quot;options&quot;:[&quot;Draft&quot;,&quot;In review&quot;,&quot;Published&quot;,&quot;Rejected&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Business&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'overview', q: '', offer: 'All', sw: { listed: true, offers: true, leads: true, top: false, contacts: false } };
+
+  renderVals() {
+    const s = this.state;
+    const GOLD = '#B08D57', OK = 'oklch(0.72 0.10 155)', WARN = 'oklch(0.78 0.12 75)', BAD = 'oklch(0.65 0.17 25)', MUTED = 'rgba(237,235,231,.45)';
+    const plan = this.props.plan || 'Featured placement';
+    const status = this.props.status || 'Published';
+    const set = patch => () => this.setState(patch);
+
+    const navDefs = [
+      ['overview', 'Overview', ''],
+      ['profile', 'Company profile', ''],
+      ['offers', 'Offers & catalog', '6'],
+      ['leads', 'Client requests', '3'],
+      ['team', 'Team & access', ''],
+      ['visibility', 'Visibility', ''],
+      ['billing', 'Placement & billing', '']
+    ];
+    const nav = navDefs.map(([k, label, badge]) => ({
+      label, badge, go: set({ screen: k }),
+      bg: s.screen === k ? '#131415' : 'transparent',
+      fg: s.screen === k ? '#EDEBE7' : 'rgba(237,235,231,.62)',
+      rule: s.screen === k ? GOLD : 'rgba(255,255,255,.16)',
+      badgeFg: k === 'leads' ? GOLD : MUTED
+    }));
+    const titles = {
+      overview: ['BUSINESS / OVERVIEW', 'Mercer Industrial Group'],
+      profile: ['BUSINESS / COMPANY PROFILE', 'Company profile and documents'],
+      offers: ['BUSINESS / OFFERS', 'Offers and catalog'],
+      leads: ['BUSINESS / CLIENT REQUESTS', 'Introductions from members'],
+      team: ['BUSINESS / TEAM', 'Team and account access'],
+      visibility: ['BUSINESS / VISIBILITY', 'Visibility and placement'],
+      billing: ['BUSINESS / BILLING', 'Placement and billing']
+    }[s.screen];
+
+    const stateFg = status === 'Published' ? OK : status === 'In review' ? WARN : status === 'Rejected' ? BAD : MUTED;
+    const modIdx = status === 'Published' ? 4 : status === 'In review' ? 3 : status === 'Rejected' ? 3 : 1;
+    const modSteps = [
+      ['01', 'Profile filled', '12 Jun 2026'],
+      ['02', 'Documents checked', '18 Jun 2026'],
+      ['03', 'Moderator review', status === 'Draft' ? 'not started' : '21 Jun 2026'],
+      ['04', 'Published in directory', status === 'Published' ? '24 Jun 2026' : 'pending']
+    ].map(([n, label, when], i) => {
+      const done = i < modIdx;
+      return { n, label, when, bd: done ? GOLD : 'rgba(255,255,255,.12)', fg: done ? '#EDEBE7' : 'rgba(237,235,231,.5)', nFg: done ? GOLD : 'rgba(237,235,231,.4)' };
+    });
+
+    const OFFERS = [
+      { name: 'Production line audit', note: 'two-day on-site assessment', cat: 'Consulting', terms: '−15% members', reqs: '12', status: 'Live', kind: 'Live' },
+      { name: 'Conveyor retrofit programme', note: 'modernisation of existing lines', cat: 'Engineering', terms: '−10% members', reqs: '8', status: 'Live', kind: 'Live' },
+      { name: 'Spare parts supply contract', note: 'annual framework agreement', cat: 'Supply', terms: 'Fixed pricing', reqs: '5', status: 'Live', kind: 'Live' },
+      { name: 'Operator training course', note: 'four groups per quarter', cat: 'Training', terms: '−20% members', reqs: '3', status: 'In review', kind: 'In review' },
+      { name: 'Predictive maintenance pilot', note: 'sensors and monthly reporting', cat: 'Service', terms: 'First month free', reqs: '2', status: 'Draft', kind: 'Draft' },
+      { name: 'Turnkey line installation', note: 'from layout to commissioning', cat: 'Engineering', terms: 'By request', reqs: '9', status: 'Live', kind: 'Live' }
+    ];
+    const q = (s.q || '').trim().toLowerCase();
+    let oRows = s.offer === 'All' ? OFFERS : OFFERS.filter(o => o.kind === s.offer);
+    if (q) oRows = oRows.filter(o => (o.name + o.cat + o.note).toLowerCase().includes(q));
+    const offerRows = oRows.map(o => ({ ...o, sFg: o.status === 'Live' ? OK : o.status === 'In review' ? WARN : MUTED }));
+    const offerChips = ['All', 'Live', 'In review', 'Draft'].map(c => ({
+      label: c, go: set({ offer: c }),
+      bg: s.offer === c ? 'rgba(176,141,87,.12)' : 'transparent',
+      bd: s.offer === c ? GOLD : 'rgba(255,255,255,.16)',
+      fg: s.offer === c ? '#EDEBE7' : 'rgba(237,235,231,.6)'
+    }));
+
+    const stageTone = st => st === 'Won' ? OK : st === 'Lost' ? MUTED : WARN;
+    const leadRows = [
+      { ref: 'REQ-2081', client: 'Nordvik Foods', member: 'M. Kudashova', need: 'Bottling line modernisation', date: '28 Jul 2026', stage: 'New' },
+      { ref: 'REQ-2074', client: 'Adriatic Steel', member: 'D. Rutkowski', need: 'Spare parts framework', date: '24 Jul 2026', stage: 'In talks' },
+      { ref: 'REQ-2069', client: 'Meridian Freight', member: 'N. Al-Farsi', need: 'Warehouse conveyor audit', date: '21 Jul 2026', stage: 'New' },
+      { ref: 'REQ-2055', client: 'Vrh Retail', member: 'L. Ivanic', need: 'Packaging line supply', date: '14 Jul 2026', stage: 'Won' },
+      { ref: 'REQ-2041', client: 'Brandt & Co', member: 'H. Brandt', need: 'Compliance documentation', date: '02 Jul 2026', stage: 'Won' },
+      { ref: 'REQ-2033', client: 'Northbound', member: 'S. Vetrov', need: 'Sensor integration pilot', date: '26 Jun 2026', stage: 'Lost' }
+    ].map(r => ({ ...r, sFg: stageTone(r.stage), sBd: r.stage === 'Lost' ? 'rgba(255,255,255,.14)' : 'rgba(176,141,87,.4)' }));
+
+    const swDefs = [
+      ['listed', 'Listed in the partner directory', 'Members find the company by sector and region', false],
+      ['offers', 'Show member offers', 'Special terms visible to verified members only', false],
+      ['leads', 'Accept client introductions', 'Members can request an introduction to your team', false],
+      ['top', 'Recommended placement', 'Requires Premium placement', plan !== 'Premium placement'],
+      ['contacts', 'Show direct phone number', 'Off by default — requests arrive through the club', false]
+    ];
+    const toggles = swDefs.map(([k, name, hint, locked]) => {
+      const on = !locked && !!s.sw[k];
+      return {
+        name, hint,
+        go: locked ? () => {} : () => this.setState(st => ({ sw: { ...st.sw, [k]: !st.sw[k] } })),
+        cursor: locked ? 'default' : 'pointer',
+        nameFg: locked ? 'rgba(237,235,231,.45)' : '#EDEBE7',
+        justify: on ? 'flex-end' : 'flex-start',
+        bd: on ? GOLD : 'rgba(255,255,255,.2)',
+        knob: on ? GOLD : 'rgba(237,235,231,.28)'
+      };
+    });
+
+    const plans = [
+      { name: 'Basic placement', price: '€900 / year', what: 'Directory entry, sector and region, one contact form.', kind: 'Basic placement' },
+      { name: 'Featured placement', price: '€2 400 / year', what: 'Priority in category, member offers, three team seats.', kind: 'Featured placement' },
+      { name: 'Premium placement', price: '€4 800 / year', what: 'Recommended block on the directory front, unlimited offers and seats.', kind: 'Premium placement' }
+    ].map(p => ({
+      ...p,
+      bd: plan === p.kind ? GOLD : 'rgba(255,255,255,.12)',
+      bg: plan === p.kind ? 'rgba(176,141,87,.06)' : 'transparent',
+      tag: plan === p.kind ? 'Current plan' : 'Switch to this plan',
+      tagFg: plan === p.kind ? GOLD : 'rgba(237,235,231,.5)'
+    }));
+
+    return {
+      nav, crumb: titles[0], title: titles[1],
+      q: s.q, onSearch: e => this.setState({ q: e.target.value, screen: 'offers' }),
+      isOverview: s.screen === 'overview', isProfile: s.screen === 'profile',
+      isOffers: s.screen === 'offers', isLeads: s.screen === 'leads',
+      isTeam: s.screen === 'team', isVisibility: s.screen === 'visibility',
+      isBilling: s.screen === 'billing',
+      planLabel: plan, planPrice: plan === 'Premium placement' ? '€4 800' : plan === 'Featured placement' ? '€2 400' : '€900',
+      stateLabel: status, stateFg, stateDot: stateFg,
+      modSteps,
+      modTitle: status === 'Published' ? 'Listing is live in the partner directory' : status === 'In review' ? 'Listing is with the moderation team' : status === 'Rejected' ? 'Listing was returned with comments' : 'Listing is a draft',
+      modText: status === 'Published'
+        ? 'Changes to the public profile go through a short review before they appear to members.'
+        : status === 'In review'
+          ? 'A moderator checks documents and public copy. Usually five working days.'
+          : status === 'Rejected'
+            ? 'Address the moderator comments and submit the profile again.'
+            : 'Fill the required fields and submit the profile for moderation.',
+      kpis: [
+        { label: 'Listing views', value: '1 940', delta: '+18%', deltaFg: OK, note: 'members only · 30 days' },
+        { label: 'Client requests', value: '3', delta: 'new', deltaFg: WARN, note: 'awaiting your reply' },
+        { label: 'Live offers', value: '4', delta: 'of 6', deltaFg: MUTED, note: 'two not published yet' },
+        { label: 'Won this year', value: '7', delta: '+2', deltaFg: OK, note: 'introductions closed' }
+      ],
+      tasks: [
+        { kind: 'Documents', kindFg: WARN, title: 'Certificate of incorporation expires in 40 days', meta: 'renew before 08 Sep', action: 'Upload' },
+        { kind: 'Request', kindFg: GOLD, title: 'Nordvik Foods asks about line modernisation', meta: 'received 2 days ago', action: 'Reply' },
+        { kind: 'Offer', kindFg: 'rgba(237,235,231,.55)', title: 'Operator training course waits for moderation', meta: 'in review 3 days', action: 'View' },
+        { kind: 'Profile', kindFg: 'rgba(237,235,231,.55)', title: 'Two case studies missing from the public profile', meta: '82% complete', action: 'Add' }
+      ],
+      activity: [
+        { when: 'Today', text: 'Nordvik Foods was introduced to your sales team by M. Kudashova.' },
+        { when: 'Yesterday', text: 'Offer “Turnkey line installation” was approved by moderation.' },
+        { when: '24 Jul', text: 'Listing appeared in the Logistics & Manufacturing category front.' },
+        { when: '18 Jul', text: 'Company documents verified by the admissions team.' },
+        { when: '11 Jul', text: 'I. Novak was given editor access to the business account.' }
+      ],
+      tags: ['Industrial equipment', 'Engineering', 'Europe', 'Gulf'],
+      facts: [
+        { k: 'Category', v: 'Industrial equipment', fg: '#EDEBE7' },
+        { k: 'Placement', v: plan, fg: GOLD },
+        { k: 'Regions shown', v: 'UK · EU · UAE', fg: '#EDEBE7' },
+        { k: 'Member offers', v: '4 live', fg: '#EDEBE7' },
+        { k: 'Paid until', v: '30 Nov 2026', fg: '#EDEBE7' },
+        { k: 'Moderator', v: 'E. Morozova', fg: '#EDEBE7' }
+      ],
+      legalRows: [
+        { k: 'Legal name', v: 'Mercer Industrial Group Ltd', st: 'Verified', stFg: OK },
+        { k: 'Registration no.', v: '09 447 218', st: 'Verified', stFg: OK },
+        { k: 'VAT number', v: 'GB 312 4471 08', st: 'Verified', stFg: OK },
+        { k: 'Incorporated', v: '14 February 2015', st: '—', stFg: MUTED },
+        { k: 'Registered address', v: '18 Bevis Marks, London EC3A', st: 'Verified', stFg: OK },
+        { k: 'Beneficial owner', v: 'A. Mercer · 72%', st: 'Verified', stFg: OK },
+        { k: 'Employees', v: '210', st: '—', stFg: MUTED },
+        { k: 'Annual turnover', v: '€48 M', st: 'Confidential', stFg: MUTED }
+      ],
+      docs: [
+        { name: 'Certificate of incorporation', status: 'Expires 08 Sep', sFg: WARN, action: 'Renew' },
+        { name: 'VAT registration', status: 'Valid', sFg: OK, action: 'View' },
+        { name: 'Insurance certificate', status: 'Valid', sFg: OK, action: 'View' },
+        { name: 'ISO 9001', status: 'Valid', sFg: OK, action: 'View' }
+      ],
+      publicRows: [
+        { k: 'Display name', v: 'Mercer Industrial Group' },
+        { k: 'One-line summary', v: 'Production lines for mid-size manufacturers — supply, retrofit and service.' },
+        { k: 'About', v: 'Since 2015 we have delivered and serviced production lines across the UK, the EU and the Gulf. In-house engineering, installation crews in three countries and a spare-parts depot in Rotterdam.' },
+        { k: 'Serving regions', v: 'United Kingdom · European Union · United Arab Emirates' },
+        { k: 'Languages', v: 'English · German · Arabic' },
+        { k: 'Website', v: 'mercer-ig.com' }
+      ],
+      gallery: ['photo 1 — plant', 'photo 2 — install', 'photo 3 — team'],
+      offerRows, offerChips,
+      leadRows,
+      funnel: [
+        { k: 'New this month', v: '3', note: 'reply within 48 hours' },
+        { k: 'In talks', v: '4', note: 'average cycle 6 weeks' },
+        { k: 'Won this year', v: '7', note: 'from 19 introductions' }
+      ],
+      teamRows: [
+        { name: 'Alexander Mercer', mail: 'a.mercer@mercer-ig.com', pos: 'Managing director', acc: 'Owner', member: 'KC-2841', accFg: WARN },
+        { name: 'Irena Novak', mail: 'i.novak@mercer-ig.com', pos: 'Head of sales', acc: 'Editor', member: '—', accFg: GOLD },
+        { name: 'Tomas Weber', mail: 't.weber@mercer-ig.com', pos: 'Chief engineer', acc: 'Editor', member: '—', accFg: GOLD },
+        { name: 'Sofia Lang', mail: 's.lang@mercer-ig.com', pos: 'Finance manager', acc: 'Billing', member: '—', accFg: 'rgba(237,235,231,.6)' },
+        { name: 'Pavel Ilyin', mail: 'p.ilyin@mercer-ig.com', pos: 'Service coordinator', acc: 'Read-only', member: '—', accFg: 'rgba(237,235,231,.5)' }
+      ].map(r => ({ ...r, ini: r.name.split(' ').map(w => w[0]).join('') })),
+      toggles,
+      ruleText: plan === 'Premium placement' ? 'All visibility options are available on your plan.' : 'Recommended placement is available on Premium only. Changes are logged in the moderation history.',
+      ruleFg: plan === 'Premium placement' ? 'rgba(237,235,231,.5)' : WARN,
+      plans,
+      perf: [
+        { k: 'Views · 30 days', v: '1 940' },
+        { k: 'Contact clicks', v: '212' },
+        { k: 'Requests started', v: '17' },
+        { k: 'Category rank', v: '#3 of 84' }
+      ],
+      payState: 'Auto-renewal is on', payFg: OK,
+      invoices: [
+        { no: 'KB-2026-0338', desc: 'Placement · ' + plan, date: '30 Nov 2025', amount: '€2 400', status: 'Paid', sFg: OK },
+        { no: 'KB-2026-0402', desc: 'Featured offer slot · Q3', date: '01 Jul 2026', amount: '€350', status: 'Paid', sFg: OK },
+        { no: 'KB-2025-0290', desc: 'Placement · Basic', date: '30 Nov 2024', amount: '€900', status: 'Paid', sFg: OK },
+        { no: 'KB-2025-0244', desc: 'Directory verification fee', date: '18 Jun 2024', amount: '€180', status: 'Paid', sFg: OK },
+        { no: 'KB-2026-0441', desc: 'Offer promotion · Q4', date: '01 Oct 2026', amount: '€350', status: 'Scheduled', sFg: WARN }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
