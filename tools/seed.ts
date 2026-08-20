@@ -181,6 +181,61 @@ async function seedFeatureFlags(): Promise<void> {
   }
 }
 
+// ── Bootstrap staff owner ────────────────────────────────────
+
+async function seedBootstrapStaff(): Promise<void> {
+  const phone = process.env.ADMIN_BOOTSTRAP_OWNER_PHONE;
+  const password = process.env.ADMIN_BOOTSTRAP_OWNER_PASSWORD;
+
+  if (!phone || !password) {
+    console.log(
+      "\n⏭️  Skipping staff bootstrap (ADMIN_BOOTSTRAP_OWNER_PHONE / ADMIN_BOOTSTRAP_OWNER_PASSWORD not set).",
+    );
+    return;
+  }
+
+  if (password.length < 12) {
+    console.error(
+      "\n❌ ADMIN_BOOTSTRAP_OWNER_PASSWORD must be at least 12 characters (staff password policy).",
+    );
+    process.exit(1);
+  }
+
+  console.log("\n👑 Bootstrapping staff owner...");
+
+  const { db } = await import("../src/data/db");
+  const { members } = await import("../src/data/schema");
+  const { hashPassword } = await import("../src/modules/identity/crypto");
+
+  const displayName = process.env.ADMIN_BOOTSTRAP_OWNER_NAME ?? "Owner";
+  const country = process.env.ADMIN_BOOTSTRAP_OWNER_COUNTRY ?? "US";
+  const language = process.env.ADMIN_BOOTSTRAP_OWNER_LANGUAGE ?? "en";
+
+  const inserted = await db
+    .insert(members)
+    .values({
+      phone,
+      passwordHash: await hashPassword(password),
+      displayName,
+      role: "staff_owner",
+      country,
+      language,
+      status: "active",
+    })
+    .onConflictDoNothing({ target: members.phone })
+    .returning({ id: members.id });
+
+  if (inserted.length === 0) {
+    console.log(`  ✓ Staff owner already exists for ${phone} — skipped.`);
+    return;
+  }
+
+  console.log(`  + Created staff owner "${displayName}" (${phone}).`);
+  console.log(
+    "  ⚠️  Remove ADMIN_BOOTSTRAP_OWNER_PASSWORD from the environment now that bootstrap is done.",
+  );
+}
+
 // ── Dev sample data ──────────────────────────────────────────
 
 async function seedDevData(): Promise<void> {
@@ -686,6 +741,8 @@ async function main(): Promise<void> {
 
   console.log("\n── Feature flags ──");
   await seedFeatureFlags();
+
+  await seedBootstrapStaff();
 
   await seedDevData();
 
