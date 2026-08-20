@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>
+html,body{margin:0;padding:0;background:#0b0d0f;color:#e7eaec;font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:oklch(0.75 0.12 205);text-decoration:none}
+a:hover{color:oklch(0.85 0.1 205)}
+input,button{font-family:inherit}
+input::placeholder{color:#5c666e}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2a3036;border-radius:5px}::-webkit-scrollbar-track{background:transparent}
+@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideright{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+</style></helmet>
+
+<div style="display:flex;min-height:100vh;background:#0b0d0f">
+
+  <sc-if value="{{ showScrim }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleMenu }}" style="position:fixed;inset:0;background:rgba(4,6,8,.62);z-index:55"></div>
+  </sc-if>
+  <aside style="width:238px;flex:none;border-right:1px solid #1c2126;background:#0d1013;display:flex;flex-direction:column;top:0;height:100vh;z-index:60;position:{{ asidePos }};left:{{ asideLeft }};transform:{{ asideTransform }};box-shadow:{{ asideShadow }};transition:transform .22s ease">
+    <div style="padding:20px 18px 18px;border-bottom:1px solid #1c2126;display:flex;align-items:center;gap:10px">
+      <div style="width:26px;height:26px;border-radius:6px;background:oklch(0.72 0.13 205);display:flex;align-items:center;justify-content:center;font:600 13px 'IBM Plex Mono',monospace;color:#06181e">B</div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font:600 13px/1 'IBM Plex Sans',sans-serif;letter-spacing:.01em">Бизнес-портал</div>
+        <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.04em">ADMIN CONSOLE</div>
+      </div>
+    </div>
+
+    <nav style="padding:12px 10px;display:flex;flex-direction:column;gap:2px">
+      <div style="font:500 10px/1 'IBM Plex Mono',monospace;color:#5c666e;letter-spacing:.08em;padding:8px 10px 6px">РАБОЧАЯ ОБЛАСТЬ</div>
+      <div onClick="{{ navById.overview.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.overview.bg }};color:{{ navById.overview.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px">
+          <span style="background:currentColor;border-radius:1.5px"></span><span style="background:currentColor;border-radius:1.5px;opacity:.55"></span><span style="background:currentColor;border-radius:1.5px;opacity:.55"></span><span style="background:currentColor;border-radius:1.5px"></span>
+        </div>
+        <span style="flex:1">Обзор</span>
+      </div>
+
+      <div onClick="{{ navById.users.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.users.bg }};color:{{ navById.users.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+          <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>
+          <span style="width:13px;height:6px;border-radius:6px 6px 2px 2px;background:currentColor"></span>
+        </div>
+        <span style="flex:1">Пользователи</span>
+        <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ navById.users.badgeFg }};background:{{ navById.users.badgeBg }};padding:3px 5px;border-radius:4px">{{ navById.users.badge }}</span>
+      </div>
+
+      <div onClick="{{ navById.companies.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.companies.bg }};color:{{ navById.companies.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px">
+          <span style="width:7px;height:3px;border-radius:2px 2px 0 0;background:currentColor"></span>
+          <span style="width:14px;height:9px;border-radius:2px;background:currentColor"></span>
+        </div>
+        <span style="flex:1">Бизнес</span>
+        <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ navById.companies.badgeFg }};background:{{ navById.companies.badgeBg }};padding:3px 5px;border-radius:4px">{{ navById.companies.badge }}</span>
+      </div>
+
+      <div onClick="{{ navById.intros.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.intros.bg }};color:{{ navById.intros.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;align-items:center;justify-content:center;gap:1px">
+          <span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>
+          <span style="width:3px;height:1.5px;background:currentColor"></span>
+          <span style="width:6px;height:6px;border-radius:50%;border:1.5px solid currentColor;box-sizing:border-box"></span>
+        </div>
+        <span style="flex:1">Представления</span>
+        <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ navById.intros.badgeFg }};background:{{ navById.intros.badgeBg }};padding:3px 5px;border-radius:4px">{{ navById.intros.badge }}</span>
+      </div>
+
+      <div onClick="{{ navById.requests.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.requests.bg }};color:{{ navById.requests.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0">
+          <span style="width:14px;height:10px;border-radius:3px;background:currentColor"></span>
+          <span style="width:4px;height:3px;background:currentColor;border-radius:0 0 2px 2px;margin-left:3px"></span>
+        </div>
+        <span style="flex:1">Обращения</span>
+        <span style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ navById.requests.badgeFg }};background:{{ navById.requests.badgeBg }};padding:3px 5px;border-radius:4px">{{ navById.requests.badge }}</span>
+      </div>
+
+      <div onClick="{{ navById.content.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.content.bg }};color:{{ navById.content.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:2.5px">
+          <span style="width:14px;height:1.8px;border-radius:1px;background:currentColor"></span>
+          <span style="width:11px;height:1.8px;border-radius:1px;background:currentColor;opacity:.7"></span>
+          <span style="width:8px;height:1.8px;border-radius:1px;background:currentColor;opacity:.5"></span>
+        </div>
+        <span style="flex:1">Контент и доступы</span>
+      </div>
+
+      <div onClick="{{ navById.roles.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.roles.bg }};color:{{ navById.roles.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;align-items:center;justify-content:center">
+          <span style="width:11px;height:13px;border:1.5px solid currentColor;border-radius:2px 2px 5px 5px;box-sizing:border-box;display:block"></span>
+        </div>
+        <span style="flex:1">Роли и доступы</span>
+      </div>
+
+      <div onClick="{{ navById.settings.go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;cursor:pointer;font:500 13px/1 'IBM Plex Sans',sans-serif;background:{{ navById.settings.bg }};color:{{ navById.settings.fg }}" style-hover="background:#171b1f;color:#e7eaec">
+        <div style="width:15px;height:15px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:3px">
+          <div style="display:flex;align-items:center"><span style="width:9px;height:1.8px;background:currentColor;opacity:.55"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;margin-left:-1px"></span></div>
+          <div style="display:flex;align-items:center"><span style="width:3px;height:1.8px;background:currentColor;opacity:.55"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor"></span><span style="width:3px;height:1.8px;background:currentColor;opacity:.55"></span></div>
+        </div>
+        <span style="flex:1">Настройки</span>
+      </div>
+    </nav>
+
+    <div style="margin-top:auto;padding:14px;border-top:1px solid #1c2126;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;border-radius:50%;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px);display:flex;align-items:center;justify-content:center;font:500 10px 'IBM Plex Mono',monospace;color:#8b949e">АК</div>
+        <div style="min-width:0">
+          <div style="font:500 12px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">А. Ковалёв</div>
+          <div style="font:400 10px/1.3 'IBM Plex Mono',monospace;color:oklch(0.78 0.13 75)">SUPERADMIN</div>
+        </div>
+      </div>
+      <div style="font:400 10px/1.5 'IBM Plex Mono',monospace;color:#4f585f">v2.4.1 · синхр. 2 мин назад</div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="position:sticky;top:0;z-index:20;background:rgba(11,13,15,.92);backdrop-filter:blur(8px);border-bottom:1px solid #1c2126;padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ toggleMenu }}" style="width:38px;height:38px;flex:none;border:1px solid #23282d;border-radius:8px;background:#111417;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer">
+          <span style="width:16px;height:1.5px;background:#c9d1d6;border-radius:1px"></span>
+          <span style="width:16px;height:1.5px;background:#c9d1d6;border-radius:1px"></span>
+          <span style="width:16px;height:1.5px;background:#c9d1d6;border-radius:1px"></span>
+        </div>
+      </sc-if>
+      <div style="flex:1;min-width:160px">
+        <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.06em;margin-bottom:5px">{{ crumb }}</div>
+        <h1 style="margin:0;font:600 19px/1.1 'IBM Plex Sans',sans-serif;letter-spacing:-.01em">{{ title }}</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;background:#111417;border:1px solid #23282d;border-radius:8px;padding:8px 11px;flex:1 1 200px;max-width:{{ searchWidth }}">
+          <span style="font:400 12px 'IBM Plex Mono',monospace;color:#5c666e">⌕</span>
+          <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Поиск: имя, e-mail, ИНН…" style="flex:1;background:none;border:none;outline:none;color:#e7eaec;font:400 12.5px 'IBM Plex Sans',sans-serif"/>
+          <span style="font:400 10px 'IBM Plex Mono',monospace;color:#4f585f;border:1px solid #2a3036;border-radius:4px;padding:2px 4px">⌘K</span>
+        </div>
+        <div style="display:flex;background:#111417;border:1px solid #23282d;border-radius:8px;padding:3px">
+          <sc-for list="{{ periods }}" as="p" hint-placeholder-count="3">
+            <div onClick="{{ p.go }}" style="cursor:pointer;padding:6px 11px;border-radius:6px;font:500 11.5px/1 'IBM Plex Mono',monospace;background:{{ p.bg }};color:{{ p.fg }}">{{ p.label }}</div>
+          </sc-for>
+        </div>
+        <div style="position:relative;width:36px;height:36px;border:1px solid #23282d;border-radius:8px;background:#111417;display:flex;align-items:center;justify-content:center;cursor:pointer;font:400 14px 'IBM Plex Sans',sans-serif;color:#8b949e" style-hover="border-color:#2f363c;color:#e7eaec">
+          <span>◔</span>
+          <span style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:oklch(0.65 0.17 25);color:#fff;font:500 9.5px/16px 'IBM Plex Mono',monospace;text-align:center">7</span>
+        </div>
+      </div>
+    </header>
+
+    <div style="padding:22px 24px 40px;display:flex;flex-direction:column;gap:18px">
+
+      <!-- ОБЗОР -->
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:12px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;padding:15px 16px 14px;display:flex;flex-direction:column;gap:11px" style-hover="border-color:#2b3238">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span style="font:400 11px/1.2 'IBM Plex Sans',sans-serif;color:#8b949e">{{ k.label }}</span>
+                  <span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:3px 5px;border-radius:4px;background:{{ k.deltaBg }};color:{{ k.deltaFg }}">{{ k.delta }}</span>
+                </div>
+                <div style="font:500 27px/1 'IBM Plex Mono',monospace;letter-spacing:-.02em">{{ k.value }}</div>
+                <div style="display:flex;align-items:flex-end;gap:2px;height:26px">
+                  <sc-for list="{{ k.spark }}" as="s" hint-placeholder-count="12">
+                    <div style="flex:1;border-radius:1px;background:{{ k.sparkColor }};height:{{ s.h }}%;opacity:{{ s.o }}"></div>
+                  </sc-for>
+                </div>
+                <div style="font:400 10.5px/1.2 'IBM Plex Mono',monospace;color:#5c666e">{{ k.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px">
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;padding:16px 18px 14px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+                <div>
+                  <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Регистрации по дням</div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">{{ chartRange }} · сравнение с прошлым периодом</div>
+                </div>
+                <div style="display:flex;gap:14px">
+                  <div style="display:flex;align-items:center;gap:6px;font:400 10.5px 'IBM Plex Mono',monospace;color:#8b949e"><span style="width:8px;height:8px;border-radius:2px;background:oklch(0.72 0.13 205)"></span>Users</div>
+                  <div style="display:flex;align-items:center;gap:6px;font:400 10.5px 'IBM Plex Mono',monospace;color:#8b949e"><span style="width:8px;height:8px;border-radius:2px;background:#2c353c"></span>Companies</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:5px;height:168px;border-bottom:1px solid #1f242a;padding-bottom:2px">
+                <sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="14">
+                  <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:100%;cursor:default" style-hover="opacity:.75">
+                    <div style="border-radius:2px 2px 0 0;background:oklch(0.72 0.13 205);height:{{ b.a }}%"></div>
+                    <div style="border-radius:0 0 2px 2px;background:#2c353c;height:{{ b.b }}%"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:8px;font:400 10px 'IBM Plex Mono',monospace;color:#5c666e">
+                <span>{{ chartFrom }}</span><span>{{ chartMid }}</span><span>{{ chartTo }}</span>
+              </div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;padding:16px 18px">
+              <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif;margin-bottom:4px">География бизнеса</div>
+              <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-bottom:16px">по юрисдикции компании</div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ countries }}" as="c" hint-placeholder-count="6">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline">
+                      <span style="font:400 12px/1 'IBM Plex Sans',sans-serif;color:#c9d1d6">{{ c.name }}</span>
+                      <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8b949e">{{ c.value }} <span style="color:#4f585f">· {{ c.pct }}</span></span>
+                    </div>
+                    <div style="height:5px;border-radius:3px;background:#1a1f24;overflow:hidden">
+                      <div style="height:100%;border-radius:3px;background:{{ c.color }};width:{{ c.w }}%"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px">
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;padding:16px 18px">
+              <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif;margin-bottom:4px">Чего не хватает в анкетах</div>
+              <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-bottom:15px">доля аккаунтов без данных</div>
+              <div style="display:flex;flex-direction:column;gap:1px">
+                <sc-for list="{{ fields }}" as="f" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #191e23">
+                    <span style="flex:1;font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#c9d1d6">{{ f.name }}</span>
+                    <span style="width:74px;height:4px;border-radius:2px;background:#1a1f24;overflow:hidden;flex:none"><span style="display:block;height:100%;background:{{ f.color }};width:{{ f.pct }}%"></span></span>
+                    <span style="width:38px;text-align:right;font:500 11.5px/1 'IBM Plex Mono',monospace;color:{{ f.color }}">{{ f.pct }}%</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:14px;padding:11px 12px;border:1px dashed #2a3036;border-radius:8px;font:400 11px/1.5 'IBM Plex Sans',sans-serif;color:#8b949e">Новое требование при регистрации: <span style="color:#e7eaec">подтверждение ИНН</span> — включено 12.07, охват 54%.</div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;padding:16px 18px 8px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+                <div>
+                  <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Компании в очереди на верификацию</div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">требуется решение оператора</div>
+                </div>
+                <div onClick="{{ goCompanies }}" style="cursor:pointer;font:500 11px/1 'IBM Plex Mono',monospace;color:oklch(0.75 0.12 205);border:1px solid #23282d;padding:7px 9px;border-radius:6px" style-hover="border-color:oklch(0.72 0.13 205)">ВСЕ →</div>
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ queue }}" as="c" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #191e23">
+                    <div style="width:30px;height:30px;border-radius:7px;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px)"></div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d">ИНН {{ c.inn }} · {{ c.country }}</div>
+                    </div>
+                    <div style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:#6b757d;width:74px">{{ c.docs }}</div>
+                    <div style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:4px 6px;border-radius:4px;background:{{ c.bg }};color:{{ c.fg }};width:86px;text-align:center">{{ c.wait }}</div>
+                    <div style="display:flex;gap:6px">
+                      <div style="cursor:pointer;font:500 11px/1 'IBM Plex Sans',sans-serif;padding:7px 10px;border-radius:6px;background:oklch(0.72 0.13 205);color:#06181e" style-hover="background:oklch(0.79 0.13 205)">✓&nbsp;&nbsp;Принять</div>
+                      <div style="cursor:pointer;font:500 11px/1 'IBM Plex Sans',sans-serif;padding:7px 10px;border-radius:6px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:oklch(0.65 0.17 25);color:oklch(0.7 0.16 25)">✕&nbsp;&nbsp;Отказ</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ПОЛЬЗОВАТЕЛИ -->
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+          <div style="flex:1 1 620px;min-width:0;background:#111417;border:1px solid #1f242a;border-radius:10px;overflow-x:auto">
+            <div style="padding:13px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ userChips }}" as="c" hint-placeholder-count="4">
+                <div onClick="{{ c.go }}" style="cursor:pointer;padding:6px 10px;border-radius:6px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.65">{{ c.count }}</span></div>
+              </sc-for>
+              <div style="margin-left:auto;font:400 11px/1 'IBM Plex Mono',monospace;color:#6b757d">{{ usersCount }} записей</div>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(190px,2.1fr) minmax(96px,1.2fr) minmax(88px,.85fr) minmax(74px,.9fr) minmax(76px,.8fr) minmax(96px,.9fr) 34px;gap:12px;padding:9px 16px;border-bottom:1px solid #1f242a;background:#0e1114">
+              <sc-for list="{{ userCols }}" as="h" hint-placeholder-count="6">
+                <div onClick="{{ h.go }}" style="cursor:pointer;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;color:{{ h.fg }};text-align:{{ h.align }}">{{ h.label }}{{ h.arrow }}</div>
+              </sc-for>
+            </div>
+            <div>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="9">
+                <div onClick="{{ u.go }}" style="display:grid;grid-template-columns:minmax(190px,2.1fr) minmax(96px,1.2fr) minmax(88px,.85fr) minmax(74px,.9fr) minmax(76px,.8fr) minmax(96px,.9fr) 34px;gap:12px;align-items:center;padding:{{ rowPad }} 16px;border-bottom:1px solid #191e23;cursor:pointer;background:{{ u.bg }}" style-hover="background:#161a1e">
+                  <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                    <div style="width:30px;height:30px;border-radius:50%;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px);display:flex;align-items:center;justify-content:center;font:500 10px 'IBM Plex Mono',monospace;color:#8b949e">{{ u.ini }}</div>
+                    <div style="min-width:0">
+                      <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.phone }}</div>
+                    </div>
+                  </div>
+                  <div style="font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#c9d1d6;min-width:0;overflow:hidden;text-overflow:ellipsis">{{ u.company }}</div>
+                  <div style="min-width:0">
+                    <span style="display:inline-block;padding:3px 8px;border-radius:5px;font:500 10px/1.3 'IBM Plex Mono',monospace;letter-spacing:.04em;border:1px solid {{ u.planBd }};background:{{ u.planBg }};color:{{ u.planFg }}">{{ u.plan }}</span>
+                  </div>
+                  <div style="font:400 11.5px/1 'IBM Plex Sans',sans-serif;color:#8b949e">{{ u.country }}</div>
+                  <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b949e">{{ u.reg }}</div>
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <span style="width:6px;height:6px;border-radius:50%;flex:none;background:{{ u.dot }}"></span>
+                    <span style="font:400 11.5px/1 'IBM Plex Sans',sans-serif;color:{{ u.dot }}">{{ u.status }}</span>
+                  </div>
+                  <div style="text-align:right;font:400 12px 'IBM Plex Mono',monospace;color:#4f585f">›</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasUser }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ hasUser }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ hasUserClose }}" style="position:fixed;inset:0;background:rgba(4,6,8,.6);z-index:65;animation:fadein .18s ease-out"></div>
+          </sc-if>
+          <div style="position:fixed;top:0;right:0;height:100vh;width:min(620px,100%);background:#111417;border-left:1px solid #1f242a;z-index:70;overflow-y:auto;animation:slideright .22s ease-out;box-shadow:-28px 0 56px rgba(0,0,0,.55)">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;justify-content:space-between">
+                <div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.07em;color:#6b757d">КАРТОЧКА АККАУНТА</div>
+                <div onClick="{{ closeUser }}" style="cursor:pointer;font:400 14px/1 'IBM Plex Sans',sans-serif;color:#6b757d" style-hover="color:#e7eaec">✕</div>
+              </div>
+              <div style="padding:18px 16px;display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;gap:14px;align-items:center">
+                  <div style="width:72px;height:72px;border-radius:10px;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 5px,#1b2126 5px 10px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:400 8.5px 'IBM Plex Mono',monospace;color:#7a848c">фото профиля</div>
+                  <div style="min-width:0;display:flex;flex-direction:column;gap:5px">
+                    <div style="font:600 15px/1.2 'IBM Plex Sans',sans-serif">{{ sel.name }}</div>
+                    <div style="font:400 11px/1.3 'IBM Plex Mono',monospace;color:#6b757d">ID {{ sel.id }}</div>
+                    <div style="display:inline-flex;align-items:center;gap:6px;font:400 11px/1 'IBM Plex Sans',sans-serif;color:{{ sel.dot }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ sel.dot }}"></span>{{ sel.status }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:3px;background:#0e1114;border:1px solid #1f242a;border-radius:8px;padding:3px">
+                  <sc-for list="{{ sel.tabs }}" as="t" hint-placeholder-count="2">
+                    <div onClick="{{ t.go }}" style="flex:1;text-align:center;cursor:pointer;padding:7px 10px;border-radius:6px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ sel.settingsTab }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:16px">
+                    <sc-for list="{{ sel.picks }}" as="p" hint-placeholder-count="4">
+                      <div style="display:flex;flex-direction:column;gap:7px">
+                        <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">{{ p.label }}</div>
+                        <div style="display:flex;gap:5px;flex-wrap:wrap">
+                          <sc-for list="{{ p.options }}" as="o" hint-placeholder-count="3">
+                            <div onClick="{{ o.go }}" style="cursor:pointer;padding:7px 9px;border-radius:6px;font:500 11px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <div style="display:flex;flex-direction:column;gap:1px">
+                      <sc-for list="{{ sel.uSwitches }}" as="f" hint-placeholder-count="2">
+                        <div onClick="{{ f.go }}" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid #191e23;cursor:pointer">
+                          <div style="flex:1;min-width:0">
+                            <div style="font:400 12px/1.3 'IBM Plex Sans',sans-serif">{{ f.name }}</div>
+                            <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ f.hint }}</div>
+                          </div>
+                          <div style="width:34px;height:19px;border-radius:10px;flex:none;padding:2px;background:{{ f.trackBg }};display:flex;justify-content:{{ f.justify }}">
+                            <div style="width:15px;height:15px;border-radius:50%;background:{{ f.knob }}"></div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="padding:10px 12px;border:1px dashed #2a3036;border-radius:8px;font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:#6b757d">Изменения применяются сразу и попадают в журнал действий.</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ sel.infoTab }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:1px">
+                  <sc-for list="{{ sel.rows }}" as="r" hint-placeholder-count="7">
+                    <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                      <span style="width:114px;flex:none;font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.03em">{{ r.k }}</span>
+                      <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:#e7eaec;word-break:break-word">{{ r.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font:400 10.5px 'IBM Plex Mono',monospace;color:#6b757d;margin-bottom:7px"><span>ЗАПОЛНЕННОСТЬ АНКЕТЫ</span><span style="color:{{ sel.compColor }}">{{ sel.comp }}%</span></div>
+                  <div style="height:5px;border-radius:3px;background:#1a1f24;overflow:hidden"><div style="height:100%;background:{{ sel.compColor }};width:{{ sel.comp }}%"></div></div>
+                  <div style="margin-top:8px;font:400 11px/1.5 'IBM Plex Sans',sans-serif;color:#8b949e">Не хватает: {{ sel.missing }}</div>
+                </div>
+                </sc-if>
+                <div style="display:flex;gap:8px">
+                  <div style="flex:1;text-align:center;cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px;border-radius:7px;background:oklch(0.72 0.13 205);color:#06181e" style-hover="background:oklch(0.79 0.13 205)">✎&nbsp;&nbsp;Запросить данные</div>
+                  <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 12px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:oklch(0.65 0.17 25);color:oklch(0.7 0.16 25)">Блок</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- КОМПАНИИ -->
+      <sc-if value="{{ isCompanies }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+          <div style="flex:1 1 660px;min-width:0;background:#111417;border:1px solid #1f242a;border-radius:10px;overflow-x:auto">
+            <div style="padding:13px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ bizChips }}" as="c" hint-placeholder-count="6">
+                <div onClick="{{ c.go }}" style="cursor:pointer;padding:6px 10px;border-radius:6px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.65">{{ c.count }}</span></div>
+              </sc-for>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8b949e;border:1px solid #23282d;padding:7px 9px;border-radius:6px;cursor:pointer" style-hover="border-color:#2f363c;color:#e7eaec">↓&nbsp;&nbsp;ЭКСПОРТ</div>
+                <div style="font:500 11px/1 'IBM Plex Sans',sans-serif;padding:7px 11px;border-radius:6px;background:oklch(0.72 0.13 205);color:#06181e;cursor:pointer" style-hover="background:oklch(0.79 0.13 205)">+ Добавить бизнес</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(200px,2.2fr) 132px minmax(112px,1.1fr) minmax(128px,1.2fr) 64px 92px minmax(104px,1fr);gap:12px;padding:10px 16px;border-bottom:1px solid #1f242a;background:#0e1114;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#6b757d">
+              <div>БИЗНЕС</div><div>СТАТУС</div><div>ВЛАДЕЛЕЦ</div><div>РАЗМЕЩЕНИЕ</div><div>ИНТРО</div><div>ВИДИМОСТЬ</div><div>ИЗМЕНЕНО</div>
+            </div>
+            <sc-for list="{{ businesses }}" as="c" hint-placeholder-count="7">
+              <div onClick="{{ c.go }}" style="display:grid;grid-template-columns:minmax(200px,2.2fr) 132px minmax(112px,1.1fr) minmax(128px,1.2fr) 64px 92px minmax(104px,1fr);gap:12px;align-items:center;padding:{{ rowPad }} 16px;border-bottom:1px solid #191e23;cursor:pointer;background:{{ c.bg }}" style-hover="background:#161a1e">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <div style="width:30px;height:30px;border-radius:7px;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px)"></div>
+                  <div style="min-width:0">
+                    <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+                    <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.category }} · {{ c.city }}</div>
+                  </div>
+                </div>
+                <div><span style="font:500 10px/1 'IBM Plex Mono',monospace;padding:4px 6px;border-radius:4px;background:{{ c.sbg }};color:{{ c.sfg }};white-space:nowrap">{{ c.status }}</span></div>
+                <div style="font:400 11.5px/1.3 'IBM Plex Sans',sans-serif;color:#c9d1d6;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.owner }}</div>
+                <div style="min-width:0">
+                  <div style="font:400 11px/1.3 'IBM Plex Mono',monospace;color:{{ c.payFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.payState }}</div>
+                  <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#5c666e">{{ c.payUntil }}</div>
+                </div>
+                <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b949e">{{ c.intros }}</div>
+                <div style="display:flex;gap:4px">
+                  <sc-for list="{{ c.badges }}" as="b" hint-placeholder-count="1">
+                    <span style="font:500 9.5px/1 'IBM Plex Mono',monospace;padding:4px 5px;border-radius:4px;background:{{ b.bg }};color:{{ b.fg }}">{{ b.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="min-width:0">
+                  <div style="font:400 10.5px/1.3 'IBM Plex Mono',monospace;color:#8b949e">{{ c.updated }}</div>
+                  <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#5c666e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.updatedBy }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ openBiz }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ openBizClose }}" style="position:fixed;inset:0;background:rgba(4,6,8,.6);z-index:65;animation:fadein .18s ease-out"></div>
+          </sc-if>
+          <sc-if value="{{ openBiz }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;top:0;right:0;height:100vh;width:min(620px,100%);background:#111417;border-left:1px solid #1f242a;z-index:70;overflow-y:auto;animation:slideright .22s ease-out;box-shadow:-28px 0 56px rgba(0,0,0,.55)">
+            <div style="padding:16px;border-bottom:1px solid #1f242a;display:flex;flex-direction:column;gap:13px">
+              <div onClick="{{ openBizClose }}" style="align-self:flex-start;cursor:pointer;font:400 14px/1 'IBM Plex Sans',sans-serif;color:#6b757d" style-hover="color:#e7eaec">✕</div>
+              <div style="display:flex;gap:12px;align-items:center">
+                <div style="width:46px;height:46px;border-radius:9px;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 5px,#1b2126 5px 10px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font:400 7px 'IBM Plex Mono',monospace;color:#7a848c">логотип</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:600 15px/1.2 'IBM Plex Sans',sans-serif">{{ biz.name }}</div>
+                  <div style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">{{ biz.category }} · {{ biz.city }}, {{ biz.country }}</div>
+                </div>
+                <span style="font:500 10px/1 'IBM Plex Mono',monospace;padding:5px 7px;border-radius:4px;background:{{ biz.sbg }};color:{{ biz.sfg }};white-space:nowrap">{{ biz.status }}</span>
+              </div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <sc-for list="{{ biz.actions }}" as="a" hint-placeholder-count="3">
+                  <div onClick="{{ a.go }}" style="cursor:pointer;font:500 11px/1 'IBM Plex Sans',sans-serif;padding:8px 10px;border-radius:6px;border:1px solid {{ a.bd }};background:{{ a.bg }};color:{{ a.fg }}">{{ a.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:12px 16px 0">
+              <div style="display:flex;gap:3px;background:#0e1114;border:1px solid #1f242a;border-radius:8px;padding:3px;flex-wrap:wrap">
+                <sc-for list="{{ biz.tabs }}" as="t" hint-placeholder-count="6">
+                  <div onClick="{{ t.go }}" style="flex:1 1 auto;text-align:center;cursor:pointer;padding:7px 8px;border-radius:6px;font:500 10.5px/1 'IBM Plex Sans',sans-serif;background:{{ t.bg }};color:{{ t.fg }};white-space:nowrap">{{ t.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:14px 16px 18px;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ biz.isOverview }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+                    <sc-for list="{{ biz.stats }}" as="k" hint-placeholder-count="4">
+                      <div style="border:1px solid #1f242a;border-radius:8px;padding:11px 12px;background:#0e1114">
+                        <div style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">{{ k.label }}</div>
+                        <div style="font:500 12.5px/1.4 'IBM Plex Sans',sans-serif;color:{{ k.fg }};margin-top:6px">{{ k.value }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ biz.overviewRows }}" as="r" hint-placeholder-count="8">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:130px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.03em">{{ r.k }}</span>
+                        <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:#e7eaec;word-break:break-word">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isProfile }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:7px">ОПИСАНИЕ · {{ biz.descLen }}/500</div>
+                    <div style="font:400 12px/1.6 'IBM Plex Sans',sans-serif;color:#c9d1d6;text-wrap:pretty">{{ biz.description }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ biz.profileRows }}" as="r" hint-placeholder-count="6">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:130px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ r.k }}</span>
+                        <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:{{ r.fg }};word-break:break-word">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:8px">МЕДИА</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                      <div style="height:64px;border-radius:7px;background:repeating-linear-gradient(45deg,#232a30 0 5px,#1b2126 5px 10px);display:flex;align-items:flex-end;padding:6px;font:400 7.5px 'IBM Plex Mono',monospace;color:#7a848c">обложка</div>
+                      <div style="height:64px;border-radius:7px;background:repeating-linear-gradient(45deg,#232a30 0 5px,#1b2126 5px 10px);display:flex;align-items:flex-end;padding:6px;font:400 7.5px 'IBM Plex Mono',monospace;color:#7a848c">фото 1</div>
+                      <div style="height:64px;border-radius:7px;background:repeating-linear-gradient(45deg,#232a30 0 5px,#1b2126 5px 10px);display:flex;align-items:flex-end;padding:6px;font:400 7.5px 'IBM Plex Mono',monospace;color:#7a848c">фото 2</div>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isModeration }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:15px">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">СТАТУС ПРОФИЛЯ</div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                      <sc-for list="{{ biz.statusOptions }}" as="o" hint-placeholder-count="5">
+                        <div onClick="{{ o.go }}" style="cursor:{{ o.cursor }};padding:7px 9px;border-radius:6px;font:500 10.5px/1 'IBM Plex Mono',monospace;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};opacity:{{ o.op }}">{{ o.label }}</div>
+                      </sc-for>
+                    </div>
+                    <div style="font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:{{ biz.ruleFg }}">{{ biz.rule }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">МОДЕРАТОР</div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                      <sc-for list="{{ biz.moderators }}" as="o" hint-placeholder-count="3">
+                        <div onClick="{{ o.go }}" style="cursor:pointer;padding:7px 9px;border-radius:6px;font:500 11px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <sc-if value="{{ biz.isRejected }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:oklch(0.78 0.13 75);letter-spacing:.05em">ПРИЧИНА ОТКЛОНЕНИЯ · ОБЯЗАТЕЛЬНО</div>
+                      <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <sc-for list="{{ biz.reasons }}" as="o" hint-placeholder-count="5">
+                          <div onClick="{{ o.go }}" style="cursor:pointer;padding:7px 9px;border-radius:6px;font:500 11px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <div style="padding:12px;border:1px solid #23282d;border-radius:8px;background:#0e1114">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:7px">ВНУТРЕННЯЯ ЗАМЕТКА · ТОЛЬКО STAFF</div>
+                    <div style="font:400 12px/1.6 'IBM Plex Sans',sans-serif;color:#c9d1d6;text-wrap:pretty">{{ biz.internalNote }}</div>
+                  </div>
+                  <div style="padding:12px;border:1px dashed #2a3036;border-radius:8px">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:7px">КОММЕНТАРИЙ ДЛЯ УЧАСТНИКА</div>
+                    <div style="font:400 12px/1.6 'IBM Plex Sans',sans-serif;color:#8b949e">{{ biz.publicComment }}</div>
+                  </div>
+                  <div style="display:flex;gap:8px">
+                    <div onClick="{{ biz.approve }}" style="flex:1;text-align:center;cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px;border-radius:7px;background:oklch(0.72 0.13 205);color:#06181e" style-hover="background:oklch(0.79 0.13 205)">✓&nbsp;&nbsp;Одобрить профиль</div>
+                    <div onClick="{{ biz.reject }}" style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:oklch(0.65 0.17 25);color:oklch(0.7 0.16 25)">✕&nbsp;&nbsp;Отклонить</div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isBilling }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;background:{{ biz.payBg }};border:1px solid {{ biz.payBd }}">
+                    <div style="flex:1">
+                      <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;color:{{ biz.payFg }}">{{ biz.payState }}</div>
+                      <div style="font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:#8b949e;margin-top:4px">{{ biz.payHint }}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ biz.billingRows }}" as="r" hint-placeholder-count="7">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:130px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ r.k }}</span>
+                        <span style="flex:1;font:400 11.5px/1.5 'IBM Plex Mono',monospace;color:{{ r.fg }};word-break:break-word">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font:400 10.5px/1.6 'IBM Plex Mono',monospace;color:#5c666e">Источник истины — платёжный провайдер. Публикация профиля происходит по подтверждённому платежу, скрытие — по истечении подписки.</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isIntros }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">{{ biz.introSummary }}</div>
+                  <sc-for list="{{ biz.introList }}" as="r" hint-placeholder-count="3">
+                    <div onClick="{{ r.go }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #23282d;border-radius:8px;cursor:pointer" style-hover="border-color:#2f363c">
+                      <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;flex:none">{{ r.id }}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:500 12px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.client }}</div>
+                        <div style="font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">от {{ r.member }} · {{ r.mgr }}</div>
+                      </div>
+                      <span style="font:500 10px/1 'IBM Plex Mono',monospace;padding:4px 6px;border-radius:4px;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap">{{ r.status }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isVisibility }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <sc-for list="{{ biz.visibility }}" as="f" hint-placeholder-count="3">
+                    <div onClick="{{ f.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #191e23;cursor:{{ f.cursor }};opacity:{{ f.op }}">
+                      <div style="flex:1;min-width:0">
+                        <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ f.name }}</div>
+                        <div style="font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ f.hint }}</div>
+                      </div>
+                      <div style="width:34px;height:19px;border-radius:10px;flex:none;padding:2px;background:{{ f.trackBg }};display:flex;justify-content:{{ f.justify }}">
+                        <div style="width:15px;height:15px;border-radius:50%;background:{{ f.knob }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <div style="padding:11px 12px;border:1px dashed #2a3036;border-radius:8px;font:400 10.5px/1.6 'IBM Plex Mono',monospace;color:#6b757d">Публичная ссылка: {{ biz.publicUrl }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ biz.isHistory }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ biz.log }}" as="l" hint-placeholder-count="5">
+                    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #191e23">
+                      <span style="width:92px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ l.at }}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:400 11.5px/1.5 'IBM Plex Sans',sans-serif;color:#c9d1d6">{{ l.text }}</div>
+                        <div style="font:400 10px/1.5 'IBM Plex Mono',monospace;color:#5c666e">{{ l.by }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ПРЕДСТАВЛЕНИЯ КЛИЕНТОВ -->
+      <sc-if value="{{ isIntros }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+          <div style="flex:1 1 660px;min-width:0;background:#111417;border:1px solid #1f242a;border-radius:10px;overflow-x:auto">
+            <div style="padding:13px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ introChips }}" as="c" hint-placeholder-count="8">
+                <div onClick="{{ c.go }}" style="cursor:pointer;padding:6px 10px;border-radius:6px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.65">{{ c.count }}</span></div>
+              </sc-for>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8b949e;border:1px solid #23282d;padding:7px 9px;border-radius:6px;cursor:pointer" style-hover="border-color:#2f363c;color:#e7eaec">↓&nbsp;&nbsp;ЭКСПОРТ CSV</div>
+                <div style="font:500 11px/1 'IBM Plex Sans',sans-serif;padding:7px 11px;border-radius:6px;background:oklch(0.72 0.13 205);color:#06181e;cursor:pointer" style-hover="background:oklch(0.79 0.13 205)">+ Создать представление</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid #1f242a">
+              <sc-for list="{{ introToggles }}" as="t" hint-placeholder-count="3">
+                <div onClick="{{ t.go }}" style="cursor:pointer;display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:6px;font:400 11px/1 'IBM Plex Mono',monospace;border:1px solid {{ t.bd }};color:{{ t.fg }}">
+                  <span style="width:7px;height:7px;border-radius:2px;background:{{ t.dot }}"></span>{{ t.label }}
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:88px minmax(126px,1fr) minmax(210px,2fr) minmax(120px,1.2fr) minmax(120px,1.1fr) minmax(112px,1fr);gap:12px;padding:10px 16px;border-bottom:1px solid #1f242a;background:#0e1114;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#6b757d">
+              <div>ID</div><div>СТАТУС</div><div>КЛИЕНТ ← УЧАСТНИК</div><div>БИЗНЕС</div><div>МЕНЕДЖЕР СДЕЛКИ</div><div>FOLLOW-UP</div>
+            </div>
+            <sc-for list="{{ intros }}" as="r" hint-placeholder-count="8">
+              <div onClick="{{ r.go }}" style="display:grid;grid-template-columns:88px minmax(126px,1fr) minmax(210px,2fr) minmax(120px,1.2fr) minmax(120px,1.1fr) minmax(112px,1fr);gap:12px;align-items:center;padding:{{ rowPad }} 16px;border-bottom:1px solid #191e23;cursor:pointer;background:{{ r.bg }}" style-hover="background:#161a1e">
+                <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#6b757d">{{ r.id }}</div>
+                <div><span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:4px 7px;border-radius:4px;background:{{ r.sbg }};color:{{ r.sfg }};white-space:nowrap">{{ r.status }}</span></div>
+                <div style="min-width:0">
+                  <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.clientName }} <span style="color:#6b757d;font-weight:400">{{ r.clientMeta }}</span></div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">от {{ r.member }} · {{ r.consentShort }}</div>
+                </div>
+                <div style="min-width:0;font:400 11.5px/1.3 'IBM Plex Sans',sans-serif;color:#c9d1d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.business }}</div>
+                <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <div style="width:22px;height:22px;border-radius:50%;flex:none;background:{{ r.mgrBg }};display:flex;align-items:center;justify-content:center;font:500 9px 'IBM Plex Mono',monospace;color:{{ r.mgrFg }}">{{ r.mgrIni }}</div>
+                  <span style="font:400 11.5px/1.3 'IBM Plex Sans',sans-serif;color:{{ r.mgrFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.manager }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font:500 10px/1 'IBM Plex Mono',monospace;padding:3px 6px;border-radius:4px;background:{{ r.slaBg }};color:{{ r.slaFg }};align-self:flex-start">{{ r.sla }}</span>
+                  <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d">{{ r.followUp }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ openIntro }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ openIntroClose }}" style="position:fixed;inset:0;background:rgba(4,6,8,.6);z-index:65;animation:fadein .18s ease-out"></div>
+          </sc-if>
+          <sc-if value="{{ openIntro }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;top:0;right:0;height:100vh;width:min(620px,100%);background:#111417;border-left:1px solid #1f242a;z-index:70;overflow-y:auto;animation:slideright .22s ease-out;box-shadow:-28px 0 56px rgba(0,0,0,.55)">
+            <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px"><div onClick="{{ openIntroClose }}" style="cursor:pointer;font:400 14px/1 'IBM Plex Sans',sans-serif;color:#6b757d" style-hover="color:#e7eaec">✕</div><div style="font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.07em;color:#6b757d">ПРЕДСТАВЛЕНИЕ {{ intro.id }}</div></div>
+                <div style="font:600 14px/1.2 'IBM Plex Sans',sans-serif;margin-top:6px">{{ intro.clientName }} → {{ intro.business }}</div>
+              </div>
+              <span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:5px 8px;border-radius:4px;background:{{ intro.sbg }};color:{{ intro.sfg }};white-space:nowrap">{{ intro.status }}</span>
+            </div>
+
+            <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;flex-direction:column;gap:11px;background:#0e1114">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:28px;height:28px;border-radius:50%;flex:none;background:{{ intro.mgrBg }};display:flex;align-items:center;justify-content:center;font:500 10px 'IBM Plex Mono',monospace;color:{{ intro.mgrFg }}">{{ intro.mgrIni }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">МЕНЕДЖЕР СДЕЛКИ</div>
+                  <div style="font:500 12.5px/1.4 'IBM Plex Sans',sans-serif;color:{{ intro.mgrFg }}">{{ intro.manager }}</div>
+                </div>
+                <div onClick="{{ intro.takeDeal }}" style="cursor:pointer;font:500 11px/1 'IBM Plex Sans',sans-serif;padding:8px 10px;border-radius:6px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:oklch(0.72 0.13 205);color:oklch(0.75 0.12 205)">{{ intro.takeLabel }}</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ intro.managers }}" as="m" hint-placeholder-count="4">
+                  <div onClick="{{ m.go }}" style="cursor:pointer;padding:6px 9px;border-radius:6px;font:500 11px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ m.bd }};background:{{ m.bg }};color:{{ m.fg }}">{{ m.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.6">{{ m.load }}</span></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px dashed #2a3036;border-radius:7px">
+                <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d">СЛЕДУЮЩЕЕ ДЕЙСТВИЕ</span>
+                <span style="flex:1;font:400 11.5px/1.4 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ intro.nextAction }}</span>
+                <span style="font:500 10px/1 'IBM Plex Mono',monospace;padding:3px 6px;border-radius:4px;background:{{ intro.slaBg }};color:{{ intro.slaFg }}">{{ intro.sla }}</span>
+              </div>
+              <div style="display:flex;gap:7px">
+                <div style="flex:1;text-align:center;cursor:pointer;font:500 11.5px/1 'IBM Plex Sans',sans-serif;padding:9px;border-radius:7px;background:oklch(0.72 0.13 205);color:#06181e" style-hover="background:oklch(0.79 0.13 205)">✓&nbsp;&nbsp;Зафиксировать контакт</div>
+                <div style="cursor:pointer;font:500 11.5px/1 'IBM Plex Sans',sans-serif;padding:9px 11px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">⇄&nbsp;&nbsp;Передать</div>
+              </div>
+            </div>
+
+            <div style="padding:12px 16px 0">
+              <div style="display:flex;gap:3px;background:#0e1114;border:1px solid #1f242a;border-radius:8px;padding:3px">
+                <sc-for list="{{ intro.tabs }}" as="t" hint-placeholder-count="4">
+                  <div onClick="{{ t.go }}" style="flex:1;text-align:center;cursor:pointer;padding:7px 6px;border-radius:6px;font:500 10.5px/1 'IBM Plex Sans',sans-serif;background:{{ t.bg }};color:{{ t.fg }};white-space:nowrap">{{ t.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:14px 16px 18px;display:flex;flex-direction:column;gap:14px">
+              <sc-if value="{{ intro.isOverview }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ intro.overviewRows }}" as="r" hint-placeholder-count="6">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:120px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.03em">{{ r.k }}</span>
+                        <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:7px">ПРИЧИНА ЗНАКОМСТВА</div>
+                    <div style="font:400 12px/1.6 'IBM Plex Sans',sans-serif;color:#c9d1d6;text-wrap:pretty">{{ intro.reason }}</div>
+                  </div>
+                  <div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:9px">ТАЙМЛАЙН</div>
+                    <div style="display:flex;flex-direction:column">
+                      <sc-for list="{{ intro.timeline }}" as="e" hint-placeholder-count="4">
+                        <div style="display:flex;gap:11px;padding-bottom:12px">
+                          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;padding-top:3px">
+                            <span style="width:7px;height:7px;border-radius:50%;background:{{ e.dot }}"></span>
+                            <span style="width:1px;flex:1;background:#242a30"></span>
+                          </div>
+                          <div style="min-width:0">
+                            <div style="font:400 11.5px/1.4 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ e.text }}</div>
+                            <div style="font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ e.meta }}</div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ intro.isContact }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ intro.contactRows }}" as="r" hint-placeholder-count="6">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:120px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ r.k }}</span>
+                        <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="padding:11px 12px;border-radius:8px;background:{{ intro.consentBg }};border:1px solid {{ intro.consentBd }}">
+                    <div style="font:500 11.5px/1.4 'IBM Plex Sans',sans-serif;color:{{ intro.consentFg }}">{{ intro.consentTitle }}</div>
+                    <div style="font:400 10.5px/1.6 'IBM Plex Mono',monospace;color:#8b949e;margin-top:5px">{{ intro.consentNote }}</div>
+                  </div>
+                  <div onClick="{{ intro.toggleConsent }}" style="align-self:flex-start;cursor:pointer;font:500 11.5px/1 'IBM Plex Sans',sans-serif;padding:9px 12px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">{{ intro.consentAction }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ intro.isProcessing }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:15px">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">СТАТУС ПРЕДСТАВЛЕНИЯ</div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                      <sc-for list="{{ intro.statusOptions }}" as="o" hint-placeholder-count="7">
+                        <div onClick="{{ o.go }}" style="cursor:{{ o.cursor }};padding:7px 9px;border-radius:6px;font:500 11px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};opacity:{{ o.op }}">{{ o.label }}</div>
+                      </sc-for>
+                    </div>
+                    <div style="font:400 10.5px/1.5 'IBM Plex Mono',monospace;color:{{ intro.ruleFg }}">{{ intro.rule }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:1px">
+                    <sc-for list="{{ intro.processRows }}" as="r" hint-placeholder-count="7">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:120px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ r.k }}</span>
+                        <span style="flex:1;font:400 12px/1.5 'IBM Plex Sans',sans-serif;color:{{ r.fg }}">{{ r.v }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ intro.isNotes }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <div style="padding:12px;border:1px solid #23282d;border-radius:8px;background:#0e1114">
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:7px">ВНУТРЕННЯЯ ЗАМЕТКА · НЕ ВИДНА БИЗНЕСУ</div>
+                    <div style="font:400 12px/1.6 'IBM Plex Sans',sans-serif;color:#c9d1d6;text-wrap:pretty">{{ intro.internalNote }}</div>
+                  </div>
+                  <div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em;margin-bottom:9px">ЖУРНАЛ ИЗМЕНЕНИЙ</div>
+                    <sc-for list="{{ intro.log }}" as="l" hint-placeholder-count="4">
+                      <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #191e23">
+                        <span style="width:88px;flex:none;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#6b757d">{{ l.at }}</span>
+                        <span style="flex:1;font:400 11.5px/1.5 'IBM Plex Sans',sans-serif;color:#c9d1d6">{{ l.text }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ОБРАЩЕНИЯ (архив) -->
+      <sc-if value="{{ isRequests }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow-x:auto">
+          <div style="padding:13px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ reqChips }}" as="c" hint-placeholder-count="4">
+              <div onClick="{{ c.go }}" style="cursor:pointer;padding:6px 10px;border-radius:6px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }} <span style="font-family:'IBM Plex Mono',monospace;opacity:.65">{{ c.count }}</span></div>
+            </sc-for>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8b949e;border:1px solid #23282d;padding:7px 9px;border-radius:6px;cursor:pointer" style-hover="border-color:#2f363c;color:#e7eaec">↓&nbsp;&nbsp;ЭКСПОРТ CSV</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:64px minmax(96px,1.1fr) minmax(200px,2fr) minmax(104px,1.1fr) minmax(88px,.9fr) minmax(88px,.9fr);gap:12px;padding:10px 16px;border-bottom:1px solid #1f242a;background:#0e1114;font:500 10px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;color:#6b757d">
+            <div>ID</div><div>ТИП</div><div>ТЕМА</div><div>ОТ КОГО</div><div>СОЗДАНО</div><div>СТАТУС</div>
+          </div>
+          <sc-for list="{{ requests }}" as="r" hint-placeholder-count="9">
+            <div style="display:grid;grid-template-columns:64px minmax(96px,1.1fr) minmax(200px,2fr) minmax(104px,1.1fr) minmax(88px,.9fr) minmax(88px,.9fr);gap:12px;align-items:center;padding:{{ rowPad }} 16px;border-bottom:1px solid #191e23;cursor:pointer" style-hover="background:#161a1e">
+              <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#6b757d">{{ r.id }}</div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="width:5px;height:14px;border-radius:2px;background:{{ r.pri }}"></span><span style="font:400 11.5px/1 'IBM Plex Sans',sans-serif;color:#c9d1d6">{{ r.type }}</span></div>
+              <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.subject }}</div>
+              <div style="font:400 11.5px/1.3 'IBM Plex Sans',sans-serif;color:#8b949e;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.from }}</div>
+              <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b949e">{{ r.date }}</div>
+              <div><span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:4px 7px;border-radius:4px;background:{{ r.sbg }};color:{{ r.sfg }}">{{ r.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- КОНТЕНТ И ДОСТУПЫ -->
+      <sc-if value="{{ isContent }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;align-items:start">
+          <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+            <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Инструкции и справка</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">материалы для пользователей портала</div>
+              </div>
+              <div style="cursor:pointer;font:500 11.5px/1 'IBM Plex Sans',sans-serif;padding:8px 11px;border-radius:6px;background:oklch(0.72 0.13 205);color:#06181e" style-hover="background:oklch(0.79 0.13 205)">+ Статья</div>
+            </div>
+            <sc-for list="{{ articles }}" as="a" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(200px,2.4fr) minmax(96px,1fr) minmax(80px,.9fr) minmax(96px,.9fr);gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #191e23;cursor:pointer" style-hover="background:#161a1e">
+                <div style="min-width:0">
+                  <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.title }}</div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d">{{ a.section }}</div>
+                </div>
+                <div style="font:400 11.5px/1 'IBM Plex Sans',sans-serif;color:#8b949e">{{ a.author }}</div>
+                <div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b949e">{{ a.updated }}</div>
+                <div><span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:4px 7px;border-radius:4px;background:{{ a.sbg }};color:{{ a.sfg }}">{{ a.status }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+            <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+              <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Администраторы и уровни доступа</div>
+              <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">4 роли · права на разделы</div>
+            </div>
+            <div style="padding:6px 16px 16px">
+              <div style="display:grid;grid-template-columns:1.6fr repeat(4,32px);gap:8px;padding:12px 0 9px;border-bottom:1px solid #1f242a;font:400 9.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.04em">
+                <div>ПОЛЬЗОВАТЕЛЬ</div><div style="text-align:center">ОБЗ</div><div style="text-align:center">ПОЛ</div><div style="text-align:center">КОМ</div><div style="text-align:center">КНТ</div>
+              </div>
+              <sc-for list="{{ admins }}" as="a" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:1.6fr repeat(4,32px);gap:8px;align-items:center;padding:11px 0;border-bottom:1px solid #191e23">
+                  <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                    <div style="width:26px;height:26px;border-radius:50%;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px);display:flex;align-items:center;justify-content:center;font:500 9px 'IBM Plex Mono',monospace;color:#8b949e">{{ a.ini }}</div>
+                    <div style="min-width:0">
+                      <div style="font:500 12px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</div>
+                      <div style="font:400 9.5px/1.4 'IBM Plex Mono',monospace;color:{{ a.roleFg }};letter-spacing:.04em">{{ a.role }}</div>
+                    </div>
+                  </div>
+                  <sc-for list="{{ a.perms }}" as="p" hint-placeholder-count="4">
+                    <div style="height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font:500 10px 'IBM Plex Mono',monospace;background:{{ p.bg }};color:{{ p.fg }}">{{ p.mark }}</div>
+                  </sc-for>
+                </div>
+              </sc-for>
+              <div style="margin-top:14px;display:flex;gap:16px;font:400 10px 'IBM Plex Mono',monospace;color:#6b757d">
+                <span>R — чтение</span><span>W — запись</span><span>· — нет доступа</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- РОЛИ И ДОСТУПЫ -->
+      <sc-if value="{{ isRoles }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+
+          <div style="display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.35fr);gap:14px;align-items:start">
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div>
+                  <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Аккаунты сотрудников</div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">6 аккаунтов · 4 роли</div>
+                </div>
+                <div style="cursor:pointer;font:500 11.5px/1 'IBM Plex Sans',sans-serif;padding:8px 11px;border-radius:6px;background:{{ accent }};color:#06181e" style-hover="opacity:.88">+ Пригласить</div>
+              </div>
+              <sc-for list="{{ staff }}" as="p" hint-placeholder-count="6">
+                <div onClick="{{ p.go }}" style="display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid #191e23;cursor:pointer;background:{{ p.bg }};border-left:2px solid {{ p.bd }}" style-hover="background:#161a1e">
+                  <div style="width:28px;height:28px;border-radius:50%;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px);display:flex;align-items:center;justify-content:center;font:500 9.5px 'IBM Plex Mono',monospace;color:#8b949e">{{ p.ini }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font:500 12.5px/1.3 'IBM Plex Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                    <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#6b757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.mail }}</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none">
+                    <span style="font:500 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;color:{{ p.roleFg }}">{{ p.role }}</span>
+                    <span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:{{ p.stFg }}">{{ p.st }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:16px;border-bottom:1px solid #1f242a;display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;border-radius:50%;flex:none;background:repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px);display:flex;align-items:center;justify-content:center;font:500 12px 'IBM Plex Mono',monospace;color:#8b949e">{{ spIni }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:600 15px/1.2 'IBM Plex Sans',sans-serif">{{ spName }}</div>
+                  <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">{{ spRole }} · {{ spRoleRu }}</div>
+                </div>
+                <span style="font:500 10.5px/1 'IBM Plex Mono',monospace;padding:5px 8px;border-radius:5px;background:#0e1114;border:1px solid #23282d;color:{{ spStFg }}">{{ spSt }}</span>
+              </div>
+
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;flex-direction:column;gap:9px">
+                <div style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">НАЗНАЧЕННАЯ РОЛЬ</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px">
+                  <sc-for list="{{ accountRoles }}" as="r" hint-placeholder-count="4">
+                    <div onClick="{{ r.go }}" style="cursor:pointer;padding:9px 11px;border-radius:7px;border:1px solid {{ r.bd }};background:{{ r.bg }};display:flex;flex-direction:column;gap:4px">
+                      <span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;color:{{ r.fg }}">{{ r.label }}</span>
+                      <span style="font:400 10.5px/1.3 'IBM Plex Sans',sans-serif;color:#6b757d">{{ r.ru }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="padding:6px 16px 4px">
+                <sc-for list="{{ accountFacts }}" as="f" hint-placeholder-count="7">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #191e23">
+                    <span style="font:400 10px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">{{ f.k }}</span>
+                    <span style="font:400 12px/1.3 'IBM Plex Sans',sans-serif;color:{{ f.fg }};text-align:right">{{ f.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;border-top:1px solid #1f242a">
+                <div style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">ЭФФЕКТИВНЫЕ ПРАВА РОЛИ</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ accountPerms }}" as="p" hint-placeholder-count="10">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;border:1px solid #23282d;background:{{ p.bg }};font:400 11px/1 'IBM Plex Sans',sans-serif;color:#8b949e">
+                      {{ p.name }}<span style="font:500 10px 'IBM Plex Mono',monospace;color:{{ p.fg }}">{{ p.mark }}</span>
+                    </span>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="padding:14px 16px;border-top:1px solid #1f242a;display:flex;gap:8px;flex-wrap:wrap">
+                <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">Сбросить пароль</div>
+                <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">Завершить сессии</div>
+                <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid rgba(200,70,50,.34);color:oklch(0.65 0.17 25)" style-hover="border-color:oklch(0.65 0.17 25)">Приостановить доступ</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+            <div style="padding:14px 16px;border-bottom:1px solid #1f242a;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+              <div>
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Матрица прав доступа</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">клик по ячейке меняет уровень · OWNER, биллинг и роли фиксированы</div>
+              </div>
+              <div style="display:flex;background:#0e1114;border:1px solid #23282d;border-radius:8px;padding:3px">
+                <sc-for list="{{ roleTabs }}" as="r" hint-placeholder-count="4">
+                  <div onClick="{{ r.go }}" style="cursor:pointer;padding:7px 11px;border-radius:6px;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;background:{{ r.bg }};color:{{ r.fg }}">{{ r.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:6px 16px 16px">
+              <div style="display:grid;grid-template-columns:minmax(180px,2.2fr) repeat(4,minmax(72px,1fr));gap:8px;padding:12px 0 9px;border-bottom:1px solid #1f242a;font:400 9.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">
+                <div>РАЗДЕЛ</div>
+                <sc-for list="{{ roleCols }}" as="c" hint-placeholder-count="4">
+                  <div style="text-align:center">{{ c }}</div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ matrix }}" as="m" hint-placeholder-count="10">
+                <div style="display:grid;grid-template-columns:minmax(180px,2.2fr) repeat(4,minmax(72px,1fr));gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #191e23">
+                  <div style="min-width:0">
+                    <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ m.name }}</div>
+                    <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#5c666e;margin-top:2px">{{ m.hint }}</div>
+                  </div>
+                  <sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="4">
+                    <div onClick="{{ c.go }}" style="height:26px;border-radius:5px;border:1px solid {{ c.bd }};display:flex;align-items:center;justify-content:center;font:500 10.5px 'IBM Plex Mono',monospace;background:{{ c.bg }};color:{{ c.fg }};cursor:{{ c.cursor }}" style-hover="border-color:#3a424a">{{ c.mark }}</div>
+                  </sc-for>
+                </div>
+              </sc-for>
+              <div style="margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;font:400 10px 'IBM Plex Mono',monospace;color:#6b757d">
+                <span>R — чтение</span><span>W — чтение и запись</span><span>· — нет доступа</span><span>SUPPORT ограничен чтением на уровне платформы</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;align-items:start">
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Роль {{ activeRoleKey }} — {{ activeRoleRu }}</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">{{ activeRolePurpose }}</div>
+              </div>
+              <div style="padding:4px 16px 14px">
+                <sc-for list="{{ editRows }}" as="r" hint-placeholder-count="10">
+                  <div onClick="{{ r.go }}" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #191e23;cursor:{{ r.cursor }}">
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ r.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ r.hint }}</div>
+                    </div>
+                    <div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#4f585f;width:78px;text-align:right">{{ r.lockNote }}</div>
+                    <div style="font:400 11.5px/1 'IBM Plex Sans',sans-serif;color:{{ r.labelFg }};width:118px;text-align:right">{{ r.label }}</div>
+                    <div style="width:30px;height:24px;flex:none;border-radius:5px;border:1px solid {{ r.bd }};display:flex;align-items:center;justify-content:center;font:500 10.5px 'IBM Plex Mono',monospace;background:{{ r.bg }};color:{{ r.fg }}">{{ r.mark }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Журнал изменений доступа</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">хранится 24 месяца · экспорт доступен OWNER</div>
+              </div>
+              <div style="padding:4px 16px 14px">
+                <sc-for list="{{ auditTrail }}" as="a" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #191e23">
+                    <span style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;width:62px;flex:none">{{ a.t }}</span>
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 12.5px/1.4 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ a.act }}</div>
+                      <div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ a.who }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#111417;border:1px solid #1f242a;border-radius:10px;padding:14px 16px">
+            <div style="flex:1;min-width:200px;font:400 11.5px/1.5 'IBM Plex Sans',sans-serif;color:#8b949e">{{ dirtyText }}</div>
+            <div onClick="{{ resetSettings }}" style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">↺&nbsp;&nbsp;Сбросить</div>
+            <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 15px;border-radius:7px;background:{{ accent }};color:#06181e">✓&nbsp;&nbsp;Применить права</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- НАСТРОЙКИ -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;align-items:start">
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Обязательные поля при регистрации</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">влияет на новые анкеты · применяется сразу</div>
+              </div>
+              <div style="padding:4px 16px 14px">
+                <sc-for list="{{ regFields }}" as="f" hint-placeholder-count="5">
+                  <div onClick="{{ f.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #191e23;cursor:pointer">
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ f.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ f.hint }}</div>
+                    </div>
+                    <div style="font:500 10px/1 'IBM Plex Mono',monospace;color:{{ f.tagFg }};width:88px;text-align:right">{{ f.tag }}</div>
+                    <div style="width:34px;height:19px;border-radius:10px;flex:none;padding:2px;background:{{ f.trackBg }};display:flex;justify-content:{{ f.justify }};transition:background .15s">
+                      <div style="width:15px;height:15px;border-radius:50%;background:{{ f.knob }}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Верификация компаний</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">правила обработки очереди</div>
+              </div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:18px">
+                <sc-for list="{{ choices }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">{{ c.label }}</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <sc-for list="{{ c.options }}" as="o" hint-placeholder-count="3">
+                        <div onClick="{{ o.go }}" style="cursor:pointer;padding:8px 12px;border-radius:7px;font:500 11.5px/1 'IBM Plex Sans',sans-serif;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+                      </sc-for>
+                    </div>
+                    <div style="font:400 11px/1.5 'IBM Plex Sans',sans-serif;color:#6b757d">{{ c.hint }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Уведомления оператора</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">канал: e-mail + панель</div>
+              </div>
+              <div style="padding:4px 16px 14px">
+                <sc-for list="{{ notifs }}" as="f" hint-placeholder-count="4">
+                  <div onClick="{{ f.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #191e23;cursor:pointer">
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ f.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ f.hint }}</div>
+                    </div>
+                    <div style="width:34px;height:19px;border-radius:10px;flex:none;padding:2px;background:{{ f.trackBg }};display:flex;justify-content:{{ f.justify }}">
+                      <div style="width:15px;height:15px;border-radius:50%;background:{{ f.knob }}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#111417;border:1px solid #1f242a;border-radius:10px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid #1f242a">
+                <div style="font:600 13.5px/1.2 'IBM Plex Sans',sans-serif">Безопасность и доступ</div>
+                <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:4px">действует на всех администраторов</div>
+              </div>
+              <div style="padding:4px 16px 14px">
+                <sc-for list="{{ security }}" as="f" hint-placeholder-count="3">
+                  <div onClick="{{ f.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #191e23;cursor:pointer">
+                    <div style="flex:1;min-width:0">
+                      <div style="font:400 12.5px/1.3 'IBM Plex Sans',sans-serif;color:#e7eaec">{{ f.name }}</div>
+                      <div style="font:400 10.5px/1.4 'IBM Plex Mono',monospace;color:#6b757d;margin-top:3px">{{ f.hint }}</div>
+                    </div>
+                    <div style="width:34px;height:19px;border-radius:10px;flex:none;padding:2px;background:{{ f.trackBg }};display:flex;justify-content:{{ f.justify }}">
+                      <div style="width:15px;height:15px;border-radius:50%;background:{{ f.knob }}"></div>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font:400 10.5px/1 'IBM Plex Mono',monospace;color:#6b757d;letter-spacing:.05em">ВРЕМЯ ЖИЗНИ СЕССИИ</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{ ttlOptions }}" as="o" hint-placeholder-count="4">
+                      <div onClick="{{ o.go }}" style="cursor:pointer;padding:8px 12px;border-radius:7px;font:500 11.5px/1 'IBM Plex Mono',monospace;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#111417;border:1px solid #1f242a;border-radius:10px;padding:14px 16px">
+            <div style="flex:1;min-width:200px;font:400 11.5px/1.5 'IBM Plex Sans',sans-serif;color:#8b949e">{{ dirtyText }}</div>
+            <div onClick="{{ resetSettings }}" style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 13px;border-radius:7px;border:1px solid #2a3036;color:#8b949e" style-hover="border-color:#3a424a;color:#e7eaec">↺&nbsp;&nbsp;Сбросить</div>
+            <div style="cursor:pointer;font:500 12px/1 'IBM Plex Sans',sans-serif;padding:10px 15px;border-radius:7px;background:{{ accent }};color:#06181e">✓&nbsp;&nbsp;Сохранить изменения</div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;oklch(0.72 0.13 205)&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;oklch(0.72 0.13 205)&quot;,&quot;oklch(0.78 0.13 75)&quot;,&quot;oklch(0.74 0.13 155)&quot;,&quot;oklch(0.7 0.14 300)&quot;],&quot;section&quot;:&quot;Оформление&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Обычно&quot;,&quot;options&quot;:[&quot;Обычно&quot;,&quot;Компактно&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Оформление&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'overview', period: '30д', q: '', userFilter: 'Все', sort: 'reg', selUser: null, selCo: null, reqFilter: 'Все',
+    sw: { phone: true, inn: true, docs: false, photo: false, addr: true, nNew: true, nQueue: true, nDaily: false, nWeekly: true, twofa: true, ipLimit: false, audit: true },
+    verifyMode: 'Ручная', autoTrust: 'Партнёры', sla: '48 ч', ttl: '8 ч', dirty: false, ov: {}, uTab: 'info',
+    bov: {}, bizFilter: 'Все', bTab: 'overview', iov: {}, introFilter: 'Все', selIntro: null, iTab: 'overview', onlyUnassigned: false, onlyOverdue: false, onlyNoConsent: false
+  };
+
+  componentDidMount() {
+    this._onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+    this._onResize();
+  }
+
+  componentWillUnmount() { window.removeEventListener('resize', this._onResize); }
+
+  patchUser(id, patch) {
+    this.setState(st => ({ ov: { ...st.ov, [id]: { ...(st.ov[id] || {}), ...patch } } }));
+  }
+
+  uPick(u, field, label, options) {
+    return {
+      label,
+      options: options.map(o => ({
+        label: o, go: () => this.patchUser(u.id, { [field]: o }),
+        bd: u[field] === o ? this.accent : '#23282d',
+        bg: u[field] === o ? 'rgba(56,160,190,.12)' : 'transparent',
+        fg: u[field] === o ? this.accent : '#8b949e'
+      }))
+    };
+  }
+
+  uToggle(u, field, name, hint) {
+    const on = !!u[field];
+    return {
+      name, hint, go: () => this.patchUser(u.id, { [field]: !on }),
+      trackBg: on ? this.accent : '#252b31',
+      justify: on ? 'flex-end' : 'flex-start',
+      knob: on ? '#06181e' : '#6b757d'
+    };
+  }
+
+  DEFAULT_SW = { phone: true, inn: true, docs: false, photo: false, addr: true, nNew: true, nQueue: true, nDaily: false, nWeekly: true, twofa: true, ipLimit: false, audit: true };
+
+  toggle(key) {
+    return () => this.setState(st => ({ sw: { ...st.sw, [key]: !st.sw[key] }, dirty: true }));
+  }
+
+  sw(key, name, hint, tag) {
+    const on = this.state.sw[key];
+    return {
+      name, hint, go: this.toggle(key),
+      tag: tag ? (on ? tag[0] : tag[1]) : '',
+      tagFg: on ? this.accent : '#5c666e',
+      trackBg: on ? this.accent : '#252b31',
+      justify: on ? 'flex-end' : 'flex-start',
+      knob: on ? '#06181e' : '#6b757d'
+    };
+  }
+
+  pick(field, label, hint, options) {
+    return {
+      label, hint,
+      options: options.map(o => ({
+        label: o, go: () => this.setState({ [field]: o, dirty: true }),
+        bd: this.state[field] === o ? this.accent : '#23282d',
+        bg: this.state[field] === o ? 'rgba(56,160,190,.12)' : 'transparent',
+        fg: this.state[field] === o ? this.accent : '#8b949e'
+      }))
+    };
+  }
+
+  ACC = 'oklch(0.72 0.13 205)';
+  WARN = 'oklch(0.78 0.13 75)';
+  BAD = 'oklch(0.65 0.17 25)';
+  OK = 'oklch(0.74 0.13 155)';
+
+  get accent() { return this.props.accent || this.ACC; }
+
+  usersData() {
+    return [
+      { id: 'U-10428', name: 'Марина Логинова', email: 'm.loginova@sever-trade.ru', phone: '+7 916 224-08-51', company: 'Север-Трейд', country: 'Россия', reg: '24.07.26', status: 'Активен', comp: 92, missing: 'нет', role: 'Владелец компании', src: 'Органика' },
+      { id: 'U-10427', name: 'Дамир Сулейменов', email: 'damir.s@altyngroup.kz', phone: '+7 701 553-19-04', company: 'Altyn Group', country: 'Казахстан', reg: '24.07.26', status: 'Ожидает', comp: 48, missing: 'ИНН, документы', role: 'Сотрудник', src: 'Реклама' },
+      { id: 'U-10425', name: 'Ольга Ветрова', email: 'o.vetrova@mail.ru', phone: '+7 903 118-72-30', company: '—', country: 'Россия', reg: '23.07.26', status: 'Активен', comp: 71, missing: 'фото профиля', role: 'Частное лицо', src: 'Органика' },
+      { id: 'U-10421', name: 'Ян Кравец', email: 'y.kravets@bel-logistic.by', phone: '+375 29 640-11-27', company: 'БелЛогистик', country: 'Беларусь', reg: '22.07.26', status: 'Активен', comp: 88, missing: 'нет', role: 'Владелец компании', src: 'Партнёр' },
+      { id: 'U-10419', name: 'Сабина Юсупова', email: 's.yusupova@tashkent-food.uz', phone: '+998 90 774-55-12', company: 'Tashkent Food', country: 'Узбекистан', reg: '21.07.26', status: 'Ожидает', comp: 35, missing: 'телефон, ИНН, документы', role: 'Сотрудник', src: 'Реклама' },
+      { id: 'U-10414', name: 'Пётр Ильин', email: 'p.ilyin@granit-stroy.ru', phone: '+7 921 305-64-88', company: 'Гранит-Строй', country: 'Россия', reg: '20.07.26', status: 'Заблокирован', comp: 60, missing: 'документы', role: 'Сотрудник', src: 'Органика' },
+      { id: 'U-10411', name: 'Нина Абрамян', email: 'n.abramyan@arm-textile.am', phone: '+374 55 21-40-93', company: 'Arm Textile', country: 'Армения', reg: '19.07.26', status: 'Активен', comp: 95, missing: 'нет', role: 'Владелец компании', src: 'Партнёр' },
+      { id: 'U-10407', name: 'Игорь Сташевский', email: 'i.stashevsky@nordwood.ru', phone: '+7 495 782-01-16', company: 'NordWood', country: 'Россия', reg: '18.07.26', status: 'Активен', comp: 79, missing: 'фото профиля', role: 'Сотрудник', src: 'Органика' },
+      { id: 'U-10402', name: 'Айгуль Тлеубаева', email: 'a.tleubaeva@kaspi-agro.kz', phone: '+7 707 900-32-45', company: 'Kaspi Agro', country: 'Казахстан', reg: '17.07.26', status: 'Ожидает', comp: 42, missing: 'ИНН, документы', role: 'Владелец компании', src: 'Реклама' }
+    ];
+  }
+
+  introTone(st) {
+    return st === 'Успешно' ? [this.OK, 'rgba(60,170,140,.13)']
+      : st === 'Закрыто' ? ['#8b949e', '#1a1f24']
+      : st === 'Новое' ? [this.accent, 'rgba(56,160,190,.13)']
+      : st === 'На проверке' ? [this.WARN, 'rgba(200,150,40,.14)']
+      : [this.accent, 'rgba(56,160,190,.09)'];
+  }
+
+  BIZ_STATUSES = ['UNDER_REVIEW', 'APPROVED', 'PUBLISHED', 'REJECTED', 'HIDDEN'];
+  MODERATORS = ['Не назначен', 'Е. Морозова', 'Д. Соколов', 'Л. Гареева'];
+  REJECT_REASONS = ['Неполные данные', 'Категория не подходит', 'Не удалось верифицировать', 'Дубликат', 'Другое'];
+
+  companiesData() {
+    return [
+      { name: 'Север-Трейд', legal: 'ООО «Север-Трейд»', inn: '7712048853', industry: 'Оптовая торговля', staff: '120', country: 'Россия', city: 'Москва', status: 'PUBLISHED', owner: 'М. Логинова', rep: 'Марина Логинова', phone: '+7 916 224-08-51', email: 'partner@sever-trade.ru', channel: 'TELEGRAM', site: 'sever-trade.ru', payState: 'Активно', payUntil: 'до 12.09.26', plan: 'Каталог · год', sub: 'sub_1P4kQz…', last: 'успешно · 12.09.25', next: '12.09.26', top: true, rec: false, moderator: 'Е. Морозова', updated: '28.07.26', updatedBy: 'Е. Морозова', note: 'Партнёр с 2024 года, документы в порядке.', publicComment: 'Профиль опубликован в каталоге.', reason: '—', desc: 'Оптовые поставки упаковки и расходных материалов по России и СНГ. Собственный склад в Москве, работа с малыми партиями.' },
+      { name: 'Altyn Group', legal: 'ТОО «Altyn Group»', inn: '181240019283', industry: 'Логистика', staff: '48', country: 'Казахстан', city: 'Алматы', status: 'UNDER_REVIEW', owner: 'Д. Сулейменов', rep: 'Дамир Сулейменов', phone: '+7 701 553-19-04', email: 'info@altyngroup.kz', channel: 'WHATSAPP', site: 'altyngroup.kz', payState: 'Не начато', payUntil: '—', plan: '—', sub: '—', last: '—', next: '—', top: false, rec: false, moderator: 'Не назначен', updated: '29.07.26', updatedBy: 'система', note: 'Не хватает свидетельства о регистрации.', publicComment: 'Профиль на модерации, ожидайте решения в течение 48 часов.', reason: '—', desc: 'Грузоперевозки и складская логистика по Казахстану, 4 региональных хаба.' },
+      { name: 'БелЛогистик', legal: 'ООО «БелЛогистик»', inn: '190845112', industry: 'Логистика', staff: '210', country: 'Беларусь', city: 'Минск', status: 'PUBLISHED', owner: 'Я. Кравец', rep: 'Ян Кравец', phone: '+375 29 640-11-27', email: 'office@bel-logistic.by', channel: 'PHONE', site: 'bel-logistic.by', payState: 'Активно', payUntil: 'до 03.11.26', plan: 'Каталог · год', sub: 'sub_1N8xTr…', last: 'успешно · 03.11.25', next: '03.11.26', top: false, rec: true, moderator: 'Д. Соколов', updated: '26.07.26', updatedBy: 'Д. Соколов', note: 'Проверен по реестру, замечаний нет.', publicComment: 'Профиль опубликован.', reason: '—', desc: 'Международные перевозки и таможенное оформление, филиалы в 6 городах.' },
+      { name: 'Tashkent Food', legal: 'MChJ «Tashkent Food»', inn: '305114872', industry: 'Продукты', staff: '76', country: 'Узбекистан', city: 'Ташкент', status: 'APPROVED', owner: 'С. Юсупова', rep: 'Сабина Юсупова', phone: '+998 90 774-55-12', email: 'sales@tashkent-food.uz', channel: 'TELEGRAM', site: 'tashkent-food.uz', payState: 'Ожидает оплату', payUntil: 'счёт от 27.07.26', plan: 'Каталог · год', sub: 'sub_pending', last: 'ожидание', next: '—', top: false, rec: false, moderator: 'Л. Гареева', updated: '27.07.26', updatedBy: 'Л. Гареева', note: 'Одобрено, ждём оплату размещения.', publicComment: 'Профиль одобрен, оплатите размещение для публикации.', reason: '—', desc: 'Производство и поставка полуфабрикатов для кафе и ресторанов Ташкента.' },
+      { name: 'Гранит-Строй', legal: 'ООО «Гранит-Строй»', inn: '7802554011', industry: 'Строительство', staff: '340', country: 'Россия', city: 'Санкт-Петербург', status: 'REJECTED', owner: 'П. Ильин', rep: 'Пётр Ильин', phone: '+7 921 305-64-88', email: 'info@granit-stroy.ru', channel: 'EMAIL', site: 'granit-stroy.ru', payState: 'Отменено', payUntil: '—', plan: '—', sub: '—', last: 'возврат · 21.07.26', next: '—', top: false, rec: false, moderator: 'Е. Морозова', updated: '21.07.26', updatedBy: 'Е. Морозова', note: 'Дубль профиля с тем же ИНН, основной профиль уже в каталоге.', publicComment: 'Профиль отклонён: обнаружен дубликат с тем же ИНН.', reason: 'Дубликат', desc: 'Генеральный подряд, промышленное и складское строительство.' },
+      { name: 'Arm Textile', legal: 'ЗАО «Arm Textile»', inn: '02841193', industry: 'Производство', staff: '95', country: 'Армения', city: 'Ереван', status: 'PUBLISHED', owner: 'Н. Абрамян', rep: 'Нина Абрамян', phone: '+374 55 21-40-93', email: 'hello@arm-textile.am', channel: 'PHONE', site: 'arm-textile.am', payState: 'Активно', payUntil: 'до 19.01.27', plan: 'Каталог · год', sub: 'sub_1M2wQa…', last: 'успешно · 19.01.26', next: '19.01.27', top: true, rec: true, moderator: 'Д. Соколов', updated: '19.07.26', updatedBy: 'Д. Соколов', note: 'Успешный кейс интродукции, подходит для рассылки.', publicComment: 'Профиль опубликован.', reason: '—', desc: 'Производство тканей и пошив малых партий для дизайнеров и брендов.' },
+      { name: 'NordWood', legal: 'АО «NordWood»', inn: '7710420087', industry: 'Деревообработка', staff: '58', country: 'Россия', city: 'Москва', status: 'HIDDEN', owner: 'И. Сташевский', rep: 'Игорь Сташевский', phone: '+7 495 782-01-16', email: 'order@nordwood.ru', channel: 'EMAIL', site: 'nordwood.ru', payState: 'Истекло', payUntil: 'истекло 14.07.26', plan: 'Каталог · год', sub: 'sub_1L9pKd…', last: 'ошибка списания · 14.07.26', next: '—', top: false, rec: false, moderator: 'Л. Гареева', updated: '14.07.26', updatedBy: 'система', note: 'Скрыт автоматически: подписка истекла, featured-флаги сброшены.', publicComment: 'Размещение истекло, профиль скрыт из каталога.', reason: '—', desc: 'Мебельные щиты, столешницы и мелкосерийная деревообработка.' }
+    ];
+  }
+
+  STATUSES = ['Новое', 'На проверке', 'Одобрено', 'Передано бизнесу', 'В работе', 'Успешно', 'Закрыто'];
+  MANAGERS = [
+    { name: 'Не назначен', load: '' },
+    { name: 'Е. Морозова', load: '6' },
+    { name: 'Д. Соколов', load: '12' },
+    { name: 'Л. Гареева', load: '3' }
+  ];
+
+  introsData() {
+    return [
+      { id: 'INT-000124', client: 'Артём Белов', clientType: 'PERSON', pos: 'Founder', clientCo: 'Belov Digital', phone: '+7 916 780-22-14', email: 'a.belov@belovdigital.ru', channel: 'TELEGRAM', member: 'М. Логинова', card: 'KK-10428-04', business: 'Север-Трейд', status: 'Новое', mgr: 'Не назначен', consent: true, consentSrc: 'WRITTEN', consentAt: '28.07.26 17:40', created: '28.07.26', follow: '30.07 12:00', slaState: 'Сегодня', next: 'Проверить согласие и релевантность', reason: 'Клиенту нужен поставщик упаковки под собственный бренд, объём от 20 тонн в квартал. Север-Трейд закрывает такую номенклатуру и работает с малыми партиями.', note: 'Участник просит не звонить до 11:00, клиент в другом часовом поясе.', value: '—', outcome: '—' },
+      { id: 'INT-000123', client: 'ТОО «Kaspi Retail»', clientType: 'COMPANY', pos: 'Procurement Manager', clientCo: 'Kaspi Retail', phone: '+7 701 448-90-06', email: 'procurement@kaspiretail.kz', channel: 'EMAIL', member: 'Д. Сулейменов', card: 'KK-10427-04', business: 'Altyn Group', status: 'На проверке', mgr: 'Е. Морозова', consent: true, consentSrc: 'FORM', consentAt: '27.07.26 11:02', created: '27.07.26', follow: '29.07 16:00', slaState: 'Просрочено', next: 'Запросить у клиента список складов', reason: 'Клиент ищет логистического партнёра для доставки по Казахстану, 4 региона, сроки — до конца августа.', note: 'Проверить, нет ли конфликта с действующим контрактом Altyn Group.', value: '≈ 8 400 000 ₸', outcome: '—' },
+      { id: 'INT-000122', client: 'Виктор Сташевский', clientType: 'PERSON', pos: 'COO', clientCo: 'NordLine', phone: '+7 495 220-71-19', email: 'v.stashevsky@nordline.ru', channel: 'PHONE', member: 'И. Сташевский', card: 'KK-10407-04', business: 'NordWood', status: 'Одобрено', mgr: 'Д. Соколов', consent: true, consentSrc: 'VERBAL', consentAt: '26.07.26 09:15', created: '26.07.26', follow: '31.07 10:00', slaState: 'В срок', next: 'Передать контакт бизнесу по e-mail', reason: 'Нужен подрядчик по деревообработке для серии мебельных заказов; критично соблюдение сроков.', note: 'Участник — родственник клиента, отметить в журнале.', value: '≈ 1 200 000 ₽', outcome: '—' },
+      { id: 'INT-000121', client: 'ООО «Гранит-Инвест»', clientType: 'COMPANY', pos: 'CEO', clientCo: 'Гранит-Инвест', phone: '+7 812 640-15-73', email: 'ceo@granit-invest.ru', channel: 'WHATSAPP', member: 'О. Ветрова', card: 'KK-10425-04', business: 'Гранит-Строй', status: 'Передано бизнесу', mgr: 'Е. Морозова', consent: true, consentSrc: 'WRITTEN', consentAt: '24.07.26 14:20', created: '24.07.26', follow: '30.07 15:00', slaState: 'Сегодня', next: 'Уточнить, состоялся ли первый контакт', reason: 'Клиент планирует реконструкцию складского комплекса, ищет генподрядчика в Санкт-Петербурге.', note: 'Бизнес в статусе «Отклонена» — уточнить возможность работы до передачи.', value: '≈ 24 000 000 ₽', outcome: '—' },
+      { id: 'INT-000119', client: 'Sabina Ltd', clientType: 'COMPANY', pos: 'Head of Supply', clientCo: 'Sabina Ltd', phone: '+998 90 112-77-05', email: 'supply@sabina.uz', channel: 'TELEGRAM', member: 'С. Юсупова', card: 'KK-10419-04', business: 'Tashkent Food', status: 'В работе', mgr: 'Л. Гареева', consent: true, consentSrc: 'FORM', consentAt: '22.07.26 08:30', created: '22.07.26', follow: '01.08 11:00', slaState: 'В срок', next: 'Встреча с закупщиком, подготовить КП', reason: 'Клиент расширяет сеть кафе и ищет поставщика полуфабрикатов с доставкой по Ташкенту.', note: 'Клиент просит КП на английском.', value: '≈ 96 000 000 UZS', outcome: 'КП отправлено' },
+      { id: 'INT-000117', client: 'Нина Абрамян', clientType: 'PERSON', pos: 'Owner', clientCo: 'Abramyan Textile Studio', phone: '+374 55 21-40-93', email: 'n.abramyan@studio.am', channel: 'PHONE', member: 'Н. Абрамян', card: 'KK-10411-04', business: 'Arm Textile', status: 'Успешно', mgr: 'Д. Соколов', consent: true, consentSrc: 'WRITTEN', consentAt: '19.07.26 12:00', created: '19.07.26', follow: '—', slaState: 'В срок', next: 'Запросить обратную связь у бизнеса', reason: 'Клиенту нужны малые партии тканей под пошив коллекции.', note: 'Кейс подходит для публикации в клубной рассылке.', value: '≈ 3 800 000 AMD', outcome: 'Сделка закрыта' },
+      { id: 'INT-000115', client: 'Пётр Ильин', clientType: 'PERSON', pos: 'Managing Partner', clientCo: 'Ilyin & Partners', phone: '+7 921 305-64-88', email: 'p.ilyin@ilyinpartners.ru', channel: 'EMAIL', member: 'П. Ильин', card: 'KK-10414-04', business: 'Волга-Пласт', status: 'Закрыто', mgr: 'Л. Гареева', consent: false, consentSrc: '—', consentAt: '—', created: '18.07.26', follow: '—', slaState: 'В срок', next: 'Нет действий — закрыто без результата', reason: 'Клиент интересовался пластиковой тарой, но не подтвердил передачу контакта.', note: 'Согласие не получено, контакт бизнесу не передавали.', value: '—', outcome: 'Не релевантно' },
+      { id: 'INT-000112', client: 'Aigul Trade', clientType: 'COMPANY', pos: 'Director', clientCo: 'Aigul Trade', phone: '+7 707 900-32-45', email: 'info@aigultrade.kz', channel: 'WHATSAPP', member: 'А. Тлеубаева', card: 'KK-10402-04', business: 'Kaspi Agro', status: 'Новое', mgr: 'Не назначен', consent: false, consentSrc: '—', consentAt: '—', created: '17.07.26', follow: '30.07 09:00', slaState: 'Сегодня', next: 'Получить согласие клиента на передачу контакта', reason: 'Клиент ищет оптового поставщика зерна на сезон 2026/27.', note: 'Участник новый, анкета заполнена на 42% — проверить данные.', value: '—', outcome: '—' }
+    ];
+  }
+
+  requestsData() {
+    return [
+      { id: '#4821', type: 'Регистрация', subject: 'Не приходит код подтверждения на телефон', from: 'Д. Сулейменов', date: '29.07 09:14', status: 'Новое', p: 'hi' },
+      { id: '#4820', type: 'Верификация', subject: 'Загрузил устав повторно, прошу проверить', from: 'Tashkent Food', date: '29.07 08:40', status: 'В работе', p: 'mid' },
+      { id: '#4818', type: 'Жалоба', subject: 'Компания-дубликат с тем же ИНН', from: 'М. Логинова', date: '28.07 18:22', status: 'Новое', p: 'hi' },
+      { id: '#4815', type: 'Вопрос', subject: 'Какие документы нужны для филиала?', from: 'Я. Кравец', date: '28.07 15:03', status: 'В работе', p: 'low' },
+      { id: '#4811', type: 'Данные', subject: 'Смена юридического адреса', from: 'БелЛогистик', date: '28.07 11:47', status: 'Закрыто', p: 'low' },
+      { id: '#4809', type: 'Регистрация', subject: 'ИНН не проходит валидацию (Армения)', from: 'Н. Абрамян', date: '27.07 16:31', status: 'Закрыто', p: 'mid' },
+      { id: '#4804', type: 'Жалоба', subject: 'Аккаунт заблокирован без причины', from: 'П. Ильин', date: '27.07 10:09', status: 'В работе', p: 'hi' },
+      { id: '#4801', type: 'Вопрос', subject: 'Как передать права владельца?', from: 'И. Сташевский', date: '26.07 14:55', status: 'Закрыто', p: 'low' },
+      { id: '#4797', type: 'Данные', subject: 'Удалить дубль сотрудника', from: 'Kaspi Agro', date: '26.07 09:20', status: 'Закрыто', p: 'low' }
+    ];
+  }
+
+  chip(active, label, count) {
+    return { label, count, bg: active ? 'rgba(56,160,190,.12)' : 'transparent', bd: active ? this.accent : '#23282d', fg: active ? this.accent : '#8b949e' };
+  }
+
+  spark(seed) {
+    const out = [];
+    for (let i = 0; i < 14; i++) {
+      const h = 30 + ((Math.sin(seed + i * 0.9) + 1) / 2) * 68;
+      out.push({ h: Math.round(h), o: i > 10 ? 1 : 0.45 });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state, mult = s.period === '7д' ? 0.28 : s.period === '90д' ? 2.7 : 1;
+    const dense = (this.props.density || 'Обычно') === 'Компактно';
+    const rowPad = dense ? '8px' : '11px';
+    const set = (o) => () => this.setState(o);
+
+    const mobile = (s.vw || 1440) < 900;
+    const menuOpen = !!s.menuOpen;
+    const closeMenu = mobile ? { menuOpen: false } : {};
+
+    const navDefs = [
+      ['overview', 'Обзор', ''], ['users', 'Пользователи', '9 412'], ['companies', 'Бизнес', '1 284'],
+      ['intros', 'Представления клиентов', '4'], ['requests', 'Обращения', '7'],
+      ['content', 'Контент и доступы', ''], ['roles', 'Роли и доступы', ''], ['settings', 'Настройки', '']
+    ];
+    const nav = navDefs.map(([k, label, badge]) => ({
+      label, badge, go: set({ screen: k, ...closeMenu }),
+      bg: s.screen === k ? '#171b1f' : 'transparent',
+      fg: s.screen === k ? '#e7eaec' : '#8b949e',
+      dot: s.screen === k ? this.accent : '#2f363c',
+      badgeBg: k === 'requests' ? 'rgba(200,70,50,.16)' : k === 'intros' ? 'rgba(56,160,190,.16)' : 'transparent',
+      badgeFg: k === 'requests' ? this.BAD : k === 'intros' ? this.accent : '#5c666e'
+    }));
+
+    const titles = {
+      overview: ['РАБОЧАЯ ОБЛАСТЬ / ОБЗОР', 'Обзор портала'],
+      users: ['РАБОЧАЯ ОБЛАСТЬ / ПОЛЬЗОВАТЕЛИ', 'Пользователи'],
+      companies: ['РАБОЧАЯ ОБЛАСТЬ / БИЗНЕС', 'Бизнесы'],
+      intros: ['РАБОЧАЯ ОБЛАСТЬ / ПРЕДСТАВЛЕНИЯ', 'Представления клиентов бизнесу'],
+      requests: ['РАБОЧАЯ ОБЛАСТЬ / ОБРАЩЕНИЯ', 'Обращения пользователей'],
+      content: ['РАБОЧАЯ ОБЛАСТЬ / КОНТЕНТ', 'Контент и доступы'],
+      roles: ['АДМИНИСТРИРОВАНИЕ / РОЛИ И ДОСТУПЫ', 'Аккаунты сотрудников и права доступа'],
+      settings: ['РАБОЧАЯ ОБЛАСТЬ / НАСТРОЙКИ', 'Настройки портала']
+    }[s.screen];
+
+    const periods = ['7д', '30д', '90д'].map(p => ({
+      label: p, go: set({ period: p }),
+      bg: s.period === p ? '#1c2126' : 'transparent',
+      fg: s.period === p ? '#e7eaec' : '#6b757d'
+    }));
+
+    const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
+    const kpis = [
+      { label: 'Всего пользователей', value: fmt(9412), delta: '+4,1%', note: 'из них 62% с компанией', up: true, seed: 1 },
+      { label: 'Новых регистраций', value: fmt(318 * mult), delta: '+11,8%', note: 'период: ' + s.period, up: true, seed: 2 },
+      { label: 'Бизнес-аккаунтов', value: fmt(1284), delta: '+2,3%', note: '96 ждут верификации', up: true, seed: 3 },
+      { label: 'Анкеты не завершены', value: fmt(1_871), delta: '−1,4%', note: 'после ввода нового поля ИНН', up: false, seed: 4 }
+    ].map(k => ({
+      ...k, spark: this.spark(k.seed),
+      sparkColor: k.up ? this.accent : this.WARN,
+      deltaBg: k.up ? 'rgba(60,170,140,.13)' : 'rgba(200,150,40,.14)',
+      deltaFg: k.up ? this.OK : this.WARN
+    }));
+
+    const bars = [];
+    const n = s.period === '7д' ? 7 : s.period === '90д' ? 26 : 14;
+    for (let i = 0; i < n; i++) {
+      const a = 34 + ((Math.sin(i * 0.8 + 1.3) + 1) / 2) * 52;
+      bars.push({ a: Math.round(a), b: Math.round(8 + ((Math.cos(i * 0.62) + 1) / 2) * 22) });
+    }
+
+    const countries = [
+      { name: 'Россия', value: '4 210', pct: '52%', w: 100 },
+      { name: 'Казахстан', value: '1 180', pct: '15%', w: 28 },
+      { name: 'Беларусь', value: '640', pct: '8%', w: 15 },
+      { name: 'Узбекистан', value: '410', pct: '5%', w: 10 },
+      { name: 'Армения', value: '210', pct: '3%', w: 6 },
+      { name: 'Другие (11)', value: '155', pct: '2%', w: 4 }
+    ].map((c, i) => ({ ...c, color: i === 0 ? this.accent : i < 3 ? 'oklch(0.62 0.1 205)' : '#39424a' }));
+
+    const fields = [
+      { name: 'Подтверждённый телефон', pct: 22 },
+      { name: 'ИНН компании', pct: 46 },
+      { name: 'Уставные документы', pct: 59 },
+      { name: 'Фото профиля', pct: 67 },
+      { name: 'Юридический адрес', pct: 31 }
+    ].map(f => ({ ...f, color: f.pct > 55 ? this.BAD : f.pct > 35 ? this.WARN : this.accent }));
+
+    const queue = [
+      { name: 'Altyn Group', inn: '181240019283', country: 'Казахстан', docs: '3 из 4', wait: '2 дня', urgent: false },
+      { name: 'Tashkent Food', inn: '305114872', country: 'Узбекистан', docs: '4 из 4', wait: '5 дней', urgent: true },
+      { name: 'NordWood', inn: '7710420087', country: 'Россия', docs: '2 из 4', wait: '1 день', urgent: false },
+      { name: 'Kaspi Agro', inn: '181140093311', country: 'Казахстан', docs: '4 из 4', wait: '6 дней', urgent: true },
+      { name: 'Волга-Пласт', inn: '6312904471', country: 'Россия', docs: '3 из 4', wait: '4 часа', urgent: false }
+    ].map(c => ({ ...c, bg: c.urgent ? 'rgba(200,70,50,.14)' : '#1a1f24', fg: c.urgent ? this.BAD : '#8b949e' }));
+
+    // users
+    const ov = s.ov || {};
+    const planSeed = ['VIP', 'Business', 'Free', 'Business', 'Free', 'Free', 'VIP', 'Business', 'Free'];
+    const all = this.usersData().map((u, i) => ({ tier: 'Серебро', lang: 'RU', mail: true, twofa: u.comp > 70, plan: planSeed[i % planSeed.length], ...u, ...(ov[u.id] || {}) }));
+    const planStyle = p => p === 'VIP'
+      ? { planFg: '#e2b23c', planBg: 'rgba(226,178,60,.12)', planBd: 'rgba(226,178,60,.32)' }
+      : p === 'Business'
+        ? { planFg: '#4fc9d6', planBg: 'rgba(79,201,214,.11)', planBd: 'rgba(79,201,214,.3)' }
+        : { planFg: '#8b949e', planBg: '#1a1f24', planBd: '#262c33' };
+    const q = s.q.trim().toLowerCase();
+    let list = all.filter(u => s.userFilter === 'Все' || u.status === s.userFilter);
+    if (q) list = list.filter(u => (u.name + u.email + u.company + u.id).toLowerCase().includes(q));
+    if (s.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    if (s.sort === 'comp') list = [...list].sort((a, b) => a.comp - b.comp);
+    if (s.sort === 'plan') { const r = { VIP: 0, Business: 1, Free: 2 }; list = [...list].sort((a, b) => r[a.plan] - r[b.plan]); }
+
+    const dotOf = st => st === 'Активен' ? this.OK : st === 'Ожидает' ? this.WARN : this.BAD;
+    const users = list.map((u, i) => ({
+      ...u, ini: u.name.split(' ').map(w => w[0]).join(''),
+      dot: dotOf(u.status), ...planStyle(u.plan),
+      bg: all[s.selUser] && all[s.selUser].id === u.id ? '#161a1e' : 'transparent',
+      go: () => this.setState({ selUser: all.findIndex(x => x.id === u.id) })
+    }));
+
+    const userChips = ['Все', 'Активен', 'Ожидает', 'Заблокирован'].map(f => ({
+      ...this.chip(s.userFilter === f, f, f === 'Все' ? all.length : all.filter(u => u.status === f).length),
+      go: set({ userFilter: f })
+    }));
+
+    const arrow = k => s.sort === k ? ' ↓' : '';
+    const userCols = [
+      ['name', 'ПОЛЬЗОВАТЕЛЬ', 'left'], [null, 'КОМПАНИЯ', 'left'], ['plan', 'ПОДПИСКА', 'left'], [null, 'СТРАНА', 'left'],
+      ['reg', 'РЕГИСТРАЦИЯ', 'left'], [null, 'СТАТУС', 'left'], [null, '', 'right']
+    ].map(([k, label, align]) => ({
+      label, align, arrow: k ? arrow(k) : '',
+      fg: k && s.sort === k ? '#e7eaec' : '#6b757d',
+      go: k ? set({ sort: k }) : () => {}
+    }));
+
+    const su = all[s.selUser];
+    const suCo = su && this.companiesData().find(c => c.name === su.company);
+    const sel = su && {
+      ...su, dot: dotOf(su.status),
+      compColor: su.comp > 80 ? this.OK : su.comp > 50 ? this.WARN : this.BAD,
+      rows: [
+        { k: 'PHONE', v: su.phone }, { k: 'E-MAIL', v: su.email }, { k: 'COMPANY', v: su.company },
+        { k: 'ROLE', v: su.role }, { k: 'ПОДПИСКА', v: su.plan },
+        { k: 'КЛУБНАЯ КАРТА', v: 'KK-' + su.id.replace(/\D/g, '') + '-04 · уровень «' + su.tier + '»' },
+        { k: 'ПРЕДСТАВЛЕННЫЙ БИЗНЕС', v: suCo ? suCo.name + ' · ' + suCo.industry + ' · ИНН ' + suCo.inn : 'не привязан' },
+        { k: 'COUNTRY', v: su.country }, { k: 'REGISTERED', v: su.reg + ' · ' + su.src },
+        { k: 'LAST SEEN', v: '29.07.26 08:12' }
+      ],
+      infoTab: s.uTab === 'info', settingsTab: s.uTab === 'settings',
+      tabs: [['info', 'Данные'], ['settings', 'Настройки']].map(([k, label]) => ({
+        label, go: () => this.setState({ uTab: k }),
+        bg: s.uTab === k ? '#1c2126' : 'transparent',
+        fg: s.uTab === k ? '#e7eaec' : '#6b757d'
+      })),
+      picks: [
+        this.uPick(su, 'status', 'СТАТУС АККАУНТА', ['Активен', 'Ожидает', 'Заблокирован']),
+        this.uPick(su, 'plan', 'ПОДПИСКА', ['Free', 'VIP', 'Business']),
+        this.uPick(su, 'tier', 'УРОВЕНЬ КЛУБНОЙ КАРТЫ', ['Базовый', 'Серебро', 'Золото']),
+        this.uPick(su, 'role', 'РОЛЬ В КОМПАНИИ', ['Владелец компании', 'Сотрудник', 'Частное лицо']),
+        this.uPick(su, 'lang', 'ЯЗЫК ИНТЕРФЕЙСА', ['RU', 'EN', 'KZ'])
+      ],
+      uSwitches: [
+        this.uToggle(su, 'mail', 'E-mail рассылка', 'новости и статусы заявок'),
+        this.uToggle(su, 'twofa', 'Двухфакторная аутентификация', 'подтверждение входа по SMS')
+      ],
+      cardNo: 'KK-' + su.id.replace(/\D/g, '') + '-04'
+    };
+
+    // businesses
+    const bov = s.bov || {};
+    const coAll = this.companiesData().map(c => ({ ...c, ...(bov[c.name] || {}) }));
+    const bTone = st => st === 'PUBLISHED' ? [this.OK, 'rgba(60,170,140,.13)']
+      : st === 'UNDER_REVIEW' ? [this.WARN, 'rgba(200,150,40,.14)']
+      : st === 'APPROVED' ? [this.accent, 'rgba(56,160,190,.13)']
+      : st === 'REJECTED' ? [this.BAD, 'rgba(200,70,50,.14)']
+      : ['#8b949e', '#1a1f24'];
+    const payTone = p => p === 'Активно' ? this.OK : p === 'Ожидает оплату' ? this.WARN : p === 'Истекло' || p === 'Отменено' ? this.BAD : '#8b949e';
+    const views = [['Все', null], ['На модерации', 'UNDER_REVIEW'], ['Ожидают оплаты', 'APPROVED'], ['Опубликованные', 'PUBLISHED'], ['Скрытые', 'HIDDEN'], ['Отклонённые', 'REJECTED']];
+    const introsAllForBiz = this.introsData().map(r => ({ ...r, ...((s.iov || {})[r.id] || {}) }));
+    const introCount = name => {
+      const rs = introsAllForBiz.filter(r => r.business === name);
+      return { active: rs.filter(r => !['Успешно', 'Закрыто'].includes(r.status)).length, total: rs.length, rows: rs };
+    };
+    const topCount = coAll.filter(c => c.top && c.status === 'PUBLISHED').length;
+    const recCount = coAll.filter(c => c.rec && c.status === 'PUBLISHED').length;
+
+    let bList = coAll;
+    const view = s.bizFilter || 'Все';
+    const viewCode = (views.find(v => v[0] === view) || [])[1];
+    if (viewCode) bList = bList.filter(c => c.status === viewCode);
+    if (q) bList = bList.filter(c => (c.name + c.owner + c.email + c.inn).toLowerCase().includes(q));
+
+    const businesses = bList.map(c => {
+      const [sfg, sbg] = bTone(c.status), ic = introCount(c.name);
+      const badges = [];
+      if (c.top && c.status === 'PUBLISHED') badges.push({ label: 'ТОП', bg: 'rgba(200,150,40,.16)', fg: this.WARN });
+      if (c.rec && c.status === 'PUBLISHED') badges.push({ label: 'РЕК', bg: 'rgba(56,160,190,.14)', fg: this.accent });
+      return {
+        name: c.name, category: c.industry, city: c.city, status: c.status, sfg, sbg,
+        owner: c.owner, payState: c.payState, payUntil: c.payUntil, payFg: payTone(c.payState),
+        intros: ic.active + ' / ' + ic.total, badges,
+        updated: c.updated, updatedBy: c.updatedBy,
+        bg: c.name === (coAll[s.selCo] || {}).name ? '#161a1e' : 'transparent',
+        go: () => this.setState({ selCo: coAll.findIndex(x => x.name === c.name) })
+      };
+    });
+
+    const bizChips = views.map(([label, code]) => ({
+      ...this.chip(view === label, label, code ? coAll.filter(c => c.status === code).length : coAll.length),
+      go: set({ bizFilter: label })
+    }));
+
+    const b0 = coAll[s.selCo] || coAll[0];
+    const [bsfg, bsbg] = bTone(b0.status);
+    const bic = introCount(b0.name);
+    const patchBiz = patch => this.setState(st => ({ bov: { ...st.bov, [b0.name]: { ...(st.bov[b0.name] || {}), ...patch } } }));
+    const published = b0.status === 'PUBLISHED';
+    const allowed = st => st === 'PUBLISHED' ? b0.payState === 'Активно' : true;
+    const bTab = s.bTab || 'overview';
+    const opt = (label, active, on, extra) => ({
+      label, go: on, cursor: extra && extra.locked ? 'not-allowed' : 'pointer', op: extra && extra.locked ? 0.4 : 1,
+      bd: active ? this.accent : '#23282d',
+      bg: active ? 'rgba(56,160,190,.12)' : 'transparent',
+      fg: active ? this.accent : '#8b949e'
+    });
+    const actions = [];
+    if (b0.status === 'UNDER_REVIEW') {
+      actions.push({ label: 'Одобрить', go: () => patchBiz({ status: 'APPROVED' }), bd: 'transparent', bg: this.accent, fg: '#06181e' });
+      actions.push({ label: 'Отклонить', go: () => patchBiz({ status: 'REJECTED' }), bd: '#2a3036', bg: 'transparent', fg: '#8b949e' });
+    }
+    if (b0.status === 'APPROVED') actions.push({ label: 'Опубликовать', go: () => patchBiz({ status: 'PUBLISHED', payState: 'Активно' }), bd: 'transparent', bg: this.accent, fg: '#06181e' });
+    if (published) actions.push({ label: 'Скрыть из каталога', go: () => patchBiz({ status: 'HIDDEN', top: false, rec: false }), bd: '#2a3036', bg: 'transparent', fg: '#8b949e' });
+    if (b0.status === 'HIDDEN' || b0.status === 'REJECTED') actions.push({ label: 'Вернуть на модерацию', go: () => patchBiz({ status: 'UNDER_REVIEW' }), bd: '#2a3036', bg: 'transparent', fg: '#8b949e' });
+    actions.push({ label: 'Публичная страница ↗', go: () => {}, bd: '#2a3036', bg: 'transparent', fg: '#8b949e' });
+    actions.push({ label: 'Интродукции', go: set({ bTab: 'intros' }), bd: '#2a3036', bg: 'transparent', fg: '#8b949e' });
+
+    const biz = {
+      name: b0.name, category: b0.industry, city: b0.city, country: b0.country,
+      status: b0.status, sfg: bsfg, sbg: bsbg, actions,
+      tabs: [['overview', 'Обзор'], ['profile', 'Профиль'], ['moderation', 'Модерация'], ['billing', 'Размещение'], ['intros', 'Интро'], ['visibility', 'Видимость'], ['history', 'История']].map(([k, label]) => ({
+        label, go: set({ bTab: k }),
+        bg: bTab === k ? '#1c2126' : 'transparent',
+        fg: bTab === k ? '#e7eaec' : '#6b757d'
+      })),
+      isOverview: bTab === 'overview', isProfile: bTab === 'profile', isModeration: bTab === 'moderation',
+      isBilling: bTab === 'billing', isIntros: bTab === 'intros', isVisibility: bTab === 'visibility', isHistory: bTab === 'history',
+      stats: [
+        { label: 'СТАТУС ПРОФИЛЯ', value: b0.status, fg: bsfg },
+        { label: 'РАЗМЕЩЕНИЕ', value: b0.payState + ' ' + b0.payUntil, fg: payTone(b0.payState) },
+        { label: 'ИНТРОДУКЦИИ', value: bic.active + ' в работе / ' + bic.total, fg: '#e7eaec' },
+        { label: 'МОДЕРАТОР', value: b0.moderator, fg: b0.moderator === 'Не назначен' ? this.WARN : '#e7eaec' }
+      ],
+      overviewRows: [
+        { k: 'ЮРЛИЦО', v: b0.legal + ' · ИНН ' + b0.inn },
+        { k: 'КАТЕГОРИЯ', v: b0.industry },
+        { k: 'ЛОКАЦИЯ', v: b0.city + ', ' + b0.country },
+        { k: 'ВЛАДЕЛЕЦ ПРОФИЛЯ', v: b0.owner },
+        { k: 'ПРЕДСТАВИТЕЛЬ', v: b0.rep },
+        { k: 'ТЕЛЕФОН', v: b0.phone },
+        { k: 'E-MAIL', v: b0.email },
+        { k: 'СПОСОБ СВЯЗИ', v: b0.channel }
+      ],
+      description: b0.desc, descLen: b0.desc.length,
+      profileRows: [
+        { k: 'САЙТ', v: b0.site, fg: this.accent },
+        { k: 'КАТЕГОРИЯ', v: b0.industry, fg: '#e7eaec' },
+        { k: 'СТРАНА', v: b0.country, fg: '#e7eaec' },
+        { k: 'ГОРОД', v: b0.city, fg: '#e7eaec' },
+        { k: 'СОТРУДНИКОВ', v: b0.staff, fg: '#e7eaec' },
+        { k: 'ПУБЛИЧНЫЙ URL', v: published ? '/catalog/' + b0.site.split('.')[0] : 'нет — не опубликован', fg: published ? this.accent : '#6b757d' }
+      ],
+      statusOptions: this.BIZ_STATUSES.map(st => ({
+        ...opt(st, b0.status === st, allowed(st) ? () => patchBiz(st === 'HIDDEN' ? { status: st, top: false, rec: false } : { status: st }) : () => {}, { locked: !allowed(st) })
+      })),
+      rule: b0.payState === 'Активно' ? 'Переходы доступны · изменения пишутся в историю.' : 'PUBLISHED недоступен: размещение не оплачено. Публикация происходит по подтверждённому платежу.',
+      ruleFg: b0.payState === 'Активно' ? '#6b757d' : this.WARN,
+      moderators: this.MODERATORS.map(m => opt(m, b0.moderator === m, () => patchBiz({ moderator: m }))),
+      isRejected: b0.status === 'REJECTED',
+      reasons: this.REJECT_REASONS.map(r => opt(r, b0.reason === r, () => patchBiz({ reason: r }))),
+      internalNote: b0.note, publicComment: b0.publicComment,
+      approve: () => patchBiz({ status: 'APPROVED' }),
+      reject: () => patchBiz({ status: 'REJECTED' }),
+      payState: b0.payState, payHint: b0.payUntil + ' · ' + b0.plan,
+      payFg: payTone(b0.payState),
+      payBg: b0.payState === 'Активно' ? 'rgba(60,170,140,.09)' : b0.payState === 'Ожидает оплату' ? 'rgba(200,150,40,.09)' : '#0e1114',
+      payBd: b0.payState === 'Активно' ? 'rgba(60,170,140,.3)' : b0.payState === 'Ожидает оплату' ? 'rgba(200,150,40,.3)' : '#23282d',
+      billingRows: [
+        { k: 'ТАРИФ', v: b0.plan, fg: '#e7eaec' },
+        { k: 'SUBSCRIPTION ID', v: b0.sub, fg: '#8b949e' },
+        { k: 'ПЕРИОД', v: b0.payUntil, fg: '#e7eaec' },
+        { k: 'ПОСЛЕДНИЙ ПЛАТЁЖ', v: b0.last, fg: b0.last.includes('ошибка') ? this.BAD : '#e7eaec' },
+        { k: 'СЛЕДУЮЩЕЕ СПИСАНИЕ', v: b0.next, fg: '#e7eaec' },
+        { k: 'ПРИЧИНА СКРЫТИЯ', v: b0.status === 'HIDDEN' ? 'Подписка истекла' : '—', fg: b0.status === 'HIDDEN' ? this.WARN : '#8b949e' }
+      ],
+      introSummary: bic.total ? bic.active + ' в работе из ' + bic.total + ' · получатель ' + b0.name : 'Интродукций для этого бизнеса пока нет',
+      introList: bic.rows.map(r => {
+        const [sfg, sbg] = this.introTone(r.status);
+        return { id: r.id, client: r.client, member: r.member, mgr: r.mgr, status: r.status, sfg, sbg, go: set({ screen: 'intros', selIntro: introsAllForBiz.findIndex(x => x.id === r.id) }) };
+      }),
+      visibility: [
+        {
+          name: 'Показывать в каталоге', hint: 'определяется статусом PUBLISHED · не редактируется',
+          cursor: 'not-allowed', op: 0.6, go: () => {},
+          trackBg: published ? this.OK : '#252b31', justify: published ? 'flex-end' : 'flex-start', knob: published ? '#06181e' : '#6b757d'
+        },
+        {
+          name: 'Топ на главной', hint: published ? 'занято ' + topCount + ' из 3' : 'только для PUBLISHED',
+          cursor: published ? 'pointer' : 'not-allowed', op: published ? 1 : 0.5,
+          go: published && (b0.top || topCount < 3) ? () => patchBiz({ top: !b0.top }) : () => {},
+          trackBg: b0.top && published ? this.WARN : '#252b31', justify: b0.top && published ? 'flex-end' : 'flex-start', knob: b0.top && published ? '#06181e' : '#6b757d'
+        },
+        {
+          name: 'Рекомендуемый на главной', hint: published ? 'занято ' + recCount + ' из 3' : 'только для PUBLISHED',
+          cursor: published ? 'pointer' : 'not-allowed', op: published ? 1 : 0.5,
+          go: published && (b0.rec || recCount < 3) ? () => patchBiz({ rec: !b0.rec }) : () => {},
+          trackBg: b0.rec && published ? this.accent : '#252b31', justify: b0.rec && published ? 'flex-end' : 'flex-start', knob: b0.rec && published ? '#06181e' : '#6b757d'
+        }
+      ],
+      publicUrl: published ? 'kclub.ru/catalog/' + b0.site.split('.')[0] : 'недоступна — профиль не опубликован',
+      log: [
+        { at: b0.updated, text: 'Статус → ' + b0.status, by: b0.updatedBy },
+        { at: b0.updated, text: b0.top || b0.rec ? 'Featured-флаги: ' + (b0.top ? 'ТОП ' : '') + (b0.rec ? 'РЕКОМЕНДУЕМЫЙ' : '') : 'Featured-флаги не установлены', by: b0.updatedBy },
+        { at: '24.07.26', text: 'Модератор: ' + b0.moderator, by: 'А. Ковалёв' },
+        { at: '22.07.26', text: 'Размещение: ' + b0.payState + ' ' + b0.payUntil, by: 'платёжный вебхук' },
+        { at: '20.07.26', text: 'Профиль создан владельцем ' + b0.owner, by: b0.owner }
+      ]
+    };
+
+
+    // introductions
+    const iov = s.iov || {};
+    const introAll = this.introsData().map(r => ({ ...r, ...(iov[r.id] || {}) }));
+    const slaTone = v => v === 'Просрочено' ? [this.BAD, 'rgba(200,70,50,.14)'] : v === 'Сегодня' ? [this.WARN, 'rgba(200,150,40,.14)'] : ['#8b949e', '#1a1f24'];
+    const ini = n => n === 'Не назначен' ? '—' : n.split(' ').map(w => w[0]).join('');
+
+    let iList = introAll;
+    if (s.introFilter !== 'Все') iList = iList.filter(r => r.status === s.introFilter);
+    if (s.onlyUnassigned) iList = iList.filter(r => r.mgr === 'Не назначен');
+    if (s.onlyOverdue) iList = iList.filter(r => r.slaState === 'Просрочено');
+    if (s.onlyNoConsent) iList = iList.filter(r => !r.consent);
+    if (q) iList = iList.filter(r => (r.id + r.client + r.member + r.business + r.mgr).toLowerCase().includes(q));
+    const rank = r => this.STATUSES.indexOf(r.status) < 2 ? 0 : 1;
+    iList = [...iList].sort((a, b) => rank(a) - rank(b));
+
+    const intros = iList.map(r => {
+      const [sfg, sbg] = this.introTone(r.status), [slaFg, slaBg] = slaTone(r.slaState);
+      return {
+        id: r.id, status: r.status, sfg, sbg, slaFg, slaBg, sla: r.slaState, followUp: r.follow,
+        clientName: r.client, clientMeta: r.pos ? '· ' + r.pos : '',
+        member: r.member, business: r.business, manager: r.mgr,
+        consentShort: r.consent ? 'согласие есть' : 'без согласия',
+        mgrIni: ini(r.mgr),
+        mgrBg: r.mgr === 'Не назначен' ? 'transparent' : 'repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px)',
+        mgrFg: r.mgr === 'Не назначен' ? this.WARN : '#c9d1d6',
+        bg: r.id === (introAll[s.selIntro] || {}).id ? '#161a1e' : 'transparent',
+        go: () => this.setState({ selIntro: introAll.findIndex(x => x.id === r.id) })
+      };
+    });
+
+    const introChips = ['Все', ...this.STATUSES].map(f => ({
+      ...this.chip(s.introFilter === f, f, f === 'Все' ? introAll.length : introAll.filter(r => r.status === f).length),
+      go: set({ introFilter: f })
+    }));
+    const tgl = (key, label) => ({
+      label, go: () => this.setState({ [key]: !s[key] }),
+      bd: s[key] ? this.accent : '#23282d',
+      fg: s[key] ? this.accent : '#8b949e',
+      dot: s[key] ? this.accent : '#2f363c'
+    });
+    const introToggles = [tgl('onlyUnassigned', 'БЕЗ МЕНЕДЖЕРА'), tgl('onlyOverdue', 'ПРОСРОЧЕН FOLLOW-UP'), tgl('onlyNoConsent', 'БЕЗ СОГЛАСИЯ')];
+
+    const ir = introAll[s.selIntro] || introAll[0];
+    const [isfg, isbg] = this.introTone(ir.status), [islaFg, islaBg] = slaTone(ir.slaState);
+    const patchIntro = patch => this.setState(st => ({ iov: { ...st.iov, [ir.id]: { ...(st.iov[ir.id] || {}), ...patch } } }));
+    const locked = st => !ir.consent && ['Одобрено', 'Передано бизнесу', 'В работе', 'Успешно'].includes(st);
+    const intro = {
+      id: ir.id, status: ir.status, sfg: isfg, sbg: isbg, sla: ir.slaState, slaFg: islaFg, slaBg: islaBg,
+      clientName: ir.client, business: ir.business, manager: ir.mgr, mgrIni: ini(ir.mgr),
+      mgrBg: ir.mgr === 'Не назначен' ? 'transparent' : 'repeating-linear-gradient(45deg,#232a30 0 4px,#1b2126 4px 8px)',
+      mgrFg: ir.mgr === 'Не назначен' ? this.WARN : '#e7eaec',
+      takeLabel: ir.mgr === 'Не назначен' ? 'Взять сделку' : 'Снять',
+      takeDeal: () => patchIntro({ mgr: ir.mgr === 'Не назначен' ? 'А. Ковалёв' : 'Не назначен' }),
+      managers: this.MANAGERS.map(m => ({
+        label: m.name, load: m.load,
+        go: () => patchIntro({ mgr: m.name }),
+        bd: ir.mgr === m.name ? this.accent : '#23282d',
+        bg: ir.mgr === m.name ? 'rgba(56,160,190,.12)' : 'transparent',
+        fg: ir.mgr === m.name ? this.accent : '#8b949e'
+      })),
+      nextAction: ir.next,
+      tabs: [['overview', 'Обзор'], ['contact', 'Согласие'], ['process', 'Обработка'], ['notes', 'Заметки']].map(([k, label]) => ({
+        label, go: set({ iTab: k }),
+        bg: s.iTab === k ? '#1c2126' : 'transparent',
+        fg: s.iTab === k ? '#e7eaec' : '#6b757d'
+      })),
+      isOverview: s.iTab === 'overview', isContact: s.iTab === 'contact',
+      isProcessing: s.iTab === 'process', isNotes: s.iTab === 'notes',
+      overviewRows: [
+        { k: 'УЧАСТНИК', v: ir.member + ' · ' + ir.card },
+        { k: 'КЛИЕНТ', v: ir.client + (ir.pos ? ' · ' + ir.pos : '') },
+        { k: 'КОМПАНИЯ КЛИЕНТА', v: ir.clientCo },
+        { k: 'ТИП КЛИЕНТА', v: ir.clientType === 'COMPANY' ? 'Компания' : 'Физлицо' },
+        { k: 'БИЗНЕС-ПОЛУЧАТЕЛЬ', v: ir.business },
+        { k: 'СОЗДАНО', v: ir.created }
+      ],
+      reason: ir.reason,
+      timeline: [
+        { text: 'Представление создано участником', meta: ir.created + ' · ' + ir.member, dot: this.accent },
+        { text: ir.consent ? 'Согласие клиента подтверждено' : 'Ожидается согласие клиента', meta: ir.consent ? ir.consentAt + ' · ' + ir.consentSrc : 'блокирует передачу бизнесу', dot: ir.consent ? this.OK : this.WARN },
+        { text: ir.mgr === 'Не назначен' ? 'Менеджер не назначен' : 'Назначен менеджер ' + ir.mgr, meta: ir.mgr === 'Не назначен' ? 'в очереди' : 'нагрузка учтена', dot: ir.mgr === 'Не назначен' ? this.WARN : this.accent },
+        { text: 'Текущий статус: ' + ir.status, meta: 'следующее действие ' + ir.follow, dot: isfg }
+      ],
+      contactRows: [
+        { k: 'ТЕЛЕФОН', v: ir.phone }, { k: 'E-MAIL', v: ir.email },
+        { k: 'КАНАЛ СВЯЗИ', v: ir.channel }, { k: 'ИСТОЧНИК СОГЛАСИЯ', v: ir.consentSrc },
+        { k: 'ДАТА СОГЛАСИЯ', v: ir.consentAt }, { k: 'ЗАПРОСИЛ УЧАСТНИК', v: ir.member }
+      ],
+      consentTitle: ir.consent ? 'Согласие на передачу контакта подтверждено' : 'Согласие не подтверждено',
+      consentNote: ir.consent ? 'Контакт можно передавать бизнесу.' : 'Статусы «Одобрено» и далее заблокированы до подтверждения.',
+      consentFg: ir.consent ? this.OK : this.WARN,
+      consentBg: ir.consent ? 'rgba(60,170,140,.09)' : 'rgba(200,150,40,.09)',
+      consentBd: ir.consent ? 'rgba(60,170,140,.3)' : 'rgba(200,150,40,.3)',
+      consentAction: ir.consent ? 'Отозвать согласие' : 'Подтвердить согласие',
+      toggleConsent: () => patchIntro({ consent: !ir.consent, consentSrc: ir.consent ? '—' : 'WRITTEN', consentAt: ir.consent ? '—' : '29.07.26 10:05' }),
+      statusOptions: this.STATUSES.map(st => ({
+        label: st, cursor: locked(st) ? 'not-allowed' : 'pointer', op: locked(st) ? 0.4 : 1,
+        go: locked(st) ? () => {} : () => patchIntro({ status: st }),
+        bd: ir.status === st ? this.accent : '#23282d',
+        bg: ir.status === st ? 'rgba(56,160,190,.12)' : 'transparent',
+        fg: ir.status === st ? this.accent : '#8b949e'
+      })),
+      rule: ir.consent ? 'Все переходы доступны · изменения попадают в журнал.' : 'Нельзя одобрить или передать бизнесу без согласия клиента.',
+      ruleFg: ir.consent ? '#6b757d' : this.WARN,
+      processRows: [
+        { k: 'МЕНЕДЖЕР СДЕЛКИ', v: ir.mgr, fg: ir.mgr === 'Не назначен' ? this.WARN : '#e7eaec' },
+        { k: 'НАЗНАЧИЛ', v: 'А. Ковалёв · ' + ir.created, fg: '#e7eaec' },
+        { k: 'СЛЕДУЮЩИЙ КОНТАКТ', v: ir.follow, fg: '#e7eaec' },
+        { k: 'SLA', v: ir.slaState, fg: islaFg },
+        { k: 'ПОТЕНЦИАЛ', v: ir.value, fg: '#e7eaec' },
+        { k: 'ИТОГ', v: ir.outcome, fg: '#e7eaec' },
+        { k: 'СПОСОБ ПЕРЕДАЧИ', v: ir.status === 'Новое' ? 'не передано' : 'E-MAIL', fg: '#e7eaec' }
+      ],
+      internalNote: ir.note,
+      log: [
+        { at: '29.07 10:12', text: 'Статус → ' + ir.status + ' (А. Ковалёв)' },
+        { at: '28.07 17:41', text: ir.consent ? 'Согласие клиента зафиксировано (' + ir.consentSrc + ')' : 'Запрошено согласие клиента' },
+        { at: '28.07 16:03', text: ir.mgr === 'Не назначен' ? 'Возвращено в очередь без менеджера' : 'Менеджер сделки: ' + ir.mgr },
+        { at: ir.created + ' 09:20', text: 'Создано представление участником ' + ir.member }
+      ]
+    };
+
+    // requests
+    const rq = this.requestsData();
+    let rlist = rq.filter(r => s.reqFilter === 'Все' || r.status === s.reqFilter);
+    if (q) rlist = rlist.filter(r => (r.subject + r.from + r.id).toLowerCase().includes(q));
+    const requests = rlist.map(r => ({
+      ...r,
+      pri: r.p === 'hi' ? this.BAD : r.p === 'mid' ? this.WARN : '#39424a',
+      sbg: r.status === 'Новое' ? 'rgba(56,160,190,.13)' : r.status === 'В работе' ? 'rgba(200,150,40,.14)' : '#1a1f24',
+      sfg: r.status === 'Новое' ? this.accent : r.status === 'В работе' ? this.WARN : '#8b949e'
+    }));
+    const reqChips = ['Все', 'Новое', 'В работе', 'Закрыто'].map(f => ({
+      ...this.chip(s.reqFilter === f, f, f === 'Все' ? rq.length : rq.filter(r => r.status === f).length),
+      go: set({ reqFilter: f })
+    }));
+
+    const articles = [
+      { title: 'Как зарегистрировать бизнес-аккаунт', section: 'Регистрация', author: 'А. Ковалёв', updated: '28.07.26', status: 'Опубликовано' },
+      { title: 'Какие документы нужны для верификации', section: 'Верификация', author: 'Е. Морозова', updated: '26.07.26', status: 'Опубликовано' },
+      { title: 'Подтверждение ИНН: новое требование', section: 'Регистрация', author: 'А. Ковалёв', updated: '25.07.26', status: 'Черновик' },
+      { title: 'Передача прав владельца компании', section: 'Аккаунт', author: 'Д. Соколов', updated: '21.07.26', status: 'Опубликовано' },
+      { title: 'Ограничения для аккаунтов без телефона', section: 'Безопасность', author: 'Е. Морозова', updated: '18.07.26', status: 'На ревью' },
+      { title: 'Инструкция для операторов поддержки', section: 'Внутреннее', author: 'А. Ковалёв', updated: '14.07.26', status: 'Опубликовано' }
+    ].map(a => ({
+      ...a,
+      sbg: a.status === 'Опубликовано' ? 'rgba(60,170,140,.13)' : a.status === 'Черновик' ? '#1a1f24' : 'rgba(200,150,40,.14)',
+      sfg: a.status === 'Опубликовано' ? this.OK : a.status === 'Черновик' ? '#8b949e' : this.WARN
+    }));
+
+    // --- Роли и доступы ---
+    const ROLES = [
+      { k: 'OWNER', ru: 'Владелец платформы', purpose: 'Владение платформой, настройка биллинга, назначение ролей сотрудников', fg: this.WARN },
+      { k: 'ADMIN', ru: 'Администратор', purpose: 'Операции с пользователями, карты, подписки, видимость аудита', fg: this.accent },
+      { k: 'MODERATOR', ru: 'Модератор', purpose: 'Модерация бизнеса, каталога, таксономии и представлений', fg: this.accent },
+      { k: 'SUPPORT', ru: 'Поддержка', purpose: 'Строго read-only исследование обращений', fg: '#8b949e' }
+    ];
+    const RES = [
+      ['users', 'Пользователи', 'профили, блокировки, сброс пароля'],
+      ['cards', 'Карты', 'выпуск, перевыпуск, лимиты'],
+      ['subs', 'Подписки', 'тарифы, продление, возвраты'],
+      ['biz', 'Бизнес-профили', 'модерация и публикация'],
+      ['catalog', 'Каталог', 'позиции, цены, витрина'],
+      ['taxonomy', 'Таксономия', 'категории, теги, регионы'],
+      ['intros', 'Представления', 'очередь, назначение, SLA'],
+      ['billing', 'Биллинг платформы', 'эквайринг, тарифная сетка'],
+      ['staff', 'Роли сотрудников', 'назначение и отзыв доступов'],
+      ['audit', 'Аудит', 'журнал действий и экспорт']
+    ];
+    const BASE = {
+      OWNER: { users: 'W', cards: 'W', subs: 'W', biz: 'W', catalog: 'W', taxonomy: 'W', intros: 'W', billing: 'W', staff: 'W', audit: 'W' },
+      ADMIN: { users: 'W', cards: 'W', subs: 'W', biz: 'R', catalog: 'R', taxonomy: '·', intros: 'R', billing: '·', staff: '·', audit: 'R' },
+      MODERATOR: { users: 'R', cards: '·', subs: '·', biz: 'W', catalog: 'W', taxonomy: 'W', intros: 'W', billing: '·', staff: '·', audit: '·' },
+      SUPPORT: { users: 'R', cards: 'R', subs: 'R', biz: 'R', catalog: 'R', taxonomy: 'R', intros: 'R', billing: '·', staff: '·', audit: 'R' }
+    };
+    const roleKey = s.roleKey || 'ADMIN';
+    const permOv = s.permOv || {};
+    const permOf = (rk, res) => (permOv[rk] && permOv[rk][res]) || BASE[rk][res];
+    const lockedCell = (rk, res) => rk === 'OWNER' || res === 'billing' || res === 'staff';
+    const cyclePerm = (rk, res) => () => {
+      if (lockedCell(rk, res)) return;
+      const cur = permOf(rk, res);
+      const ring = rk === 'SUPPORT' ? ['·', 'R'] : ['·', 'R', 'W'];
+      const next = ring[(ring.indexOf(cur) + 1) % ring.length];
+      this.setState(st => ({ dirty: true, permOv: { ...(st.permOv || {}), [rk]: { ...((st.permOv || {})[rk] || {}), [res]: next } } }));
+    };
+    const cellTone = (m, locked) => ({
+      mark: m,
+      bg: m === 'W' ? 'rgba(56,160,190,.16)' : m === 'R' ? '#1a1f24' : 'transparent',
+      fg: m === 'W' ? this.accent : m === 'R' ? '#8b949e' : '#39424a',
+      bd: locked ? '#191e23' : '#23282d',
+      cursor: locked ? 'default' : 'pointer'
+    });
+    const roleTabs = ROLES.map(r => ({
+      label: r.k, ru: r.ru, go: set({ roleKey: r.k }),
+      bg: roleKey === r.k ? '#1c2126' : 'transparent',
+      fg: roleKey === r.k ? '#e7eaec' : '#6b757d',
+      bd: roleKey === r.k ? '#2f363c' : '#23282d'
+    }));
+    const activeRole = ROLES.find(r => r.k === roleKey);
+    const matrix = RES.map(([res, name, hint]) => ({
+      name, hint,
+      cells: ROLES.map(r => {
+        const locked = lockedCell(r.k, res);
+        return { ...cellTone(permOf(r.k, res), locked), go: cyclePerm(r.k, res), isCol: r.k === roleKey ? '#0e1114' : 'transparent' };
+      })
+    }));
+    const editRows = RES.map(([res, name, hint]) => {
+      const locked = lockedCell(roleKey, res);
+      const m = permOf(roleKey, res);
+      return {
+        name, hint, go: cyclePerm(roleKey, res),
+        label: m === 'W' ? 'Чтение и запись' : m === 'R' ? 'Только чтение' : 'Нет доступа',
+        labelFg: m === 'W' ? this.accent : m === 'R' ? '#8b949e' : '#5c666e',
+        lockNote: locked ? (roleKey === 'OWNER' ? 'фиксировано' : 'только OWNER') : '',
+        cursor: locked ? 'default' : 'pointer',
+        ...cellTone(m, locked)
+      };
+    });
+    const STAFF = [
+      { name: 'А. Ковалёв', mail: 'a.kovalev@portal.ru', role: 'OWNER', st: 'Активен', last: '12 мин назад', twofa: true, ip: 'Офис · 2 сети' },
+      { name: 'И. Северов', mail: 'i.severov@portal.ru', role: 'ADMIN', st: 'Активен', last: '1 ч назад', twofa: true, ip: 'Любой' },
+      { name: 'Е. Морозова', mail: 'e.morozova@portal.ru', role: 'MODERATOR', st: 'Активен', last: '26 мин назад', twofa: true, ip: 'Любой' },
+      { name: 'Д. Соколов', mail: 'd.sokolov@portal.ru', role: 'MODERATOR', st: 'Ожидает 2FA', last: '3 дня назад', twofa: false, ip: 'Любой' },
+      { name: 'Л. Гареева', mail: 'l.gareeva@portal.ru', role: 'SUPPORT', st: 'Активен', last: '4 ч назад', twofa: true, ip: 'Офис · 1 сеть' },
+      { name: 'П. Ильин', mail: 'p.ilyin@portal.ru', role: 'SUPPORT', st: 'Приостановлен', last: '21 день назад', twofa: false, ip: 'Любой' }
+    ];
+    const selStaff = s.selStaff == null ? 0 : s.selStaff;
+    const stTone = st => st === 'Активен' ? this.OK : st === 'Ожидает 2FA' ? this.WARN : '#8b949e';
+    const staffRoleOf = i => (s.staffRole || {})[i] || STAFF[i].role;
+    const staff = STAFF.map((p, i) => {
+      const rk = staffRoleOf(i);
+      const r = ROLES.find(x => x.k === rk);
+      return {
+        name: p.name, mail: p.mail, role: rk, roleFg: r.fg, st: p.st, stFg: stTone(p.st), last: p.last,
+        ini: p.name.split(' ').map(w => w[0]).join(''),
+        go: set({ selStaff: i }),
+        bg: selStaff === i ? '#161a1e' : 'transparent',
+        bd: selStaff === i ? this.accent : 'transparent',
+        twofa: p.twofa ? '2FA' : 'нет 2FA',
+        twofaFg: p.twofa ? this.OK : this.WARN
+      };
+    });
+    const sp = STAFF[selStaff], spRole = staffRoleOf(selStaff);
+    const spRoleObj = ROLES.find(r => r.k === spRole);
+    const accountRoles = ROLES.map(r => ({
+      label: r.k, ru: r.ru, go: () => this.setState(st => ({ dirty: true, staffRole: { ...(st.staffRole || {}), [selStaff]: r.k } })),
+      bg: spRole === r.k ? 'rgba(56,160,190,.12)' : 'transparent',
+      fg: spRole === r.k ? '#e7eaec' : '#8b949e',
+      bd: spRole === r.k ? this.accent : '#23282d'
+    }));
+    const accountFacts = [
+      { k: 'E-MAIL', v: sp.mail },
+      { k: 'РОЛЬ', v: spRole + ' · ' + spRoleObj.ru },
+      { k: 'СТАТУС', v: sp.st, fg: stTone(sp.st) },
+      { k: 'ПОСЛЕДНИЙ ВХОД', v: sp.last },
+      { k: 'ДВУХФАКТОРНАЯ', v: sp.twofa ? 'Включена' : 'Не настроена', fg: sp.twofa ? this.OK : this.WARN },
+      { k: 'IP-ОГРАНИЧЕНИЕ', v: sp.ip },
+      { k: 'СЕССИЙ АКТИВНО', v: sp.st === 'Приостановлен' ? '0' : '2' }
+    ].map(f => ({ ...f, fg: f.fg || '#e7eaec' }));
+    const accountPerms = RES.map(([res, name]) => {
+      const m = permOf(spRole, res);
+      return { name, ...cellTone(m, true) };
+    });
+    const auditTrail = [
+      { t: '09:41', who: 'А. Ковалёв', act: 'Роль Д. Соколова: SUPPORT → MODERATOR' },
+      { t: 'вчера', who: 'А. Ковалёв', act: 'MODERATOR: таксономия · R → W' },
+      { t: '28.07', who: 'И. Северов', act: 'Приостановлен доступ П. Ильина' },
+      { t: '26.07', who: 'А. Ковалёв', act: 'Приглашён сотрудник l.gareeva@portal.ru' }
+    ];
+
+    const permCell = m => ({
+      mark: m,
+      bg: m === 'W' ? 'rgba(56,160,190,.16)' : m === 'R' ? '#1a1f24' : 'transparent',
+      fg: m === 'W' ? this.accent : m === 'R' ? '#8b949e' : '#39424a'
+    });
+    const admins = [
+      { name: 'А. Ковалёв', role: 'SUPERADMIN', p: ['W', 'W', 'W', 'W'], fg: this.WARN },
+      { name: 'Е. Морозова', role: 'МОДЕРАТОР', p: ['R', 'W', 'W', 'R'], fg: this.accent },
+      { name: 'Д. Соколов', role: 'КОНТЕНТ', p: ['R', '·', '·', 'W'], fg: this.accent },
+      { name: 'Л. Гареева', role: 'АНАЛИТИК', p: ['W', 'R', 'R', '·'], fg: '#8b949e' }
+    ].map(a => ({
+      name: a.name, role: a.role, roleFg: a.fg,
+      ini: a.name.split(' ').map(w => w[0]).join(''),
+      perms: a.p.map(permCell)
+    }));
+
+    return {
+      nav, navById: navDefs.reduce((acc, d, i) => ({ ...acc, [d[0]]: nav[i] }), {}),
+      periods, rowPad, q: s.q,
+      mobile, showScrim: mobile && menuOpen,
+      toggleMenu: () => this.setState({ menuOpen: !menuOpen }),
+      asidePos: mobile ? 'fixed' : 'sticky',
+      asideLeft: mobile ? '0' : 'auto',
+      asideTransform: mobile && !menuOpen ? 'translateX(-100%)' : 'translateX(0)',
+      asideShadow: mobile && menuOpen ? '0 0 0 1px #1c2126, 24px 0 48px rgba(0,0,0,.6)' : 'none',
+      searchWidth: mobile ? '100%' : '262px',
+      crumb: titles[0], title: titles[1],
+      onSearch: e => this.setState({ q: e.target.value }),
+      isOverview: s.screen === 'overview', isUsers: s.screen === 'users',
+      isCompanies: s.screen === 'companies', isRequests: s.screen === 'requests',
+      isContent: s.screen === 'content', isSettings: s.screen === 'settings',
+      isRoles: s.screen === 'roles',
+      roleTabs, matrix, editRows, roleCols: ROLES.map(r => r.k),
+      activeRoleKey: activeRole.k, activeRoleRu: activeRole.ru, activeRolePurpose: activeRole.purpose,
+      staff, accountRoles, accountFacts, accountPerms, auditTrail,
+      spName: sp.name, spIni: sp.name.split(' ').map(w => w[0]).join(''), spRole, spRoleRu: spRoleObj.ru,
+      spStFg: stTone(sp.st), spSt: sp.st,
+      spSuspended: sp.st === 'Приостановлен',
+      accent: this.accent,
+      regFields: [
+        this.sw('phone', 'Подтверждённый телефон', 'SMS-код при регистрации', ['ОБЯЗАТЕЛЬНО', 'ОПЦИОНАЛЬНО']),
+        this.sw('inn', 'ИНН компании', 'проверка по реестру · включено 12.07', ['ОБЯЗАТЕЛЬНО', 'ОПЦИОНАЛЬНО']),
+        this.sw('docs', 'Уставные документы', 'загрузка PDF до 10 МБ', ['ОБЯЗАТЕЛЬНО', 'ОПЦИОНАЛЬНО']),
+        this.sw('photo', 'Фото профиля', 'для частных лиц не требуется', ['ОБЯЗАТЕЛЬНО', 'ОПЦИОНАЛЬНО']),
+        this.sw('addr', 'Юридический адрес', 'только для бизнес-аккаунтов', ['ОБЯЗАТЕЛЬНО', 'ОПЦИОНАЛЬНО'])
+      ],
+      choices: [
+        this.pick('verifyMode', 'РЕЖИМ ПРОВЕРКИ', 'Ручная — каждая заявка проходит через оператора.', ['Ручная', 'Гибридная', 'Авто']),
+        this.pick('autoTrust', 'АВТООДОБРЕНИЕ', 'Компании из выбранной группы проходят без оператора.', ['Никто', 'Партнёры', 'Все с полным пакетом']),
+        this.pick('sla', 'СРОК ОБРАБОТКИ (SLA)', 'После истечения заявка помечается как просроченная.', ['24 ч', '48 ч', '72 ч'])
+      ],
+      notifs: [
+        this.sw('nNew', 'Новое обращение', 'мгновенно, приоритет «высокий»'),
+        this.sw('nQueue', 'Заявка в очереди > SLA', 'напоминание раз в 4 часа'),
+        this.sw('nDaily', 'Ежедневная сводка', '09:00 по времени оператора'),
+        this.sw('nWeekly', 'Недельный отчёт', 'понедельник, метрики регистраций')
+      ],
+      security: [
+        this.sw('twofa', 'Двухфакторная аутентификация', 'обязательна для роли SUPERADMIN'),
+        this.sw('ipLimit', 'Ограничение по IP', 'доступ только из корпоративной сети'),
+        this.sw('audit', 'Журнал действий', 'хранение 180 дней')
+      ],
+      ttlOptions: this.pick('ttl', '', '', ['1 ч', '8 ч', '24 ч', '7 дней']).options,
+      dirtyText: s.dirty ? 'Есть несохранённые изменения — они затронут новые регистрации.' : 'Все изменения сохранены · последнее обновление 28.07.26, А. Ковалёв',
+      resetSettings: () => this.setState({ sw: { ...this.DEFAULT_SW }, verifyMode: 'Ручная', autoTrust: 'Партнёры', sla: '48 ч', ttl: '8 ч', dirty: false }),
+      goCompanies: set({ screen: 'companies' }),
+      kpis, chartBars: bars, countries, fields, queue,
+      chartRange: s.period === '7д' ? 'последние 7 дней' : s.period === '90д' ? 'последние 90 дней' : 'последние 30 дней',
+      chartFrom: s.period === '7д' ? '23.07' : s.period === '90д' ? '30.04' : '30.06',
+      chartMid: s.period === '7д' ? '26.07' : s.period === '90д' ? '14.06' : '14.07',
+      chartTo: '29.07',
+      users, userChips, userCols, usersCount: list.length,
+      hasUser: !!sel && s.screen === 'users', sel,
+      closeUser: set({ selUser: null }), hasUserClose: set({ selUser: null }),
+      openBiz: s.selCo !== null, openBizClose: set({ selCo: null }),
+      openIntro: s.selIntro !== null, openIntroClose: set({ selIntro: null }),
+      requests, reqChips, articles, admins,
+      isIntros: s.screen === 'intros', intros, introChips, introToggles, intro,
+      businesses, bizChips, biz
+    };
+  }
+}
+</script>
+</body>
+</html>

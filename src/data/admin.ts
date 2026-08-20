@@ -7,6 +7,7 @@ import {
   isNotNull,
   isNull,
   lte,
+  sql,
 } from "drizzle-orm";
 import type { DbClient } from "./db";
 import { companies, members, referrals, subscriptions } from "./schema";
@@ -61,6 +62,69 @@ export async function getAdminDashboardMetrics(db: DbClient) {
   const renewalsDue = countValue(renewalsResult);
 
   return { activeVip, activeCompany, renewalsDue };
+}
+
+export interface RegistrationsByDay {
+  date: string;
+  members: number;
+  companies: number;
+}
+
+/**
+ * FR-036-adjacent: a display aggregate, not a billing-grade count. Fills
+ * every day in the window with zeros first so the chart's x-axis stays
+ * evenly spaced even when a day had no activity.
+ */
+export async function getRegistrationsByDay(
+  db: DbClient,
+  days: number,
+): Promise<RegistrationsByDay[]> {
+  const since = new Date();
+  since.setDate(since.getDate() - (days - 1));
+  since.setHours(0, 0, 0, 0);
+
+  const byDay = new Map<string, RegistrationsByDay>();
+  for (let i = 0; i < days; i++) {
+    const day = new Date(since);
+    day.setDate(day.getDate() + i);
+    const key = day.toISOString().slice(0, 10);
+    byDay.set(key, { date: key, members: 0, companies: 0 });
+  }
+
+  const memberRows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${members.createdAt}), 'YYYY-MM-DD')`,
+      value: count(),
+    })
+    .from(members)
+    .where(
+      and(
+        inArray(members.role, CLUB_MEMBER_ROLES),
+        gte(members.createdAt, since),
+      ),
+    )
+    .groupBy(sql`1`);
+
+  for (const row of memberRows) {
+    const bucket = byDay.get(row.date);
+    if (bucket) bucket.members = row.value;
+  }
+
+  const companyRows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${companies.createdAt}), 'YYYY-MM-DD')`,
+      value: count(),
+    })
+    .from(companies)
+    .where(gte(companies.createdAt, since))
+    .groupBy(sql`1`);
+
+  for (const row of companyRows) {
+    const bucket = byDay.get(row.date);
+    if (bucket) bucket.companies = row.value;
+  }
+
+  return Array.from(byDay.values());
 }
 
 export async function getAdminSupportMetrics(db: DbClient) {

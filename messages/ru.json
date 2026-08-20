@@ -884,8 +884,11 @@
     "dashboard": {
       "title": "Дашборд администратора",
       "description": "Обзор финансовых показателей и подписок.",
-      "revenue30d": "Доход за 30 дней",
-      "last30Days": "За последние 30 дней",
+      "revenue": "Выручка",
+      "lastNDays": "За последние {days} дн.",
+      "period7": "7Д",
+      "period30": "30Д",
+      "period90": "90Д",
       "activeVip": "Активные VIP подписки",
       "activeCompany": "Активные подписки компаний",
       "renewalsDue": "Ожидаемые продления",
@@ -896,8 +899,15 @@
       "unknownCustomer": "Неизвестный клиент",
       "viewReceipt": "Чек",
       "revenueByCountry": "Доход по странам",
-      "revenueByCountryDesc": "Распределение дохода за последние 30 дней",
-      "noData": "Нет данных"
+      "revenueByCountryDesc": "Распределение дохода за выбранный период",
+      "noData": "Нет данных",
+      "registrationsTitle": "Регистрации",
+      "registrationsDesc": "Новые участники и компании по дням",
+      "membersSeriesLabel": "Участники",
+      "companiesSeriesLabel": "Компании",
+      "queueTitle": "Компании, ожидающие проверки",
+      "queueEmpty": "Нет заявок на проверку",
+      "viewAll": "Смотреть все"
     },
     "audit": {
       "title": "Аудит",

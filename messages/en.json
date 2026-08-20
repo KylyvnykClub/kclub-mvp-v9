@@ -884,8 +884,11 @@
     "dashboard": {
       "title": "Admin Dashboard",
       "description": "Overview of financial metrics and subscriptions.",
-      "revenue30d": "30-Day Revenue",
-      "last30Days": "Last 30 days",
+      "revenue": "Revenue",
+      "lastNDays": "Last {days} days",
+      "period7": "7D",
+      "period30": "30D",
+      "period90": "90D",
       "activeVip": "Active VIP Subscriptions",
       "activeCompany": "Active Company Subscriptions",
       "renewalsDue": "Renewals Due",
@@ -896,8 +899,15 @@
       "unknownCustomer": "Unknown Customer",
       "viewReceipt": "View Receipt",
       "revenueByCountry": "Revenue by Country",
-      "revenueByCountryDesc": "Revenue distribution from the last 30 days",
-      "noData": "No data available"
+      "revenueByCountryDesc": "Revenue distribution for the selected period",
+      "noData": "No data available",
+      "registrationsTitle": "Registrations",
+      "registrationsDesc": "New members and companies per day",
+      "membersSeriesLabel": "Members",
+      "companiesSeriesLabel": "Companies",
+      "queueTitle": "Companies Awaiting Review",
+      "queueEmpty": "Nothing pending review",
+      "viewAll": "View all"
     },
     "audit": {
       "title": "Audit Logs",
