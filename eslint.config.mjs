@@ -28,6 +28,9 @@ export default tseslint.config(
       "coverage/**",
       "docs/**",
       "public/sw.js",
+      // Claude Design canvas mockups (.dc.html prototypes + their runtime) -
+      // design references, not application code.
+      "src/admin/**",
     ],
   },
 

@@ -15,3 +15,6 @@ yarn.lock
 
 # Claude Code configuration (auto-generated).
 .claude/
+
+# Claude Design canvas mockups - design references, not application code.
+src/admin/
