@@ -40,10 +40,11 @@ jobs:
 
       # .claude/ holds vendored agent and skill definitions we do not author.
       # .state/ is local handoff state, CREDENTIALS.md is a local ignored file,
-      # and docs/policy/ contains legal source text whose structure is
-      # validated by tools/check-docs.py instead.
+      # docs/policy/ contains legal source text whose structure is validated
+      # by tools/check-docs.py instead, and src/admin/ is Claude Design canvas
+      # mockups (design references, not authored docs).
       - name: Lint markdown formatting
-        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude" "#.state" "#docs/policy" "#CREDENTIALS.md"
+        run: npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#.claude" "#.state" "#docs/policy" "#CREDENTIALS.md" "#src/admin"
 
   triggers:
     name: Documentation update triggers
