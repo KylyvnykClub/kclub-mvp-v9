@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
-import { DashboardHeader } from "./_components/dashboard-header";
+import { DashboardChrome } from "./_components/dashboard-chrome";
 import { buildActor } from "@/domain/actor";
 
 type Props = {
@@ -35,10 +35,9 @@ export default async function DashboardLayout({ children, params }: Props) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardHeader actor={buildActor(result.member)} />
-      <main className="flex-1">
-        <div className="kclub-shell py-8 sm:py-10">{children}</div>
-      </main>
+      <DashboardChrome actor={buildActor(result.member)}>
+        {children}
+      </DashboardChrome>
     </div>
   );
 }
