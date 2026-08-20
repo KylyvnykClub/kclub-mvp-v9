@@ -59,11 +59,19 @@ lives in [`vercel.json`](../vercel.json).
 
 |Job|Schedule|What it does|
 |-|-|-|
-|`/api/cron/outbox-drain`|every minute|Drains the transactional outbox: notification emails, moderation outcomes|
-|`/api/cron/subscription-lapse`|every 2 minutes|Revokes access once a paid period has ended|
+|`/api/cron/outbox-drain`|00:05 UTC daily|Drains the transactional outbox: notification emails, moderation outcomes|
+|`/api/cron/subscription-lapse`|00:35 UTC daily|Revokes access once a paid period has ended|
 |`/api/cron/billing-reconciliation`|02:17 UTC daily|Compares local subscription rows against Stripe and alerts on divergence, without repairing|
 |`/api/cron/retention`|03:41 UTC daily|Deletes abandoned company drafts after 90 days, and runs the 30-day account erasure|
-|`/api/cron/referrals`|hourly at :11|Expires referrals not acted on within 14 days - delivered and never answered, or never moderated - and deletes the client contact details they hold (FR-077)|
+|`/api/cron/referrals`|01:11 UTC daily|Expires referrals not acted on within 14 days - delivered and never answered, or never moderated - and deletes the client contact details they hold (FR-077)|
+
+All five run once daily because the project is deployed on Vercel's Hobby
+plan, which rejects any cron schedule finer than once per day. `outbox-drain`
+and `subscription-lapse` ran every minute / every 2 minutes until this
+constraint forced a change (see git history on this file); moving to Pro
+restores sub-daily scheduling if the resulting latency - up to ~24h before a
+lapsed subscription's access is revoked, or a queued notification is sent -
+becomes a problem.
 
 `tests/constraints/cron-schedule-coverage.test.ts` fails if a route under
 `src/app/api/cron/` has no schedule, or a schedule has no route. That suite
