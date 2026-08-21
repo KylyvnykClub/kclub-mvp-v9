@@ -5,12 +5,16 @@ import type { DbClient } from "@/data/db.js";
 import { appendAuditEntry, searchAuditLogs } from "@/data/audit-log.js";
 import {
   applyCompanyPendingChanges,
+  countCompaniesByStatus,
+  countCompaniesForAdmin,
   createBusinessCategory,
   createCity,
   createCountry,
   findCompanyById,
   insertCompany,
+  findCompanyForAdmin,
   listApprovedCompaniesByIds,
+  listCompaniesForAdmin,
   listCompaniesWithPendingChanges,
   listPendingCompanies,
   setCompanyModerationStatus,
@@ -19,7 +23,13 @@ import {
   updateCompanyFields,
   validateCityBelongsToCountry,
 } from "@/data/companies.js";
-import { companies, members } from "@/data/schema/index.js";
+import {
+  countReferralsByRecipientCompany,
+  insertReferral,
+  listReferralsByRecipientCompany,
+} from "@/data/referrals.js";
+import { listSubscriptionsByCompanyId } from "@/data/billing.js";
+import { companies, members, subscriptions } from "@/data/schema/index.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 /**
@@ -352,5 +362,186 @@ describe("FR-048: the moderation queue shows the age of each item", () => {
 
     expect(entry?.createdAt).toBeInstanceOf(Date);
     expect(entry!.createdAt.getTime()).toBeLessThanOrEqual(Date.now() + 1000);
+  });
+});
+
+/**
+ * The staff directory behind the admin Companies screen. Not an FR of its own -
+ * it is how FR-043's approve/reject queue is reached once the screen shows
+ * every moderation state instead of only the pending ones.
+ */
+describe("admin company directory: filters, paging and counts", () => {
+  it("returns companies in every moderation state, not only the pending queue", async () => {
+    const db = testDbClient();
+    const marker = `Directory${crypto.randomUUID().slice(0, 8)}`;
+
+    for (const moderationStatus of [
+      "pending",
+      "approved",
+      "rejected",
+    ] as const) {
+      await seedCompany(db, {
+        moderationStatus,
+        name: `${marker} ${moderationStatus}`,
+      });
+    }
+
+    const rows = await listCompaniesForAdmin(db, { query: marker });
+    expect(rows.map((row) => row.moderationStatus).sort()).toEqual([
+      "approved",
+      "pending",
+      "rejected",
+    ]);
+
+    const queue = await listPendingCompanies(db);
+    expect(queue.filter((row) => row.name.startsWith(marker))).toHaveLength(1);
+  });
+
+  it("narrows to one status and counts every status under the same search", async () => {
+    const db = testDbClient();
+    const marker = `Counted${crypto.randomUUID().slice(0, 8)}`;
+
+    await seedCompany(db, { moderationStatus: "pending", name: `${marker} a` });
+    await seedCompany(db, { moderationStatus: "pending", name: `${marker} b` });
+    await seedCompany(db, {
+      moderationStatus: "approved",
+      name: `${marker} c`,
+    });
+
+    await expect(countCompaniesForAdmin(db, { query: marker })).resolves.toBe(
+      3,
+    );
+    await expect(
+      countCompaniesForAdmin(db, { query: marker, status: "pending" }),
+    ).resolves.toBe(2);
+    await expect(
+      countCompaniesByStatus(db, { query: marker }),
+    ).resolves.toEqual({ pending: 2, approved: 1, rejected: 0 });
+
+    const approved = await listCompaniesForAdmin(db, {
+      query: marker,
+      status: "approved",
+    });
+    expect(approved.map((row) => row.name)).toEqual([`${marker} c`]);
+  });
+
+  it("matches on slug and city as well as name, and pages without repeating a row", async () => {
+    const db = testDbClient();
+    const marker = `paged${crypto.randomUUID().slice(0, 8)}`;
+
+    const seeded = [];
+    for (let index = 0; index < 3; index += 1) {
+      const { company } = await seedCompany(db, {
+        name: `Paged company ${index}`,
+        slug: `${marker}-${index}`,
+        city: `${marker}ville`,
+      });
+      seeded.push(company);
+    }
+
+    await expect(countCompaniesForAdmin(db, { query: marker })).resolves.toBe(
+      3,
+    );
+    await expect(
+      countCompaniesForAdmin(db, { query: `${marker}ville` }),
+    ).resolves.toBe(3);
+
+    const first = await listCompaniesForAdmin(
+      db,
+      { query: marker },
+      { limit: 2, offset: 0 },
+    );
+    const second = await listCompaniesForAdmin(
+      db,
+      { query: marker },
+      { limit: 2, offset: 2 },
+    );
+
+    expect(first).toHaveLength(2);
+    expect(second).toHaveLength(1);
+    expect(new Set([...first, ...second].map((row) => row.id))).toEqual(
+      new Set(seeded.map((row) => row.id)),
+    );
+  });
+});
+
+/**
+ * What the staff company drawer is able to read. The pending-changes path in
+ * FR-045 is covered above at the data layer; these cover the aggregation the
+ * drawer added around it, including the one property worth proving by shape:
+ * the introductions tab cannot leak client identity because it never selects
+ * those columns (ADR 0009).
+ */
+describe("admin company detail: what the drawer can read", () => {
+  it("returns the company with the owner and category the drawer shows", async () => {
+    const db = testDbClient();
+    const { company, owner, category } = await seedCompany(db);
+
+    const detail = await findCompanyForAdmin(db, company.id);
+
+    expect(detail?.owner?.displayName).toBe(owner.displayName);
+    expect(detail?.businessCategory?.id).toBe(category.id);
+  });
+
+  it("scopes subscriptions to the company being looked at", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db);
+    const other = await seedCompany(db);
+
+    await db.insert(subscriptions).values({
+      memberId: owner.id,
+      companyId: company.id,
+      stripeCustomerId: `cus_${crypto.randomUUID()}`,
+      stripeSubscriptionId: `sub_${crypto.randomUUID()}`,
+      status: "active",
+      priceId: `price_${crypto.randomUUID()}`,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    const mine = await listSubscriptionsByCompanyId(db, company.id);
+    expect(mine).toHaveLength(1);
+    await expect(
+      listSubscriptionsByCompanyId(db, other.company.id),
+    ).resolves.toHaveLength(0);
+  });
+
+  it("counts introductions by status without ever selecting the client's identity", async () => {
+    const db = testDbClient();
+    const { company } = await seedCompany(db);
+    const sender = await seedOwner(db);
+
+    const base = {
+      senderId: sender.id,
+      recipientCompanyId: company.id,
+      clientName: "Client Should Not Appear",
+      contactChannel: "secret@example.com",
+      serviceNeeded: "Roof repair",
+      consentAttested: true,
+      consentTimestamp: new Date(),
+      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    };
+
+    await insertReferral(db, base);
+    await insertReferral(db, { ...base, status: "delivered" });
+    await insertReferral(db, { ...base, status: "accepted" });
+
+    await expect(
+      countReferralsByRecipientCompany(db, company.id),
+    ).resolves.toEqual({ pending_review: 1, delivered: 1, accepted: 1 });
+
+    const rows = await listReferralsByRecipientCompany(db, company.id);
+    expect(rows).toHaveLength(3);
+
+    const serialised = JSON.stringify(rows);
+    expect(serialised).not.toContain("Client Should Not Appear");
+    expect(serialised).not.toContain("secret@example.com");
+    expect(Object.keys(rows[0]!).sort()).toEqual([
+      "createdAt",
+      "expiresAt",
+      "id",
+      "serviceNeeded",
+      "status",
+    ]);
   });
 });

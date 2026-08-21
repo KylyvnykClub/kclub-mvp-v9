@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, lte } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte } from "drizzle-orm";
 
 import type { Db, DbClient, DbTx } from "./db";
 import {
@@ -42,6 +42,16 @@ export async function listSubscriptionsByMember(
 export type SubscriptionRow = Awaited<
   ReturnType<typeof listSubscriptionsByMember>
 >[number];
+
+export async function listSubscriptionsByCompanyId(
+  db: DbClient,
+  companyId: string,
+) {
+  return db.query.subscriptions.findMany({
+    where: eq(subscriptions.companyId, companyId),
+    orderBy: [desc(subscriptions.currentPeriodEnd)],
+  });
+}
 
 export async function listAllSubscriptions(db: DbClient) {
   return db.query.subscriptions.findMany();

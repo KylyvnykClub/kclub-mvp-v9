@@ -60,6 +60,9 @@ export { findProfileByMemberId, upsertProfile } from "./profiles";
 export type { ProfileUpdate, ProfileView, SocialLinks } from "./profiles";
 export {
   companySlugExists,
+  COMPANY_ADMIN_STATUSES,
+  countCompaniesByStatus,
+  countCompaniesForAdmin,
   createBusinessCategory,
   createCity,
   createCountry,
@@ -67,6 +70,7 @@ export {
   deleteCity,
   deleteCountry,
   findApprovedCompanyBySlug,
+  findCompanyForAdmin,
   insertCompany,
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
@@ -75,6 +79,7 @@ export {
   listApprovedCompaniesByIds,
   listApprovedCompaniesWithSubscriptionsByOwner,
   listCompaniesByOwner,
+  listCompaniesForAdmin,
   listCompanyIdsWithActiveSubscription,
   listCountries,
   listPendingCompanies,
@@ -85,6 +90,9 @@ export {
   setCountryStatus,
 } from "./companies";
 export type {
+  CompanyAdminFilters,
+  CompanyAdminStatus,
+  CompanyAdminView,
   PartnerCompanyView,
   PartnerDetailView,
   PartnerFilters,

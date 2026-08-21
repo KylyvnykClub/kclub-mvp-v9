@@ -1,30 +1,49 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { getPendingCompaniesAction } from "@/actions/company";
+import { getCompaniesForAdminAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { COMPANY_ADMIN_STATUSES } from "@/data/companies";
+import { AdminSearchInput } from "../_components/admin-search-input";
+import { AdminFilterChips } from "../_components/admin-filter-chips";
+import { AdminPagination } from "../_components/admin-pagination";
+import { StatusBadge, type StatusTone } from "../_components/status-badge";
 import { ModerateActions } from "./_components/moderate-actions";
-import { Badge } from "@/components/ui/badge";
+import { CompanyDetailSheet } from "./_components/company-detail-sheet";
 
-function formatAge(createdAt: Date): string {
-  const diffMs = Date.now() - createdAt.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (diffHours < 1) return "<1h";
-  if (diffHours < 24) return `${diffHours}h`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d`;
-}
+const STATUS_LABEL_KEYS = {
+  pending: "statusPending",
+  approved: "statusApproved",
+  rejected: "statusRejected",
+} as const;
+
+const STATUS_TONES: Record<keyof typeof STATUS_LABEL_KEYS, StatusTone> = {
+  pending: "warning",
+  approved: "positive",
+  rejected: "negative",
+};
 
 export default async function AdminCompaniesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations("admin.companies");
+  const tShell = await getTranslations("admin.shell");
 
   const auth = await getCurrentMember();
   if (!auth?.member) {
@@ -34,79 +53,145 @@ export default async function AdminCompaniesPage({
   if (!can(actor, "read", "company")) {
     redirect(`/${locale}/dashboard`);
   }
+  const canModerate =
+    can(actor, "approve", "company") || can(actor, "reject", "company");
 
-  const result = await getPendingCompaniesAction();
-  const companies = result.data || [];
+  const { q, status, page } = await searchParams;
+  const { data } = await getCompaniesForAdminAction({
+    query: q,
+    status,
+    page,
+  });
+  const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+
+  const buildHref = (target: number) => {
+    const query = new URLSearchParams();
+    if (q) query.set("q", q);
+    if (status) query.set("status", status);
+    if (target > 1) query.set("page", String(target));
+    const search = query.toString();
+    return search
+      ? `/${locale}/dashboard/admin/companies?${search}`
+      : `/${locale}/dashboard/admin/companies`;
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">
+        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-2">{t("description")}</p>
+        <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
 
-      <div className="bg-card border border-border/50">
-        {companies.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            {t("empty")}
-          </div>
-        ) : (
-          <div className="divide-y divide-border/50">
-            {companies.map((company) => (
-              <div
-                key={company.id}
-                className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-medium text-lg">{company.name}</h2>
-                    <Badge
-                      variant="outline"
-                      className="bg-muted/50 text-xs text-muted-foreground uppercase"
-                    >
-                      {t("statusPending")}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      <strong>{t("ownerLabel")}</strong>{" "}
-                      {company.owner?.displayName}
-                    </p>
-                    <p>
-                      <strong>{t("categoryLabel")}</strong>{" "}
-                      {company.businessCategory?.block} /{" "}
-                      {company.businessCategory?.category}
-                    </p>
-                    <p>
-                      <strong>{t("slugLabel")}</strong> {company.slug}
-                    </p>
-                    {company.discount && (
-                      <p>
-                        <strong>{t("discountLabel")}</strong>{" "}
-                        <span className="text-accent">{company.discount}</span>
-                      </p>
-                    )}
-                    <p>
-                      <strong>{t("ageLabel")}</strong>{" "}
-                      {formatAge(company.createdAt)}
-                    </p>
-                  </div>
-                  {company.description && (
-                    <p className="text-sm mt-2 max-w-2xl line-clamp-2">
-                      {company.description}
-                    </p>
-                  )}
-                </div>
+      <div className="space-y-4 rounded-lg border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <AdminSearchInput
+            defaultValue={q}
+            placeholder={t("searchPlaceholder")}
+            submitLabel={t("search")}
+          />
+          <p className="text-xs font-medium text-muted-foreground">
+            {t("totalCount", { count: data.total })}
+          </p>
+        </div>
 
-                <div className="flex-shrink-0">
-                  <ModerateActions companyId={company.id} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <AdminFilterChips
+          paramName="status"
+          allLabel={tShell("filterAll")}
+          options={COMPANY_ADMIN_STATUSES.map((value) => ({
+            value,
+            label: t(STATUS_LABEL_KEYS[value]),
+            count: data.statusCounts[value],
+          }))}
+        />
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("colCompany")}</TableHead>
+              <TableHead>{t("colOwner")}</TableHead>
+              <TableHead>{t("colCategory")}</TableHead>
+              <TableHead>{t("colSubmitted")}</TableHead>
+              <TableHead>{t("colStatus")}</TableHead>
+              <TableHead>{t("colActions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.rows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="py-8 text-center text-muted-foreground"
+                >
+                  {t("empty")}
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.rows.map((company) => (
+                <TableRow key={company.id}>
+                  <TableCell>
+                    <span className="font-medium">{company.name}</span>
+                    <span className="block font-mono text-xs text-muted-foreground">
+                      {company.slug}
+                    </span>
+                    {company.discount && (
+                      <span className="block text-xs text-accent">
+                        {company.discount}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {company.owner?.displayName}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {company.businessCategory?.block}
+                    <span className="block">
+                      {company.businessCategory?.category}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(company.createdAt).toLocaleDateString(locale)}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge
+                      tone={STATUS_TONES[company.moderationStatus]}
+                      label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <CompanyDetailSheet
+                        companyId={company.id}
+                        companyName={company.name}
+                        canModerate={canModerate}
+                      />
+                      {canModerate &&
+                        company.moderationStatus === "pending" && (
+                          <ModerateActions companyId={company.id} />
+                        )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+
+        <AdminPagination
+          page={data.page}
+          totalPages={totalPages}
+          buildHref={buildHref}
+          labels={{
+            previous: tShell("previous"),
+            next: tShell("next"),
+            summary: tShell("pageSummary", {
+              page: data.page,
+              totalPages,
+              total: data.total,
+            }),
+          }}
+        />
       </div>
     </div>
   );

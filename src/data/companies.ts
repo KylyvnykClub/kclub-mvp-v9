@@ -8,9 +8,11 @@ import {
   inArray,
   or,
   sql,
+  type SQL,
 } from "drizzle-orm";
 
 import type { DbClient } from "./db";
+import type { PageParams } from "./pagination";
 import {
   businessCategories,
   cities,
@@ -437,6 +439,133 @@ export async function listPendingCompanies(db: DbClient) {
     },
     orderBy: [asc(companies.name)],
   });
+}
+
+export const COMPANY_ADMIN_STATUSES = [
+  "pending",
+  "approved",
+  "rejected",
+] as const;
+
+export type CompanyAdminStatus = (typeof COMPANY_ADMIN_STATUSES)[number];
+
+export interface CompanyAdminFilters {
+  query?: string;
+  status?: CompanyAdminStatus;
+}
+
+const COMPANY_ADMIN_RELATIONS = {
+  businessCategory: true,
+  owner: {
+    columns: {
+      id: true,
+      displayName: true,
+    },
+  },
+} as const;
+
+/**
+ * One WHERE for the page of rows and for the counts taken over it, so a filter
+ * can never apply to one and not the other.
+ */
+function companyAdminWhere(filters: CompanyAdminFilters): SQL | undefined {
+  const conditions: SQL[] = [];
+
+  if (filters.query) {
+    const pattern = `%${filters.query}%`;
+    conditions.push(
+      or(
+        ilike(companies.name, pattern),
+        ilike(companies.slug, pattern),
+        ilike(companies.city, pattern),
+      )!,
+    );
+  }
+
+  if (filters.status) {
+    conditions.push(eq(companies.moderationStatus, filters.status));
+  }
+
+  return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+/**
+ * The staff directory of companies in every moderation state, as opposed to
+ * listPendingCompanies, which only ever showed the queue.
+ *
+ * Deliberately lean: category and owner name are what the table renders, and
+ * nothing else is joined - subscriptions, referrals and audit history belong
+ * to the detail view, where exactly one company is being looked at.
+ */
+export async function listCompaniesForAdmin(
+  db: DbClient,
+  filters: CompanyAdminFilters = {},
+  page: PageParams = { limit: 50, offset: 0 },
+) {
+  return db.query.companies.findMany({
+    where: companyAdminWhere(filters),
+    with: COMPANY_ADMIN_RELATIONS,
+    // Newest first, since the reason to open this screen is usually the
+    // submission that just arrived. id breaks ties so paging stays stable.
+    orderBy: [desc(companies.createdAt), desc(companies.id)],
+    limit: page.limit,
+    offset: page.offset,
+  });
+}
+
+export type CompanyAdminView = Awaited<
+  ReturnType<typeof listCompaniesForAdmin>
+>[number];
+
+/**
+ * One company with the same relations the directory row carries, for the staff
+ * detail view. Separate from findCompanyById, which is the plain row used by
+ * the moderation paths.
+ */
+export async function findCompanyForAdmin(db: DbClient, companyId: string) {
+  return db.query.companies.findFirst({
+    where: eq(companies.id, companyId),
+    with: COMPANY_ADMIN_RELATIONS,
+  });
+}
+
+export async function countCompaniesForAdmin(
+  db: DbClient,
+  filters: CompanyAdminFilters = {},
+): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(companies)
+    .where(companyAdminWhere(filters));
+
+  return row?.value ?? 0;
+}
+
+/**
+ * Counts for the status filter chips. Ignores the status filter itself - a chip
+ * shows what selecting it would find, not what the current selection left.
+ */
+export async function countCompaniesByStatus(
+  db: DbClient,
+  filters: Omit<CompanyAdminFilters, "status"> = {},
+): Promise<Record<CompanyAdminStatus, number>> {
+  const rows = await db
+    .select({ status: companies.moderationStatus, value: count() })
+    .from(companies)
+    .where(companyAdminWhere(filters))
+    .groupBy(companies.moderationStatus);
+
+  const counts: Record<CompanyAdminStatus, number> = {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  };
+
+  for (const row of rows) {
+    counts[row.status] = row.value;
+  }
+
+  return counts;
 }
 
 export async function setCompanyModerationStatus(
