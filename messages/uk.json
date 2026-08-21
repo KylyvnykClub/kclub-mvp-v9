@@ -1007,7 +1007,9 @@
       "last7Days": "Останні 7 днів",
       "pendingCompanies": "Компанії на модерації",
       "pendingReferrals": "Реферали на модерації",
-      "clickToReview": "Натисніть, щоб переглянути"
+      "clickToReview": "Натисніть, щоб переглянути",
+      "queuesTitle": "Черги модерації",
+      "queueClear": "Нічого не чекає"
     },
     "dashboard": {
       "title": "Адмін-панель",
