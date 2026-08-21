@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import type { DbClient } from "@/data/db.js";
 import {
+  countReferralsByStatus,
+  countReferralsForAdmin,
   expireOverdueReferrals,
   insertReferral,
+  listPendingReviewReferrals,
   listReceivedReferralsForCompanies,
+  listReferralsForAdmin,
   respondToReferral,
   setMemberReferralPermission,
   setReferralModeration,
@@ -227,5 +231,109 @@ describe("referral lifecycle (FR-074, FR-075, FR-077, FR-078)", () => {
 
     const unbarred = await setMemberReferralPermission(db, sender.id, true);
     expect(unbarred?.canSendReferrals).toBe(true);
+  });
+});
+
+/**
+ * The staff introductions directory. Not an FR of its own - it is how the
+ * FR-072/FR-075 moderation queue is reached once the screen shows every status
+ * rather than only the ones waiting for review.
+ */
+describe("admin introductions directory: statuses, search and counts", () => {
+  async function seedTriple(db: DbClient, suffix: string) {
+    const sender = await seedMember(db, `9${suffix}1`);
+    const owner = await seedMember(db, `9${suffix}2`);
+    const company = await seedCompany(db, owner.id, `9${suffix}`);
+
+    const base = {
+      senderId: sender.id,
+      recipientCompanyId: company.id,
+      clientName: "Directory Client",
+      contactChannel: "client@example.com",
+      serviceNeeded: "Tax advice",
+      consentAttested: true,
+      consentTimestamp: new Date(),
+      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    };
+
+    return { sender, company, base };
+  }
+
+  it("returns introductions in every status, while the queue query still returns only those in review", async () => {
+    const db = testDbClient();
+    const { company, base } = await seedTriple(db, "01");
+
+    await insertReferral(db, base);
+    await insertReferral(db, { ...base, status: "delivered" });
+    await insertReferral(db, { ...base, status: "expired" });
+
+    const rows = await listReferralsForAdmin(db, { query: company.name });
+    expect(rows.map((row) => row.status).sort()).toEqual([
+      "delivered",
+      "expired",
+      "pending_review",
+    ]);
+
+    const queue = await listPendingReviewReferrals(db);
+    expect(
+      queue.filter((row) => row.recipientCompanyId === company.id),
+    ).toHaveLength(1);
+  });
+
+  it("narrows to one status and counts every status under the same search", async () => {
+    const db = testDbClient();
+    const { company, base } = await seedTriple(db, "02");
+
+    await insertReferral(db, base);
+    await insertReferral(db, base);
+    await insertReferral(db, { ...base, status: "accepted" });
+
+    const filters = { query: company.name };
+    await expect(countReferralsForAdmin(db, filters)).resolves.toBe(3);
+    await expect(
+      countReferralsForAdmin(db, { ...filters, status: "pending_review" }),
+    ).resolves.toBe(2);
+    await expect(countReferralsByStatus(db, filters)).resolves.toEqual({
+      pending_review: 2,
+      delivered: 0,
+      accepted: 1,
+      declined: 0,
+      rejected: 0,
+      expired: 0,
+    });
+  });
+
+  it("finds an introduction by its sender as well as by its recipient company, and pages without repeating a row", async () => {
+    const db = testDbClient();
+    const { sender, company, base } = await seedTriple(db, "03");
+
+    const seeded = [];
+    for (let index = 0; index < 3; index += 1) {
+      seeded.push(await insertReferral(db, base));
+    }
+
+    await expect(
+      countReferralsForAdmin(db, { query: sender.displayName }),
+    ).resolves.toBe(3);
+    await expect(
+      countReferralsForAdmin(db, { query: company.name }),
+    ).resolves.toBe(3);
+
+    const first = await listReferralsForAdmin(
+      db,
+      { query: company.name },
+      { limit: 2, offset: 0 },
+    );
+    const second = await listReferralsForAdmin(
+      db,
+      { query: company.name },
+      { limit: 2, offset: 2 },
+    );
+
+    expect(first).toHaveLength(2);
+    expect(second).toHaveLength(1);
+    expect(new Set([...first, ...second].map((row) => row.id))).toEqual(
+      new Set(seeded.map((row) => row.id)),
+    );
   });
 });
