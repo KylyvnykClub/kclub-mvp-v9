@@ -97,10 +97,14 @@ export default async function AdminReferralsPage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("colDate")}</TableHead>
+              <TableHead className="hidden md:table-cell">
+                {t("colDate")}
+              </TableHead>
               <TableHead>{t("colFrom")}</TableHead>
               <TableHead>{t("colTo")}</TableHead>
-              <TableHead>{t("colService")}</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("colService")}
+              </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
               <TableHead>{t("colActions")}</TableHead>
             </TableRow>
@@ -121,7 +125,7 @@ export default async function AdminReferralsPage({
               // drawer rather than across every row of a shared screen.
               list.rows.map((referral) => (
                 <TableRow key={referral.id}>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(referral.createdAt).toLocaleDateString(locale)}
                   </TableCell>
                   <TableCell className="text-sm">
@@ -130,7 +134,7 @@ export default async function AdminReferralsPage({
                   <TableCell className="text-sm font-medium">
                     {referral.recipientCompany?.name ?? tr("unknown")}
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
+                  <TableCell className="hidden max-w-xs truncate text-sm text-muted-foreground lg:table-cell">
                     {referral.serviceNeeded}
                   </TableCell>
                   <TableCell>
