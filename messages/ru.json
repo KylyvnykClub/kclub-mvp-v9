@@ -1007,7 +1007,9 @@
       "last7Days": "За последние 7 дней",
       "pendingCompanies": "Компании на модерации",
       "pendingReferrals": "Рефералы на модерации",
-      "clickToReview": "Нажмите для проверки"
+      "clickToReview": "Нажмите для проверки",
+      "queuesTitle": "Очереди модерации",
+      "queueClear": "Ничего не ждёт"
     },
     "dashboard": {
       "title": "Дашборд администратора",

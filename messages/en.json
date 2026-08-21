@@ -1007,7 +1007,9 @@
       "last7Days": "Last 7 days",
       "pendingCompanies": "Pending Companies",
       "pendingReferrals": "Pending Referrals",
-      "clickToReview": "Click to review"
+      "clickToReview": "Click to review",
+      "queuesTitle": "Moderation queues",
+      "queueClear": "Nothing waiting"
     },
     "dashboard": {
       "title": "Admin Dashboard",
