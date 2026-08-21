@@ -101,9 +101,15 @@ export default async function AdminMembersPage({
           <TableHeader>
             <TableRow>
               <TableHead>{t("colDisplayName")}</TableHead>
-              <TableHead>{t("colPhone")}</TableHead>
-              <TableHead>{t("colCards")}</TableHead>
-              <TableHead>{t("colJoined")}</TableHead>
+              <TableHead className="hidden sm:table-cell">
+                {t("colPhone")}
+              </TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("colCards")}
+              </TableHead>
+              <TableHead className="hidden md:table-cell">
+                {t("colJoined")}
+              </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
               <TableHead>{t("colActions")}</TableHead>
             </TableRow>
@@ -124,8 +130,10 @@ export default async function AdminMembersPage({
                   <TableCell className="font-medium">
                     {m.displayName || t("notAvailable")}
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{m.phone}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden font-mono text-xs sm:table-cell">
+                    {m.phone}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     {m.cards.length > 0 ? (
                       <div className="flex flex-col gap-1">
                         {m.cards.map((c) => (
@@ -153,7 +161,7 @@ export default async function AdminMembersPage({
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(m.createdAt).toLocaleDateString(locale)}
                   </TableCell>
                   <TableCell>

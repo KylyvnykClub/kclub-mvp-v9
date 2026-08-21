@@ -110,9 +110,21 @@ export default async function AdminCompaniesPage({
           <TableHeader>
             <TableRow>
               <TableHead>{t("colCompany")}</TableHead>
-              <TableHead>{t("colOwner")}</TableHead>
-              <TableHead>{t("colCategory")}</TableHead>
-              <TableHead>{t("colSubmitted")}</TableHead>
+              <TableHead className="hidden sm:table-cell">
+                {t("colOwner")}
+              </TableHead>
+              {/*
+                Category and submission date are the first to go when the
+                viewport narrows: identity, status and the action are what a
+                moderator needs, and keeping six columns on a phone turned every
+                row into a three-line block with a horizontal scrollbar.
+              */}
+              <TableHead className="hidden lg:table-cell">
+                {t("colCategory")}
+              </TableHead>
+              <TableHead className="hidden md:table-cell">
+                {t("colSubmitted")}
+              </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
               <TableHead>{t("colActions")}</TableHead>
             </TableRow>
@@ -136,21 +148,23 @@ export default async function AdminCompaniesPage({
                       {company.slug}
                     </span>
                     {company.discount && (
-                      <span className="block text-xs text-accent">
+                      <span className="hidden text-xs text-accent sm:block">
                         {company.discount}
                       </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="hidden text-sm sm:table-cell">
                     {company.owner?.displayName}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {company.businessCategory?.block}
-                    <span className="block">
-                      {company.businessCategory?.category}
-                    </span>
+                  <TableCell className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:table-cell">
+                    {[
+                      company.businessCategory?.block,
+                      company.businessCategory?.category,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(company.createdAt).toLocaleDateString(locale)}
                   </TableCell>
                   <TableCell>
