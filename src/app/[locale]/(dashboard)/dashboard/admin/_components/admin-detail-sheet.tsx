@@ -45,7 +45,11 @@ export function AdminDetailSheet({
           {description && <SheetDescription>{description}</SheetDescription>}
         </SheetHeader>
         <Tabs defaultValue={tabs[0]?.value} className="mt-4">
-          <TabsList className="w-full flex-wrap justify-start">
+          {/*
+            Seven tabs wrapped onto a second line and pushed the panel down.
+            One scrolling row keeps the header a fixed height at every width.
+          */}
+          <TabsList className="w-full justify-start overflow-x-auto">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
                 {tab.label}
