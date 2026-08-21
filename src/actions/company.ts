@@ -5,13 +5,18 @@ import { appendAuditEntry } from "@/data/audit-log";
 import { enqueueOutbox } from "@/data/outbox";
 import {
   companySlugExists,
+  COMPANY_ADMIN_STATUSES,
+  countCompaniesByStatus,
+  countCompaniesForAdmin,
   findApprovedCompanyBySlug,
+  findCompanyForAdmin,
   findCategoryById,
   insertCompany,
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
   listActiveSubcategories,
   listApprovedCompaniesByIds,
+  listCompaniesForAdmin,
   listCompanyIdsWithActiveSubscription,
   listPendingCompanies,
   listShowcaseCompanies,
@@ -26,6 +31,16 @@ import {
   validateCityBelongsToCountry,
   type PartnerFilters,
 } from "@/data/companies";
+import {
+  DEFAULT_PAGE_SIZE,
+  pageParamsFromSearchParam,
+} from "@/data/pagination";
+import { listSubscriptionsByCompanyId } from "@/data/billing";
+import {
+  countReferralsByRecipientCompany,
+  listReferralsByRecipientCompany,
+} from "@/data/referrals";
+import { searchAuditLogs } from "@/data/audit-log";
 import {
   deleteCompanyDraft,
   findCompanyDraftByOwner,
@@ -332,6 +347,112 @@ export async function getPendingCompaniesAction() {
   const pending = await listPendingCompanies(db);
 
   return { success: true, data: pending };
+}
+
+/**
+ * The values come straight off the query string, so an unknown status or a
+ * nonsense page narrows to nothing sensible rather than throwing.
+ */
+const companiesListParamsSchema = z.object({
+  query: z.string().trim().max(120).optional().catch(undefined),
+  status: z.enum(COMPANY_ADMIN_STATUSES).optional().catch(undefined),
+  page: z.coerce.number().int().min(1).max(10_000).default(1).catch(1),
+});
+
+const EMPTY_COMPANY_PAGE = {
+  rows: [],
+  total: 0,
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  statusCounts: { pending: 0, approved: 0, rejected: 0 },
+};
+
+export async function getCompaniesForAdminAction(
+  params: { query?: string; status?: string; page?: string | number } = {},
+) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized", data: EMPTY_COMPANY_PAGE };
+  }
+
+  const actor = buildActor(auth.member);
+  if (!can(actor, "read", "company")) {
+    return { success: false, error: "Unauthorized", data: EMPTY_COMPANY_PAGE };
+  }
+
+  const { query, status, page } = companiesListParamsSchema.parse(params);
+  const filters = { query: query || undefined, status };
+
+  const [total, statusCounts] = await Promise.all([
+    countCompaniesForAdmin(db, filters),
+    countCompaniesByStatus(db, { query: filters.query }),
+  ]);
+
+  // Counting first means a page past the end lands on the last real page
+  // instead of an empty table under a heading that claims otherwise.
+  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const rows = await listCompaniesForAdmin(
+    db,
+    filters,
+    pageParamsFromSearchParam(currentPage, DEFAULT_PAGE_SIZE),
+  );
+
+  return {
+    success: true,
+    data: {
+      rows,
+      total,
+      page: currentPage,
+      pageSize: DEFAULT_PAGE_SIZE,
+      statusCounts,
+    },
+  };
+}
+
+const companyIdSchema = z.string().uuid();
+
+/**
+ * Everything the company drawer shows, in one round trip.
+ *
+ * Called when a drawer opens rather than for every row of the directory - the
+ * list query stays lean precisely so this can be expensive for exactly one
+ * company.
+ */
+export async function getCompanyAdminDetailAction(companyId: string) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized", data: null };
+  }
+
+  const actor = buildActor(auth.member);
+  if (!can(actor, "read", "company")) {
+    return { success: false, error: "Unauthorized", data: null };
+  }
+
+  const parsed = companyIdSchema.safeParse(companyId);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid company id", data: null };
+  }
+
+  const company = await findCompanyForAdmin(db, parsed.data);
+  if (!company) {
+    return { success: false, error: "Not found", data: null };
+  }
+
+  const [subscriptions, referralCounts, referrals, history] = await Promise.all(
+    [
+      listSubscriptionsByCompanyId(db, parsed.data),
+      countReferralsByRecipientCompany(db, parsed.data),
+      listReferralsByRecipientCompany(db, parsed.data, 10),
+      searchAuditLogs(db, { target: parsed.data }),
+    ],
+  );
+
+  return {
+    success: true,
+    data: { company, subscriptions, referralCounts, referrals, history },
+  };
 }
 
 export async function moderateCompanyAction(

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, lt } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, lt } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { companies, members, referrals } from "./schema";
@@ -129,6 +129,51 @@ export async function listReceivedReferralsForCompanies(
 export type ReceivedReferralView = Awaited<
   ReturnType<typeof listReceivedReferralsForCompanies>
 >[number];
+
+/**
+ * Introductions received by one company, for the staff company view.
+ *
+ * The client's name and contact channel are deliberately not selected. Staff
+ * reviewing a partner need the volume and the outcome, not the client's
+ * details, and a column that is never read cannot leak (ADR 0009). The
+ * referral moderation screen, which does need them to moderate, keeps its own
+ * query.
+ */
+export async function listReferralsByRecipientCompany(
+  db: DbClient,
+  companyId: string,
+  limit = 20,
+) {
+  return db.query.referrals.findMany({
+    where: eq(referrals.recipientCompanyId, companyId),
+    columns: {
+      id: true,
+      status: true,
+      serviceNeeded: true,
+      createdAt: true,
+      expiresAt: true,
+    },
+    orderBy: [desc(referrals.createdAt)],
+    limit,
+  });
+}
+
+export type CompanyReferralView = Awaited<
+  ReturnType<typeof listReferralsByRecipientCompany>
+>[number];
+
+export async function countReferralsByRecipientCompany(
+  db: DbClient,
+  companyId: string,
+): Promise<Record<string, number>> {
+  const rows = await db
+    .select({ status: referrals.status, value: count() })
+    .from(referrals)
+    .where(eq(referrals.recipientCompanyId, companyId))
+    .groupBy(referrals.status);
+
+  return Object.fromEntries(rows.map((row) => [row.status, row.value]));
+}
 
 export async function listPendingReviewReferrals(db: DbClient) {
   return db.query.referrals.findMany({

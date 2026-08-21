@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Check, X } from "lucide-react";
 import { moderateCompanyAction } from "@/actions/company";
 import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const REJECT_REASON_KEYS = [
   "rejectReasonProhibited",
@@ -15,30 +24,42 @@ const REJECT_REASON_KEYS = [
   "rejectReasonOther",
 ] as const;
 
+type Mode = "idle" | "confirmApprove" | "reject";
+
 export function ModerateActions({ companyId }: { companyId: string }) {
   const t = useTranslations("admin.companies");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showRejectForm, setShowRejectForm] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [mode, setMode] = useState<Mode>("idle");
   const [selectedReason, setSelectedReason] = useState("");
   const [customReason, setCustomReason] = useState("");
-  const router = useRouter();
 
-  const handleApprove = async () => {
-    if (!confirm(t("approveConfirm"))) return;
-
-    setIsLoading(true);
-    const res = await moderateCompanyAction(companyId, "approved");
-    setIsLoading(false);
-
-    if (res.success) {
-      alert(t("approved"));
-      router.refresh();
-    } else {
-      alert(t("actionFailed", { error: res.error ?? "" }));
-    }
+  const reset = () => {
+    setMode("idle");
+    setSelectedReason("");
+    setCustomReason("");
   };
 
-  const handleReject = async () => {
+  const moderate = (
+    status: "approved" | "rejected",
+    reason: string | undefined,
+    successMessage: string,
+  ) => {
+    startTransition(async () => {
+      const res = await moderateCompanyAction(companyId, status, reason);
+
+      if (res.success) {
+        toast.success(successMessage);
+        reset();
+        router.refresh();
+        return;
+      }
+
+      toast.error(t("actionFailed", { error: res.error ?? "" }));
+    });
+  };
+
+  const handleReject = () => {
     const reason =
       selectedReason === "rejectReasonOther"
         ? customReason
@@ -46,41 +67,58 @@ export function ModerateActions({ companyId }: { companyId: string }) {
 
     if (!reason.trim()) return;
 
-    setIsLoading(true);
-    const res = await moderateCompanyAction(companyId, "rejected", reason);
-    setIsLoading(false);
-
-    if (res.success) {
-      alert(t("rejected"));
-      setShowRejectForm(false);
-      router.refresh();
-    } else {
-      alert(t("actionFailed", { error: res.error ?? "" }));
-    }
+    moderate("rejected", reason, t("rejected"));
   };
 
-  if (showRejectForm) {
+  // Approval publishes the listing to the public catalogue, so it keeps a
+  // confirmation step - as an inline one, since the native confirm() it
+  // replaces cannot be styled, translated or tested.
+  if (mode === "confirmApprove") {
     return (
-      <div className="space-y-3 min-w-[280px]">
+      <div className="min-w-[240px] space-y-3">
+        <p className="text-sm">{t("approveConfirm")}</p>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => moderate("approved", undefined, t("approved"))}
+            disabled={isPending}
+          >
+            {t("confirmApprove")}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={reset}
+            disabled={isPending}
+          >
+            {t("cancel")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "reject") {
+    return (
+      <div className="min-w-[280px] space-y-3">
         <p className="text-sm font-medium">{t("rejectReasonLabel")}</p>
-        <select
-          value={selectedReason}
-          onChange={(e) => setSelectedReason(e.target.value)}
-          className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">{t("rejectReasonSelect")}</option>
-          {REJECT_REASON_KEYS.map((key) => (
-            <option key={key} value={key}>
-              {t(key)}
-            </option>
-          ))}
-        </select>
+        <Select value={selectedReason} onValueChange={setSelectedReason}>
+          <SelectTrigger>
+            <SelectValue placeholder={t("rejectReasonSelect")} />
+          </SelectTrigger>
+          <SelectContent>
+            {REJECT_REASON_KEYS.map((key) => (
+              <SelectItem key={key} value={key}>
+                {t(key)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {selectedReason === "rejectReasonOther" && (
-          <textarea
+          <Textarea
             value={customReason}
             onChange={(e) => setCustomReason(e.target.value)}
             placeholder={t("rejectReasonCustomPlaceholder")}
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
             rows={2}
           />
         )}
@@ -88,9 +126,9 @@ export function ModerateActions({ companyId }: { companyId: string }) {
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => void handleReject()}
+            onClick={handleReject}
             disabled={
-              isLoading ||
+              isPending ||
               !selectedReason ||
               (selectedReason === "rejectReasonOther" && !customReason.trim())
             }
@@ -100,11 +138,8 @@ export function ModerateActions({ companyId }: { companyId: string }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              setShowRejectForm(false);
-              setSelectedReason("");
-              setCustomReason("");
-            }}
+            onClick={reset}
+            disabled={isPending}
           >
             {t("cancel")}
           </Button>
@@ -118,20 +153,20 @@ export function ModerateActions({ companyId }: { companyId: string }) {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => void handleApprove()}
-        disabled={isLoading}
-        className="text-green-500 hover:text-green-600 hover:bg-green-500/10"
+        onClick={() => setMode("confirmApprove")}
+        disabled={isPending}
+        className="text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600"
       >
-        <Check className="w-4 h-4 mr-1" /> {t("approve")}
+        <Check className="mr-1 size-4" /> {t("approve")}
       </Button>
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setShowRejectForm(true)}
-        disabled={isLoading}
-        className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+        onClick={() => setMode("reject")}
+        disabled={isPending}
+        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
-        <X className="w-4 h-4 mr-1" /> {t("reject")}
+        <X className="mr-1 size-4" /> {t("reject")}
       </Button>
     </div>
   );
