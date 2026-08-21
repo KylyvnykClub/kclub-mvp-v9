@@ -1,6 +1,18 @@
-import { and, count, desc, eq, gt, inArray, lt } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 
 import type { DbClient } from "./db";
+import type { PageParams } from "./pagination";
 import { companies, members, referrals } from "./schema";
 
 export async function listReferralsSince(
@@ -173,6 +185,158 @@ export async function countReferralsByRecipientCompany(
     .groupBy(referrals.status);
 
   return Object.fromEntries(rows.map((row) => [row.status, row.value]));
+}
+
+export const REFERRAL_ADMIN_STATUSES = [
+  "pending_review",
+  "delivered",
+  "accepted",
+  "declined",
+  "rejected",
+  "expired",
+] as const;
+
+export type ReferralAdminStatus = (typeof REFERRAL_ADMIN_STATUSES)[number];
+
+export interface ReferralAdminFilters {
+  query?: string;
+  status?: ReferralAdminStatus;
+}
+
+/**
+ * One WHERE for the page of rows and for the counts taken over it.
+ *
+ * The search deliberately spans the sender and the recipient company only.
+ * The client's name is on this table too, but a moderator looking for one
+ * referral finds it by who sent it or who it went to; making client identity
+ * searchable would widen what this screen is for (ADR 0009).
+ *
+ * Each subquery names its own columns under its own alias: inside a relational
+ * query drizzle rewrites embedded column references to the outer alias.
+ */
+function referralAdminWhere(filters: ReferralAdminFilters): SQL | undefined {
+  const conditions: SQL[] = [];
+
+  if (filters.query) {
+    const pattern = `%${filters.query}%`;
+    conditions.push(
+      or(
+        sql`exists (select 1 from ${members} as referral_sender where referral_sender.id = ${referrals.senderId} and referral_sender.display_name ilike ${pattern})`,
+        sql`exists (select 1 from ${companies} as referral_company where referral_company.id = ${referrals.recipientCompanyId} and referral_company.name ilike ${pattern})`,
+      )!,
+    );
+  }
+
+  if (filters.status) {
+    conditions.push(eq(referrals.status, filters.status));
+  }
+
+  return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+/**
+ * The staff directory of introductions in every status, as opposed to
+ * listPendingReviewReferrals, which only ever showed the moderation queue and
+ * still backs the overview widget and the nav badge.
+ */
+export async function listReferralsForAdmin(
+  db: DbClient,
+  filters: ReferralAdminFilters = {},
+  page: PageParams = { limit: 50, offset: 0 },
+) {
+  return db.query.referrals.findMany({
+    where: referralAdminWhere(filters),
+    // The client's name, contact channel and the sender's note about them are
+    // not selected. A client component's props are serialised into the page
+    // payload, so a column rendered nowhere would still have been shipped to
+    // the browser for every row; the moderator reads them one at a time from
+    // findReferralForAdmin instead (ADR 0009).
+    columns: {
+      id: true,
+      senderId: true,
+      recipientCompanyId: true,
+      serviceNeeded: true,
+      status: true,
+      createdAt: true,
+      expiresAt: true,
+    },
+    with: {
+      sender: {
+        columns: {
+          id: true,
+          displayName: true,
+        },
+      },
+      recipientCompany: {
+        columns: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: [desc(referrals.createdAt), desc(referrals.id)],
+    limit: page.limit,
+    offset: page.offset,
+  });
+}
+
+/**
+ * One introduction in full, including the client details the moderation
+ * decision needs. Read when a drawer opens, for exactly one row.
+ */
+export async function findReferralForAdmin(db: DbClient, referralId: string) {
+  return db.query.referrals.findFirst({
+    where: eq(referrals.id, referralId),
+    with: {
+      sender: true,
+      recipientCompany: true,
+    },
+  });
+}
+
+export type ReferralAdminDetail = NonNullable<
+  Awaited<ReturnType<typeof findReferralForAdmin>>
+>;
+
+export type ReferralAdminView = Awaited<
+  ReturnType<typeof listReferralsForAdmin>
+>[number];
+
+export async function countReferralsForAdmin(
+  db: DbClient,
+  filters: ReferralAdminFilters = {},
+): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(referrals)
+    .where(referralAdminWhere(filters));
+
+  return row?.value ?? 0;
+}
+
+/**
+ * Counts for the status filter chips. Ignores the status filter itself - a chip
+ * shows what selecting it would find.
+ */
+export async function countReferralsByStatus(
+  db: DbClient,
+  filters: Omit<ReferralAdminFilters, "status"> = {},
+): Promise<Record<ReferralAdminStatus, number>> {
+  const rows = await db
+    .select({ status: referrals.status, value: count() })
+    .from(referrals)
+    .where(referralAdminWhere(filters))
+    .groupBy(referrals.status);
+
+  const counts = Object.fromEntries(
+    REFERRAL_ADMIN_STATUSES.map((status) => [status, 0]),
+  ) as Record<ReferralAdminStatus, number>;
+
+  for (const row of rows) {
+    counts[row.status] = row.value;
+  }
+
+  return counts;
 }
 
 export async function listPendingReviewReferrals(db: DbClient) {
