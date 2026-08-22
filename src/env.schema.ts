@@ -33,7 +33,13 @@ export const serverSchema = z
     ADMIN_BOOTSTRAP_OWNER_PHONE: z.string().optional(),
     ADMIN_BOOTSTRAP_OWNER_PASSWORD: z.string().optional(),
 
-    TOTP_ENCRYPTION_KEY: z.string().optional(),
+    /**
+     * Encrypts staff TOTP seeds at rest (security.md §"Secret"). Without it the
+     * identity module refuses to enrol or verify a second factor rather than
+     * falling back to plaintext, so its absence disables staff sign-in instead
+     * of quietly weakening it.
+     */
+    TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
 
     // ── SMS — Twilio Verify ─────────────────────────────────
     // Optional while phone verification is postponed (ADR 0012). Required
@@ -104,6 +110,18 @@ export const serverSchema = z
         code: "custom",
         path: ["CRON_SECRET"],
         message: "CRON_SECRET is required in production",
+      });
+    }
+
+    // Staff sign-in demands TOTP unconditionally (security.md §4), so a
+    // production deploy without this key is one where no staff member can log
+    // in. Failing at boot says that plainly; failing at the first sign-in would
+    // say it to whoever is holding the incident.
+    if (env.VERCEL_ENV === "production" && !env.TOTP_ENCRYPTION_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["TOTP_ENCRYPTION_KEY"],
+        message: "TOTP_ENCRYPTION_KEY is required in production",
       });
     }
 

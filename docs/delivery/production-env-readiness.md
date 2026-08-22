@@ -52,7 +52,7 @@ Required external checks:
 |`BETTER_AUTH_SECRET`|Yes|1Password to Vercel env|Generate a high-entropy value; changing it invalidates derived card tokens and sessions, so record the rotation plan.|
 |`ADMIN_BOOTSTRAP_OWNER_PHONE`|Launch only|Owner-approved bootstrap record|Confirm it is present only while bootstrapping the first staff owner, then remove or rotate.|
 |`ADMIN_BOOTSTRAP_OWNER_PASSWORD`|Launch only|Owner-approved bootstrap record|Confirm one-time use, strong value, and removal after staff owner setup.|
-|`TOTP_ENCRYPTION_KEY`|Yes when staff TOTP secrets are stored|1Password to Vercel env|Confirm key length and rotation owner before enabling staff login for production.|
+|`TOTP_ENCRYPTION_KEY`|Yes|1Password to Vercel env|At least 32 characters. Production **fails at boot** without it, and staff sign-in refuses rather than falling back to plaintext ([ADR 0016](../decisions/0016-totp-seeds-encrypted-and-reissued.md)). Confirm the rotation owner before staff login is enabled: rotating this key re-enrols every staff authenticator.|
 |`AUTH_DEV_PHONE_BYPASS_ENABLED`|No|Development only|Must be unset or `false` in preview and production.|
 |`AUTH_PHONE_VERIFICATION_ENABLED`|No — postponed|Deployment decision|Currently `false` ([ADR 0012](../decisions/0012-postpone-phone-verification-turnstile-gate.md)). Setting it to `true` makes the three Twilio keys mandatory at boot, so provision them in the same change.|
 |`E2E_TEST_SECRET`|Preview only|CI secret|Must not be set in production unless an explicit production smoke route requires it.|

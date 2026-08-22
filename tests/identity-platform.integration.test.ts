@@ -10,6 +10,11 @@ import {
   upgradeSessionTx,
 } from "@/data/identity.js";
 import { setMemberStatus } from "@/data/members.js";
+import {
+  encryptTotpSecret,
+  isEncryptedTotpSecret,
+} from "@/modules/identity/totp-crypto.js";
+import { generateTotpSecret } from "@/modules/identity/totp.js";
 import { legalAcceptances, members, sessions } from "@/data/schema/index.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
@@ -20,6 +25,9 @@ import { getTestDb } from "./setup/integration-setup.js";
  * code they describe is switched off, and a test that pretended otherwise
  * would be worse than the gap it hid.
  */
+
+// Repetitive on purpose - see the note in totp-crypto.test.ts.
+const ENCRYPTION_KEY = "totp-integration-key-".repeat(3);
 
 function testDbClient(): DbClient {
   return getTestDb() as unknown as DbClient;
@@ -206,12 +214,22 @@ describe("FR-080: a staff sign-in is incomplete until the second factor is given
     const member = await register(db);
     const token = crypto.randomUUID();
 
+    // What the service stores against the partial session: the seed already
+    // encrypted and bound to this member. The plaintext never reaches this
+    // layer, which is the point of the change.
+    const encrypted = encryptTotpSecret(
+      generateTotpSecret().secret,
+      member.id,
+      ENCRYPTION_KEY,
+    );
+
     await createSessionTx(db, {
       memberId: member.id,
       sessionToken: token,
       userAgent: "test",
       ipAddress: "127.0.0.1",
       isPartialSession: true,
+      pendingTotpSecret: encrypted,
     });
 
     await upgradeSessionTx(
@@ -220,7 +238,7 @@ describe("FR-080: a staff sign-in is incomplete until the second factor is given
       member.id,
       "127.0.0.1",
       "test",
-      "ENROLLED-SECRET",
+      encrypted,
     );
 
     const updated = await db.query.members.findFirst({
@@ -228,7 +246,45 @@ describe("FR-080: a staff sign-in is incomplete until the second factor is given
     });
 
     expect(updated?.totpEnabled).toBe(true);
-    expect(updated?.totpSecret).toBe("ENROLLED-SECRET");
+    expect(updated?.totpSecret).toBe(encrypted);
+    expect(isEncryptedTotpSecret(updated?.totpSecret ?? null)).toBe(true);
+
+    // The seed must not linger on a session that is now fully authenticated.
+    const upgraded = await findActiveSessionByToken(db, token);
+    expect(upgraded?.pendingTotpSecret).toBeNull();
+  });
+
+  it("clears an abandoned pending secret even when nothing is enrolled", async () => {
+    const db = testDbClient();
+    const member = await register(db);
+    const token = crypto.randomUUID();
+
+    const encrypted = encryptTotpSecret(
+      generateTotpSecret().secret,
+      member.id,
+      ENCRYPTION_KEY,
+    );
+
+    await createSessionTx(db, {
+      memberId: member.id,
+      sessionToken: token,
+      userAgent: "test",
+      ipAddress: "127.0.0.1",
+      isPartialSession: true,
+      pendingTotpSecret: encrypted,
+    });
+
+    // Upgrading without enrolling - the member already had a factor, or the
+    // enrolment was abandoned. Either way the pending seed is not left behind.
+    await upgradeSessionTx(db, token, member.id, "127.0.0.1", "test");
+
+    const upgraded = await findActiveSessionByToken(db, token);
+    expect(upgraded?.pendingTotpSecret).toBeNull();
+
+    const updated = await db.query.members.findFirst({
+      where: eq(members.id, member.id),
+    });
+    expect(updated?.totpEnabled).toBe(false);
   });
 });
 
