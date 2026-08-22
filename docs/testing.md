@@ -68,10 +68,18 @@ only that the mock behaves as we imagined.
 |Load|The catalogue, sign-in and card verification at 10× projected launch traffic|k6 against staging with 10× synthetic data|Production|Run before launch and quarterly|
 
 **Tooling:** Vitest (unit and integration), Testcontainers (PostgreSQL, Redis,
-MinIO), Playwright (e2e, visual, accessibility), axe-core, k6, Stripe CLI and
-test clocks, MSW for HTTP mocking at the network boundary rather than by
+MinIO), Playwright (e2e, visual, accessibility), axe-core, k6, Stripe test
+clocks, MSW for HTTP mocking at the network boundary rather than by
 monkey-patching modules. See
 [technology.md §8](technology.md#8-build-and-development-tooling).
+
+The Stripe CLI is _not_ required: test clocks are created and advanced through
+the API, and the lifecycle suite folds the subscription Stripe returns rather
+than waiting for a forwarded webhook. That suite lives outside
+`pnpm test:integration` — a clock advance settles in tens of seconds, so a whole
+lifecycle costs minutes — and runs as `pnpm test:stripe-lifecycle`
+(`vitest.stripe.config.ts`). It refuses to run against anything but a
+`sk_test` key and deletes its clocks afterwards.
 
 ---
 
