@@ -31,6 +31,10 @@ export default tseslint.config(
       // Claude Design canvas mockups (.dc.html prototypes + their runtime) -
       // design references, not application code.
       "src/admin/**",
+      // Playwright output, regenerated on every run.
+      "playwright-report/**",
+      "test-results/**",
+      "blob-report/**",
     ],
   },
 
