@@ -16,18 +16,12 @@ import {
 import { checkVerificationCode, sendVerificationCode } from "./twilio";
 import { upgradeSessionTx } from "@/data/identity";
 import { logger } from "@/lib/logger";
+import { isUniqueViolation, safeErrorFields } from "@/lib/safe-error";
 import { env } from "@/env";
 import { isStaffRole, normalizeRole } from "@/domain/actor";
 
 function isPhoneUniquenessError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    "constraint" in error &&
-    error.code === "23505" &&
-    error.constraint === "members_phone_unique"
-  );
+  return isUniqueViolation(error, "members_phone_unique");
 }
 
 export class IdentityService {
@@ -105,9 +99,10 @@ export class IdentityService {
 
       return { success: true, sessionToken };
     } catch (error) {
-      logger.error("Failed to create member account", {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      // Not error.message: drizzle puts the statement and its bound values
+      // there, which for this statement are the phone number and the password
+      // hash (security.md §3).
+      logger.error("Failed to create member account", safeErrorFields(error));
 
       if (isPhoneUniquenessError(error)) {
         return {

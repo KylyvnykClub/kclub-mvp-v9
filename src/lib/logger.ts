@@ -87,8 +87,46 @@ function formatDev(level: LogLevel, message: string, ctx: LogContext): string {
   return `${prefix} ${message}${extras ? ` | ${extras}` : ""}`;
 }
 
-function emit(level: LogLevel, message: string, ctx: LogContext = {}): void {
+/**
+ * Marker that drizzle puts in every failed-statement message, right before it
+ * prints the bound parameter values.
+ */
+const QUERY_DUMP_MARKER = "Failed query:";
+
+/**
+ * Last line of defence against logging a statement and its parameters.
+ *
+ * The right fix is at the call site: pass `safeErrorFields(error)` rather than
+ * `error.message`. This exists because that rule lived for months as a comment
+ * at the top of this file and was followed nowhere - a registration failure
+ * published the member's phone number and password hash. A guard that costs one
+ * string comparison is worth more than a comment.
+ *
+ * It is deliberately narrow. It catches the one shape known to carry user data
+ * into logs, and it is not a general redactor: nothing here can tell a phone
+ * number from any other digits, so do not treat it as permission to log
+ * unfamiliar values.
+ */
+function redactQueryDumps(ctx: LogContext): LogContext {
+  let touched = false;
+  const safe: LogContext = {};
+
+  for (const [key, value] of Object.entries(ctx)) {
+    if (typeof value === "string" && value.includes(QUERY_DUMP_MARKER)) {
+      safe[key] = "[redacted: query and parameters, see safeErrorFields()]";
+      touched = true;
+      continue;
+    }
+    safe[key] = value;
+  }
+
+  return touched ? safe : ctx;
+}
+
+function emit(level: LogLevel, message: string, rawCtx: LogContext = {}): void {
   if (!shouldLog(level)) return;
+
+  const ctx = redactQueryDumps(rawCtx);
 
   if (IS_DEV) {
     const line = formatDev(level, message, ctx);

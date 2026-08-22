@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { env } from "@/env";
 import { logger } from "@/lib/logger";
+import { safeErrorFields } from "@/lib/safe-error";
 
 const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -71,9 +72,7 @@ export async function verifyTurnstileToken(
 
     return { ok: true };
   } catch (error) {
-    logger.error("Turnstile siteverify request failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    logger.error("Turnstile siteverify request failed", safeErrorFields(error));
     return { ok: false, reason: "unavailable" };
   }
 }
