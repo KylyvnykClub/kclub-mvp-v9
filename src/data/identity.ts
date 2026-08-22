@@ -100,6 +100,8 @@ export async function createSessionTx(
     userAgent: string;
     ipAddress: string;
     isPartialSession?: boolean;
+    /** Encrypted seed for a staff member mid-enrolment. Never plaintext. */
+    pendingTotpSecret?: string;
   },
 ): Promise<void> {
   await db.transaction(async (tx) => {
@@ -112,6 +114,7 @@ export async function createSessionTx(
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
       isPartialSession: input.isPartialSession ?? false,
+      pendingTotpSecret: input.pendingTotpSecret ?? null,
     });
 
     await appendAuditEntry(tx, {
@@ -225,18 +228,25 @@ export async function upgradeSessionTx(
   memberId: string,
   ipAddress: string,
   userAgent: string,
-  newSecret?: string,
+  /**
+   * The already-encrypted seed to enrol, when this sign-in was an enrolment.
+   * It comes from the session's own pending column, never from the request -
+   * the caller must not be able to choose which secret a member ends up with.
+   */
+  encryptedSecretToEnrol?: string,
 ): Promise<void> {
   await db.transaction(async (tx) => {
+    // The pending seed is cleared whether or not it was enrolled, so an
+    // abandoned enrolment does not leave a seed sitting on a live session.
     await tx
       .update(sessions)
-      .set({ isPartialSession: false })
+      .set({ isPartialSession: false, pendingTotpSecret: null })
       .where(sessionTokenLookup(token));
 
-    if (newSecret) {
+    if (encryptedSecretToEnrol) {
       await tx
         .update(members)
-        .set({ totpEnabled: true, totpSecret: newSecret })
+        .set({ totpEnabled: true, totpSecret: encryptedSecretToEnrol })
         .where(eq(members.id, memberId));
     }
 

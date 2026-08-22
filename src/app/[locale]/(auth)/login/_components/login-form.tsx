@@ -44,7 +44,6 @@ export function LoginForm() {
     requiresTotp?: boolean;
     setupTotp?: boolean;
     totpUri?: string;
-    totpSecret?: string;
   };
 
   const [loginState, loginFormAction] = useActionState(
@@ -111,11 +110,6 @@ export function LoginForm() {
               {loginState.setupTotp && loginState.totpUri && (
                 <div className="mb-4 flex justify-center border border-border bg-white p-4">
                   <QRCodeSVG value={loginState.totpUri} size={200} />
-                  <input
-                    type="hidden"
-                    name="newSecret"
-                    value={loginState.totpSecret}
-                  />
                 </div>
               )}
               <div className="space-y-2 text-left">

@@ -142,7 +142,7 @@ Two structural rules that outrank the table:
 |Internal|Categories, countries, cities, aggregate counts, plan prices|Disk encryption|TLS|Any authenticated principal|
 |Confidential — member PII|Phone number, display name, country, card serial, session records, IP addresses|AES-256 at rest (Neon); phone number additionally indexed by a keyed hash so lookups do not require scanning plaintext|TLS 1.3|The owning member; `staff_support` and above through the console; never a third party|
 |Confidential — third-party PII|Referral client name and contact channel|AES-256-GCM at the column level with a key held outside the database, in addition to disk encryption|TLS 1.3|The recipient company after acceptance; `staff_moderator` and above during review only; deleted on the schedule in [data-storage.md §4](data-storage.md#4-retention-and-deletion)|
-|Secret|Password hashes, TOTP seeds, session ids, QR verification tokens, API keys|Hashed (argon2id) or encrypted; QR tokens and session ids stored only as SHA-256 hashes so the database never holds a usable credential|TLS 1.3|Nobody. There is no interface, for any role, that displays any of these|
+|Secret|Password hashes, TOTP seeds, session ids, QR verification tokens, API keys|Password hashes are argon2id. TOTP seeds are AES-256-GCM at the column level under `TOTP_ENCRYPTION_KEY`, each bound to its member id so a seed copied onto another row fails to decrypt ([ADR 0016](decisions/0016-totp-seeds-encrypted-and-reissued.md)) — a seed cannot be hashed, because verification needs the original bytes back. QR tokens and session ids are stored only as SHA-256 hashes. The database never holds a usable credential|TLS 1.3|Nobody. There is no interface, for any role, that displays any of these|
 |Financial|Invoice amounts, currency, country, Stripe identifiers|AES-256 at rest|TLS 1.3|`staff_admin` and above|
 |Card data|—|**Never held.** All entry on Stripe-hosted surfaces|—|—|
 
@@ -180,6 +180,7 @@ calendar reminder, and immediately when anyone with access leaves.
 |`TWILIO_*` (account SID, auth token, Verify service SID)|Vercel env|90 days|Owner, tech lead|
 |`AUTH_SECRET` (session signing)|Vercel env|Annually — rotation signs out everyone, so it is scheduled|Owner|
 |`COLUMN_ENCRYPTION_KEY_V<n>`|Vercel env, versioned|Annually, with re-encryption|Owner|
+|`TOTP_ENCRYPTION_KEY`|Vercel env|Not rotatable without re-enrolment — every staff authenticator is re-registered, so it is scheduled, not casual ([ADR 0016](decisions/0016-totp-seeds-encrypted-and-reissued.md))|Owner|
 |`PHONE_HASH_PEPPER`|Vercel env|Never rotated casually — rotation requires rehashing every phone index|Owner|
 |`RESEND_API_KEY`, `UPSTASH_*`, `R2_*`|Vercel env|90 days|Owner, tech lead|
 |Backup age key|1Password only, never in any environment|Annually|Owner, tech lead|

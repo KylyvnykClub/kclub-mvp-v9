@@ -71,6 +71,7 @@ that the folder cannot be trusted.
 |[0013](0013-partner-logos-as-external-urls.md)|Partner logos are member-supplied external URLs, not uploaded files|Accepted|2026-08-19|
 |[0014](0014-no-notification-log-table.md)|No dedicated notification log table|Accepted|2026-08-19|
 |[0015](0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Accepted|2026-08-18|
+|[0016](0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|2026-08-22|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
