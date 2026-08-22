@@ -138,7 +138,7 @@ export function LoginForm() {
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="font-bold uppercase tracking-[0.12em] text-foreground hover:text-accent"
+                  className="font-bold uppercase tracking-[0.12em] text-foreground hover:text-accent-ink"
                 >
                   {t("totpCancel")}
                 </button>
@@ -206,7 +206,7 @@ export function LoginForm() {
               {t("noAccount")}{" "}
               <Link
                 href={`/${locale}/register`}
-                className="font-bold text-foreground hover:text-accent"
+                className="font-bold text-foreground hover:text-accent-ink"
               >
                 {t("registerLink")}
               </Link>

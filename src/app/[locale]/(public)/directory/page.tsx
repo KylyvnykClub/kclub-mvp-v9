@@ -53,7 +53,7 @@ export default async function CatalogueDirectoryPage({
 
   return (
     <main className="border-b border-border bg-background">
-      <section className="border-b border-border bg-zinc-950 py-16 text-white sm:py-20">
+      <section className="dark border-b border-border bg-zinc-950 py-16 text-white sm:py-20">
         <div className="kclub-shell">
           <p className="kclub-eyebrow !text-white/55">{t("eyebrow")}</p>
           <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-end">
@@ -171,12 +171,12 @@ export default async function CatalogueDirectoryPage({
                         />
                       </div>
                     ) : (
-                      <div className="flex size-16 shrink-0 items-center justify-center border border-accent/30 bg-accent/10 text-2xl font-black text-accent">
+                      <div className="flex size-16 shrink-0 items-center justify-center border border-accent/30 bg-accent/10 text-2xl font-black text-accent-ink">
                         {partner.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <ArrowUpRight
-                      className="size-5 text-muted-foreground transition-colors group-hover:text-accent"
+                      className="size-5 text-muted-foreground transition-colors group-hover:text-accent-ink"
                       aria-hidden="true"
                     />
                   </div>
@@ -185,7 +185,7 @@ export default async function CatalogueDirectoryPage({
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       {partner.businessCategory?.block}
                     </p>
-                    <h2 className="mt-3 text-2xl font-black uppercase leading-tight tracking-[-0.025em] transition-colors group-hover:text-accent">
+                    <h2 className="mt-3 text-2xl font-black uppercase leading-tight tracking-[-0.025em] transition-colors group-hover:text-accent-ink">
                       {partner.name}
                     </h2>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -200,13 +200,13 @@ export default async function CatalogueDirectoryPage({
                 <div className="mt-8 flex items-center justify-between gap-4 border-t border-border pt-5">
                   <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     <BadgeCheck
-                      className="size-4 text-accent"
+                      className="size-4 text-accent-ink"
                       aria-hidden="true"
                     />
                     KCLUB
                   </span>
                   {partner.discount && (
-                    <span className="max-w-[55%] text-right text-xs font-black uppercase tracking-[0.12em] text-accent">
+                    <span className="max-w-[55%] text-right text-xs font-black uppercase tracking-[0.12em] text-accent-ink">
                       {partner.discount}
                     </span>
                   )}

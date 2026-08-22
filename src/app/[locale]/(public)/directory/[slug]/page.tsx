@@ -144,11 +144,11 @@ export default async function PartnerLandingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="min-h-screen bg-background pb-24">
-        <section className="border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
+        <section className="dark border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
           <div className="kclub-shell">
             <Link
               href={`/${locale}/directory`}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
               <ArrowLeft className="size-4" aria-hidden="true" />
               {tc("title")}
@@ -167,7 +167,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                   />
                 </div>
               ) : (
-                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent sm:size-32">
+                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent-ink sm:size-32">
                   {partner.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -241,7 +241,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         href={partner.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 transition-colors hover:text-accent"
+                        className="flex items-center justify-between gap-3 transition-colors hover:text-accent-ink"
                       >
                         <span className="inline-flex min-w-0 items-center gap-3">
                           <Globe
@@ -263,7 +263,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`mailto:${partner.contactEmail}`}
-                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent"
+                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent-ink"
                           >
                             <Mail
                               className="size-4 shrink-0 text-muted-foreground"
@@ -277,7 +277,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`tel:${partner.contactPhone}`}
-                            className="flex items-center gap-3 transition-colors hover:text-accent"
+                            className="flex items-center gap-3 transition-colors hover:text-accent-ink"
                           >
                             <Phone
                               className="size-4 text-muted-foreground"
@@ -312,7 +312,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                     <div className="border border-border bg-background p-4">
                       <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                         <BadgeCheck
-                          className="size-4 text-accent"
+                          className="size-4 text-accent-ink"
                           aria-hidden="true"
                         />
                         {tc("representedBy")}

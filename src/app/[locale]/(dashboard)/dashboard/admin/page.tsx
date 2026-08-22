@@ -210,7 +210,7 @@ export default async function AdminDashboardPage({
                           href={payment.receipt_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs text-accent hover:underline"
+                          className="text-xs text-accent-ink hover:underline"
                         >
                           {t("viewReceipt")}
                         </a>
@@ -230,7 +230,7 @@ export default async function AdminDashboardPage({
             </div>
             <Link
               href={`/${locale}/dashboard/admin/companies`}
-              className="text-xs font-bold uppercase tracking-[0.08em] text-accent hover:underline"
+              className="text-xs font-bold uppercase tracking-[0.08em] text-accent-ink hover:underline"
             >
               {t("viewAll")}
             </Link>

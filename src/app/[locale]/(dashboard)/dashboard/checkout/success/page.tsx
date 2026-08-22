@@ -20,7 +20,7 @@ export default async function CheckoutSuccessPage({
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-4">
       <div className="mx-auto max-w-md text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <CheckCircle className="mx-auto h-12 w-12 text-accent" />
+        <CheckCircle className="mx-auto h-12 w-12 text-accent-ink" />
         <h1 className="text-2xl font-bold">{t("successTitle")}</h1>
         <p className="text-muted-foreground">{t("successDescription")}</p>
         <Link

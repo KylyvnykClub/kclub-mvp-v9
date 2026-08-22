@@ -113,7 +113,7 @@ export default async function AdminSupportPage({
                         {queue.count > 0 ? t("clickToReview") : t("queueClear")}
                       </p>
                     </div>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-accent" />
+                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-accent-ink" />
                   </div>
                 </CardContent>
               </Card>
