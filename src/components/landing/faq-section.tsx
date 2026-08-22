@@ -36,12 +36,12 @@ export function FaqSection() {
                   aria-expanded={open}
                   aria-controls={panelId}
                   onClick={() => setOpenIndex(open ? -1 : index)}
-                  className="flex min-h-16 w-full items-center justify-between gap-5 px-5 py-5 text-left text-base font-black uppercase transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring"
+                  className="flex min-h-16 w-full items-center justify-between gap-5 px-5 py-5 text-left text-base font-black uppercase transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring"
                 >
                   <span>{item.question}</span>
                   <ChevronDown
                     aria-hidden="true"
-                    className={`size-5 shrink-0 text-accent transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    className={`size-5 shrink-0 text-accent-ink transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                     strokeWidth={1.5}
                   />
                 </button>

@@ -22,7 +22,7 @@ export function PrinciplesSection() {
               key={key}
               className="grid gap-5 border-b border-border py-8 last:border-b-0 sm:grid-cols-[5rem_1fr] sm:gap-8"
             >
-              <span className="text-3xl font-semibold text-accent">
+              <span className="text-3xl font-semibold text-accent-ink">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className="grid gap-3 lg:grid-cols-[0.65fr_1.35fr] lg:gap-10">

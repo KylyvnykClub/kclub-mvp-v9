@@ -29,7 +29,7 @@ export default async function LegalDocumentPage({
       <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
         <Link
           href={`/${locale}/legal`}
-          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-accent transition-colors mb-8"
+          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-accent-ink transition-colors mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("backToLegal")}
@@ -58,7 +58,7 @@ export default async function LegalDocumentPage({
           </div>
         </header>
 
-        <main className="prose prose-base sm:prose-lg dark:prose-invert prose-headings:font-serif prose-a:text-accent hover:prose-a:text-accent/80 prose-a:transition-colors max-w-none">
+        <main className="prose prose-base sm:prose-lg dark:prose-invert prose-headings:font-serif prose-a:text-accent-ink hover:prose-a:text-accent-ink/80 prose-a:transition-colors max-w-none">
           <MDXRemote source={doc.content} />
         </main>
       </div>

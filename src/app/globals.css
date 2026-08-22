@@ -18,6 +18,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-ink: var(--accent-ink);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -67,6 +68,16 @@
   --muted-foreground: #52525b;
   --accent: #d4af37;
   --accent-foreground: #09090b;
+  /**
+   * The accent has two jobs and one colour cannot do both. As a fill, #d4af37
+   * carries #09090b at 9.46:1. As text on this background it measures 2.10:1,
+   * which fails WCAG AA for small text (4.5:1) and also for large (3:1) - so it
+   * was never usable as an ink here, at any size. `--accent-ink` is the accent
+   * for text and other things that must be legible: 4.90:1 on white.
+   * ux.md 8 records this constraint - it was simply never expressed in the
+   * tokens it claims to live in.
+   */
+  --accent-ink: #8a6d1f;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #e4e4e7;
@@ -92,6 +103,8 @@
   --muted-foreground: #a1a1aa;
   --accent: #b18a44;
   --accent-foreground: #09090b;
+  /* 8.91:1 on this background - the bright gold is legible on dark. */
+  --accent-ink: #d4af37;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
@@ -134,7 +147,7 @@
   }
 
   .kclub-eyebrow {
-    @apply border-l-4 border-accent pl-4 text-xs font-bold uppercase tracking-[0.22em] text-zinc-500 dark:text-white/60;
+    @apply border-l-4 border-accent pl-4 text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground dark:text-white/60;
   }
 
   .kclub-section-title {

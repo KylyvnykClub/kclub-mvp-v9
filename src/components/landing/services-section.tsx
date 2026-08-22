@@ -20,7 +20,7 @@ export function ServicesSection() {
         <div className="mt-12 grid gap-px border border-border bg-border lg:grid-cols-2">
           <article className="flex min-h-[420px] flex-col justify-between bg-white p-8 text-zinc-950 sm:p-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 01 / Member
               </span>
               <h3 className="mt-6 text-4xl font-black uppercase leading-none">
@@ -32,14 +32,14 @@ export function ServicesSection() {
             </div>
             <Link
               href="/register"
-              className="mt-12 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] hover:text-accent"
+              className="mt-12 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] hover:text-accent-ink"
             >
               {t("services.member.cta")}{" "}
               <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>
           </article>
 
-          <article className="flex min-h-[420px] flex-col justify-between bg-zinc-950 p-8 text-white sm:p-12">
+          <article className="dark flex min-h-[420px] flex-col justify-between bg-zinc-950 p-8 text-white sm:p-12">
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/45">
                 02 / Partner
@@ -56,7 +56,7 @@ export function ServicesSection() {
             </div>
             <Link
               href="/register"
-              className="mt-12 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] text-accent hover:text-white"
+              className="mt-12 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.16em] text-accent-ink hover:text-white"
             >
               {t("services.partner.cta")}{" "}
               <ArrowUpRight className="size-4" aria-hidden="true" />

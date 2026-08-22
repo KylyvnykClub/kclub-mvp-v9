@@ -45,7 +45,7 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl font-serif text-accent">
+            <CardTitle className="text-xl font-serif text-accent-ink">
               {t("title")}
             </CardTitle>
             <CardDescription className="mt-1">
@@ -54,7 +54,7 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
           </div>
           <Badge
             variant="outline"
-            className={tier === "vip" ? "text-accent border-accent" : ""}
+            className={tier === "vip" ? "text-accent-ink border-accent" : ""}
           >
             {tier.toUpperCase()}
           </Badge>

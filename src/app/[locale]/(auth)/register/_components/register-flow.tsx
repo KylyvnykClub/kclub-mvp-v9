@@ -367,7 +367,7 @@ export function RegisterFlow({
                       terms: (chunks) => (
                         <Link
                           href={`/${locale}/legal/terms-of-use`}
-                          className="font-bold underline hover:text-accent"
+                          className="font-bold underline hover:text-accent-ink"
                         >
                           {chunks}
                         </Link>
@@ -391,7 +391,7 @@ export function RegisterFlow({
                       privacy: (chunks) => (
                         <Link
                           href={`/${locale}/legal/privacy-policy`}
-                          className="font-bold underline hover:text-accent"
+                          className="font-bold underline hover:text-accent-ink"
                         >
                           {chunks}
                         </Link>
@@ -415,7 +415,7 @@ export function RegisterFlow({
                       terms: (chunks) => (
                         <Link
                           href={`/${locale}/legal/terms-of-use`}
-                          className="font-bold underline hover:text-accent"
+                          className="font-bold underline hover:text-accent-ink"
                         >
                           {chunks}
                         </Link>
@@ -457,7 +457,7 @@ export function RegisterFlow({
             {t("haveAccount")}{" "}
             <Link
               href={`/${locale}/login`}
-              className="font-bold text-foreground hover:text-accent"
+              className="font-bold text-foreground hover:text-accent-ink"
             >
               {t("loginLink")}
             </Link>

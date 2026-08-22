@@ -43,7 +43,7 @@ export function BenefitsSection() {
                 className="group relative min-h-64 border-b border-r border-border p-8 transition-colors duration-200 hover:bg-background sm:p-10"
               >
                 <Icon
-                  className="size-8 text-accent"
+                  className="size-8 text-accent-ink"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
