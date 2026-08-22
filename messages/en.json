@@ -94,7 +94,13 @@
       "ru": "Russian"
     },
     "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
-    "ageLabel": "I confirm that I am 18 years of age or older"
+    "ageLabel": "I confirm that I am 18 years of age or older",
+    "turnstileError": {
+      "configuration": "Verification is misconfigured for this site, so registration cannot continue. Trying again will not help — please contact support and quote code {code}.",
+      "unsupported": "This browser cannot run the verification challenge. Please try a different browser. (code {code})",
+      "network": "The verification challenge could not be loaded. Check your connection and reload the page.",
+      "retryable": "The verification challenge failed. Please reload the page and try again. (code {code})"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
