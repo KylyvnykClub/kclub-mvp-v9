@@ -24,10 +24,18 @@ synthetic member data.
 
 ## Application URLs
 
+**The production origin is `https://www.kylyvnyk.club`.** It is written here because it was
+written nowhere, and on 2026-08-22 that cost an investigation: the domain still served the previous
+application from the `kclub-mvp` repository while `NEXT_PUBLIC_APP_URL` already named it, so every
+card QR encoded a URL that returned someone else's 404. Nothing detected it — the value is a
+syntactically valid URL, and no check compares it against what the domain actually serves. The
+domain was moved onto this project rather than the variable repointed at the `vercel.app` host,
+because a QR code outlives the deployment that printed it.
+
 |Key|Required for production|Source of truth|Verification|
 |-|-|-|-|
-|`NEXT_PUBLIC_APP_URL`|Yes|Vercel project domain|Open the production URL and confirm generated links, robots sitemap URL, auth redirects, and Stripe return URLs use the same origin.|
-|`BETTER_AUTH_URL`|Yes|Vercel project domain|Confirm it matches `NEXT_PUBLIC_APP_URL`; mismatches can create invalid callback or cookie behavior.|
+|`NEXT_PUBLIC_APP_URL`|Yes|`https://www.kylyvnyk.club` — the Vercel project domain|Open the production URL and confirm generated links, robots sitemap URL, auth redirects, and Stripe return URLs use the same origin. Check `/en/card/<any-token>` renders this application's "Card Not Found" rather than a 404 from another app — that is the cheapest proof the domain and the variable agree.|
+|`BETTER_AUTH_URL`|Yes|`https://www.kylyvnyk.club` — must match `NEXT_PUBLIC_APP_URL`|Confirm it matches `NEXT_PUBLIC_APP_URL`; mismatches can create invalid callback or cookie behavior. `tools/check-production-env.ts` compares the two, but passes when both are absent — see the backlog item `check-production-env-blind-to-missing-app-url`.|
 |`NODE_ENV`|Yes|Vercel runtime|Confirm production deploy reports `production`.|
 |`VERCEL_ENV`|Yes|Vercel runtime|Confirm production is `production` and previews are `preview`.|
 
