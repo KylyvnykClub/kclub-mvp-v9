@@ -245,7 +245,8 @@ job lands in the dead-letter queue and pages. Member pays and the whole
 projection pipeline is down → the member sees "activating, this can take a few
 minutes"; access appears when the pipeline recovers, and nothing is lost because
 Stripe holds the truth. Card declined at renewal → dunning per FR-056; access
-survives the 14-day grace period, then the entitlement expiry sweep removes it.
+survives the 14-day grace period, the subscriber is warned three days before it
+ends, and then the entitlement expiry sweep removes it.
 
 ### 3.3 Partner onboarding to publication
 

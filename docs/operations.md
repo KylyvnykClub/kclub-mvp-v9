@@ -59,8 +59,8 @@ lives in [`vercel.json`](../vercel.json).
 
 |Job|Schedule|What it does|
 |-|-|-|
-|`/api/cron/outbox-drain`|00:05 UTC daily|Drains the transactional outbox: notification emails, moderation outcomes|
-|`/api/cron/subscription-lapse`|00:35 UTC daily|Revokes access once a paid period has ended|
+|`/api/cron/outbox-drain`|00:50 UTC daily|Drains the transactional outbox: notification emails, moderation outcomes. Runs _after_ subscription-lapse so a warning it enqueues leaves the same night, and is only the retry path for Stripe projections since ADR 0017|
+|`/api/cron/subscription-lapse`|00:35 UTC daily|Two sweeps: revokes access once a paid period has ended (FR-054), then warns subscribers whose dunning grace period is within 3 days of expiring (FR-056)|
 |`/api/cron/billing-reconciliation`|02:17 UTC daily|Compares local subscription rows against Stripe and alerts on divergence, without repairing|
 |`/api/cron/retention`|03:41 UTC daily|Deletes abandoned company drafts after 90 days, and runs the 30-day account erasure|
 |`/api/cron/referrals`|01:11 UTC daily|Expires referrals not acted on within 14 days - delivered and never answered, or never moderated - and deletes the client contact details they hold (FR-077)|

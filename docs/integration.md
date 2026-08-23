@@ -108,7 +108,7 @@ we expect, and adding one is a deliberate act.
 
 |Aspect|Detail|
 |-|-|
-|Purpose|Transactional email: moderation outcomes, payment failures, referral notifications, security notices|
+|Purpose|Transactional email: moderation outcomes, payment failures, grace-expiry warnings, referral notifications, security notices|
 |Base URL(s)|`https://api.resend.com`|
 |Protocol|REST|
 |Authentication|API key|

@@ -3,7 +3,12 @@ import type { Db, DbClient } from "@/data/db";
 import { findMemberByStripeCustomerId } from "@/data/billing";
 import { findCompanyById } from "@/data/companies";
 import { findMemberLanguage } from "@/data/members";
-import { drainOutbox, markProcessed } from "@/data/outbox";
+import {
+  GRACE_EXPIRY_WARNING_NOTIFICATION,
+  PAYMENT_FAILED_NOTIFICATION,
+  drainOutbox,
+  markProcessed,
+} from "@/data/outbox";
 import {
   BILLING_OUTBOX_TOPIC,
   BILLING_NOTIFICATION_TOPIC,
@@ -49,11 +54,18 @@ interface SubscriptionSyncPayload {
   subscriptionId?: string;
 }
 
+/**
+ * Flat and entirely optional on purpose: this arrives from a `jsonb` column and
+ * nothing validates it at runtime, so a discriminated union would imply a
+ * guarantee the row does not carry.
+ */
 interface NotificationPayload {
   type?: string;
   subscriptionId?: string;
   customerId?: string;
+  memberId?: string;
   attemptCount?: number;
+  graceEndsAt?: string;
 }
 
 /**
@@ -210,42 +222,104 @@ function processReconciliationAlert(payload: ReconciliationAlertPayload): void {
   );
 }
 
-async function processNotification(
-  client: DbClient,
-  payload: NotificationPayload,
-): Promise<void> {
-  if (payload.type !== "payment_failed" || !payload.customerId) return;
+interface Recipient {
+  email: string;
+  displayName: string;
+  locale: "en" | "ru" | "uk";
+}
 
-  const member = await findMemberByStripeCustomerId(client, payload.customerId);
+/**
+ * Resolve who to write to. The email comes from the Stripe customer, not from
+ * us — the members table has no email column — so a deleted customer or one
+ * without an address is unrecoverable here rather than retryable.
+ */
+async function resolveRecipient(
+  client: DbClient,
+  customerId: string,
+): Promise<Recipient | null> {
+  const member = await findMemberByStripeCustomerId(client, customerId);
   if (!member) {
     console.warn(
-      `[billing-notification] no member found for customer ${payload.customerId}`,
+      `[billing-notification] no member found for customer ${customerId}`,
     );
-    return;
+    return null;
   }
 
-  // Look up email from the Stripe customer — members table has no email column.
   const stripe = await getStripe();
-  const customer = await stripe.customers.retrieve(payload.customerId);
+  const customer = await stripe.customers.retrieve(customerId);
   if (customer.deleted || !customer.email) {
-    console.warn(
-      `[billing-notification] no email for customer ${payload.customerId}`,
-    );
-    return;
+    console.warn(`[billing-notification] no email for customer ${customerId}`);
+    return null;
   }
 
   const locale = (
     ["en", "ru", "uk"].includes(member.language) ? member.language : "en"
   ) as "en" | "ru" | "uk";
 
-  const { sendPaymentFailedEmail } =
-    await import("@/modules/notifications/email");
-
-  await sendPaymentFailedEmail({
-    to: customer.email,
+  return {
+    email: customer.email,
     displayName: member.displayName,
     locale,
-  });
+  };
+}
+
+/**
+ * The two halves of FR-056's notification requirement: the failure notice from
+ * the `invoice.payment_failed` webhook, and the warning before the grace period
+ * ends from the daily sweep.
+ *
+ * The default branch warns rather than throwing, deliberately. `runOutboxDrain`
+ * leaves a failed row unprocessed for the next drain, and a row whose type
+ * nobody handles never gets better — throwing would make it immortal, and since
+ * ADR 0017 every Stripe webhook starts a drain that would re-select it, so it
+ * would eventually crowd out live rows. Warn, mark processed, move on.
+ */
+async function processNotification(
+  client: DbClient,
+  payload: NotificationPayload,
+): Promise<void> {
+  if (!payload.customerId) {
+    console.warn(
+      `[billing-notification] no customer on a ${payload.type ?? "typeless"} row`,
+    );
+    return;
+  }
+
+  switch (payload.type) {
+    case PAYMENT_FAILED_NOTIFICATION: {
+      const recipient = await resolveRecipient(client, payload.customerId);
+      if (!recipient) return;
+
+      const { sendPaymentFailedEmail } =
+        await import("@/modules/notifications/email");
+      await sendPaymentFailedEmail({
+        to: recipient.email,
+        displayName: recipient.displayName,
+        locale: recipient.locale,
+      });
+      return;
+    }
+
+    case GRACE_EXPIRY_WARNING_NOTIFICATION: {
+      const recipient = await resolveRecipient(client, payload.customerId);
+      if (!recipient) return;
+
+      const { sendGraceExpiryWarningEmail } =
+        await import("@/modules/notifications/email");
+      await sendGraceExpiryWarningEmail({
+        to: recipient.email,
+        displayName: recipient.displayName,
+        locale: recipient.locale,
+      });
+      return;
+    }
+
+    default:
+      console.warn(
+        `[billing-notification] unhandled notification type: ${payload.type ?? "<none>"}`,
+      );
+      return;
+  }
 }
 
 async function processCompanyModeration(
