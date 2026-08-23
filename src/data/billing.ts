@@ -1,9 +1,23 @@
-import { and, desc, eq, inArray, isNull, lte } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lte,
+  notExists,
+  sql,
+} from "drizzle-orm";
 
 import type { Db, DbClient, DbTx } from "./db";
 import {
+  BILLING_NOTIFICATION_TOPIC,
+  GRACE_EXPIRY_WARNING_NOTIFICATION,
+} from "./outbox";
+import {
   cards,
   members,
+  outbox,
   processedWebhooks,
   stripeCustomers,
   subscriptions,
@@ -176,6 +190,117 @@ export async function findLapsedSubscriptions(
       and(
         eq(subscriptions.status, "active"),
         lte(subscriptions.currentPeriodEnd, now),
+      ),
+    );
+}
+
+/** FR-056: the dunning window Stripe is configured to retry across. */
+export const GRACE_PERIOD_DAYS = 14;
+
+/**
+ * How far ahead of the grace deadline the subscriber is warned.
+ *
+ * Three days, not one. The sweep runs once a day, so a one-day window tiles
+ * exactly and loses a subscriber entirely to a single skipped or delayed run.
+ * Three absorbs daily granularity, one wholly missed run, and the lag between
+ * enqueueing and draining - and still leaves at least two days to fix a card.
+ */
+export const GRACE_WARNING_LEAD_DAYS = 3;
+
+export interface GraceWarningCandidate {
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+  memberId: string;
+  companyId: string | null;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * When the dunning clock started for a subscription that is currently
+ * `past_due`.
+ *
+ * Stripe advances a subscription's period when the renewal invoice is
+ * *created*, not when it is paid, so for a `past_due` row `currentPeriodStart`
+ * is the moment the failing invoice was issued and `currentPeriodEnd` is still
+ * in the future. Pinned by an assertion in tests/billing-lifecycle.stripe.test.ts
+ * against a real test clock, because the whole window depends on it.
+ *
+ * The fallback to `currentPeriodEnd` keeps the query correct if that behaviour
+ * ever changes - a row whose period has already ended failed at its end.
+ */
+export function graceAnchorOf(
+  row: Pick<GraceWarningCandidate, "currentPeriodStart" | "currentPeriodEnd">,
+  now: Date,
+): Date {
+  return row.currentPeriodEnd > now
+    ? row.currentPeriodStart
+    : row.currentPeriodEnd;
+}
+
+/**
+ * FR-056: subscribers in the dunning grace period whose access is about to be
+ * revoked and who have not already been warned in this billing period.
+ *
+ * The deduplication is the outbox itself rather than a column on the
+ * subscription: a warning already enqueued since this period began suppresses
+ * the next sweep, whether or not it has been drained yet. That deliberately
+ * needs no migration.
+ */
+export async function findSubscriptionsNearingGraceExpiry(
+  db: DbClient,
+  now: Date,
+  gracePeriodDays: number = GRACE_PERIOD_DAYS,
+  leadDays: number = GRACE_WARNING_LEAD_DAYS,
+): Promise<GraceWarningCandidate[]> {
+  const graceMs = gracePeriodDays * MS_PER_DAY;
+  const leadMs = leadDays * MS_PER_DAY;
+
+  // We want `now < anchor + graceMs <= now + leadMs`, rearranged so that all
+  // the arithmetic happens here and SQL only compares two timestamps.
+  const anchorAfter = new Date(now.getTime() - graceMs);
+  const anchorUpTo = new Date(now.getTime() + leadMs - graceMs);
+
+  const anchor = sql`case
+    when ${subscriptions.currentPeriodEnd} > ${now}
+    then ${subscriptions.currentPeriodStart}
+    else ${subscriptions.currentPeriodEnd}
+  end`;
+
+  return db
+    .select({
+      stripeSubscriptionId: subscriptions.stripeSubscriptionId,
+      stripeCustomerId: subscriptions.stripeCustomerId,
+      memberId: subscriptions.memberId,
+      companyId: subscriptions.companyId,
+      currentPeriodStart: subscriptions.currentPeriodStart,
+      currentPeriodEnd: subscriptions.currentPeriodEnd,
+    })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.status, "past_due"),
+        sql`${anchor} > ${anchorAfter}`,
+        sql`${anchor} <= ${anchorUpTo}`,
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(outbox)
+            .where(
+              and(
+                eq(outbox.topic, BILLING_NOTIFICATION_TOPIC),
+                sql`${outbox.payload} ->> 'type' = ${GRACE_EXPIRY_WARNING_NOTIFICATION}`,
+                sql`${outbox.payload} ->> 'subscriptionId' = ${subscriptions.stripeSubscriptionId}`,
+                // created_at is timestamptz and current_period_start is a naive
+                // timestamp. Convert explicitly rather than leaning on the
+                // session TimeZone - the test container is UTC, so a non-UTC
+                // production session would flip this with every test green.
+                sql`${outbox.createdAt} > (${subscriptions.currentPeriodStart} at time zone 'utc')`,
+              ),
+            ),
+        ),
       ),
     );
 }

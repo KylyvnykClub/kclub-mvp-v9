@@ -108,7 +108,7 @@ we expect, and adding one is a deliberate act.
 
 |Aspect|Detail|
 |-|-|
-|Purpose|Transactional email: moderation outcomes, payment failures, referral notifications, security notices|
+|Purpose|Transactional email: moderation outcomes, payment failures, grace-expiry warnings, referral notifications, security notices|
 |Base URL(s)|`https://api.resend.com`|
 |Protocol|REST|
 |Authentication|API key|
@@ -190,12 +190,20 @@ internal identifier, a stack trace or a vendor's raw error string.
 |Job invocation|Inngest|Signature verification|The job's own step ids|Inngest retries per its policy|
 
 **The handler contract, identical for all of them:** verify the signature, insert
-the event id, write an outbox row, return 200 — and do nothing else. Projection
-happens in a worker. This is the single most important design rule in the
-integration surface, and it exists because a webhook handler that does real work
-will eventually be slow, and a slow handler makes the sender retry, and retries
-against a handler that is already half-finished are how double-provisioning
-happens.
+the event id, write an outbox row, return 200 — and do nothing else _before
+responding_. Projection happens in a worker. This is the single most important
+design rule in the integration surface, and it exists because a webhook handler
+that does real work will eventually be slow, and a slow handler makes the sender
+retry, and retries against a handler that is already half-finished are how
+double-provisioning happens.
+
+**The worker may run in the same invocation, after the response.** Since
+[ADR 0017](decisions/0017-project-entitlements-after-the-webhook-response.md)
+the Stripe handler schedules the outbox drain in a Next.js `after()` callback,
+which runs once the 200 is already on the wire. The rule above is about the
+sender's response timer, and `after()` is outside it; the outbox row and the
+scheduled drain remain the durable record and the retry path. Doing the same
+work _before_ responding is still forbidden, for exactly the reason given.
 
 **Out-of-order delivery** is treated as normal, not exceptional. Stripe does not
 guarantee order. Projection is a fold over the current subscription object, and

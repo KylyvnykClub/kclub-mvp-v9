@@ -5,6 +5,20 @@ import { outbox } from "./schema/outbox";
 
 export type OutboxEntry = typeof outbox.$inferSelect;
 
+/**
+ * Outbox topic for billing-related notifications, and the payload `type`
+ * discriminators carried inside it.
+ *
+ * These live beside the table rather than in the billing module because
+ * `findSubscriptionsNearingGraceExpiry` (data/billing.ts) reads them to
+ * deduplicate against rows already enqueued, and importing them from
+ * `@/modules/billing/projection` would close the cycle
+ * data/billing -> modules/billing/projection -> data/billing.
+ */
+export const BILLING_NOTIFICATION_TOPIC = "billing.notification";
+export const PAYMENT_FAILED_NOTIFICATION = "payment_failed";
+export const GRACE_EXPIRY_WARNING_NOTIFICATION = "grace_expiry_warning";
+
 export async function enqueueOutbox(
   db: DbClient,
   topic: string,

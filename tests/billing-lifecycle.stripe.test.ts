@@ -6,6 +6,7 @@ import { getTestDb } from "./setup/integration-setup.js";
 import { foldSubscription } from "@/modules/billing/projection.js";
 import {
   findSubscriptionByStripeId,
+  graceAnchorOf,
   processWebhookOnce,
 } from "@/data/billing.js";
 import {
@@ -255,6 +256,24 @@ describeWithStripe(
 
       // 4. Dun. FR-056: Stripe is still retrying, so access is retained.
       await expect(cardTierOf(db, memberId)).resolves.toBe("vip");
+
+      // FR-056: which end of the row is the dunning clock? The grace-expiry
+      // warning derives its deadline from this and nothing else, so pin it
+      // here rather than in a comment. Stripe advances the period when the
+      // renewal invoice is *created*, not when it is paid — so for a past_due
+      // row the period has already moved on: `currentPeriodStart` is when
+      // dunning began and `currentPeriodEnd` is a month away. See
+      // graceAnchorOf() in src/data/billing.ts.
+      const duningRow = await findSubscriptionByStripeId(db, created.id);
+      expect(duningRow?.currentPeriodStart.getTime()).toBeGreaterThanOrEqual(
+        periodEndOf(renewed) * 1000,
+      );
+      expect(duningRow?.currentPeriodEnd.getTime()).toBeGreaterThan(
+        periodEndOf(renewed) * 1000,
+      );
+      expect(
+        graceAnchorOf(duningRow!, new Date(periodEndOf(renewed) * 1000)),
+      ).toEqual(duningRow!.currentPeriodStart);
 
       // 5. Recover. A working card plus paying the open invoice returns the
       //    subscription to active without any change on our side.

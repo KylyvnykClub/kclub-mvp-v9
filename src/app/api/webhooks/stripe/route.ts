@@ -1,98 +1,32 @@
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { after } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/data/db";
-import { processWebhookOnce } from "@/data/billing";
-import { enqueueOutbox } from "@/data/outbox";
 import { env } from "@/env";
+import { handleStripeWebhook } from "@/modules/billing/stripe-webhook";
 import {
-  BILLING_OUTBOX_TOPIC,
-  BILLING_NOTIFICATION_TOPIC,
-} from "@/modules/billing/projection";
+  INLINE_BATCH_SIZE,
+  runOutboxDrain,
+} from "@/modules/platform/outbox-worker";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
 /**
- * The handler contract from integration.md §4, verbatim: verify the signature,
- * insert the event id, write an outbox row, return 200 — and do nothing else.
- * Projection happens in the worker (src/modules/billing/projection.ts), which
- * re-fetches the subscription from the Stripe API rather than trusting this
- * payload's fields (ADR 0004).
+ * Stripe's only inbound endpoint. The handler itself lives in the billing
+ * module (`stripe-webhook.ts`); this file is the production wiring, and it is
+ * where the secrets and the connection are read. Keeping them here is what lets
+ * a test import the handler and assert what ADR 0017 decided — that the
+ * projection runs in this invocation, after the response — without needing
+ * either.
  */
 export async function POST(req: Request) {
-  const body = await req.text();
-  const signature = (await headers()).get("Stripe-Signature");
-
-  if (!signature) {
-    return new NextResponse("Missing Stripe-Signature header", { status: 400 });
-  }
-
-  let event: Stripe.Event;
-
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      env.server.STRIPE_WEBHOOK_SECRET,
-    );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new NextResponse(`Webhook Error: ${message}`, { status: 400 });
-  }
-
-  try {
-    await processWebhookOnce(db, event.id, event.type, async (tx) => {
-      if (
-        event.type === "customer.subscription.created" ||
-        event.type === "customer.subscription.updated" ||
-        event.type === "customer.subscription.deleted"
-      ) {
-        await enqueueOutbox(tx, BILLING_OUTBOX_TOPIC, {
-          eventId: event.id,
-          eventCreated: event.created,
-          subscriptionId: event.data.object.id,
-        });
-      }
-
-      if (event.type === "invoice.payment_failed") {
-        const invoice = event.data.object;
-        const subDetails = invoice.parent?.subscription_details;
-        const subscriptionId =
-          typeof subDetails?.subscription === "string"
-            ? subDetails.subscription
-            : subDetails?.subscription?.id;
-
-        if (subscriptionId) {
-          await enqueueOutbox(tx, BILLING_NOTIFICATION_TOPIC, {
-            eventId: event.id,
-            type: "payment_failed",
-            subscriptionId,
-            customerId:
-              typeof invoice.customer === "string"
-                ? invoice.customer
-                : invoice.customer?.id,
-            attemptCount: invoice.attempt_count,
-          });
-        }
-      }
-    });
-
-    if (process.env.NODE_ENV === "development") {
-      // Automatically trigger outbox drain in development mode
-      // since Vercel Cron is not running locally.
-      fetch(new URL("/api/cron/outbox-drain", req.url).toString(), {
-        headers: env.server.CRON_SECRET
-          ? { authorization: `Bearer ${env.server.CRON_SECRET}` }
-          : undefined,
-      }).catch((err) =>
-        console.error("Auto-drain trigger failed in dev:", err),
-      );
-    }
-
-    return new NextResponse(null, { status: 200 });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Webhook handler failed for event ${event.id}: ${message}`);
-    return new NextResponse("Webhook handler failed", { status: 500 });
-  }
+  return handleStripeWebhook(req, after, {
+    db,
+    constructEvent: (body, signature) =>
+      stripe.webhooks.constructEvent(
+        body,
+        signature,
+        env.server.STRIPE_WEBHOOK_SECRET,
+      ),
+    drain: () => runOutboxDrain(INLINE_BATCH_SIZE),
+  });
 }
