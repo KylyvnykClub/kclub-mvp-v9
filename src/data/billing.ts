@@ -263,10 +263,15 @@ export async function findSubscriptionsNearingGraceExpiry(
   const anchorAfter = new Date(now.getTime() - graceMs);
   const anchorUpTo = new Date(now.getTime() + leadMs - graceMs);
 
+  // Both period columns are naive `timestamp`, while `now` arrives as
+  // `timestamptz`. Every comparison below converts explicitly, for the same
+  // reason the outbox subquery does: without it Postgres casts using the
+  // session TimeZone, the test container is UTC, and a non-UTC production
+  // session would shift the whole window with every test still green.
   const anchor = sql`case
-    when ${subscriptions.currentPeriodEnd} > ${now}
-    then ${subscriptions.currentPeriodStart}
-    else ${subscriptions.currentPeriodEnd}
+    when (${subscriptions.currentPeriodEnd} at time zone 'utc') > ${now}
+    then (${subscriptions.currentPeriodStart} at time zone 'utc')
+    else (${subscriptions.currentPeriodEnd} at time zone 'utc')
   end`;
 
   return db
@@ -293,10 +298,6 @@ export async function findSubscriptionsNearingGraceExpiry(
                 eq(outbox.topic, BILLING_NOTIFICATION_TOPIC),
                 sql`${outbox.payload} ->> 'type' = ${GRACE_EXPIRY_WARNING_NOTIFICATION}`,
                 sql`${outbox.payload} ->> 'subscriptionId' = ${subscriptions.stripeSubscriptionId}`,
-                // created_at is timestamptz and current_period_start is a naive
-                // timestamp. Convert explicitly rather than leaning on the
-                // session TimeZone - the test container is UTC, so a non-UTC
-                // production session would flip this with every test green.
                 sql`${outbox.createdAt} > (${subscriptions.currentPeriodStart} at time zone 'utc')`,
               ),
             ),

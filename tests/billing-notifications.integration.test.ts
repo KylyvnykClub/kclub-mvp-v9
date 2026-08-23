@@ -165,6 +165,103 @@ describe("billing notifications (FR-056)", () => {
     expect(sendGraceExpiryWarningEmail).not.toHaveBeenCalled();
   });
 
+  it("FR-056: a Resend failure leaves the row for the next drain instead of losing the warning", async () => {
+    const db = testDbClient();
+    await seedMemberWithCustomer(db, "en");
+
+    await enqueueOutbox(db, BILLING_NOTIFICATION_TOPIC, {
+      type: GRACE_EXPIRY_WARNING_NOTIFICATION,
+      subscriptionId: "sub_grace",
+      customerId: CUSTOMER_ID,
+    });
+
+    vi.mocked(sendGraceExpiryWarningEmail).mockRejectedValueOnce(
+      new Error("Resend refused the message: 429 rate limited"),
+    );
+
+    const failed = await runOutboxDrain(CRON_BATCH_SIZE, drainDeps());
+
+    // Unprocessed, not silently discarded. Marking it here would lose the
+    // warning for good: the enqueued row still suppresses the next sweep, so
+    // the member would never be warned at all.
+    expect(failed.failed).toBe(1);
+    expect(await countPending(db)).toBe(1);
+
+    const retried = await runOutboxDrain(CRON_BATCH_SIZE, drainDeps());
+
+    expect(retried.notified).toBe(1);
+    expect(sendGraceExpiryWarningEmail).toHaveBeenCalledTimes(2);
+    expect(await countPending(db)).toBe(0);
+  });
+
+  it("FR-056: a failing row is retried alone and its delivered sibling is not sent again", async () => {
+    const db = testDbClient();
+    await seedMemberWithCustomer(db, "en");
+
+    // Row A: a notification whose email really goes out.
+    await enqueueOutbox(db, BILLING_NOTIFICATION_TOPIC, {
+      type: PAYMENT_FAILED_NOTIFICATION,
+      subscriptionId: "sub_first",
+      customerId: CUSTOMER_ID,
+    });
+
+    // Row B, drained after A: a projection for a member that does not exist,
+    // so the fold fails.
+    //
+    // Worth being precise about what this does and does not prove. It pins the
+    // retry semantics: B comes back, A does not. It does NOT discriminate
+    // between one transaction per row and one per batch, because
+    // foldSubscription wraps its own writes in a nested transaction, so a
+    // constraint violation is rolled back to that savepoint and never poisons
+    // the surrounding transaction. Only an infrastructure failure - a dropped
+    // connection, a statement timeout - can leave Postgres `aborted` mid-batch,
+    // and that is not reachable from a test. The per-row transaction is there
+    // for that case; this test covers the case that is reachable.
+    await enqueueOutbox(db, "billing.subscription.sync", {
+      eventId: "evt_fk_violation",
+      eventCreated: 1_750_000_000,
+      subscriptionId: "sub_orphan",
+    });
+
+    const orphanFixture = {
+      id: "sub_orphan",
+      customer: "cus_orphan",
+      status: "active",
+      metadata: { memberId: crypto.randomUUID() },
+      items: {
+        data: [
+          {
+            price: { id: "price_vip_monthly" },
+            current_period_start: 1_750_000_000,
+            current_period_end: 1_752_592_000,
+          },
+        ],
+      },
+      cancel_at_period_end: false,
+      canceled_at: null,
+    };
+
+    const result = await runOutboxDrain(CRON_BATCH_SIZE, {
+      db: getTestDb() as never,
+      fetchSubscription: () => Promise.resolve(orphanFixture as never),
+    });
+
+    expect(sendPaymentFailedEmail).toHaveBeenCalledTimes(1);
+    expect(result.failed).toBe(1);
+    expect(result.notified).toBe(1);
+
+    // Row A stays processed; only row B is left pending.
+    expect(await countPending(db)).toBe(1);
+
+    const retried = await runOutboxDrain(CRON_BATCH_SIZE, {
+      db: getTestDb() as never,
+      fetchSubscription: () => Promise.reject(new Error("still broken")),
+    });
+
+    expect(retried.drained).toBe(1);
+    expect(sendPaymentFailedEmail).toHaveBeenCalledTimes(1);
+  });
+
   it("FR-056: an unhandled notification type sends nothing and does not jam the outbox", async () => {
     const db = testDbClient();
     await seedMemberWithCustomer(db, "en");

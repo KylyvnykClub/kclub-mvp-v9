@@ -6,13 +6,16 @@ import { findMemberLanguage } from "@/data/members";
 import {
   GRACE_EXPIRY_WARNING_NOTIFICATION,
   PAYMENT_FAILED_NOTIFICATION,
+  claimOutboxRow,
   drainOutbox,
   markProcessed,
+  type OutboxEntry,
 } from "@/data/outbox";
 import {
   BILLING_OUTBOX_TOPIC,
   BILLING_NOTIFICATION_TOPIC,
   reconcileSubscription,
+  type ProjectionResult,
   type SubscriptionFetcher,
 } from "@/modules/billing/projection";
 import {
@@ -105,15 +108,35 @@ export interface DrainResult {
  * wire. The webhook still does nothing but verify, insert and enqueue *before*
  * responding, which is the property integration.md §4's contract is protecting.
  *
- * The whole drain runs in one transaction. `drainOutbox` selects
+ * **One transaction per row, not one per batch.** `drainOutbox` selects
  * `FOR UPDATE SKIP LOCKED`, and that lock only means anything for as long as a
  * transaction holds it — outside one it is released microseconds later, long
  * before the row is marked processed. That was harmless while exactly one drain
  * ran per day and stopped being harmless the moment every webhook started one.
  *
- * A row that fails is left unprocessed for the next drain, and a failure is
- * caught per row so that one poisoned payload cannot roll back the rows that
- * succeeded beside it.
+ * Wrapping the whole batch instead would fix the lock and break something else:
+ * one SQL error puts Postgres into `aborted`, a JavaScript `catch` cannot undo
+ * that, and the commit at the end of the batch degrades to a rollback — so rows
+ * whose emails had already been sent lose their `processed_at` and are sent
+ * again on the next drain. A per-row transaction keeps the lock meaningful and
+ * confines a failure to the row that caused it.
+ *
+ * In practice that abort takes an infrastructure failure — a dropped
+ * connection, a statement timeout — rather than bad data, because
+ * `foldSubscription` wraps its own writes in a nested transaction and a
+ * constraint violation there is rolled back to that savepoint. No test reaches
+ * it; this shape is defensive, and cheap.
+ *
+ * A row that fails is left unprocessed for the next drain, which is also what
+ * happens if the invocation is killed mid-row: the transaction never commits,
+ * so the work is retried rather than lost. That is the right way round for
+ * entitlements — the fold is idempotent, so a repeat is free, while a loss is
+ * money and access disagreeing.
+ *
+ * The Stripe and Resend calls still happen inside their row's transaction,
+ * which holds one pool connection for the length of a round trip. Bounded and
+ * acceptable at this volume; the way out is a claim column, which needs a
+ * migration (backlog `outbox-has-no-retention-and-no-payload-index`).
  */
 export async function runOutboxDrain(
   batchSize: number,
@@ -121,94 +144,122 @@ export async function runOutboxDrain(
 ): Promise<DrainResult> {
   const deps = injected ?? (await productionDrainDeps());
 
-  return deps.db.transaction(async (tx) => {
-    const entries = await drainOutbox(tx, batchSize);
-    const result: DrainResult = {
-      drained: entries.length,
-      processed: 0,
-      stale: 0,
-      deleted: 0,
-      notified: 0,
-      alerted: 0,
-      failed: 0,
-    };
+  const result: DrainResult = {
+    drained: 0,
+    processed: 0,
+    stale: 0,
+    deleted: 0,
+    notified: 0,
+    alerted: 0,
+    failed: 0,
+  };
 
-    for (const entry of entries) {
-      if (entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC) {
-        processReconciliationAlert(entry.payload as ReconciliationAlertPayload);
-        result.alerted += 1;
-        await markProcessed(tx, entry.id);
-        continue;
-      }
+  // Candidates first, outside any transaction. Listing and taking are separate
+  // steps so that a row which fails cannot be re-selected by the next
+  // iteration and starve the rest of the batch behind it.
+  const candidates = await drainOutbox(deps.db, batchSize);
 
-      if (entry.topic === BILLING_NOTIFICATION_TOPIC) {
-        try {
-          await processNotification(tx, entry.payload as NotificationPayload);
-          result.notified += 1;
-          await markProcessed(tx, entry.id);
-        } catch (error) {
-          result.failed += 1;
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
-          console.error(`[billing-notification] failed: ${message}`);
-        }
-        continue;
-      }
+  for (const candidate of candidates) {
+    try {
+      const outcome = await deps.db.transaction(async (tx) => {
+        const entry = await claimOutboxRow(tx, candidate.id);
+        if (!entry) return "taken-by-another";
 
-      if (entry.topic === COMPANY_MODERATION_TOPIC) {
-        try {
-          await processCompanyModeration(
-            tx,
-            entry.payload as CompanyModerationPayload,
-          );
-          result.notified += 1;
-          await markProcessed(tx, entry.id);
-        } catch (error) {
-          result.failed += 1;
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
-          console.error(`[company-moderation] notification failed: ${message}`);
-        }
-        continue;
-      }
+        return handleEntry(tx, entry, deps);
+      });
 
-      if (entry.topic !== BILLING_OUTBOX_TOPIC) {
-        await markProcessed(tx, entry.id);
-        continue;
-      }
+      if (outcome === "taken-by-another") continue;
 
-      const payload = entry.payload as SubscriptionSyncPayload;
-      const subscriptionId = payload.subscriptionId;
-      const eventCreated = payload.eventCreated;
-
-      if (!subscriptionId || !eventCreated) {
-        result.failed += 1;
-        continue;
-      }
-
-      try {
-        const outcome = await reconcileSubscription(
-          tx,
-          deps.fetchSubscription,
-          subscriptionId,
-          eventCreated,
-        );
-        if (outcome === "stale") result.stale += 1;
-        else if (outcome === "deleted") result.deleted += 1;
-        else result.processed += 1;
-        await markProcessed(tx, entry.id);
-      } catch (error) {
-        result.failed += 1;
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
-        console.error(
-          `[billing-projection] failed for subscription ${subscriptionId}: ${message}`,
-        );
-      }
+      result.drained += 1;
+      if (outcome === "alerted") result.alerted += 1;
+      else if (outcome === "notified") result.notified += 1;
+      else if (outcome === "stale") result.stale += 1;
+      else if (outcome === "deleted") result.deleted += 1;
+      else if (outcome === "applied") result.processed += 1;
+      else if (outcome === "malformed") result.failed += 1;
+    } catch (error) {
+      // The transaction rolled back, so this row keeps its null processed_at
+      // and the next drain will try it again. Its siblings are already
+      // committed and are not touched by it.
+      result.drained += 1;
+      result.failed += 1;
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(
+        `[outbox-drain] failed for row ${candidate.id} on topic ${candidate.topic}: ${message}`,
+      );
     }
+  }
 
-    return result;
-  });
+  return result;
+}
+
+type EntryOutcome =
+  | "alerted"
+  | "notified"
+  | "ignored"
+  | "malformed"
+  | "taken-by-another"
+  | ProjectionResult;
+
+/**
+ * Handle exactly one outbox row inside its own transaction. Throwing is how a
+ * row asks to be retried: the transaction rolls back and `processed_at` stays
+ * null.
+ */
+async function handleEntry(
+  tx: DbClient,
+  entry: OutboxEntry,
+  deps: DrainDeps,
+): Promise<EntryOutcome> {
+  if (entry.topic === BILLING_RECONCILIATION_ALERT_TOPIC) {
+    processReconciliationAlert(entry.payload as ReconciliationAlertPayload);
+    await markProcessed(tx, entry.id);
+    return "alerted";
+  }
+
+  if (entry.topic === BILLING_NOTIFICATION_TOPIC) {
+    await processNotification(tx, entry.payload as NotificationPayload);
+    await markProcessed(tx, entry.id);
+    return "notified";
+  }
+
+  if (entry.topic === COMPANY_MODERATION_TOPIC) {
+    await processCompanyModeration(
+      tx,
+      entry.payload as CompanyModerationPayload,
+    );
+    await markProcessed(tx, entry.id);
+    return "notified";
+  }
+
+  if (entry.topic !== BILLING_OUTBOX_TOPIC) {
+    await markProcessed(tx, entry.id);
+    return "ignored";
+  }
+
+  const payload = entry.payload as SubscriptionSyncPayload;
+  const subscriptionId = payload.subscriptionId;
+  const eventCreated = payload.eventCreated;
+
+  if (!subscriptionId || !eventCreated) {
+    // Not retryable: no later drain will find the missing fields. Marked
+    // processed so it cannot be re-selected forever, and counted as failed so
+    // it is visible in the cron response.
+    console.error(
+      `[billing-projection] outbox row ${entry.id} has no subscriptionId or eventCreated`,
+    );
+    await markProcessed(tx, entry.id);
+    return "malformed";
+  }
+
+  const outcome = await reconcileSubscription(
+    tx,
+    deps.fetchSubscription,
+    subscriptionId,
+    eventCreated,
+  );
+  await markProcessed(tx, entry.id);
+  return outcome;
 }
 
 function processReconciliationAlert(payload: ReconciliationAlertPayload): void {
