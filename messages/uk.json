@@ -423,7 +423,9 @@
     "totpSubtitle": "Введіть код із застосунку-аутентифікатора",
     "totpCodeLabel": "Код аутентифікатора",
     "totpVerify": "Підтвердити",
-    "totpCancel": "Скасувати"
+    "totpCancel": "Скасувати",
+    "showPassword": "Показати пароль",
+    "hidePassword": "Приховати пароль"
   },
   "register": {
     "title": "Приєднатися до KCLUB",

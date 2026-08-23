@@ -49,7 +49,9 @@
     "totpSubtitle": "Enter the code from your authenticator app",
     "totpCodeLabel": "Authenticator code",
     "totpVerify": "Verify",
-    "totpCancel": "Cancel"
+    "totpCancel": "Cancel",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "register": {
     "title": "Join KCLUB",

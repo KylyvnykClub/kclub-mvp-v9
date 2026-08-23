@@ -6,6 +6,7 @@ import {
   setStaffStatusAction,
 } from "@/actions/staff";
 import { getCurrentMember } from "@/actions/session";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ export default async function AdminStaffPage({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("admin.staff");
+  const tAuth = await getTranslations("auth");
 
   const session = await getCurrentMember();
   if (!session?.member) {
@@ -83,11 +85,12 @@ export default async function AdminStaffPage({ params }: Props) {
           maxLength={2}
           required
         />
-        <Input
+        <PasswordInput
           name="password"
-          type="password"
           placeholder={t("temporaryPassword")}
           required
+          showLabel={tAuth("showPassword")}
+          hideLabel={tAuth("hidePassword")}
         />
         <Button className="rounded-none">{t("create")}</Button>
       </form>
