@@ -684,7 +684,22 @@
     "representedBy": "Компанию представляет:",
     "managerRole": "Менеджер",
     "memberFallback": "Участник",
-    "eyebrow": "Каталог партнёров"
+    "eyebrow": "Каталог партнёров",
+    "paginationLabel": "Страницы каталога",
+    "previousPage": "Назад",
+    "nextPage": "Вперёд",
+    "pageOf": "Страница {page} из {total}",
+    "allSubcategories": "Все подкатегории",
+    "subcategoryPlaceholder": "Подкатегория",
+    "allCountries": "Все страны",
+    "allCities": "Все города",
+    "clearFilters": "Сбросить всё",
+    "removeFilter": "Убрать фильтр {filter}",
+    "resultCount": "{count, plural, =0 {Партнёров нет} one {# партнёр} few {# партнёра} many {# партнёров} other {# партнёра}}",
+    "viewLabel": "Вид",
+    "viewGrid": "Сеткой",
+    "viewList": "Списком",
+    "emptyHint": "Уберите один из фильтров или задайте более широкий запрос."
   },
   "company": {
     "registerTitle": "Зарегистрировать компанию",

@@ -684,7 +684,22 @@
     "representedBy": "Company is represented by:",
     "managerRole": "Manager",
     "memberFallback": "Member",
-    "eyebrow": "Partner directory"
+    "eyebrow": "Partner directory",
+    "paginationLabel": "Catalogue pages",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageOf": "Page {page} of {total}",
+    "allSubcategories": "All subcategories",
+    "subcategoryPlaceholder": "Subcategory",
+    "allCountries": "All countries",
+    "allCities": "All cities",
+    "clearFilters": "Clear all",
+    "removeFilter": "Remove filter {filter}",
+    "resultCount": "{count, plural, =0 {No partners} one {# partner} other {# partners}}",
+    "viewLabel": "Layout",
+    "viewGrid": "Grid view",
+    "viewList": "List view",
+    "emptyHint": "Try removing a filter or searching for something broader."
   },
   "company": {
     "registerTitle": "Register Company",

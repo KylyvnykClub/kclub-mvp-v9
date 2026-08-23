@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/data/db";
+import type { PageParams } from "@/data/pagination";
 import { appendAuditEntry } from "@/data/audit-log";
 import { enqueueOutbox } from "@/data/outbox";
 import {
@@ -15,6 +16,8 @@ import {
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
   listActiveSubcategories,
+  countApprovedCompaniesByIds,
+  listPartnerLocations,
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
   listCompanyIdsWithActiveSubscription,
@@ -280,9 +283,31 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
   return { success: true };
 }
 
-export async function getPartnersListAction(filters?: PartnerFilters) {
+/**
+ * The country/city options for the catalogue filter, scoped to partners the
+ * caller could actually see.
+ */
+export async function getPartnerLocationsAction() {
+  if (SKIP_DB_PRERENDER) return [];
+
+  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  if (activeCompanyIds.length === 0) return [];
+
+  return listPartnerLocations(db, activeCompanyIds);
+}
+
+/**
+ * One page of the catalogue, plus how many partners the filters match in total.
+ *
+ * The total is what lets the page render "page 2 of 7" rather than guessing
+ * from a short final page.
+ */
+export async function getPartnersListAction(
+  filters?: PartnerFilters,
+  page?: PageParams,
+) {
   if (SKIP_DB_PRERENDER) {
-    return [];
+    return { rows: [], total: 0 };
   }
 
   const auth = await getCurrentMember();
@@ -293,9 +318,14 @@ export async function getPartnersListAction(filters?: PartnerFilters) {
 
   const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
 
-  if (activeCompanyIds.length === 0) return [];
+  if (activeCompanyIds.length === 0) return { rows: [], total: 0 };
 
-  return listApprovedCompaniesByIds(db, activeCompanyIds, filters);
+  const [rows, total] = await Promise.all([
+    listApprovedCompaniesByIds(db, activeCompanyIds, filters, page),
+    countApprovedCompaniesByIds(db, activeCompanyIds, filters),
+  ]);
+
+  return { rows, total };
 }
 
 export async function getPublicShowcasePartners() {
