@@ -824,7 +824,14 @@
       "fieldIndustry": "Industry",
       "fieldLocation": "Location",
       "fieldAvatarUrl": "Avatar",
-      "fieldTotpEnabled": "Two-factor authentication"
+      "fieldTotpEnabled": "Two-factor authentication",
+      "resetPassword": "Reset password",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "resetPasswordHint": "Verify who you are speaking to before resetting. All of this member's sessions will be signed out.",
+      "reasonRequiredReset": "State how you verified this person before resetting",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordReset": "Password reset and sessions revoked"
     },
     "companies": {
       "title": "Company Moderation",

@@ -824,7 +824,14 @@
       "fieldIndustry": "Галузь",
       "fieldLocation": "Місто",
       "fieldAvatarUrl": "Аватар",
-      "fieldTotpEnabled": "Двофакторна автентифікація"
+      "fieldTotpEnabled": "Двофакторна автентифікація",
+      "resetPassword": "Скинути пароль",
+      "newPasswordLabel": "Новий пароль",
+      "newPasswordPlaceholder": "Щонайменше 8 символів",
+      "resetPasswordHint": "Переконайтеся, з ким розмовляєте, перш ніж скидати. Усі сесії цього учасника буде завершено.",
+      "reasonRequiredReset": "Зазначте, як ви підтвердили особу, перш ніж скидати",
+      "passwordTooShort": "Пароль має містити щонайменше 8 символів",
+      "passwordReset": "Пароль скинуто, сесії завершено"
     },
     "companies": {
       "title": "Модерація компаній",

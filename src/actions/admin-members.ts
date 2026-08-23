@@ -2,7 +2,10 @@
 
 import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
-import { deleteSessionsByMemberId } from "@/data/identity";
+import {
+  deleteSessionsByMemberId,
+  setMemberPasswordHash,
+} from "@/data/identity";
 import {
   countMembers,
   countMembersByStatus,
@@ -21,6 +24,7 @@ import {
   pageParamsFromSearchParam,
 } from "@/data/pagination";
 import { getCurrentMember } from "@/actions/session";
+import { hashPassword } from "@/modules/identity";
 import {
   buildActor,
   normalizeRole,
@@ -49,6 +53,16 @@ function requireAuthorized(
  * nonsense page falls back to the unfiltered first page rather than throwing -
  * a hand-edited URL is a bad filter, not an error worth a 500.
  */
+const resetPasswordSchema = z.object({
+  memberId: z.uuid(),
+  // Same floor the member's own registration enforces, so a reset cannot be
+  // used to sneak a weaker password past the rule.
+  newPassword: z.string().min(8).max(100),
+  // Free text on purpose: it is the staff member's account of what identity
+  // proof they accepted, and no enum can enumerate that yet (ADR 0018).
+  reason: z.string().min(1).max(500),
+});
+
 const membersListParamsSchema = z.object({
   query: z.string().trim().max(120).optional().catch(undefined),
   status: z.enum(MEMBER_ADMIN_STATUSES).optional().catch(undefined),
@@ -134,6 +148,51 @@ export async function blockMemberAction(
       before: { status: before?.status ?? null },
       after: { status: updated.status },
     },
+  });
+}
+
+/**
+ * FR-006, ADR 0018: a staff owner resets a member's password after verifying
+ * who they are by some means outside this system.
+ *
+ * This is the whole of account recovery for now, and it is a stopgap. There is
+ * no member-facing self-service path: SMS is postponed (ADR 0012) and members
+ * have no email on file, so nothing can be sent to them to prove they are them.
+ * The reason field is where the staff member records what identity proof they
+ * accepted, because the system cannot check any.
+ *
+ * Every other session dies with the old password, which is the half of FR-006
+ * that stops a reset from leaving a thief signed in.
+ */
+export async function resetMemberPasswordAction(
+  memberId: string,
+  newPassword: string,
+  reason: string,
+) {
+  const session = await getCurrentMember();
+  const actor = requireAuthorized(session?.member, "reset_password", "member");
+
+  const input = resetPasswordSchema.parse({ memberId, newPassword, reason });
+
+  const updated = await setMemberPasswordHash(
+    db,
+    input.memberId,
+    await hashPassword(input.newPassword),
+  );
+
+  if (!updated) throw new Error("Member not found");
+
+  await deleteSessionsByMemberId(db, input.memberId);
+
+  // FR-087. The password is not in here, in any form: neither the plaintext nor
+  // the hash, both of which security.md names as never logged.
+  await appendAuditEntry(db, {
+    actorType: actor.role,
+    actorId: actor.id,
+    action: "reset_member_password",
+    subjectType: "member",
+    subjectId: input.memberId,
+    meta: { reason: input.reason, sessionsRevoked: true },
   });
 }
 

@@ -824,7 +824,14 @@
       "fieldIndustry": "Отрасль",
       "fieldLocation": "Город",
       "fieldAvatarUrl": "Аватар",
-      "fieldTotpEnabled": "Двухфакторная аутентификация"
+      "fieldTotpEnabled": "Двухфакторная аутентификация",
+      "resetPassword": "Сбросить пароль",
+      "newPasswordLabel": "Новый пароль",
+      "newPasswordPlaceholder": "Минимум 8 символов",
+      "resetPasswordHint": "Убедитесь, с кем говорите, прежде чем сбрасывать. Все сессии этого участника будут завершены.",
+      "reasonRequiredReset": "Укажите, как вы подтвердили личность, прежде чем сбрасывать",
+      "passwordTooShort": "Пароль должен быть не короче 8 символов",
+      "passwordReset": "Пароль сброшен, сессии завершены"
     },
     "companies": {
       "title": "Модерация компаний",

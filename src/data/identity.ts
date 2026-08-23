@@ -163,6 +163,30 @@ export async function deleteSessionsByMemberId(
 }
 
 /**
+ * Replace a member's password hash (FR-006, ADR 0018).
+ *
+ * Takes an already-hashed value: a plaintext password has no business reaching
+ * the data layer, where it would end up in a query the driver can echo back in
+ * an error message.
+ *
+ * Returns whether a row was actually updated, so the caller can tell a real
+ * reset from a reset of a member that does not exist.
+ */
+export async function setMemberPasswordHash(
+  db: DbClient,
+  memberId: string,
+  passwordHash: string,
+): Promise<boolean> {
+  const updated = await db
+    .update(members)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(members.id, memberId))
+    .returning({ id: members.id });
+
+  return updated.length > 0;
+}
+
+/**
  * The member's own sessions, for the screen that lets them end one (FR-007).
  *
  * The token is deliberately not selected. This list exists to be rendered, and
