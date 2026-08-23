@@ -28,6 +28,7 @@
     "env:check:production": "tsx tools/check-production-env.ts",
     "smoke:deployment": "tsx tools/smoke-deployment.ts",
     "stripe:check": "tsx tools/check-stripe-delivery.ts",
+    "beta:purge": "tsx tools/remove-beta-seed.ts",
     "i18n:check": "tsx tools/check-i18n-keys.ts",
     "test": "vitest run",
     "test:unit": "vitest run",
