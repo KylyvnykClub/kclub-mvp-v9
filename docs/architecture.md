@@ -380,6 +380,7 @@ shaped it without leaving the page.
 |[0014](decisions/0014-no-notification-log-table.md)|No dedicated notification log table|Accepted|
 |[0015](decisions/0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Accepted|
 |[0016](decisions/0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|
+|[0017](decisions/0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|
 
 ---
 

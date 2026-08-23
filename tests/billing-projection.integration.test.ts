@@ -28,6 +28,11 @@ import {
   setSubscriptionStatus,
 } from "@/data/billing.js";
 import { enqueueOutbox, countPending, drainOutbox } from "@/data/outbox.js";
+import { handleStripeWebhook } from "@/modules/billing/stripe-webhook.js";
+import {
+  INLINE_BATCH_SIZE,
+  runOutboxDrain,
+} from "@/modules/platform/outbox-worker.js";
 import {
   businessCategories,
   cards,
@@ -1130,5 +1135,116 @@ describe("billing reconciliation (FR-058)", () => {
       local: "active",
       stripe: "deleted",
     });
+  });
+});
+
+/**
+ * ADR 0017. Until it, the webhook only enqueued and `vercel.json` drained the
+ * outbox once a day, so a paid upgrade appeared the following morning — FR-026
+ * missed by roughly 1440x on a Must requirement.
+ *
+ * What a test can prove is the *architecture*: that the projection happens in
+ * the webhook's own invocation, with no scheduled run involved. The 60-second
+ * wall clock itself is a deployment property and is not asserted here — see
+ * the backlog item `fr-026-60s-bound-not-tested`.
+ */
+describe("FR-026: the tier is projected without waiting for a scheduled drain", () => {
+  it("FR-026: the webhook's deferred work moves the card tier, with no cron run", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    const eventId = `evt_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    const event = {
+      id: eventId,
+      type: "customer.subscription.created",
+      created: EPOCH,
+      data: { object: { id: subscriptionId } },
+    } as unknown as Stripe.Event;
+
+    const deferred: Array<() => Promise<void>> = [];
+    const response = await handleStripeWebhook(
+      new Request("https://kclub.test/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "Stripe-Signature": "t=0,v1=verified-by-the-fixture" },
+        body: "{}",
+      }),
+      (task) => {
+        deferred.push(task);
+      },
+      {
+        db: testDb(),
+        constructEvent: () => event,
+        drain: () =>
+          runOutboxDrain(INLINE_BATCH_SIZE, {
+            db: testDb(),
+            fetchSubscription: (id) =>
+              id === subscriptionId
+                ? Promise.resolve(
+                    subscriptionFixture(memberId, { id: subscriptionId }),
+                  )
+                : Promise.reject(new Error(`unexpected subscription ${id}`)),
+          }),
+      },
+    );
+
+    // The response Stripe waits for carries no projection work: the row is
+    // enqueued, the tier has not moved, and the handler is already done.
+    expect(response.status).toBe(200);
+    expect(await cardTierOf(db, memberId)).toBe("free");
+    expect(await countPending(db)).toBe(1);
+    expect(deferred).toHaveLength(1);
+
+    // What `after()` runs in production. No cron route is invoked anywhere in
+    // this test, and vercel.json's schedule is irrelevant to it.
+    await deferred[0]!();
+
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+    expect(await countPending(db)).toBe(0);
+  });
+
+  it("FR-026: a failed projection leaves the row for the retry sweep, not the member", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    const event = {
+      id: `evt_${crypto.randomUUID()}`,
+      type: "customer.subscription.created",
+      created: EPOCH,
+      data: { object: { id: subscriptionId } },
+    } as unknown as Stripe.Event;
+
+    const deferred: Array<() => Promise<void>> = [];
+    const response = await handleStripeWebhook(
+      new Request("https://kclub.test/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "Stripe-Signature": "t=0,v1=verified-by-the-fixture" },
+        body: "{}",
+      }),
+      (task) => {
+        deferred.push(task);
+      },
+      {
+        db: testDb(),
+        constructEvent: () => event,
+        drain: () =>
+          runOutboxDrain(INLINE_BATCH_SIZE, {
+            db: testDb(),
+            fetchSubscription: () =>
+              Promise.reject(new Error("Stripe is down")),
+          }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    await deferred[0]!();
+
+    // The inline drain failed. The outbox row must survive it unprocessed, so
+    // that the scheduled sweep still has something to retry.
+    expect(await cardTierOf(db, memberId)).toBe("free");
+    expect(await countPending(db)).toBe(1);
   });
 });
