@@ -43,6 +43,26 @@ export async function drainOutbox(
   return rows.rows as OutboxEntry[];
 }
 
+/**
+ * Take one specific pending row and hold its lock for the caller's
+ * transaction. Returns undefined when another drain already has it, or when it
+ * was processed between being listed and being claimed - `drainOutbox` only
+ * produces candidates, and this is where a row is actually taken.
+ */
+export async function claimOutboxRow(
+  db: DbClient,
+  id: string,
+): Promise<OutboxEntry | undefined> {
+  const rows = await db.execute(sql`
+    SELECT id, created_at, topic, payload, processed_at
+    FROM outbox
+    WHERE id = ${id} AND processed_at IS NULL
+    FOR UPDATE SKIP LOCKED
+  `);
+
+  return (rows.rows as OutboxEntry[])[0];
+}
+
 export async function markProcessed(db: DbClient, id: string): Promise<void> {
   await db
     .update(outbox)
