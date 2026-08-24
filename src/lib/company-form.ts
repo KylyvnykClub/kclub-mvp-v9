@@ -20,17 +20,53 @@ export const companyDetailsStepSchema = z.object({
   taxId: z.string().max(50).optional(),
   website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   description: z.string().max(1000).optional(),
+  specializationDescription: z
+    .string()
+    .min(2, "Specialization description is required")
+    .max(500),
   logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
-export const companyLocationStepSchema = z.object({
-  businessCategoryId: z.coerce
-    .number()
-    .int()
-    .positive("Please select a business category"),
-  country: z.string().min(2, "Country is required").max(100),
-  city: z.string().min(2, "City is required").max(100),
-});
+export const companyLocationStepSchema = z
+  .object({
+    businessCategoryId: z.coerce
+      .number()
+      .int()
+      .positive("Please select a business category"),
+    registrationCountryCode: z
+      .string()
+      .regex(/^[A-Z]{2}$/, "Country is required"),
+    serviceCountryCodes: z.string().max(1000),
+    servesWorldwide: z.enum(["true", "false"]),
+    businessFormat: z.enum([
+      "offline_only",
+      "online_only",
+      "online_offline",
+      "on_site_service",
+    ]),
+    administrativeLevel1: z.string().max(255).optional(),
+    administrativeLevel2: z.string().max(255).optional(),
+    city: z.string().max(100).optional(),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.servesWorldwide === "false" &&
+      !value.serviceCountryCodes.trim()
+    ) {
+      context.addIssue({ code: "custom", message: "Select a service country" });
+    }
+    if (value.businessFormat !== "online_only") {
+      if (!value.administrativeLevel1?.trim()) {
+        context.addIssue({
+          code: "custom",
+          message: "Administrative level is required",
+        });
+      }
+      if (!value.city?.trim()) {
+        context.addIssue({ code: "custom", message: "City is required" });
+      }
+    }
+  });
 
 export const companyOfferStepSchema = z.object({
   discount: z.string().max(255).optional(),

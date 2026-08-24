@@ -16,6 +16,7 @@ import {
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
   listActiveSubcategories,
+  listLocalizedCategoryTree,
   countApprovedCompaniesByIds,
   listPartnerLocations,
   listApprovedCompaniesByIds,
@@ -83,6 +84,12 @@ export async function getSubcategoriesByCategoryAction(
   return listActiveSubcategories(db, block, category);
 }
 
+export async function getLocalizedCategoryTreeAction(
+  locale: "en" | "ru" | "uk",
+) {
+  return listLocalizedCategoryTree(db, locale);
+}
+
 export type CompanyFormState = { success: boolean; error?: string };
 
 function generateSlug(name: string): string {
@@ -126,8 +133,8 @@ export async function registerCompanyAction(
 
     const cityValid = await validateCityBelongsToCountry(
       db,
-      parsed.data.city,
-      parsed.data.country,
+      parsed.data.city ?? "",
+      parsed.data.registrationCountryCode,
     );
     if (!cityValid) {
       return {
@@ -151,23 +158,33 @@ export async function registerCompanyAction(
       }
     }
 
-    await insertCompany(db, {
-      ownerId: auth.member.id,
-      name: parsed.data.name,
-      slug: finalSlug,
-      legalName: parsed.data.legalName,
-      taxId: parsed.data.taxId,
-      website: parsed.data.website,
-      description: parsed.data.description,
-      businessCategoryId: parsed.data.businessCategoryId,
-      discount: parsed.data.discount,
-      logoUrl: parsed.data.logoUrl,
-      contactEmail: parsed.data.contactEmail,
-      contactPhone: parsed.data.contactPhone,
-      country: parsed.data.country,
-      city: parsed.data.city,
-      moderationStatus: "pending",
-    });
+    await insertCompany(
+      db,
+      {
+        ownerId: auth.member.id,
+        name: parsed.data.name,
+        slug: finalSlug,
+        legalName: parsed.data.legalName,
+        taxId: parsed.data.taxId,
+        website: parsed.data.website,
+        description: parsed.data.description,
+        businessCategoryId: parsed.data.businessCategoryId,
+        discount: parsed.data.discount,
+        logoUrl: parsed.data.logoUrl,
+        contactEmail: parsed.data.contactEmail,
+        contactPhone: parsed.data.contactPhone,
+        country: parsed.data.registrationCountryCode,
+        city: parsed.data.city || null,
+        registrationCountryCode: parsed.data.registrationCountryCode,
+        businessFormat: parsed.data.businessFormat,
+        administrativeLevel1: parsed.data.administrativeLevel1 || null,
+        administrativeLevel2: parsed.data.administrativeLevel2 || null,
+        specializationDescription: parsed.data.specializationDescription,
+        servesWorldwide: parsed.data.servesWorldwide === "true" ? 1 : 0,
+        moderationStatus: "pending",
+      },
+      parsed.data.serviceCountryCodes.split(",").filter(Boolean),
+    );
 
     // The application is now a company; the draft has served its purpose.
     await deleteCompanyDraft(db, auth.member.id);

@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useActionState, useMemo } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   registerCompanyAction,
   saveCompanyDraftAction,
   getCompanyDraftAction,
-  getBlocksAction,
-  getCategoriesByBlockAction,
-  getSubcategoriesByCategoryAction,
+  getLocalizedCategoryTreeAction,
 } from "@/actions/company";
 import {
   COMPANY_FORM_STEPS,
@@ -20,6 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { countryOptions } from "@/lib/countries";
+import type { Locale } from "@/i18n/routing";
+import type { CategoryTreeRow } from "@/data/companies";
 
 /**
  * The four-step company submission form (FR-040).
@@ -37,23 +38,44 @@ const SELECT_CLASS =
 type FormValues = Record<string, string>;
 
 const STEP_FIELDS: Record<number, string[]> = {
-  1: ["name", "legalName", "taxId", "website", "logoUrl", "description"],
-  2: ["block", "category", "businessCategoryId", "country", "city"],
+  1: [
+    "name",
+    "legalName",
+    "taxId",
+    "website",
+    "logoUrl",
+    "description",
+    "specializationDescription",
+  ],
+  2: [
+    "block",
+    "category",
+    "businessCategoryId",
+    "registrationCountryCode",
+    "serviceCountryCodes",
+    "servesWorldwide",
+    "businessFormat",
+    "administrativeLevel1",
+    "administrativeLevel2",
+    "city",
+  ],
   3: ["discount", "contactEmail", "contactPhone"],
 };
 
 export function CompanyRegistrationForm() {
   const t = useTranslations("company");
+  const locale = useLocale() as Locale;
   const [state, action, pending] = useActionState(registerCompanyAction, null);
 
   const [step, setStep] = useState<CompanyStepNumber>(1);
-  const [values, setValues] = useState<FormValues>({});
+  const [values, setValues] = useState<FormValues>({
+    servesWorldwide: "false",
+  });
   const [stepError, setStepError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  const [blocks, setBlocks] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [taxonomy, setTaxonomy] = useState<CategoryTreeRow[]>([]);
   const [subcategories, setSubcategories] = useState<
     { id: number; subcategory: string }[]
   >([]);
@@ -61,6 +83,21 @@ export function CompanyRegistrationForm() {
   const selectedBlock = values.block ?? "";
   const selectedCategory = values.category ?? "";
   const selectedSubcategory = values.businessCategoryId ?? "";
+  const countries = useMemo(() => countryOptions(locale), [locale]);
+  const blocks = useMemo(
+    () => [...new Set(taxonomy.map((row) => row.block))],
+    [taxonomy],
+  );
+  const categories = useMemo(
+    () => [
+      ...new Set(
+        taxonomy
+          .filter((row) => row.block === selectedBlock)
+          .map((row) => row.category),
+      ),
+    ],
+    [taxonomy, selectedBlock],
+  );
 
   const set = (field: string, value: string) =>
     setValues((current) => ({ ...current, [field]: value }));
@@ -70,13 +107,14 @@ export function CompanyRegistrationForm() {
     void getCompanyDraftAction()
       .then((draft) => {
         if (draft) {
-          setValues(
-            Object.fromEntries(
+          setValues({
+            servesWorldwide: "false",
+            ...Object.fromEntries(
               Object.entries(draft.data)
                 .filter(([, value]) => value !== undefined && value !== null)
                 .map(([key, value]) => [key, String(value)]),
             ),
-          );
+          });
           setStep(draft.step);
         }
       })
@@ -84,26 +122,23 @@ export function CompanyRegistrationForm() {
   }, []);
 
   useEffect(() => {
-    void getBlocksAction().then(setBlocks);
-  }, []);
-
-  useEffect(() => {
-    if (!selectedBlock) {
-      setCategories([]);
-      return;
-    }
-    void getCategoriesByBlockAction(selectedBlock).then(setCategories);
-  }, [selectedBlock]);
+    void getLocalizedCategoryTreeAction(locale).then(setTaxonomy);
+  }, [locale]);
 
   useEffect(() => {
     if (!selectedBlock || !selectedCategory) {
       setSubcategories([]);
       return;
     }
-    void getSubcategoriesByCategoryAction(selectedBlock, selectedCategory).then(
-      setSubcategories,
+    setSubcategories(
+      taxonomy
+        .filter(
+          (row) =>
+            row.block === selectedBlock && row.category === selectedCategory,
+        )
+        .map((row) => ({ id: row.id, subcategory: row.subcategory })),
     );
-  }, [selectedBlock, selectedCategory]);
+  }, [taxonomy, selectedBlock, selectedCategory]);
 
   async function goNext() {
     setStepError(null);
@@ -259,6 +294,21 @@ export function CompanyRegistrationForm() {
               onChange={(e) => set("description", e.target.value)}
             />
           </Field>
+
+          <Field
+            id="specializationDescription"
+            label={t("specializationLabel")}
+          >
+            <Textarea
+              id="specializationDescription"
+              value={values.specializationDescription ?? ""}
+              placeholder={t("specializationPlaceholder")}
+              rows={4}
+              maxLength={500}
+              onChange={(e) => set("specializationDescription", e.target.value)}
+              required
+            />
+          </Field>
         </section>
       )}
 
@@ -334,26 +384,116 @@ export function CompanyRegistrationForm() {
             </select>
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field id="country" label={t("countryLabel")}>
-              <Input
-                id="country"
-                value={values.country ?? ""}
-                placeholder={t("countryPlaceholder")}
-                onChange={(e) => set("country", e.target.value)}
-                required
+          <Field
+            id="registrationCountryCode"
+            label={t("registrationCountryLabel")}
+          >
+            <select
+              id="registrationCountryCode"
+              className={SELECT_CLASS}
+              value={values.registrationCountryCode ?? ""}
+              onChange={(e) => set("registrationCountryCode", e.target.value)}
+              required
+            >
+              <option value="">{t("registrationCountryPlaceholder")}</option>
+              {countries.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field id="businessFormat" label={t("businessFormatLabel")}>
+            <select
+              id="businessFormat"
+              className={SELECT_CLASS}
+              value={values.businessFormat ?? ""}
+              onChange={(e) => set("businessFormat", e.target.value)}
+              required
+            >
+              <option value="">{t("businessFormatPlaceholder")}</option>
+              <option value="offline_only">{t("businessFormatOffline")}</option>
+              <option value="online_only">{t("businessFormatOnline")}</option>
+              <option value="online_offline">
+                {t("businessFormatHybrid")}
+              </option>
+              <option value="on_site_service">
+                {t("businessFormatOnSite")}
+              </option>
+            </select>
+          </Field>
+
+          <Field id="serviceCountryCodes" label={t("serviceCountriesLabel")}>
+            <select
+              id="serviceCountryCodes"
+              className={`${SELECT_CLASS} h-32`}
+              multiple
+              disabled={values.servesWorldwide === "true"}
+              value={(values.serviceCountryCodes ?? "")
+                .split(",")
+                .filter(Boolean)}
+              onChange={(e) =>
+                set(
+                  "serviceCountryCodes",
+                  Array.from(
+                    e.currentTarget.selectedOptions,
+                    (option) => option.value,
+                  ).join(","),
+                )
+              }
+            >
+              {countries.map((country) => (
+                <option key={country.code} value={country.code}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={values.servesWorldwide === "true"}
+                onChange={(e) =>
+                  set("servesWorldwide", e.target.checked ? "true" : "false")
+                }
               />
-            </Field>
-            <Field id="city" label={t("cityLabel")}>
-              <Input
-                id="city"
-                value={values.city ?? ""}
-                placeholder={t("cityPlaceholder")}
-                onChange={(e) => set("city", e.target.value)}
-                required
-              />
-            </Field>
-          </div>
+              {t("worldwideLabel")}
+            </label>
+          </Field>
+
+          {values.businessFormat !== "online_only" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                id="administrativeLevel1"
+                label={t("administrativeLevel1Label")}
+              >
+                <Input
+                  id="administrativeLevel1"
+                  value={values.administrativeLevel1 ?? ""}
+                  onChange={(e) => set("administrativeLevel1", e.target.value)}
+                  required
+                />
+              </Field>
+              <Field
+                id="administrativeLevel2"
+                label={t("administrativeLevel2Label")}
+              >
+                <Input
+                  id="administrativeLevel2"
+                  value={values.administrativeLevel2 ?? ""}
+                  onChange={(e) => set("administrativeLevel2", e.target.value)}
+                />
+              </Field>
+              <Field id="city" label={t("cityLabel")}>
+                <Input
+                  id="city"
+                  value={values.city ?? ""}
+                  onChange={(e) => set("city", e.target.value)}
+                  required
+                />
+              </Field>
+            </div>
+          )}
         </section>
       )}
 
@@ -461,8 +601,14 @@ const SUBMITTED_FIELDS = [
   "website",
   "logoUrl",
   "description",
+  "specializationDescription",
   "businessCategoryId",
-  "country",
+  "registrationCountryCode",
+  "serviceCountryCodes",
+  "servesWorldwide",
+  "businessFormat",
+  "administrativeLevel1",
+  "administrativeLevel2",
   "city",
   "discount",
   "contactEmail",
@@ -475,8 +621,13 @@ const REVIEW_FIELDS: [string, string][] = [
   ["taxId", "taxIdLabel"],
   ["website", "websiteLabel"],
   ["description", "descriptionLabel"],
+  ["specializationDescription", "specializationLabel"],
   ["businessCategoryId", "subcategoryLabel"],
-  ["country", "countryLabel"],
+  ["registrationCountryCode", "registrationCountryLabel"],
+  ["serviceCountryCodes", "serviceCountriesLabel"],
+  ["businessFormat", "businessFormatLabel"],
+  ["administrativeLevel1", "administrativeLevel1Label"],
+  ["administrativeLevel2", "administrativeLevel2Label"],
   ["city", "cityLabel"],
   ["discount", "discountLabel"],
   ["contactEmail", "contactEmailLabel"],

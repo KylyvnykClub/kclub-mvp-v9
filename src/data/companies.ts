@@ -15,6 +15,8 @@ import type { DbClient } from "./db";
 import type { PageParams } from "./pagination";
 import {
   businessCategories,
+  businessCategoryTranslations,
+  companyServiceCountries,
   cities,
   companies,
   countries,
@@ -137,8 +139,44 @@ export async function listActiveCategoryTree(db: DbClient) {
   });
 }
 
+export async function listLocalizedCategoryTree(
+  db: DbClient,
+  locale: "en" | "ru" | "uk",
+) {
+  return db
+    .select({
+      id: businessCategories.id,
+      block: sql<string>`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+      category: sql<string>`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+      subcategory: sql<string>`coalesce(${businessCategoryTranslations.subcategory}, ${businessCategories.subcategory})`,
+    })
+    .from(businessCategories)
+    .leftJoin(
+      businessCategoryTranslations,
+      and(
+        eq(
+          businessCategoryTranslations.businessCategoryId,
+          businessCategories.id,
+        ),
+        eq(businessCategoryTranslations.locale, locale),
+      ),
+    )
+    .where(eq(businessCategories.status, "ACTIVE"))
+    .orderBy(
+      asc(
+        sql`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+      ),
+      asc(
+        sql`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+      ),
+      asc(
+        sql`coalesce(${businessCategoryTranslations.subcategory}, ${businessCategories.subcategory})`,
+      ),
+    );
+}
+
 export type CategoryTreeRow = Awaited<
-  ReturnType<typeof listActiveCategoryTree>
+  ReturnType<typeof listLocalizedCategoryTree>
 >[number];
 
 export async function listCountries(db: DbClient) {
@@ -304,8 +342,21 @@ export async function companySlugExists(
 export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
+  serviceCountryCodes: string[] = [],
 ): Promise<void> {
-  await db.insert(companies).values(values);
+  await db.transaction(async (tx) => {
+    const [company] = await tx.insert(companies).values(values).returning({
+      id: companies.id,
+    });
+    if (serviceCountryCodes.length > 0) {
+      await tx.insert(companyServiceCountries).values(
+        [...new Set(serviceCountryCodes)].map((countryCode) => ({
+          companyId: company!.id,
+          countryCode,
+        })),
+      );
+    }
+  });
 }
 
 export async function listCompanyIdsWithActiveSubscription(
@@ -328,6 +379,10 @@ export interface PartnerFilters {
   query?: string;
   country?: string;
   city?: string;
+  serviceCountryCode?: string;
+  businessMode?: "online" | "offline";
+  administrativeLevel1?: string;
+  administrativeLevel2?: string;
 }
 
 /**
@@ -372,8 +427,64 @@ async function approvedCompanyConditions(
     conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
   }
 
-  if (filters?.country) {
+  if (filters?.serviceCountryCode) {
+    const serviceCompanies = await db
+      .select({ companyId: companyServiceCountries.companyId })
+      .from(companyServiceCountries)
+      .where(
+        eq(
+          companyServiceCountries.countryCode,
+          filters.serviceCountryCode.toUpperCase(),
+        ),
+      );
+    conditions = and(
+      conditions,
+      or(
+        eq(companies.servesWorldwide, 1),
+        inArray(
+          companies.id,
+          serviceCompanies.map((row) => row.companyId),
+        ),
+      ),
+    );
+  } else if (filters?.country) {
     conditions = and(conditions, ilike(companies.country, filters.country));
+  }
+
+  if (filters?.businessMode === "online") {
+    conditions = and(
+      conditions,
+      inArray(companies.businessFormat, ["online_only", "online_offline"]),
+    );
+  }
+  if (filters?.businessMode === "offline") {
+    conditions = and(
+      conditions,
+      inArray(companies.businessFormat, [
+        "offline_only",
+        "online_offline",
+        "on_site_service",
+      ]),
+      filters.serviceCountryCode
+        ? eq(
+            companies.registrationCountryCode,
+            filters.serviceCountryCode.toUpperCase(),
+          )
+        : undefined,
+    );
+  }
+
+  if (filters?.administrativeLevel1) {
+    conditions = and(
+      conditions,
+      ilike(companies.administrativeLevel1, filters.administrativeLevel1),
+    );
+  }
+  if (filters?.administrativeLevel2) {
+    conditions = and(
+      conditions,
+      ilike(companies.administrativeLevel2, filters.administrativeLevel2),
+    );
   }
 
   if (filters?.city) {
@@ -423,6 +534,7 @@ export async function listApprovedCompaniesByIds(
     where: conditions,
     with: {
       businessCategory: true,
+      serviceCountries: true,
     },
     orderBy,
     ...(page ? { limit: page.limit, offset: page.offset } : {}),
@@ -498,6 +610,7 @@ export async function listShowcaseCompanies(
     ),
     with: {
       businessCategory: true,
+      serviceCountries: true,
     },
     limit,
     orderBy: [asc(companies.showcaseRank), asc(companies.name)],
@@ -517,6 +630,7 @@ export async function findApprovedCompanyBySlug(
     ),
     with: {
       businessCategory: true,
+      serviceCountries: true,
       owner: {
         columns: {
           id: true,

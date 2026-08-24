@@ -7,6 +7,8 @@ import { profiles } from "./profiles";
 import { tags, profileTags } from "./tags";
 import { companies } from "./companies";
 import { businessCategories } from "./business-categories";
+import { businessCategoryTranslations } from "./business-category-translations";
+import { companyServiceCountries } from "./company-service-countries";
 import { cities } from "./cities";
 import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
@@ -90,6 +92,7 @@ export const companiesRelations = relations(companies, ({ one, many }) => ({
   }),
   subscriptions: many(subscriptions),
   receivedReferrals: many(referrals),
+  serviceCountries: many(companyServiceCountries),
 }));
 
 export const stripeCustomersRelations = relations(
@@ -117,6 +120,27 @@ export const businessCategoriesRelations = relations(
   businessCategories,
   ({ many }) => ({
     companies: many(companies),
+    translations: many(businessCategoryTranslations),
+  }),
+);
+
+export const businessCategoryTranslationsRelations = relations(
+  businessCategoryTranslations,
+  ({ one }) => ({
+    businessCategory: one(businessCategories, {
+      fields: [businessCategoryTranslations.businessCategoryId],
+      references: [businessCategories.id],
+    }),
+  }),
+);
+
+export const companyServiceCountriesRelations = relations(
+  companyServiceCountries,
+  ({ one }) => ({
+    company: one(companies, {
+      fields: [companyServiceCountries.companyId],
+      references: [companies.id],
+    }),
   }),
 );
 

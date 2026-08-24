@@ -23,6 +23,7 @@ const baseProductionEnv = {
   TOTP_ENCRYPTION_KEY: "totp-fixture-key-".repeat(3),
   UPSTASH_REDIS_REST_URL: "https://redis.example",
   UPSTASH_REDIS_REST_TOKEN: "redis-token",
+  RESEND_API_KEY: "re_live_fixture",
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_123",
 };
 

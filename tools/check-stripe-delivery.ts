@@ -109,6 +109,39 @@ async function main(): Promise<void> {
     );
   }
 
+  heading("2b. Seed data still in this database");
+  const [seedCounts] = (await sql`
+    SELECT
+      count(*)::int AS total,
+      count(*) FILTER (WHERE stripe_subscription_id LIKE 'sub_seed%')::int AS seeded
+    FROM subscriptions
+  `) as [{ total: number; seeded: number }];
+  const visibleSeeded = await sql`
+    SELECT c.name, c.moderation_status, s.stripe_subscription_id
+    FROM subscriptions s
+    JOIN companies c ON c.id = s.company_id
+    WHERE s.stripe_subscription_id LIKE 'sub_seed%'
+      AND s.status IN ('active', 'past_due')
+      AND c.moderation_status = 'approved'
+    ORDER BY c.name
+  `;
+  console.log(
+    `  ${seedCounts.seeded} of ${seedCounts.total} subscriptions are seed rows`,
+  );
+  if (visibleSeeded.length > 0) {
+    console.log(
+      `  ${visibleSeeded.length} of them back an APPROVED company, which is what the catalogue lists:`,
+    );
+    for (const row of visibleSeeded) {
+      console.log(`    ${String(row["name"])}`);
+    }
+    console.log(
+      "  On a live launch these are invented partners shown to real members.",
+    );
+  } else {
+    console.log("  None of them back an approved company.");
+  }
+
   heading("3. Outbox");
   const [pending] = (await sql`
     SELECT count(*)::int AS depth, min(created_at) AS oldest
@@ -120,6 +153,22 @@ async function main(): Promise<void> {
     console.log(
       "  A non-zero depth that is more than a few seconds old means the inline drain (ADR 0017) did not finish and the daily sweep has not caught up.",
     );
+    const stuck = await sql`
+      SELECT id, created_at, topic, payload
+      FROM outbox
+      WHERE processed_at IS NULL
+      ORDER BY created_at
+      LIMIT 10
+    `;
+    for (const row of stuck) {
+      const payload = row["payload"] as Record<string, unknown>;
+      const summary = Object.entries(payload ?? {})
+        .map(([key, value]) => `${key}=${String(value)}`)
+        .join(" ");
+      console.log(
+        `    ${ageOf(row["created_at"])}  ${String(row["topic"])}  ${summary}`,
+      );
+    }
   }
 
   heading("4. Cards by tier");
