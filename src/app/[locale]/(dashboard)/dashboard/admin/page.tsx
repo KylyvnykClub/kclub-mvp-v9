@@ -164,6 +164,11 @@ export default async function AdminDashboardPage({
               <FinanceCountryChart
                 revenueByCountry={metrics.revenueByCountry}
                 locale={locale}
+                mapLabels={{
+                  ariaLabel: t("revenueMapLabel"),
+                  selected: t("selectedCountry"),
+                  unknownCountry: t("unknownCountry"),
+                }}
               />
             )}
           </CardContent>

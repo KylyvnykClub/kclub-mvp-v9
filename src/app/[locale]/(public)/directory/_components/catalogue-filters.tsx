@@ -4,6 +4,8 @@ import {
   ChevronDown,
   ChevronRight,
   Dot,
+  Grid2X2,
+  List,
   Search,
   SlidersHorizontal,
   X,
@@ -105,7 +107,10 @@ function useCatalogueFilters({
     ].sort();
   }, [locations, values.country]);
 
-  const apply = (next: CatalogueFilterValues) => {
+  const apply = (
+    next: CatalogueFilterValues,
+    nextView: "grid" | "list" = view,
+  ) => {
     const query = new URLSearchParams();
     if (next.q) query.set("q", next.q);
     if (next.block) query.set("block", next.block);
@@ -113,7 +118,12 @@ function useCatalogueFilters({
     if (next.categoryId) query.set("categoryId", next.categoryId);
     if (next.country) query.set("country", next.country);
     if (next.city) query.set("city", next.city);
-    if (view === "list") query.set("view", "list");
+    if (next.mode) query.set("mode", next.mode);
+    if (next.administrativeLevel1)
+      query.set("administrativeLevel1", next.administrativeLevel1);
+    if (next.administrativeLevel2)
+      query.set("administrativeLevel2", next.administrativeLevel2);
+    if (nextView === "list") query.set("view", "list");
 
     const qs = query.toString();
     router.push(qs ? `?${qs}` : "?", { scroll: false });
@@ -232,6 +242,40 @@ export function CatalogueHeaderControls({
         ))}
 
         <div className="min-w-8 flex-1" />
+
+        <div
+          className="flex items-center rounded-md border border-border bg-card p-1"
+          aria-label={t("viewLabel")}
+        >
+          <button
+            type="button"
+            onClick={() => apply(values, "grid")}
+            aria-label={t("viewGrid")}
+            title={t("viewGrid")}
+            aria-pressed={view === "grid"}
+            className={`inline-flex size-8 cursor-pointer items-center justify-center rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              view === "grid"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Grid2X2 className="size-4" aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => apply(values, "list")}
+            aria-label={t("viewList")}
+            title={t("viewList")}
+            aria-pressed={view === "list"}
+            className={`inline-flex size-8 cursor-pointer items-center justify-center rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              view === "list"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <List className="size-4" aria-hidden />
+          </button>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className={labelClass}>{t("selectedLabel")}:</span>
