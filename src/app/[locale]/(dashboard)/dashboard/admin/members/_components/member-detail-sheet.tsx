@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { SheetTrigger } from "@/components/ui/sheet";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import {
   blockMemberAction,
+  resetMemberPasswordAction,
   revokeCardAction,
   reissueCardAction,
 } from "@/actions/admin-members";
@@ -67,11 +69,13 @@ export function MemberDetailSheet({
   const t = useTranslations("admin.members");
   const tCard = useTranslations("card");
   const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [reason, setReason] = useState("");
   const [newTier, setNewTier] = useState<"free" | "vip">("free");
+  const [newPassword, setNewPassword] = useState("");
 
   const completeness = computeProfileCompleteness({
     totpEnabled: member.totpEnabled,
@@ -119,6 +123,23 @@ export function MemberDetailSheet({
       () => blockMemberAction(member.id, !isBlocked, reason),
       isBlocked ? t("unblocked") : t("blocked"),
     );
+  };
+
+  const handleResetPassword = () => {
+    if (!reason) {
+      toast.error(t("reasonRequiredReset"));
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error(t("passwordTooShort"));
+      return;
+    }
+
+    runAction(
+      () => resetMemberPasswordAction(member.id, newPassword, reason),
+      t("passwordReset"),
+    );
+    setNewPassword("");
   };
 
   const handleRevokeCard = (cardId: string) => {
@@ -327,6 +348,35 @@ export function MemberDetailSheet({
               >
                 {isBlocked ? t("unblock") : t("block")}
               </Button>
+
+              {/* ADR 0018: the only account recovery there is. The reason field
+                  above is where the identity proof accepted gets recorded, since
+                  nothing here can verify it. */}
+              <div className="space-y-2 border-t border-border pt-4">
+                <Label htmlFor={`new-password-${member.id}`}>
+                  {t("newPasswordLabel")}
+                </Label>
+                <PasswordInput
+                  id={`new-password-${member.id}`}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={t("newPasswordPlaceholder")}
+                  showLabel={tAuth("showPassword")}
+                  hideLabel={tAuth("hidePassword")}
+                  autoComplete="new-password"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("resetPasswordHint")}
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleResetPassword}
+                  disabled={isPending}
+                >
+                  {t("resetPassword")}
+                </Button>
+              </div>
             </div>
           </Section>
 

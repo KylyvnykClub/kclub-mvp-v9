@@ -1,6 +1,6 @@
 # 0015. Password reset stays unbuilt until the client answers the account-recovery question
 
-> **Status:** Accepted
+> **Status:** Superseded by [0018](0018-staff-assisted-password-reset.md)
 > **Date:** 2026-08-18
 > **Deciders:** Delivery lead
 

@@ -29,7 +29,7 @@
     "passwordPlaceholder": "Enter your password",
     "codeLabel": "Verification code",
     "codePlaceholder": "Enter 6-digit code",
-    "sendCode": "Send code",
+    "sendCode": "Register",
     "verifyCode": "Verify",
     "codeSent": "Code sent to {phone}",
     "codeExpired": "Code expired. Please request a new one.",
@@ -49,13 +49,14 @@
     "totpSubtitle": "Enter the code from your authenticator app",
     "totpCodeLabel": "Authenticator code",
     "totpVerify": "Verify",
-    "totpCancel": "Cancel"
+    "totpCancel": "Cancel",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "register": {
     "title": "Join KCLUB",
     "subtitle": "Create your membership account",
     "step1Title": "Phone verification",
-    "step1Subtitle": "We'll send you a verification code",
     "step2Title": "Verify your phone",
     "step2Subtitle": "Enter the code sent to your phone",
     "step3Title": "Complete your profile",
@@ -63,14 +64,9 @@
     "nameLabel": "Display name",
     "namePlaceholder": "Your name",
     "countryLabel": "Country",
-    "languageLabel": "Preferred language",
     "passwordConfirmLabel": "Confirm password",
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordsNoMatch": "Passwords do not match",
-    "termsLabel": "I agree to the <terms>Terms</terms>",
-    "termsLink": "Terms of Service",
-    "privacyLabel": "I agree to the <privacy>Privacy Policy</privacy>",
-    "privacyLink": "Privacy Policy",
     "createAccount": "Create account",
     "haveAccount": "Already have an account?",
     "loginLink": "Sign in",
@@ -93,14 +89,13 @@
       "uk": "Ukrainian",
       "ru": "Russian"
     },
-    "arbitrationLabel": "I acknowledge the <terms>arbitration agreement and class-action waiver (Terms §29–30)</terms>",
-    "ageLabel": "I confirm that I am 18 years of age or older",
     "turnstileError": {
       "configuration": "Verification is misconfigured for this site, so registration cannot continue. Trying again will not help — please contact support and quote code {code}.",
       "unsupported": "This browser cannot run the verification challenge. Please try a different browser. (code {code})",
       "network": "The verification challenge could not be loaded. Check your connection and reload the page.",
       "retryable": "The verification challenge failed. Please reload the page and try again. (code {code})"
-    }
+    },
+    "legalNotice": "By clicking Create account you confirm that you are 18 years of age or older and agree to the <terms>Terms</terms>, including the arbitration agreement and class-action waiver (§29–30), and to the <privacy>Privacy Policy</privacy>."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -689,7 +684,22 @@
     "representedBy": "Company is represented by:",
     "managerRole": "Manager",
     "memberFallback": "Member",
-    "eyebrow": "Partner directory"
+    "eyebrow": "Partner directory",
+    "paginationLabel": "Catalogue pages",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageOf": "Page {page} of {total}",
+    "allSubcategories": "All subcategories",
+    "subcategoryPlaceholder": "Subcategory",
+    "allCountries": "All countries",
+    "allCities": "All cities",
+    "clearFilters": "Clear all",
+    "removeFilter": "Remove filter {filter}",
+    "resultCount": "{count, plural, =0 {No partners} one {# partner} other {# partners}}",
+    "viewLabel": "Layout",
+    "viewGrid": "Grid view",
+    "viewList": "List view",
+    "emptyHint": "Try removing a filter or searching for something broader."
   },
   "company": {
     "registerTitle": "Register Company",
@@ -829,7 +839,14 @@
       "fieldIndustry": "Industry",
       "fieldLocation": "Location",
       "fieldAvatarUrl": "Avatar",
-      "fieldTotpEnabled": "Two-factor authentication"
+      "fieldTotpEnabled": "Two-factor authentication",
+      "resetPassword": "Reset password",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "resetPasswordHint": "Verify who you are speaking to before resetting. All of this member's sessions will be signed out.",
+      "reasonRequiredReset": "State how you verified this person before resetting",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordReset": "Password reset and sessions revoked"
     },
     "companies": {
       "title": "Company Moderation",

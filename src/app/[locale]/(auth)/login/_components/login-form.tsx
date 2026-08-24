@@ -16,6 +16,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QRCodeSVG } from "qrcode.react";
@@ -185,12 +186,13 @@ export function LoginForm() {
                   {t("forgotPassword")}
                 </span>
               </div>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder={t("passwordPlaceholder")}
                 required
+                showLabel={t("showPassword")}
+                hideLabel={t("hidePassword")}
                 className="h-12 rounded-none bg-background"
               />
             </div>
