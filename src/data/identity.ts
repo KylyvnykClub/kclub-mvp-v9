@@ -100,6 +100,8 @@ export async function createSessionTx(
     userAgent: string;
     ipAddress: string;
     isPartialSession?: boolean;
+    /** Encrypted seed for a staff member mid-enrolment. Never plaintext. */
+    pendingTotpSecret?: string;
   },
 ): Promise<void> {
   await db.transaction(async (tx) => {
@@ -112,6 +114,7 @@ export async function createSessionTx(
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
       isPartialSession: input.isPartialSession ?? false,
+      pendingTotpSecret: input.pendingTotpSecret ?? null,
     });
 
     await appendAuditEntry(tx, {
@@ -157,6 +160,30 @@ export async function deleteSessionsByMemberId(
   memberId: string,
 ): Promise<void> {
   await db.delete(sessions).where(eq(sessions.memberId, memberId));
+}
+
+/**
+ * Replace a member's password hash (FR-006, ADR 0018).
+ *
+ * Takes an already-hashed value: a plaintext password has no business reaching
+ * the data layer, where it would end up in a query the driver can echo back in
+ * an error message.
+ *
+ * Returns whether a row was actually updated, so the caller can tell a real
+ * reset from a reset of a member that does not exist.
+ */
+export async function setMemberPasswordHash(
+  db: DbClient,
+  memberId: string,
+  passwordHash: string,
+): Promise<boolean> {
+  const updated = await db
+    .update(members)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(members.id, memberId))
+    .returning({ id: members.id });
+
+  return updated.length > 0;
 }
 
 /**
@@ -225,18 +252,25 @@ export async function upgradeSessionTx(
   memberId: string,
   ipAddress: string,
   userAgent: string,
-  newSecret?: string,
+  /**
+   * The already-encrypted seed to enrol, when this sign-in was an enrolment.
+   * It comes from the session's own pending column, never from the request -
+   * the caller must not be able to choose which secret a member ends up with.
+   */
+  encryptedSecretToEnrol?: string,
 ): Promise<void> {
   await db.transaction(async (tx) => {
+    // The pending seed is cleared whether or not it was enrolled, so an
+    // abandoned enrolment does not leave a seed sitting on a live session.
     await tx
       .update(sessions)
-      .set({ isPartialSession: false })
+      .set({ isPartialSession: false, pendingTotpSecret: null })
       .where(sessionTokenLookup(token));
 
-    if (newSecret) {
+    if (encryptedSecretToEnrol) {
       await tx
         .update(members)
-        .set({ totpEnabled: true, totpSecret: newSecret })
+        .set({ totpEnabled: true, totpSecret: encryptedSecretToEnrol })
         .where(eq(members.id, memberId));
     }
 

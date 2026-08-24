@@ -66,7 +66,7 @@ variation.
 |Plan|What can be sold: `vip_monthly`, `listing_monthly`, `business`|`Plan`|`plan`|"Tier", which is what a member gets from a plan|
 |Price|An amount for a plan, valid from a date. Multiple prices per plan over time|`Price`|`price`|The plan. Changing a price never changes the plan|
 |Entitlement|What an active subscription unlocks inside the product|`Entitlement`|`entitlement`|The subscription. Stripe owns subscriptions; we own entitlements|
-|Grace period|The 14 days after a failed payment during which access continues|`gracePeriodEndsAt`|`subscription.grace_period_ends_at`|The paid period, which ends at `current_period_end`|
+|Grace period|The 14 days after a failed payment during which access continues. **Derived, not stored** — dunning starts at `subscription.current_period_start` once the status is `past_due`, and the deadline is that plus `GRACE_PERIOD_DAYS`. There is no column; the warning's idempotency comes from the outbox row|`graceAnchorOf`, `GRACE_PERIOD_DAYS`|—|The paid period, which ends at `current_period_end`|
 |Moderation|Staff review of a company or a referral before it becomes visible|`moderation` module|`moderation_decision`|"Approval", which is one of its two outcomes|
 |Staff|An employee of the club, with a console account. A separate population from members|`StaffUser`|`staff_user`|"Admin", which is one specific staff role|
 |Audit entry|An immutable record of something a staff user or the system did|`AuditEntry`|`audit_log`|An application log line, which is diagnostic, short-lived and not evidence|

@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { DbClient } from "@/data/db.js";
 import {
+  countMembers,
+  countMembersByStatus,
   findMemberAdminById,
   searchMembers,
-  searchMembersByCardSerial,
   withMemberActivityHistory,
 } from "@/data/members.js";
 import { appendAuditEntry } from "@/data/audit-log.js";
@@ -72,11 +73,53 @@ describe("admin member directory (FR-083, FR-084)", () => {
       role: "staff_support",
     });
 
-    await expect(searchMembers(db, "Ada")).resolves.toHaveLength(1);
-    await expect(searchMembers(db, "100001")).resolves.toHaveLength(1);
+    await expect(searchMembers(db, { query: "Ada" })).resolves.toHaveLength(1);
+    await expect(searchMembers(db, { query: "100001" })).resolves.toHaveLength(
+      1,
+    );
 
-    const serialMatches = await searchMembersByCardSerial(db, "SERIAL-001");
+    // The card serial is matched inside the same query as name and phone, so
+    // a paginated page and its total are always taken over the same set.
+    const serialMatches = await searchMembers(db, { query: "SERIAL-001" });
     expect(serialMatches.map((row) => row.id)).toEqual([member.id]);
+  });
+
+  it("pages the directory and counts it under the same filter", async () => {
+    const db = testDbClient();
+    const seeded = [];
+    for (const [index, status] of (
+      ["active", "active", "blocked"] as const
+    ).entries()) {
+      seeded.push(
+        await seedMember(db, {
+          phoneSuffix: `2000${index}`,
+          displayName: `Pagedcohort ${index}`,
+          status,
+        }),
+      );
+    }
+
+    const filters = { query: "Pagedcohort" };
+    await expect(countMembers(db, filters)).resolves.toBe(3);
+    await expect(countMembersByStatus(db, filters)).resolves.toEqual({
+      active: 2,
+      blocked: 1,
+      pending_deletion: 0,
+    });
+
+    const first = await searchMembers(db, filters, { limit: 2, offset: 0 });
+    const second = await searchMembers(db, filters, { limit: 2, offset: 2 });
+    expect(first).toHaveLength(2);
+    expect(second).toHaveLength(1);
+    expect(new Set([...first, ...second].map((row) => row.id))).toEqual(
+      new Set(seeded.map((row) => row.id)),
+    );
+
+    const blocked = await searchMembers(db, {
+      ...filters,
+      status: "blocked",
+    });
+    expect(blocked.map((row) => row.id)).toEqual([seeded[2]!.id]);
   });
 
   it("returns subscriptions and activity history for member detail review", async () => {

@@ -1,7 +1,18 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 
 import type { DbClient } from "./db";
+import type { PageParams } from "./pagination";
 import {
   accountDeletionRequests,
   auditLog,
@@ -77,29 +88,117 @@ export async function findCardPublicByToken(db: DbClient, token: string) {
   return rows[0] ?? null;
 }
 
-export async function searchMembers(db: DbClient, query?: string) {
-  const textConditions = query
-    ? or(
-        ilike(members.displayName, `%${query}%`),
-        ilike(members.phone, `%${query}%`),
-      )
-    : undefined;
+export const MEMBER_ADMIN_STATUSES = [
+  "active",
+  "blocked",
+  "pending_deletion",
+] as const;
 
-  return db.query.members.findMany({
-    where: textConditions
-      ? and(inArray(members.role, CLUB_MEMBER_ROLES), textConditions)
-      : inArray(members.role, CLUB_MEMBER_ROLES),
+export type MemberAdminStatus = (typeof MEMBER_ADMIN_STATUSES)[number];
+
+export interface MemberAdminFilters {
+  query?: string;
+  status?: MemberAdminStatus;
+}
+
+const MEMBER_ADMIN_RELATIONS = {
+  cards: true,
+  subscriptions: {
     with: {
-      cards: true,
-      subscriptions: {
-        with: {
-          company: true,
-        },
-      },
-      profile: true,
+      company: true,
     },
-    limit: 50,
+  },
+  profile: true,
+} as const;
+
+/**
+ * One WHERE for the page of rows and for every count taken over it, so a
+ * filter can never apply to one and not the other.
+ *
+ * The card-serial match is an EXISTS subquery rather than a second query
+ * merged in memory: once the list is paginated, merging two result sets after
+ * the fact pages over the wrong set and reports a total that disagrees with
+ * the rows it returned.
+ */
+function memberAdminWhere(filters: MemberAdminFilters): SQL {
+  const conditions: SQL[] = [inArray(members.role, CLUB_MEMBER_ROLES)];
+
+  if (filters.query) {
+    const pattern = `%${filters.query}%`;
+    conditions.push(
+      or(
+        ilike(members.displayName, pattern),
+        ilike(members.phone, pattern),
+        // The subquery names its own columns rather than interpolating the
+        // cards columns: inside a relational query drizzle rewrites embedded
+        // column references to the outer query's alias, which silently turns
+        // cards.member_id into members.member_id.
+        sql`exists (select 1 from ${cards} as member_card where member_card.member_id = ${members.id} and member_card.serial ilike ${pattern})`,
+      )!,
+    );
+  }
+
+  if (filters.status) {
+    conditions.push(eq(members.status, filters.status));
+  }
+
+  return and(...conditions)!;
+}
+
+export async function searchMembers(
+  db: DbClient,
+  filters: MemberAdminFilters = {},
+  page: PageParams = { limit: 50, offset: 0 },
+) {
+  return db.query.members.findMany({
+    where: memberAdminWhere(filters),
+    with: MEMBER_ADMIN_RELATIONS,
+    // Offset pagination over an unordered query silently repeats and skips
+    // rows between pages; createdAt is not unique enough to sort on alone.
+    orderBy: [desc(members.createdAt), desc(members.id)],
+    limit: page.limit,
+    offset: page.offset,
   });
+}
+
+export async function countMembers(
+  db: DbClient,
+  filters: MemberAdminFilters = {},
+): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(members)
+    .where(memberAdminWhere(filters));
+
+  return row?.value ?? 0;
+}
+
+/**
+ * Counts for the status filter chips. Deliberately ignores the status filter
+ * itself - a chip has to show what selecting it would find, not what the
+ * current selection already narrowed the list to.
+ */
+export async function countMembersByStatus(
+  db: DbClient,
+  filters: Omit<MemberAdminFilters, "status"> = {},
+): Promise<Record<MemberAdminStatus, number>> {
+  const rows = await db
+    .select({ status: members.status, value: count() })
+    .from(members)
+    .where(memberAdminWhere(filters))
+    .groupBy(members.status);
+
+  const counts: Record<MemberAdminStatus, number> = {
+    active: 0,
+    blocked: 0,
+    pending_deletion: 0,
+  };
+
+  for (const row of rows) {
+    counts[row.status] = row.value;
+  }
+
+  return counts;
 }
 
 export type MemberAdminView = Awaited<ReturnType<typeof searchMembers>>[number];
@@ -110,49 +209,8 @@ export async function findMemberAdminById(db: DbClient, memberId: string) {
       eq(members.id, memberId),
       inArray(members.role, CLUB_MEMBER_ROLES),
     ),
-    with: {
-      cards: true,
-      subscriptions: {
-        with: {
-          company: true,
-        },
-      },
-      profile: true,
-    },
+    with: MEMBER_ADMIN_RELATIONS,
   });
-}
-
-export async function searchMembersByCardSerial(
-  db: DbClient,
-  serial: string,
-): Promise<MemberAdminView[]> {
-  const cardMatches = await db.query.cards.findMany({
-    where: ilike(cards.serial, `%${serial}%`),
-    with: {
-      member: {
-        with: {
-          cards: true,
-          subscriptions: {
-            with: {
-              company: true,
-            },
-          },
-          profile: true,
-        },
-      },
-    },
-  });
-
-  return cardMatches
-    .map((c) => c.member)
-    .filter(
-      (m): m is MemberAdminView =>
-        m !== null &&
-        m !== undefined &&
-        CLUB_MEMBER_ROLES.includes(
-          m.role as (typeof CLUB_MEMBER_ROLES)[number],
-        ),
-    );
 }
 
 export type MemberAuditHistoryEntry = typeof auditLog.$inferSelect;

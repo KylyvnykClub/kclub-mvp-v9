@@ -32,4 +32,12 @@ export const sessions = pgTable("sessions", {
 
   // For TOTP multi-step login
   isPartialSession: boolean("is_partial_session").notNull().default(false),
+
+  /**
+   * The seed generated for a staff member who is enrolling, held here until
+   * they prove they have loaded it into an authenticator. Encrypted with the
+   * same envelope as members.totpSecret, so it is not a usable credential at
+   * rest either. Cleared when the session is upgraded.
+   */
+  pendingTotpSecret: text("pending_totp_secret"),
 });

@@ -31,3 +31,14 @@ export function StatusBadge({
     </span>
   );
 }
+
+/**
+ * Tone per member status. Kept next to the badge rather than in each screen so
+ * the list, the drawer and any later screen cannot drift apart on what
+ * "blocked" looks like.
+ */
+export function memberStatusTone(status: string): StatusTone {
+  if (status === "blocked") return "negative";
+  if (status === "pending_deletion") return "warning";
+  return "positive";
+}

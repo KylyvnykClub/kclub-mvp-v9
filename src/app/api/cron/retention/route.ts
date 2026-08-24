@@ -10,6 +10,7 @@ import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
 } from "@/data/company-drafts";
+import { deleteProcessedOutboxRows } from "@/data/outbox";
 import { env } from "@/env";
 import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
 import { authorizeCronRequest } from "@/modules/platform";
@@ -20,6 +21,7 @@ export interface RetentionResult {
   companyDraftsDeleted: number;
   accountsErased: number;
   accountErasuresFailed: number;
+  outboxRowsDeleted: number;
 }
 
 /**
@@ -45,6 +47,11 @@ export async function GET(req: Request) {
     now,
     COMPANY_DRAFT_RETENTION_DAYS,
   );
+
+  // Processed outbox rows are evidence of a delivery that already happened;
+  // once past the dedupe window they are pure history and the table should not
+  // keep them forever.
+  const outboxRowsDeleted = await deleteProcessedOutboxRows(db, now);
 
   // FR-009: the 30-day clock on a deletion request runs out here.
   const due = await findMembersDueForErasure(db, now);
@@ -92,6 +99,7 @@ export async function GET(req: Request) {
     companyDraftsDeleted,
     accountsErased,
     accountErasuresFailed,
+    outboxRowsDeleted,
   };
 
   return NextResponse.json({ success: true, ...result });

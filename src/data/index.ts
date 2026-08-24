@@ -28,18 +28,21 @@ export {
 } from "./identity";
 export type { RegisterMemberInput } from "./identity";
 export {
+  countMembers,
+  countMembersByStatus,
   findCardByMemberId,
   findCardById,
   findCardPublicByToken,
   findMemberAdminById,
   insertCard,
   listMemberActivityHistory,
+  MEMBER_ADMIN_STATUSES,
   revokeCardById,
   searchMembers,
-  searchMembersByCardSerial,
   setMemberStatus,
   withMemberActivityHistory,
 } from "./members";
+export type { MemberAdminFilters, MemberAdminStatus } from "./members";
 export {
   createStaffMember,
   findStaffMemberById,
@@ -57,6 +60,9 @@ export { findProfileByMemberId, upsertProfile } from "./profiles";
 export type { ProfileUpdate, ProfileView, SocialLinks } from "./profiles";
 export {
   companySlugExists,
+  COMPANY_ADMIN_STATUSES,
+  countCompaniesByStatus,
+  countCompaniesForAdmin,
   createBusinessCategory,
   createCity,
   createCountry,
@@ -64,6 +70,7 @@ export {
   deleteCity,
   deleteCountry,
   findApprovedCompanyBySlug,
+  findCompanyForAdmin,
   insertCompany,
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
@@ -72,8 +79,11 @@ export {
   listApprovedCompaniesByIds,
   listApprovedCompaniesWithSubscriptionsByOwner,
   listCompaniesByOwner,
+  listCompaniesForAdmin,
   listCompanyIdsWithActiveSubscription,
+  listActiveCategoryTree,
   listCountries,
+  listPartnerLocations,
   listPendingCompanies,
   listShowcaseCompanies,
   setCategoryStatus,
@@ -82,6 +92,9 @@ export {
   setCountryStatus,
 } from "./companies";
 export type {
+  CompanyAdminFilters,
+  CompanyAdminStatus,
+  CompanyAdminView,
   PartnerCompanyView,
   PartnerDetailView,
   PartnerFilters,

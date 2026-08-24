@@ -33,7 +33,13 @@ export const serverSchema = z
     ADMIN_BOOTSTRAP_OWNER_PHONE: z.string().optional(),
     ADMIN_BOOTSTRAP_OWNER_PASSWORD: z.string().optional(),
 
-    TOTP_ENCRYPTION_KEY: z.string().optional(),
+    /**
+     * Encrypts staff TOTP seeds at rest (security.md §"Secret"). Without it the
+     * identity module refuses to enrol or verify a second factor rather than
+     * falling back to plaintext, so its absence disables staff sign-in instead
+     * of quietly weakening it.
+     */
+    TOTP_ENCRYPTION_KEY: z.string().min(32).optional(),
 
     // ── SMS — Twilio Verify ─────────────────────────────────
     // Optional while phone verification is postponed (ADR 0012). Required
@@ -107,6 +113,18 @@ export const serverSchema = z
       });
     }
 
+    // Staff sign-in demands TOTP unconditionally (security.md §4), so a
+    // production deploy without this key is one where no staff member can log
+    // in. Failing at boot says that plainly; failing at the first sign-in would
+    // say it to whoever is holding the incident.
+    if (env.VERCEL_ENV === "production" && !env.TOTP_ENCRYPTION_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["TOTP_ENCRYPTION_KEY"],
+        message: "TOTP_ENCRYPTION_KEY is required in production",
+      });
+    }
+
     // Turning phone verification back on without credentials would fail at the
     // first registration rather than at boot, which is the wrong end.
     if (env.AUTH_PHONE_VERIFICATION_ENABLED) {
@@ -137,6 +155,19 @@ export const serverSchema = z
         path: ["TURNSTILE_SECRET_KEY"],
         message:
           "TURNSTILE_SECRET_KEY is required in production while phone verification is disabled",
+      });
+    }
+
+    // Without a Resend key, sendEmail returns false and the outbox row is
+    // marked processed all the same: the FR-056 dunning notices (payment
+    // failed, grace expiring) silently never reach the member while the
+    // system believes it delivered them. Fail closed in production so the
+    // gap surfaces at boot rather than as an invisible non-delivery.
+    if (env.VERCEL_ENV === "production" && !env.RESEND_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["RESEND_API_KEY"],
+        message: "RESEND_API_KEY is required in production",
       });
     }
   });

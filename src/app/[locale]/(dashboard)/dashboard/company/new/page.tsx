@@ -30,7 +30,7 @@ export default async function NewCompanyPage({ params }: Props) {
 
       <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm rounded-none">
         <CardHeader>
-          <CardTitle className="text-xl font-serif text-accent">
+          <CardTitle className="text-xl font-serif text-accent-ink">
             {t("infoSection")}
           </CardTitle>
         </CardHeader>

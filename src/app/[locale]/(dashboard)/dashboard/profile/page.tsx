@@ -154,7 +154,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <div className="flex flex-col items-center justify-center bg-zinc-950 p-6 sm:p-10">
+            <div className="dark flex flex-col items-center justify-center bg-zinc-950 p-6 sm:p-10">
               <div
                 className="relative w-full max-w-[420px] overflow-hidden rounded-[20px] border border-accent/40 shadow-[0_24px_80px_-35px_rgba(212,175,55,0.65)]"
                 style={{
@@ -166,13 +166,13 @@ export default async function ProfilePage({ params }: Props) {
                 <div className="absolute inset-x-0 top-0 h-px bg-accent/70" />
                 <div className="absolute inset-0 z-10 flex flex-col justify-between p-6">
                   <div className="flex items-start justify-between">
-                    <div className="text-2xl font-black tracking-[0.18em] text-accent">
+                    <div className="text-2xl font-black tracking-[0.18em] text-accent-ink">
                       KCLUB
                     </div>
                     {card && (
                       <Badge
                         variant="outline"
-                        className="rounded-none border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent"
+                        className="rounded-none border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent-ink"
                       >
                         {card.tier === "vip"
                           ? tCard("tierVip")
@@ -183,7 +183,7 @@ export default async function ProfilePage({ params }: Props) {
 
                   <div className="mt-2 flex items-center justify-between opacity-90">
                     <svg
-                      className="h-9 w-9 text-accent/80"
+                      className="h-9 w-9 text-accent-ink/80"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"

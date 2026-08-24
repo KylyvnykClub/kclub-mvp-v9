@@ -79,7 +79,7 @@ export function CompanyList({
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl font-serif text-accent">
+                  <CardTitle className="text-xl font-serif text-accent-ink">
                     {company.name}
                   </CardTitle>
                   <CardDescription className="mt-1">

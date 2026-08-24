@@ -51,7 +51,7 @@ function PartnerCard({
           </div>
         </div>
         {partner.discount && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium border border-accent/20 mb-4 w-full">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent-ink text-xs font-medium border border-accent/20 mb-4 w-full">
             <Tag className="w-3 h-3 flex-shrink-0" />
             <span className="truncate" title={partner.discount}>
               {partner.discount}

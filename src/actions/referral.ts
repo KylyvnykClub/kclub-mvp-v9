@@ -5,10 +5,15 @@ import { appendAuditEntry } from "@/data/audit-log";
 import { findActiveVipSubscription } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import {
+  countReferralsByStatus,
+  countReferralsForAdmin,
+  findReferralForAdmin,
   findReferralWithRecipientCompany,
   insertReferral,
   listCompanyIdsByOwner,
   listPendingReviewReferrals,
+  listReferralsForAdmin,
+  REFERRAL_ADMIN_STATUSES,
   listReceivedReferralsForCompanies,
   listReferralsSince,
   listSentReferrals,
@@ -22,6 +27,10 @@ import {
   checkReferralLimits,
   referralWindowStart,
 } from "@/lib/referral-limits";
+import {
+  DEFAULT_PAGE_SIZE,
+  pageParamsFromSearchParam,
+} from "@/data/pagination";
 import { getCurrentMember } from "./session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
@@ -255,6 +264,82 @@ export async function getReceivedReferralsAction() {
   if (companyIds.length === 0) return [];
 
   return listReceivedReferralsForCompanies(db, companyIds);
+}
+
+const referralsListParamsSchema = z.object({
+  query: z.string().trim().max(120).optional().catch(undefined),
+  status: z.enum(REFERRAL_ADMIN_STATUSES).optional().catch(undefined),
+  page: z.coerce.number().int().min(1).max(10_000).default(1).catch(1),
+});
+
+const EMPTY_REFERRAL_PAGE = {
+  rows: [],
+  total: 0,
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
+  statusCounts: Object.fromEntries(
+    REFERRAL_ADMIN_STATUSES.map((status) => [status, 0]),
+  ) as Record<(typeof REFERRAL_ADMIN_STATUSES)[number], number>,
+};
+
+export async function getReferralsForAdminAction(
+  params: { query?: string; status?: string; page?: string | number } = {},
+) {
+  const current = await getCurrentMember();
+  const member = current?.member;
+  if (!member) return EMPTY_REFERRAL_PAGE;
+
+  const actor = buildActor(member);
+  if (!can(actor, "approve", "referral") && !can(actor, "reject", "referral")) {
+    return EMPTY_REFERRAL_PAGE;
+  }
+
+  const { query, status, page } = referralsListParamsSchema.parse(params);
+  const filters = { query: query || undefined, status };
+
+  const [total, statusCounts] = await Promise.all([
+    countReferralsForAdmin(db, filters),
+    countReferralsByStatus(db, { query: filters.query }),
+  ]);
+
+  // Count first, then clamp, so a page past the end shows the last real page
+  // rather than an empty table under a heading that says otherwise.
+  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const rows = await listReferralsForAdmin(
+    db,
+    filters,
+    pageParamsFromSearchParam(currentPage, DEFAULT_PAGE_SIZE),
+  );
+
+  return {
+    rows,
+    total,
+    page: currentPage,
+    pageSize: DEFAULT_PAGE_SIZE,
+    statusCounts,
+  };
+}
+
+/**
+ * The full introduction behind one drawer, client details included. Separate
+ * from the list action so those details are read for the row a moderator
+ * opened rather than shipped with every row of the page.
+ */
+export async function getReferralDetailAction(referralId: string) {
+  const current = await getCurrentMember();
+  const member = current?.member;
+  if (!member) return null;
+
+  const actor = buildActor(member);
+  if (!can(actor, "approve", "referral") && !can(actor, "reject", "referral")) {
+    return null;
+  }
+
+  const parsed = z.string().uuid().safeParse(referralId);
+  if (!parsed.success) return null;
+
+  return (await findReferralForAdmin(db, parsed.data)) ?? null;
 }
 
 export async function getPendingReferralsAction() {

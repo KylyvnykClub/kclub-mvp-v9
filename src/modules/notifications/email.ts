@@ -122,6 +122,21 @@ export async function sendGraceExpiryWarningEmail(
   );
 }
 
+/**
+ * The two failure modes are deliberately different, because the callers are
+ * outbox workers and the difference decides whether a row is retried.
+ *
+ * No API key is a configuration fact: retrying cannot fix it, so it returns
+ * false and the row is marked processed rather than becoming a poison row that
+ * every drain re-selects forever.
+ *
+ * A Resend error is usually transient - a 429, a 5xx, a network blip - and
+ * retrying is exactly the right response, so it throws. The caller's per-row
+ * catch then leaves the outbox row unprocessed for the next drain. Returning
+ * false here instead would mark the row done and lose the notification
+ * silently, which for FR-056's grace warning means the member is never warned
+ * at all: the enqueued row still suppresses the next sweep.
+ */
 async function sendEmail(
   to: string,
   subject: string,
@@ -140,8 +155,9 @@ async function sendEmail(
   });
 
   if (error) {
-    console.error("[notifications] Resend error:", error);
-    return false;
+    const message =
+      error instanceof Error ? error.message : JSON.stringify(error);
+    throw new Error(`Resend refused the message: ${message}`);
   }
 
   return true;

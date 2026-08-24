@@ -21,6 +21,8 @@ import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
+import { countryName } from "@/lib/countries";
+import type { Locale } from "@/i18n/routing";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -107,6 +109,16 @@ export default async function PartnerLandingPage({ params }: Props) {
 
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
+  const tCompany = await getTranslations("company");
+  const localizedCountry = partner.registrationCountryCode
+    ? countryName(partner.registrationCountryCode, locale as Locale)
+    : partner.country;
+  const formatLabels = {
+    offline_only: tCompany("businessFormatOffline"),
+    online_only: tCompany("businessFormatOnline"),
+    online_offline: tCompany("businessFormatHybrid"),
+    on_site_service: tCompany("businessFormatOnSite"),
+  } as const;
   const referralTranslations = {
     title: tr("title"),
     description: tr("description"),
@@ -144,11 +156,11 @@ export default async function PartnerLandingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <main className="min-h-screen bg-background pb-24">
-        <section className="border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
+        <section className="dark border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
           <div className="kclub-shell">
             <Link
               href={`/${locale}/directory`}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
               <ArrowLeft className="size-4" aria-hidden="true" />
               {tc("title")}
@@ -167,7 +179,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                   />
                 </div>
               ) : (
-                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent sm:size-32">
+                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent-ink sm:size-32">
                   {partner.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -223,6 +235,60 @@ export default async function PartnerLandingPage({ params }: Props) {
                   {partner.businessCategory.subcategory}
                 </div>
               </section>
+
+              {(partner.specializationDescription ||
+                partner.businessFormat ||
+                partner.registrationCountryCode ||
+                partner.serviceCountries.length > 0 ||
+                partner.servesWorldwide === 1) && (
+                <section className="border-t border-border pt-8">
+                  <p className="kclub-eyebrow">{tCompany("partnerSection")}</p>
+                  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+                    {localizedCountry && (
+                      <div>
+                        <dt className="text-muted-foreground">
+                          {tCompany("registrationCountryLabel")}
+                        </dt>
+                        <dd className="mt-1 font-medium">{localizedCountry}</dd>
+                      </div>
+                    )}
+                    {partner.businessFormat && (
+                      <div>
+                        <dt className="text-muted-foreground">
+                          {tCompany("businessFormatLabel")}
+                        </dt>
+                        <dd className="mt-1 font-medium">
+                          {formatLabels[partner.businessFormat]}
+                        </dd>
+                      </div>
+                    )}
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("serviceCountriesLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">
+                        {partner.servesWorldwide === 1
+                          ? tCompany("worldwideLabel")
+                          : partner.serviceCountries
+                              .map((item) =>
+                                countryName(item.countryCode, locale as Locale),
+                              )
+                              .join(", ")}
+                      </dd>
+                    </div>
+                    {partner.specializationDescription && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-muted-foreground">
+                          {tCompany("specializationLabel")}
+                        </dt>
+                        <dd className="mt-1 whitespace-pre-wrap leading-6">
+                          {partner.specializationDescription}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                </section>
+              )}
             </div>
 
             <aside className="bg-muted/30 p-6 sm:p-8">
@@ -241,7 +307,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         href={partner.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 transition-colors hover:text-accent"
+                        className="flex items-center justify-between gap-3 transition-colors hover:text-accent-ink"
                       >
                         <span className="inline-flex min-w-0 items-center gap-3">
                           <Globe
@@ -263,7 +329,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`mailto:${partner.contactEmail}`}
-                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent"
+                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent-ink"
                           >
                             <Mail
                               className="size-4 shrink-0 text-muted-foreground"
@@ -277,7 +343,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                         <li className="border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`tel:${partner.contactPhone}`}
-                            className="flex items-center gap-3 transition-colors hover:text-accent"
+                            className="flex items-center gap-3 transition-colors hover:text-accent-ink"
                           >
                             <Phone
                               className="size-4 text-muted-foreground"
@@ -312,7 +378,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                     <div className="border border-border bg-background p-4">
                       <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                         <BadgeCheck
-                          className="size-4 text-accent"
+                          className="size-4 text-accent-ink"
                           aria-hidden="true"
                         />
                         {tc("representedBy")}

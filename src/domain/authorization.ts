@@ -15,6 +15,7 @@ export type Action =
   | "unblock"
   | "revoke"
   | "reissue"
+  | "reset_password"
   | "send_referral"
   | "export_data"
   | "manage_reference_data"
@@ -203,6 +204,14 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     action: "unblock",
     subject: "member",
     check: (a) => staffAtLeast(a, "staff_admin"),
+  },
+  // Resetting a password is account takeover by another name: whoever does it
+  // can then sign in as that member. Held at owner while the manual flow is the
+  // only recovery path (ADR 0018), which is deliberately temporary.
+  {
+    action: "reset_password",
+    subject: "member",
+    check: (a) => staffAtLeast(a, "staff_owner"),
   },
   {
     action: "revoke",

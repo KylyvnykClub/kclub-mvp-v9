@@ -83,7 +83,7 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
             href={`/${locale}/dashboard/profile`}
             className="inline-flex min-h-11 shrink-0 items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
-            <span className="text-sm font-black uppercase tracking-[0.18em] text-accent">
+            <span className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
               KCLUB
             </span>
             <span className="hidden h-4 w-px bg-border sm:block" />

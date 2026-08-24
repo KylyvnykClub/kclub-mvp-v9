@@ -3,11 +3,20 @@ config({ path: ".env.local" });
 import fs from "fs/promises";
 import path from "path";
 import { db } from "../src/data/db";
-import { businessCategories } from "../src/data/schema";
+import {
+  businessCategories,
+  businessCategoryTranslations,
+} from "../src/data/schema";
 
 async function seed() {
   const filePath = path.join(process.cwd(), "data", "business_categories.csv");
   const content = await fs.readFile(filePath, "utf-8");
+  const translationsPath = path.join(
+    process.cwd(),
+    "data",
+    "business_category_translations.csv",
+  );
+  const translationsContent = await fs.readFile(translationsPath, "utf-8");
 
   const lines = content.split("\n").filter((line) => line.trim() !== "");
 
@@ -66,7 +75,51 @@ async function seed() {
     console.log(`Inserted chunk ${i / chunkSize + 1}`);
   }
 
-  console.log("Seeding complete!");
+  const translationLines = translationsContent
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .slice(1);
+  const translations = translationLines.map((line) => {
+    const parts = line
+      .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+      .map((part) => part.trim().replace(/^"|"$/g, "").replaceAll('""', '"'));
+    if (parts.length !== 5 || parts.some((part) => !part)) {
+      throw new Error(`Invalid classifier translation: ${line}`);
+    }
+    return {
+      businessCategoryId: Number(parts[0]!),
+      locale: parts[1]!,
+      block: parts[2]!,
+      category: parts[3]!,
+      subcategory: parts[4]!,
+    };
+  });
+
+  if (translations.length !== categories.length * 3) {
+    throw new Error(
+      `Expected ${categories.length * 3} translations, found ${translations.length}`,
+    );
+  }
+
+  for (let i = 0; i < translations.length; i += chunkSize) {
+    const chunk = translations.slice(i, i + chunkSize);
+    await db
+      .insert(businessCategoryTranslations)
+      .values(chunk)
+      .onConflictDoUpdate({
+        target: [
+          businessCategoryTranslations.businessCategoryId,
+          businessCategoryTranslations.locale,
+        ],
+        set: {
+          block: sql`EXCLUDED.block`,
+          category: sql`EXCLUDED.category`,
+          subcategory: sql`EXCLUDED.subcategory`,
+        },
+      });
+  }
+
+  console.log(`Seeded ${translations.length} classifier translations.`);
 }
 
 import { sql } from "drizzle-orm";

@@ -14,6 +14,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Actor } from "@/domain/actor";
 import { ADMIN_NAV_ITEMS, type AdminNavBadgeKey } from "./nav-items";
 
@@ -41,51 +47,68 @@ function NavLinks({
   const base = `/${locale}/dashboard/admin`;
 
   return (
-    <nav className="flex flex-col gap-1">
-      {ADMIN_NAV_ITEMS.filter((item) => item.show(actor)).map((item) => {
-        const Icon = item.icon;
-        const href = item.href === null ? null : `${base}${item.href}`;
-        const isActive = href !== null && pathname === href;
-        const count = item.badge ? counts[item.badge] : undefined;
+    <TooltipProvider delayDuration={200}>
+      <nav className="flex flex-col gap-1">
+        {ADMIN_NAV_ITEMS.filter((item) => item.show(actor)).map((item) => {
+          const Icon = item.icon;
+          const href = item.href === null ? null : `${base}${item.href}`;
+          const isActive = href !== null && pathname === href;
+          const count = item.badge ? counts[item.badge] : undefined;
 
-        if (href === null) {
+          if (href === null) {
+            // A destination that needs its own spec before it can exist. The
+            // reason is a real tooltip rather than a native title so it reads
+            // the same as the rest of the console and follows the theme.
+            return (
+              <Tooltip key={item.key}>
+                <TooltipTrigger asChild>
+                  {/*
+                    aria-disabled rather than disabled: a disabled button drops
+                    out of the tab order, and this tooltip is the only place
+                    that says why the item is inert. Announced as disabled,
+                    still reachable by keyboard.
+                  */}
+                  <button
+                    type="button"
+                    aria-disabled="true"
+                    onClick={(event) => event.preventDefault()}
+                    className="flex cursor-not-allowed items-center gap-3 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <Icon className="size-4 shrink-0" aria-hidden="true" />
+                    {t(item.key)}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{t("comingSoon")}</TooltipContent>
+              </Tooltip>
+            );
+          }
+
           return (
-            <span
+            <Link
               key={item.key}
-              className="flex cursor-not-allowed items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground/40"
-              title={t("comingSoon")}
+              href={href}
+              onClick={onNavigate}
+              className={`flex items-center gap-3 border-l-2 px-3 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                isActive
+                  ? "border-accent text-foreground"
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+              }`}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />
-              {t(item.key)}
-            </span>
+              <span className="flex-1">{t(item.key)}</span>
+              {!!count && count > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px]"
+                >
+                  {count}
+                </Badge>
+              )}
+            </Link>
           );
-        }
-
-        return (
-          <Link
-            key={item.key}
-            href={href}
-            onClick={onNavigate}
-            className={`flex items-center gap-3 border-l-2 px-3 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-              isActive
-                ? "border-accent text-foreground"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-            }`}
-          >
-            <Icon className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1">{t(item.key)}</span>
-            {!!count && count > 0 && (
-              <Badge
-                variant="secondary"
-                className="h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px]"
-              >
-                {count}
-              </Badge>
-            )}
-          </Link>
-        );
-      })}
-    </nav>
+        })}
+      </nav>
+    </TooltipProvider>
   );
 }
 
@@ -152,7 +175,7 @@ export function AdminSidebar({
           href={`/${locale}/dashboard/admin`}
           className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
         >
-          <span className="text-sm font-black uppercase tracking-[0.18em] text-accent">
+          <span className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
             KCLUB
           </span>
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
@@ -188,7 +211,7 @@ export function AdminSidebar({
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="flex w-72 flex-col p-0">
           <SheetHeader className="border-b border-border p-4 text-left">
-            <SheetTitle className="text-sm font-black uppercase tracking-[0.18em] text-accent">
+            <SheetTitle className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
               KCLUB — {t("consoleLabel")}
             </SheetTitle>
           </SheetHeader>

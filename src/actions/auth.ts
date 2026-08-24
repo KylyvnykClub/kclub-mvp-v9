@@ -206,7 +206,6 @@ export async function loginAction(formData: FormData) {
         requiresTotp: true,
         setupTotp: result.setupTotp,
         totpUri: result.totpUri,
-        totpSecret: result.totpSecret,
       };
     } else if (result.success && result.sessionToken) {
       const cookieStore = await cookies();
@@ -227,9 +226,11 @@ export async function loginAction(formData: FormData) {
   }
 }
 
+// The seed is deliberately absent. It used to arrive here from the browser and
+// be stored as-is, which meant the client chose which secret it would be judged
+// against; the server now reads the seed it stored against the partial session.
 const verifyTotpSchema = z.object({
   code: z.string().min(6).max(6),
-  newSecret: z.string().optional(),
 });
 
 export async function verifyTotpAction(formData: FormData) {
@@ -250,7 +251,6 @@ export async function verifyTotpAction(formData: FormData) {
     const result = await IdentityService.verifyTotp({
       sessionToken: token,
       code: data.code,
-      newSecret: data.newSecret,
       userAgent,
       ipAddress,
     });

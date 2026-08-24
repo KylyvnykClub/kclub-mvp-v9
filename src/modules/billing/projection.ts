@@ -13,8 +13,13 @@ import {
  */
 export const BILLING_OUTBOX_TOPIC = "billing.subscription.sync";
 
-/** Outbox topic for billing-related notifications (payment failures, grace expiry). */
-export const BILLING_NOTIFICATION_TOPIC = "billing.notification";
+/**
+ * Outbox topic for billing-related notifications (payment failures, grace
+ * expiry). Defined in the data layer beside the table, because the grace-expiry
+ * query deduplicates against outbox rows and cannot import from here without a
+ * cycle. Re-exported so existing call sites keep their import path.
+ */
+export { BILLING_NOTIFICATION_TOPIC } from "@/data/outbox";
 
 /** Dependency: retrieves one subscription from Stripe, throwing on network errors. */
 export type SubscriptionFetcher = (

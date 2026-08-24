@@ -27,12 +27,24 @@ import {
   processWebhookOnce,
   setSubscriptionStatus,
 } from "@/data/billing.js";
-import { enqueueOutbox, countPending, drainOutbox } from "@/data/outbox.js";
+import {
+  GRACE_EXPIRY_WARNING_NOTIFICATION,
+  enqueueOutbox,
+  countPending,
+  drainOutbox,
+} from "@/data/outbox.js";
+import { runGraceExpiryWarningSweep } from "@/modules/billing/grace-warning.js";
+import { handleStripeWebhook } from "@/modules/billing/stripe-webhook.js";
+import {
+  INLINE_BATCH_SIZE,
+  runOutboxDrain,
+} from "@/modules/platform/outbox-worker.js";
 import {
   businessCategories,
   cards,
   companies,
   members,
+  outbox,
 } from "@/data/schema/index.js";
 
 /**
@@ -1130,5 +1142,308 @@ describe("billing reconciliation (FR-058)", () => {
       local: "active",
       stripe: "deleted",
     });
+  });
+});
+
+/**
+ * ADR 0017. Until it, the webhook only enqueued and `vercel.json` drained the
+ * outbox once a day, so a paid upgrade appeared the following morning — FR-026
+ * missed by roughly 1440x on a Must requirement.
+ *
+ * What a test can prove is the *architecture*: that the projection happens in
+ * the webhook's own invocation, with no scheduled run involved. The 60-second
+ * wall clock itself is a deployment property and is not asserted here — see
+ * the backlog item `fr-026-60s-bound-not-tested`.
+ */
+describe("FR-026: the tier is projected without waiting for a scheduled drain", () => {
+  it("FR-026: the webhook's deferred work moves the card tier, with no cron run", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    const eventId = `evt_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    const event = {
+      id: eventId,
+      type: "customer.subscription.created",
+      created: EPOCH,
+      data: { object: { id: subscriptionId } },
+    } as unknown as Stripe.Event;
+
+    const deferred: Array<() => Promise<void>> = [];
+    const response = await handleStripeWebhook(
+      new Request("https://kclub.test/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "Stripe-Signature": "t=0,v1=verified-by-the-fixture" },
+        body: "{}",
+      }),
+      (task) => {
+        deferred.push(task);
+      },
+      {
+        db: testDb(),
+        constructEvent: () => event,
+        drain: () =>
+          runOutboxDrain(INLINE_BATCH_SIZE, {
+            db: testDb(),
+            fetchSubscription: (id) =>
+              id === subscriptionId
+                ? Promise.resolve(
+                    subscriptionFixture(memberId, { id: subscriptionId }),
+                  )
+                : Promise.reject(new Error(`unexpected subscription ${id}`)),
+          }),
+      },
+    );
+
+    // The response Stripe waits for carries no projection work: the row is
+    // enqueued, the tier has not moved, and the handler is already done.
+    expect(response.status).toBe(200);
+    expect(await cardTierOf(db, memberId)).toBe("free");
+    expect(await countPending(db)).toBe(1);
+    expect(deferred).toHaveLength(1);
+
+    // What `after()` runs in production. No cron route is invoked anywhere in
+    // this test, and vercel.json's schedule is irrelevant to it.
+    await deferred[0]!();
+
+    expect(await cardTierOf(db, memberId)).toBe("vip");
+    expect(await countPending(db)).toBe(0);
+  });
+
+  it("FR-026: a failed projection leaves the row for the retry sweep, not the member", async () => {
+    const db = testDbClient();
+    const memberId = crypto.randomUUID();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedMemberAndCard(db, memberId);
+
+    const event = {
+      id: `evt_${crypto.randomUUID()}`,
+      type: "customer.subscription.created",
+      created: EPOCH,
+      data: { object: { id: subscriptionId } },
+    } as unknown as Stripe.Event;
+
+    const deferred: Array<() => Promise<void>> = [];
+    const response = await handleStripeWebhook(
+      new Request("https://kclub.test/api/webhooks/stripe", {
+        method: "POST",
+        headers: { "Stripe-Signature": "t=0,v1=verified-by-the-fixture" },
+        body: "{}",
+      }),
+      (task) => {
+        deferred.push(task);
+      },
+      {
+        db: testDb(),
+        constructEvent: () => event,
+        drain: () =>
+          runOutboxDrain(INLINE_BATCH_SIZE, {
+            db: testDb(),
+            fetchSubscription: () =>
+              Promise.reject(new Error("Stripe is down")),
+          }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    await deferred[0]!();
+
+    // The inline drain failed. The outbox row must survive it unprocessed, so
+    // that the scheduled sweep still has something to retry.
+    expect(await cardTierOf(db, memberId)).toBe("free");
+    expect(await countPending(db)).toBe(1);
+  });
+});
+
+/**
+ * FR-056's second half: "notify the subscriber on failure **and before
+ * expiry**". The failure notice comes from the invoice.payment_failed webhook;
+ * these cases cover the warning that never existed until 2026-08-23.
+ *
+ * The deadline is derived, not stored: dunning begins at `currentPeriodStart`
+ * once the status is `past_due`, because Stripe advances the period when the
+ * renewal invoice is created rather than when it is paid. That behaviour is
+ * pinned against a real test clock in tests/billing-lifecycle.stripe.test.ts.
+ */
+describe("FR-056: warning before the grace period expires", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const HOUR = 60 * 60 * 1000;
+  const NOW = new Date("2026-08-23T12:00:00Z");
+
+  /**
+   * Seed a subscription through the real fold rather than by hand, so the row
+   * under test is the row production would have written. `anchor` is when
+   * dunning started; the period end sits a month later, as Stripe leaves it.
+   */
+  async function seedPastDue(
+    db: DbClient,
+    memberId: string,
+    subscriptionId: string,
+    anchor: Date,
+    status: Stripe.Subscription.Status = "past_due",
+  ): Promise<void> {
+    await seedMemberAndCard(db, memberId);
+
+    const startEpoch = Math.floor(anchor.getTime() / 1000);
+    const endEpoch = startEpoch + 30 * 24 * 60 * 60;
+
+    await reconcileSubscription(
+      db,
+      () =>
+        Promise.resolve(
+          subscriptionFixture(memberId, {
+            id: subscriptionId,
+            status,
+            items: {
+              data: [
+                {
+                  price: { id: "price_vip_monthly" },
+                  current_period_start: startEpoch,
+                  current_period_end: endEpoch,
+                } as Stripe.SubscriptionItem,
+              ],
+            } as Stripe.ApiList<Stripe.SubscriptionItem>,
+          }),
+        ),
+      subscriptionId,
+      startEpoch,
+    );
+  }
+
+  async function warningRowsFor(
+    db: DbClient,
+    subscriptionId: string,
+  ): Promise<number> {
+    const rows = await db.select().from(outbox);
+    return rows.filter((row) => {
+      const payload = row.payload as { type?: string; subscriptionId?: string };
+      return (
+        payload.type === GRACE_EXPIRY_WARNING_NOTIFICATION &&
+        payload.subscriptionId === subscriptionId
+      );
+    }).length;
+  }
+
+  it("FR-056: a past_due subscription inside the lead window is warned", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    // Dunning started 12 days ago, so the 14-day deadline is 2 days out.
+    await seedPastDue(
+      db,
+      crypto.randomUUID(),
+      subscriptionId,
+      new Date(NOW.getTime() - 12 * DAY),
+    );
+
+    const result = await runGraceExpiryWarningSweep(db, NOW);
+
+    expect(result).toMatchObject({ checked: 1, queued: 1, failed: 0 });
+    expect(await warningRowsFor(db, subscriptionId)).toBe(1);
+  });
+
+  it("FR-056: a past_due subscription early in its grace period is not warned yet", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedPastDue(
+      db,
+      crypto.randomUUID(),
+      subscriptionId,
+      new Date(NOW.getTime() - 2 * DAY),
+    );
+
+    const result = await runGraceExpiryWarningSweep(db, NOW);
+
+    expect(result.checked).toBe(0);
+    expect(await warningRowsFor(db, subscriptionId)).toBe(0);
+  });
+
+  it("FR-056: a past_due subscription whose grace has already expired is not warned", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedPastDue(
+      db,
+      crypto.randomUUID(),
+      subscriptionId,
+      new Date(NOW.getTime() - 15 * DAY),
+    );
+
+    const result = await runGraceExpiryWarningSweep(db, NOW);
+
+    expect(result.checked).toBe(0);
+    expect(await warningRowsFor(db, subscriptionId)).toBe(0);
+  });
+
+  it("FR-056: an active subscription is never warned, whatever its dates", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    await seedPastDue(
+      db,
+      crypto.randomUUID(),
+      subscriptionId,
+      new Date(NOW.getTime() - 12 * DAY),
+      "active",
+    );
+
+    const result = await runGraceExpiryWarningSweep(db, NOW);
+
+    expect(result.checked).toBe(0);
+    expect(await warningRowsFor(db, subscriptionId)).toBe(0);
+  });
+
+  it("FR-056: the warning is enqueued exactly once across three daily sweeps", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    // Chosen so all three sweeps fall inside the lead window — what suppresses
+    // the second and third is the outbox row, not the arithmetic.
+    await seedPastDue(
+      db,
+      crypto.randomUUID(),
+      subscriptionId,
+      new Date(NOW.getTime() - (11 * DAY + HOUR)),
+    );
+
+    const first = await runGraceExpiryWarningSweep(db, NOW);
+    const second = await runGraceExpiryWarningSweep(
+      db,
+      new Date(NOW.getTime() + DAY),
+    );
+    const third = await runGraceExpiryWarningSweep(
+      db,
+      new Date(NOW.getTime() + 2 * DAY),
+    );
+
+    expect(first).toMatchObject({ checked: 1, queued: 1 });
+    expect(second).toMatchObject({ checked: 0, queued: 0 });
+    expect(third).toMatchObject({ checked: 0, queued: 0 });
+    expect(await warningRowsFor(db, subscriptionId)).toBe(1);
+
+    // Nothing drained the row between sweeps, so an undrained warning
+    // suppresses a duplicate just as a sent one does.
+    expect(await countPending(db)).toBe(1);
+  });
+
+  it("FR-056: a warning from a previous billing period does not suppress the next one", async () => {
+    const db = testDbClient();
+    const subscriptionId = `sub_${crypto.randomUUID()}`;
+    const anchor = new Date(NOW.getTime() - 12 * DAY);
+    await seedPastDue(db, crypto.randomUUID(), subscriptionId, anchor);
+
+    // A warning for the *previous* cycle, enqueued before this period began.
+    await db.insert(outbox).values({
+      topic: "billing.notification",
+      payload: {
+        type: GRACE_EXPIRY_WARNING_NOTIFICATION,
+        subscriptionId,
+        customerId: "cus_test",
+      },
+      createdAt: new Date(anchor.getTime() - DAY),
+      processedAt: new Date(anchor.getTime() - DAY),
+    });
+
+    const result = await runGraceExpiryWarningSweep(db, NOW);
+
+    expect(result).toMatchObject({ checked: 1, queued: 1 });
+    expect(await warningRowsFor(db, subscriptionId)).toBe(2);
   });
 });

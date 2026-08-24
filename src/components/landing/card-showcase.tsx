@@ -6,7 +6,7 @@ export function CardShowcase() {
   const t = useTranslations("home");
 
   return (
-    <section className="kclub-section overflow-hidden bg-zinc-950 text-white">
+    <section className="dark kclub-section overflow-hidden bg-zinc-950 text-white">
       <div className="kclub-shell grid items-center gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <div>
           <p className="kclub-eyebrow !text-white/55">

@@ -23,9 +23,9 @@ export function StatsSection() {
           >
             <p className="text-4xl font-black leading-none text-zinc-950 dark:text-white sm:text-5xl">
               {value}
-              <span className="text-accent">.</span>
+              <span className="text-accent-ink">.</span>
             </p>
-            <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
               {t(`stats.${key}`)}
             </p>
           </div>

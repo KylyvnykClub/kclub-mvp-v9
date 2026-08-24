@@ -21,7 +21,7 @@ export function HowItWorksSection() {
               key={step.title}
               className="min-h-72 border-b border-r border-border bg-background p-8"
             >
-              <span className="text-4xl font-black text-accent">
+              <span className="text-4xl font-black text-accent-ink">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h3 className="mt-12 text-xl font-black uppercase leading-tight">
