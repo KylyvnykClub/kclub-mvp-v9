@@ -77,6 +77,14 @@ const staticRoutes: RouteEntry[] = [
   },
   {
     method: "GET",
+    path: "/:locale/dashboard",
+    action: "read",
+    subject: "own_profile",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    method: "GET",
     path: "/:locale/dashboard/profile",
     action: "read",
     subject: "own_profile",
