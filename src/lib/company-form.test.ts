@@ -21,8 +21,19 @@ import {
  * database cannot smuggle in fields the form does not own.
  */
 
-const DETAILS = { name: "Acme Coffee" };
-const LOCATION = { businessCategoryId: "7", country: "Ukraine", city: "Kyiv" };
+const DETAILS = {
+  name: "Acme Coffee",
+  specializationDescription: "Coffee roasting and tasting sessions",
+};
+const LOCATION = {
+  businessCategoryId: "7",
+  registrationCountryCode: "UA",
+  serviceCountryCodes: "UA,PL",
+  servesWorldwide: "false",
+  businessFormat: "offline_only",
+  administrativeLevel1: "Kyiv",
+  city: "Kyiv",
+};
 const OFFER = { discount: "15% for members" };
 
 describe("FR-040: four-step company submission form", () => {
@@ -44,7 +55,7 @@ describe("FR-040: four-step company submission form", () => {
     expect(result.success).toBe(false);
   });
 
-  it("requires a category, a country and a city on step 2", () => {
+  it("requires a category, registration country, service coverage and local address on step 2", () => {
     expect(companyLocationStepSchema.safeParse(LOCATION).success).toBe(true);
     expect(companyLocationStepSchema.safeParse({}).success).toBe(false);
   });
@@ -52,6 +63,33 @@ describe("FR-040: four-step company submission form", () => {
   it("coerces the category id from the string a select element submits", () => {
     const parsed = companyLocationStepSchema.parse(LOCATION);
     expect(parsed.businessCategoryId).toBe(7);
+  });
+
+  it("allows an online company to omit city and administrative levels", () => {
+    expect(
+      companyLocationStepSchema.safeParse({
+        ...LOCATION,
+        businessFormat: "online_only",
+        administrativeLevel1: "",
+        city: "",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("requires service countries unless the company serves worldwide", () => {
+    expect(
+      companyLocationStepSchema.safeParse({
+        ...LOCATION,
+        serviceCountryCodes: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      companyLocationStepSchema.safeParse({
+        ...LOCATION,
+        serviceCountryCodes: "",
+        servesWorldwide: "true",
+      }).success,
+    ).toBe(true);
   });
 
   it("treats every field on step 3 as optional - an applicant may offer nothing yet", () => {

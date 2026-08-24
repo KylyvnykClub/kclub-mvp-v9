@@ -1,4 +1,4 @@
-import { Manrope } from "next/font/google";
+import { Manrope, Oxanium } from "next/font/google";
 
 export const fontBody = Manrope({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
@@ -7,4 +7,10 @@ export const fontBody = Manrope({
   display: "swap",
 });
 
-export const fontHeading = fontBody;
+export const fontHeading = Oxanium({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-heading",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+});

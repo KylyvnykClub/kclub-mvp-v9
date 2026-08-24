@@ -64,28 +64,33 @@ async function seedPartner(
   db: DbClient,
   overrides: Partial<typeof companies.$inferInsert> & {
     categoryId?: number;
+    serviceCountryCodes?: string[];
   } = {},
 ) {
   const owner = await seedOwner(db);
-  const { categoryId, ...rest } = overrides;
+  const { categoryId, serviceCountryCodes, ...rest } = overrides;
   const category = categoryId ? null : await seedCategory(db);
   const id = crypto.randomUUID();
 
-  await insertCompany(db, {
-    id,
-    ownerId: owner.id,
-    businessCategoryId: categoryId ?? category!.id,
-    name: `Partner ${id.slice(0, 8)}`,
-    slug: `partner-${id.slice(0, 8)}`,
-    country: "Ukraine",
-    city: "Kyiv",
-    description: "Speciality coffee and pastries",
-    discount: "15% for members",
-    contactEmail: "hello@example.com",
-    contactPhone: "+380991234567",
-    moderationStatus: "approved",
-    ...rest,
-  });
+  await insertCompany(
+    db,
+    {
+      id,
+      ownerId: owner.id,
+      businessCategoryId: categoryId ?? category!.id,
+      name: `Partner ${id.slice(0, 8)}`,
+      slug: `partner-${id.slice(0, 8)}`,
+      country: "Ukraine",
+      city: "Kyiv",
+      description: "Speciality coffee and pastries",
+      discount: "15% for members",
+      contactEmail: "hello@example.com",
+      contactPhone: "+380991234567",
+      moderationStatus: "approved",
+      ...rest,
+    },
+    serviceCountryCodes,
+  );
 
   return id;
 }
@@ -187,6 +192,48 @@ describe("FR-031: filter the catalogue by category, country and city", () => {
     );
 
     expect(visible.map((row) => row.id)).toEqual([match]);
+  });
+
+  it("matches service countries and worldwide companies, then applies the selected mode", async () => {
+    const db = testDbClient();
+    const online = await seedPartner(db, {
+      registrationCountryCode: "UA",
+      businessFormat: "online_only",
+      servesWorldwide: 0,
+      serviceCountryCodes: ["PL"],
+    });
+    const worldwide = await seedPartner(db, {
+      registrationCountryCode: "CH",
+      businessFormat: "online_only",
+      servesWorldwide: 1,
+    });
+    const local = await seedPartner(db, {
+      registrationCountryCode: "UA",
+      businessFormat: "offline_only",
+      administrativeLevel1: "Kyiv",
+      serviceCountryCodes: ["UA"],
+    });
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, [online, worldwide, local], {
+          serviceCountryCode: "PL",
+          businessMode: "online",
+        })
+      )
+        .map((row) => row.id)
+        .sort(),
+    ).toEqual([online, worldwide].sort());
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, [online, worldwide, local], {
+          serviceCountryCode: "UA",
+          businessMode: "offline",
+          administrativeLevel1: "Kyiv",
+        })
+      ).map((row) => row.id),
+    ).toEqual([local]);
   });
 
   it("returns an empty page rather than everything when a filter matches nothing", async () => {
