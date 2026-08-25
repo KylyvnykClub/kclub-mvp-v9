@@ -169,6 +169,7 @@ Required external checks:
 |`NEXT_PUBLIC_TURNSTILE_SITE_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Must match `TURNSTILE_SECRET_KEY`.|
 |`SENTRY_DSN`|Optional for private beta|Sentry project|If omitted, Sentry initialization is deferred and guarded.|
 |`NEXT_PUBLIC_SENTRY_DSN`|Optional for private beta|Sentry project|Must match the intended frontend Sentry project and environment.|
+|`ALLOW_PUBLIC_INDEXING`|Off until public launch|Deployment decision|Unset or `false` keeps the whole site `noindex`, which is correct for the pre-launch beta. Set to `true` in production at launch to let search engines index the marketing, catalogue and legal pages; the `(auth)`, `(dashboard)` and card routes stay `noindex` regardless. Tracked as `seo-public-pages-are-noindex`.|
 
 ## Infrastructure Gap List
 
