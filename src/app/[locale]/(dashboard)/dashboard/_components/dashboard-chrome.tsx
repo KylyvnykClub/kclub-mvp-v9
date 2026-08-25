@@ -2,16 +2,10 @@
 
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { DashboardHeader } from "./dashboard-header";
-import type { Actor } from "@/domain/actor";
+import { SiteFooter } from "@/components/landing/site-footer";
+import { SiteHeader } from "@/components/landing/site-header";
 
-export function DashboardChrome({
-  actor,
-  children,
-}: {
-  actor: Actor;
-  children: ReactNode;
-}) {
+export function DashboardChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.includes("/dashboard/admin");
 
@@ -21,10 +15,11 @@ export function DashboardChrome({
 
   return (
     <>
-      <DashboardHeader actor={actor} />
+      <SiteHeader member />
       <main className="flex-1">
         <div className="kclub-shell py-8 sm:py-10">{children}</div>
       </main>
+      <SiteFooter />
     </>
   );
 }

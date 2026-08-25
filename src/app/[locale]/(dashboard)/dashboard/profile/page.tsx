@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { Plus } from "lucide-react";
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
@@ -8,8 +9,10 @@ import {
   listActiveSubscriptionsForDeletion,
   listSubscriptionsByMember,
 } from "@/data/billing";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfileForm } from "@/components/profile/edit-profile-form";
 import { PersonalInfoForm } from "@/components/profile/personal-info-form";
@@ -156,7 +159,7 @@ export default async function ProfilePage({ params }: Props) {
 
             <div className="dark flex flex-col items-center justify-center bg-zinc-950 p-6 sm:p-10">
               <div
-                className="relative w-full max-w-[420px] overflow-hidden rounded-[20px] border border-accent/40 shadow-[0_24px_80px_-35px_rgba(212,175,55,0.65)]"
+                className="relative w-full max-w-[420px] overflow-hidden rounded-[20px] border border-accent/40"
                 style={{
                   aspectRatio: "85.6/53.98",
                   background:
@@ -246,6 +249,14 @@ export default async function ProfilePage({ params }: Props) {
         </TabsContent>
 
         <TabsContent value="companies">
+          <div className="mb-5 flex justify-start">
+            <Button asChild className="rounded-none">
+              <Link href="/dashboard/company/new">
+                <Plus className="size-4" aria-hidden="true" />
+                {tDashboard("navRegisterCompany")}
+              </Link>
+            </Button>
+          </div>
           <CompanyList
             companies={myCompanies}
             subscriptions={mySubscriptions}

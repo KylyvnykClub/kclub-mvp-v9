@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { serverSchema } from "@/env.schema.js";
+import { clientSchema, serverSchema } from "@/env.schema.js";
 
 /**
  * The production superRefine rules in env.schema.ts are fail-closed guards: a
@@ -20,6 +20,8 @@ function productionBase(): Record<string, string> {
     BETTER_AUTH_SECRET: "better-auth-secret",
     STRIPE_SECRET_KEY: "sk_live_stub",
     STRIPE_WEBHOOK_SECRET: "whsec_stub",
+    STRIPE_VIP_PRICE_ID: "price_vip_live",
+    STRIPE_LISTING_PRICE_ID: "price_listing_live",
     UPSTASH_REDIS_REST_URL: "https://redis.upstash.io",
     UPSTASH_REDIS_REST_TOKEN: "redis-token",
     CRON_SECRET: "cron-secret",
@@ -59,5 +61,56 @@ describe("constraint: production fail-closed env (FR-056)", () => {
       });
       expect(result.success, `VERCEL_ENV=${vercelEnv} should parse`).toBe(true);
     }
+  });
+
+  it("rejects production Stripe test mode and missing checkout prices", () => {
+    const {
+      STRIPE_VIP_PRICE_ID: _vipPrice,
+      STRIPE_LISTING_PRICE_ID: _listingPrice,
+      ...base
+    } = productionBase();
+
+    const result = serverSchema.safeParse({
+      ...base,
+      STRIPE_SECRET_KEY: "sk_test_stub",
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(
+      result.error.issues.map((issue) => [issue.path[0], issue.message]),
+    ).toEqual(
+      expect.arrayContaining([
+        [
+          "STRIPE_SECRET_KEY",
+          "STRIPE_SECRET_KEY must be a live key in production",
+        ],
+        [
+          "STRIPE_VIP_PRICE_ID",
+          "STRIPE_VIP_PRICE_ID is required in production",
+        ],
+        [
+          "STRIPE_LISTING_PRICE_ID",
+          "STRIPE_LISTING_PRICE_ID is required in production",
+        ],
+      ]),
+    );
+  });
+
+  it("rejects a production publishable Stripe test key", () => {
+    const result = clientSchema.safeParse({
+      VERCEL_ENV: "production",
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_stub",
+    });
+
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.issues).toContainEqual(
+      expect.objectContaining({
+        path: ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"],
+        message:
+          "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live key in production",
+      }),
+    );
   });
 });

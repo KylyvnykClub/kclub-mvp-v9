@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { logoutAction } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -17,8 +19,10 @@ const navigation = [
   ["faq", "/#faq"],
 ] as const;
 
-export function SiteHeader() {
+export function SiteHeader({ member = false }: { member?: boolean }) {
   const t = useTranslations("home");
+  const tAuth = useTranslations("auth");
+  const tDashboard = useTranslations("dashboard");
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
@@ -27,6 +31,11 @@ export function SiteHeader() {
 
   function changeLocale(newLocale: Locale) {
     router.replace(pathname, { locale: newLocale });
+  }
+
+  async function handleLogout() {
+    await logoutAction();
+    router.push("/login");
   }
 
   return (
@@ -83,18 +92,41 @@ export function SiteHeader() {
             ))}
           </div>
           <ThemeToggle />
-          <Link
-            href="/login"
-            className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] md:inline-flex"
-          >
-            {t("nav.signIn")}
-          </Link>
-          <Link
-            href="/register"
-            className="kclub-brand-button hidden sm:inline-flex"
-          >
-            {t("nav.join")} <span aria-hidden="true">↗</span>
-          </Link>
+          {member ? (
+            <>
+              <Link
+                href="/dashboard/profile"
+                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] md:inline-flex"
+              >
+                {tDashboard("profile")}
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => void handleLogout()}
+                className="hidden h-10 rounded-none px-3 text-muted-foreground md:inline-flex"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+                {tAuth("signOut")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] md:inline-flex"
+              >
+                {t("nav.signIn")}
+              </Link>
+              <Link
+                href="/register"
+                className="kclub-brand-button hidden sm:inline-flex"
+              >
+                {t("nav.join")} <span aria-hidden="true">↗</span>
+              </Link>
+            </>
+          )}
           <button
             type="button"
             className="inline-flex size-11 items-center justify-center lg:hidden"
@@ -138,6 +170,29 @@ export function SiteHeader() {
                 </button>
               ))}
             </div>
+            {member && (
+              <div className="mt-4 grid gap-2 border-t border-border pt-4 md:hidden">
+                <Link
+                  href="/dashboard/profile"
+                  onClick={() => setOpen(false)}
+                  className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                >
+                  {tDashboard("profile")}
+                </Link>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setOpen(false);
+                    void handleLogout();
+                  }}
+                  className="h-11 justify-start rounded-none border border-border px-4"
+                >
+                  <LogOut className="size-4" aria-hidden="true" />
+                  {tAuth("signOut")}
+                </Button>
+              </div>
+            )}
           </div>
         </nav>
       )}

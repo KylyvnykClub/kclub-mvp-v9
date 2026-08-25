@@ -645,6 +645,26 @@ export type PartnerDetailView = Awaited<
   ReturnType<typeof findApprovedCompanyBySlug>
 >;
 
+/**
+ * Slugs of the publicly listable partners - approved and among the set with an
+ * active subscription. Used by the sitemap; returns only the slug so it stays a
+ * cheap query even as the catalogue grows.
+ */
+export async function listPublicPartnerSlugs(
+  db: DbClient,
+  ids: string[],
+): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const rows = await db.query.companies.findMany({
+    where: and(
+      eq(companies.moderationStatus, "approved"),
+      inArray(companies.id, ids),
+    ),
+    columns: { slug: true },
+  });
+  return rows.map((r) => r.slug);
+}
+
 export async function listPendingCompanies(db: DbClient) {
   return db.query.companies.findMany({
     where: eq(companies.moderationStatus, "pending"),

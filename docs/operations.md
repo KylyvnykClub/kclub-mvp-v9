@@ -133,8 +133,16 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`python tools/check-plan.py --strict`|Every FR claimed by one task, and named by a test title|
 |`python tools/check-docs.py --strict`|Broken links, missing owners, stale dates|
 
-**`pnpm db:seed:beta` writes 50 members and 30 companies.** Confirm which
-database `DATABASE_URL` points at before running it.
+**Database environments are separated by Neon branch/database.** Production uses
+only the production pooled and direct URLs in Vercel Production. Staging uses a
+staging branch/database for beta and release rehearsals. Preview and local work
+use disposable preview/local branches. `.env.local` must not point at the
+production database except during a named, time-boxed incident.
+
+**`pnpm db:seed:beta` writes 50 members and 30 companies.** It is for staging
+and preview only. **`pnpm beta:purge` removes that exact dataset by deterministic
+phone numbers.** Run it dry first, confirm the printed target and counts, and
+execute only with `pnpm beta:purge --execute --confirm-production-purge`.
 
 ## 7. What stands between here and production
 

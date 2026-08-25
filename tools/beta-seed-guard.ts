@@ -49,3 +49,26 @@ export function betaSeedRefusal(target: BetaSeedTarget): string | null {
 
   return null;
 }
+
+export function describeDatabaseTarget(databaseUrl: string): string {
+  const parsed = new URL(databaseUrl);
+  const database = parsed.pathname.replace(/^\/+/, "") || "(default)";
+
+  return `${parsed.protocol}//${parsed.hostname}/${database}`;
+}
+
+export function betaPurgeRefusal(target: {
+  execute: boolean;
+  confirmedProductionPurge: boolean;
+}): string | null {
+  if (!target.execute) return null;
+
+  if (!target.confirmedProductionPurge) {
+    return (
+      "Refusing to execute the beta purge without --confirm-production-purge. " +
+      "Run a dry run first, confirm the target database and counts, then pass both flags."
+    );
+  }
+
+  return null;
+}

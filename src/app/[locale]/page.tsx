@@ -14,6 +14,8 @@ import { ServicesSection } from "@/components/landing/services-section";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { StatsSection } from "@/components/landing/stats-section";
+import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -26,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `KCLUB — ${t("titleLine2")}`,
     description: t("subline"),
+    alternates: localeAlternates(locale, ""),
   };
 }
 
@@ -35,6 +38,8 @@ export default async function Page({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-background selection:bg-accent/30">
+      <JsonLd data={websiteLd()} />
+      <JsonLd data={organizationLd()} />
       <SiteHeader />
       <main>
         <HeroSection />

@@ -6,10 +6,17 @@
 
 1. **State is auto-loaded** via SessionStart hook (`.state/state.json` + `.state/handoffs.json`; legacy `.claude/...` still loads during migration)
 
-2. **Brief summary** (don't force handoff engagement):
+2. **Resume, then plan (mandatory ritual).** Read `lastSession` in `.state/state.json`
+   (`checklist`, `stoppedAt`, `nextSteps`) plus `shipped`, and open the session with:
+   - a **one-line recap** of what the previous session finished (the checklist, condensed),
+   - **where we stopped**,
+   - a **short action plan** — 2–4 bullets of the obvious next steps.
+
+   Keep it to a screenful, not a report. Then mention backlog count and any active handoff.
 
    ```text
-   "Last session: [X]. [N] backlog items.
+   "Last session: [recap]. Stopped at: [stoppedAt].
+   Suggested next: [1–3 bullets]. [N] backlog items.
    [If handoffs exist: '1 active handoff: auth-system (Phase 2/3)']
    What would you like to work on?"
    ```
@@ -21,6 +28,22 @@
    - Say anything else → do that
 
 **Don't ask "Continue?" about handoffs** — just mention they exist. User decides.
+
+## On Session Finalize (mandatory ritual)
+
+When wrapping up a work cycle — the user says we're stopping, or a cohesive chunk of
+work is finished — before ending, write the handoff for the next session into
+`.state/state.json` `lastSession`:
+
+1. **`checklist`** — a handful of **plain, detail-free bullets** of what this session did
+   (what shipped, what changed, what was decided). Each must stand alone and be understandable
+   at a glance. A checklist, not a narrative.
+2. **`stoppedAt`** — one line on where the thread was left.
+3. **`nextSteps`** — 2–4 obvious next actions, so the next session starts with momentum.
+
+This is the counterpart to the start ritual: **finalize writes the checklist, the next start
+reads it back.** Keep `shipped` and backlog updates as `/push` already handles them; this ritual
+is about continuity of context, not the changelog.
 
 ## Resuming Handoffs
 

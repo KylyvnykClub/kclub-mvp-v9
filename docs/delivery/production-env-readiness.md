@@ -48,6 +48,10 @@ because a QR code outlives the deployment that printed it.
 
 Required external checks:
 
+- Confirm production, staging, and preview/local use separate Neon
+  branches/databases. Production credentials must appear only in Vercel
+  Production and in a time-boxed incident shell; `.env.local` must point at a
+  non-production branch by default.
 - Confirm Neon project, region, PITR window, autoscaling bounds, and branch naming.
 - Confirm production migration credentials are scoped to migration work only.
 - Run `pnpm db:updownup` locally or in CI against a disposable database before merging a migration.

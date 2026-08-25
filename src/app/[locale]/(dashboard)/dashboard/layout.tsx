@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { DashboardChrome } from "./_components/dashboard-chrome";
-import { buildActor } from "@/domain/actor";
 
 type Props = {
   children: ReactNode;
@@ -35,9 +34,7 @@ export default async function DashboardLayout({ children, params }: Props) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardChrome actor={buildActor(result.member)}>
-        {children}
-      </DashboardChrome>
+      <DashboardChrome>{children}</DashboardChrome>
     </div>
   );
 }
