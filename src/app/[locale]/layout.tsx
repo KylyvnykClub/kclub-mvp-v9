@@ -40,11 +40,14 @@ export async function generateMetadata({
       title: t("title"),
       description: t("description"),
     },
-    // NOTE: the whole locale subtree is noindex while in pre-launch beta. At
-    // launch this must move to the (auth) and (dashboard) subtrees only, so the
-    // public marketing, catalogue and legal pages become indexable. Tracked as
-    // seo-public-pages-are-noindex.
-    robots: { index: false, follow: false },
+    // Public marketing, catalogue and legal pages become indexable only once
+    // ALLOW_PUBLIC_INDEXING is set at launch; until then the whole site is
+    // noindex so the pre-launch beta stays out of search. The private subtrees
+    // ((auth), (dashboard), the card page) override this with their own hard
+    // noindex, so flipping the switch never exposes them.
+    robots: env.server.ALLOW_PUBLIC_INDEXING
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
   };
 }
 
