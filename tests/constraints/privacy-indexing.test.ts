@@ -7,7 +7,8 @@ describe("constraint: privacy and indexing controls (FR-089, FR-094)", () => {
 
     expect(source).toContain('userAgent: "*"');
     expect(source).toContain('allow: "/"');
-    expect(source).toContain('"/dashboard/admin/"');
+    expect(source).toContain('"/*/dashboard/"');
+    expect(source).toContain('"/*/card/"');
     expect(source).toContain('"/api/"');
   });
 
