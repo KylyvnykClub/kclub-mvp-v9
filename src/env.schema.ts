@@ -170,11 +170,52 @@ export const serverSchema = z
         message: "RESEND_API_KEY is required in production",
       });
     }
+
+    if (env.VERCEL_ENV === "production") {
+      if (env.STRIPE_SECRET_KEY.startsWith("sk_test_")) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["STRIPE_SECRET_KEY"],
+          message: "STRIPE_SECRET_KEY must be a live key in production",
+        });
+      }
+
+      if (!env.STRIPE_VIP_PRICE_ID) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["STRIPE_VIP_PRICE_ID"],
+          message: "STRIPE_VIP_PRICE_ID is required in production",
+        });
+      }
+
+      if (!env.STRIPE_LISTING_PRICE_ID) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["STRIPE_LISTING_PRICE_ID"],
+          message: "STRIPE_LISTING_PRICE_ID is required in production",
+        });
+      }
+    }
   });
 
-export const clientSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_"),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-});
+export const clientSchema = z
+  .object({
+    VERCEL_ENV: z.enum(["development", "preview", "production"]).optional(),
+    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_"),
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  })
+  .superRefine((env, ctx) => {
+    if (
+      env.VERCEL_ENV === "production" &&
+      env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.startsWith("pk_test_")
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"],
+        message:
+          "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live key in production",
+      });
+    }
+  });

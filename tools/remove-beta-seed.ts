@@ -4,7 +4,8 @@
  *
  * Usage:
  *   pnpm beta:purge              — dry run, prints exactly what would go
- *   pnpm beta:purge --execute    — actually deletes
+ *   pnpm beta:purge --execute --confirm-production-purge
+ *                                — actually deletes after an explicit confirm
  *
  * Why this exists: `pnpm db:seed:beta` inserts 50 synthetic members, 30
  * companies and 30 `sub_seed_beta_*` subscriptions. Its production guard checks
@@ -28,6 +29,7 @@
 
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
+import { betaPurgeRefusal, describeDatabaseTarget } from "./beta-seed-guard";
 
 config({ path: ".env.local", quiet: true });
 
@@ -40,6 +42,9 @@ if (!DATABASE_URL) {
 
 const sql = neon(DATABASE_URL);
 const execute = process.argv.includes("--execute");
+const confirmedProductionPurge = process.argv.includes(
+  "--confirm-production-purge",
+);
 
 /** Mirrors betaPhone() in tools/seed.ts. Deterministic, exact, 50 values. */
 const BETA_PHONES = Array.from(
@@ -52,11 +57,22 @@ function heading(text: string): void {
 }
 
 async function main(): Promise<void> {
+  const target = describeDatabaseTarget(DATABASE_URL!);
   console.log(
     execute
       ? "MODE: execute — rows will be deleted"
       : "MODE: dry run — nothing will be deleted (pass --execute to delete)",
   );
+  console.log(`TARGET: ${target}`);
+
+  const refusal = betaPurgeRefusal({
+    execute,
+    confirmedProductionPurge,
+  });
+  if (refusal) {
+    console.error(`\nRefusing to continue. ${refusal}\n`);
+    process.exit(1);
+  }
 
   heading("Members matching the beta seed's phone numbers");
   const betaMembers = await sql`
@@ -139,7 +155,7 @@ async function main(): Promise<void> {
 
   if (!execute) {
     console.log(
-      "\nDry run only. Re-run with --execute to delete the rows listed above.\n",
+      "\nDry run only. Re-run with --execute --confirm-production-purge to delete the rows listed above.\n",
     );
     return;
   }

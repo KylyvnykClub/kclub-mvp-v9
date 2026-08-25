@@ -5,7 +5,7 @@ import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
 import {
   findStripeCustomerIdByMember,
-  insertStripeCustomerMapping,
+  upsertStripeCustomerMapping,
 } from "@/data/billing";
 import { findApprovedCompanyByOwner } from "@/data/companies";
 import { headers } from "next/headers";
@@ -19,6 +19,26 @@ import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
+function stripeResourceMissing(error: unknown): boolean {
+  return (
+    error instanceof Stripe.errors.StripeInvalidRequestError &&
+    error.code === "resource_missing"
+  );
+}
+
+async function stripeCustomerIsUsable(stripeCustomerId: string) {
+  try {
+    const customer = await stripe.customers.retrieve(stripeCustomerId);
+    return !customer.deleted;
+  } catch (error) {
+    if (stripeResourceMissing(error)) {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
 export async function getOrCreateStripeCustomer(
   memberId: string,
   email?: string,
@@ -26,7 +46,7 @@ export async function getOrCreateStripeCustomer(
 ) {
   const existing = await findStripeCustomerIdByMember(db, memberId);
 
-  if (existing) {
+  if (existing && (await stripeCustomerIsUsable(existing))) {
     return existing;
   }
 
@@ -38,7 +58,7 @@ export async function getOrCreateStripeCustomer(
     name: name || undefined,
   });
 
-  await insertStripeCustomerMapping(db, memberId, customer.id);
+  await upsertStripeCustomerMapping(db, memberId, customer.id);
 
   return customer.id;
 }

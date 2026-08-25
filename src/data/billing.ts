@@ -57,6 +57,26 @@ export async function insertStripeCustomerMapping(
   });
 }
 
+export async function upsertStripeCustomerMapping(
+  db: DbClient,
+  memberId: string,
+  stripeCustomerId: string,
+): Promise<void> {
+  await db
+    .insert(stripeCustomers)
+    .values({
+      memberId,
+      stripeCustomerId,
+    })
+    .onConflictDoUpdate({
+      target: stripeCustomers.memberId,
+      set: {
+        stripeCustomerId,
+        updatedAt: new Date(),
+      },
+    });
+}
+
 export async function listSubscriptionsByMember(
   db: DbClient,
   memberId: string,

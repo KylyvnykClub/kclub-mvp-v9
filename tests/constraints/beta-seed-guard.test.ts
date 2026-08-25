@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  betaPurgeRefusal,
   betaSeedRefusal,
+  describeDatabaseTarget,
   type BetaSeedTarget,
 } from "../../tools/beta-seed-guard";
 
@@ -57,5 +59,42 @@ describe("constraint: beta seed guard reads the target, not a CLI flag", () => {
       safeTarget({ vercelEnv: "production", realMemberCount: 0 }),
     );
     expect(reason).toContain("production");
+  });
+});
+
+describe("constraint: beta purge is explicitly confirmed", () => {
+  it("allows dry runs without the production purge confirmation", () => {
+    expect(
+      betaPurgeRefusal({
+        execute: false,
+        confirmedProductionPurge: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("refuses execute without the production purge confirmation", () => {
+    expect(
+      betaPurgeRefusal({
+        execute: true,
+        confirmedProductionPurge: false,
+      }),
+    ).toContain("--confirm-production-purge");
+  });
+
+  it("allows execute only after the confirmation flag is present", () => {
+    expect(
+      betaPurgeRefusal({
+        execute: true,
+        confirmedProductionPurge: true,
+      }),
+    ).toBeNull();
+  });
+
+  it("prints database targets without credentials or query params", () => {
+    expect(
+      describeDatabaseTarget(
+        "postgres://app_rw:secret@ep-example.us-east-1.aws.neon.tech/kclub?sslmode=require",
+      ),
+    ).toBe("postgres://ep-example.us-east-1.aws.neon.tech/kclub");
   });
 });

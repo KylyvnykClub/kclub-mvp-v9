@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { env } from "@/env";
 
 import { fontBody, fontHeading } from "@/app/fonts";
 import { PwaRegister } from "@/components/pwa-register";
@@ -20,6 +21,9 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "metadata" });
   return {
+    // Absolute base for canonical/hreflang/OG URLs; without it relative
+    // metadata URLs never resolve and social/canonical links break.
+    metadataBase: new URL(env.server.NEXT_PUBLIC_APP_URL),
     title: t("title"),
     description: t("description"),
     applicationName: "KYLYVNYK CLUB",
@@ -29,6 +33,17 @@ export async function generateMetadata({
       title: "KCLUB",
       statusBarStyle: "black-translucent",
     },
+    openGraph: {
+      type: "website",
+      siteName: "KYLYVNYK CLUB",
+      locale,
+      title: t("title"),
+      description: t("description"),
+    },
+    // NOTE: the whole locale subtree is noindex while in pre-launch beta. At
+    // launch this must move to the (auth) and (dashboard) subtrees only, so the
+    // public marketing, catalogue and legal pages become indexable. Tracked as
+    // seo-public-pages-are-noindex.
     robots: { index: false, follow: false },
   };
 }
