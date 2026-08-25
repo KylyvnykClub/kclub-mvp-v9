@@ -40,6 +40,11 @@ export async function generateMetadata({
       title: t("title"),
       description: t("description"),
     },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+    },
     // Public marketing, catalogue and legal pages become indexable only once
     // ALLOW_PUBLIC_INDEXING is set at launch; until then the whole site is
     // noindex so the pre-launch beta stays out of search. The private subtrees

@@ -19,7 +19,13 @@ const navigation = [
   ["faq", "/#faq"],
 ] as const;
 
-export function SiteHeader({ member = false }: { member?: boolean }) {
+export function SiteHeader({
+  member = false,
+  admin = false,
+}: {
+  member?: boolean;
+  admin?: boolean;
+}) {
   const t = useTranslations("home");
   const tAuth = useTranslations("auth");
   const tDashboard = useTranslations("dashboard");
@@ -94,6 +100,14 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
           <ThemeToggle />
           {member ? (
             <>
+              {admin && (
+                <Link
+                  href="/dashboard/admin"
+                  className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
+                >
+                  {tDashboard("admin")}
+                </Link>
+              )}
               <Link
                 href="/dashboard/profile"
                 className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
@@ -173,6 +187,15 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
             <div className="mt-4 grid gap-2 border-t border-border pt-4 lg:hidden">
               {member ? (
                 <>
+                  {admin && (
+                    <Link
+                      href="/dashboard/admin"
+                      onClick={() => setOpen(false)}
+                      className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                    >
+                      {tDashboard("admin")}
+                    </Link>
+                  )}
                   <Link
                     href="/dashboard/profile"
                     onClick={() => setOpen(false)}

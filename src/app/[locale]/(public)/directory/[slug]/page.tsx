@@ -55,7 +55,9 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      images: partner.logoUrl ? [{ url: partner.logoUrl }] : [],
+      // Only override the site's default OG card when the partner has a logo;
+      // otherwise fall through to it rather than shipping an imageless card.
+      ...(partner.logoUrl ? { images: [{ url: partner.logoUrl }] } : {}),
     },
   };
 }

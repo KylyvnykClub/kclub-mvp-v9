@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
+import { buildActor, staffAtLeast } from "@/domain/actor";
 import { DashboardChrome } from "./_components/dashboard-chrome";
 
 type Props = {
@@ -31,10 +32,12 @@ export default async function DashboardLayout({ children, params }: Props) {
   if (!result || !result.member) {
     redirect(`/${locale}/login`);
   }
+  const actor = buildActor(result.member);
+  const canAccessAdmin = staffAtLeast(actor, "staff_support");
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardChrome>{children}</DashboardChrome>
+      <DashboardChrome admin={canAccessAdmin}>{children}</DashboardChrome>
     </div>
   );
 }
