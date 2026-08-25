@@ -72,7 +72,7 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
 
         <div className="flex items-center gap-2">
           <div
-            className="hidden items-center gap-1 sm:flex"
+            className="hidden items-center gap-1 lg:flex"
             aria-label={t("common.languageSwitcher")}
           >
             {(["en", "ru", "uk"] as const).map((item) => (
@@ -96,7 +96,7 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
             <>
               <Link
                 href="/dashboard/profile"
-                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] md:inline-flex"
+                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
               >
                 {tDashboard("profile")}
               </Link>
@@ -105,7 +105,7 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => void handleLogout()}
-                className="hidden h-10 rounded-none px-3 text-muted-foreground md:inline-flex"
+                className="hidden h-10 rounded-none px-3 text-muted-foreground lg:inline-flex"
               >
                 <LogOut className="size-4" aria-hidden="true" />
                 {tAuth("signOut")}
@@ -115,13 +115,13 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
             <>
               <Link
                 href="/login"
-                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] md:inline-flex"
+                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
               >
                 {t("nav.signIn")}
               </Link>
               <Link
                 href="/register"
-                className="kclub-brand-button hidden sm:inline-flex"
+                className="kclub-brand-button hidden lg:inline-flex"
               >
                 {t("nav.join")} <span aria-hidden="true">↗</span>
               </Link>
@@ -157,7 +157,7 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
                 {t(`nav.${key}`)}
               </Link>
             ))}
-            <div className="mt-4 flex items-center gap-2 sm:hidden">
+            <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 lg:hidden">
               {(["en", "ru", "uk"] as const).map((item) => (
                 <button
                   key={item}
@@ -170,29 +170,48 @@ export function SiteHeader({ member = false }: { member?: boolean }) {
                 </button>
               ))}
             </div>
-            {member && (
-              <div className="mt-4 grid gap-2 border-t border-border pt-4 md:hidden">
-                <Link
-                  href="/dashboard/profile"
-                  onClick={() => setOpen(false)}
-                  className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
-                >
-                  {tDashboard("profile")}
-                </Link>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setOpen(false);
-                    void handleLogout();
-                  }}
-                  className="h-11 justify-start rounded-none border border-border px-4"
-                >
-                  <LogOut className="size-4" aria-hidden="true" />
-                  {tAuth("signOut")}
-                </Button>
-              </div>
-            )}
+            <div className="mt-4 grid gap-2 border-t border-border pt-4 lg:hidden">
+              {member ? (
+                <>
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => setOpen(false)}
+                    className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                  >
+                    {tDashboard("profile")}
+                  </Link>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setOpen(false);
+                      void handleLogout();
+                    }}
+                    className="h-11 justify-start rounded-none border border-border px-4"
+                  >
+                    <LogOut className="size-4" aria-hidden="true" />
+                    {tAuth("signOut")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                  >
+                    {t("nav.signIn")}
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setOpen(false)}
+                    className="kclub-brand-button justify-center"
+                  >
+                    {t("nav.join")} <span aria-hidden="true">↗</span>
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </nav>
       )}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { getCurrentMember } from "@/actions/session";
 import { AboutSection } from "@/components/landing/about-section";
 import { BenefitsSection } from "@/components/landing/benefits-section";
 import { CardShowcase } from "@/components/landing/card-showcase";
@@ -35,12 +36,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const current = await getCurrentMember();
 
   return (
     <div className="min-h-screen bg-background selection:bg-accent/30">
       <JsonLd data={websiteLd()} />
       <JsonLd data={organizationLd()} />
-      <SiteHeader />
+      <SiteHeader member={Boolean(current?.member)} />
       <main>
         <HeroSection />
         <StatsSection />
