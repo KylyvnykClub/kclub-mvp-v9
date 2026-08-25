@@ -23,6 +23,13 @@ export const showcaseTypeEnum = pgEnum("showcase_type", [
   "featured",
 ]);
 
+export const businessFormatEnum = pgEnum("business_format", [
+  "offline_only",
+  "online_only",
+  "online_offline",
+  "on_site_service",
+]);
+
 export const companies = pgTable("companies", {
   ...baseColumns,
   ownerId: uuid("owner_id")
@@ -41,6 +48,18 @@ export const companies = pgTable("companies", {
   website: varchar("website", { length: 255 }),
   country: varchar("country", { length: 100 }),
   city: varchar("city", { length: 100 }),
+
+  // Nullable during the staged migration so existing partners stay visible.
+  registrationCountryCode: varchar("registration_country_code", {
+    length: 2,
+  }),
+  businessFormat: businessFormatEnum("business_format"),
+  administrativeLevel1: varchar("administrative_level_1", { length: 255 }),
+  administrativeLevel2: varchar("administrative_level_2", { length: 255 }),
+  specializationDescription: varchar("specialization_description", {
+    length: 500,
+  }),
+  servesWorldwide: integer("serves_worldwide").notNull().default(0),
 
   // Partner / B2B specific fields
   discount: varchar("discount", { length: 255 }), // e.g. "15% off for members"

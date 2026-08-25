@@ -21,6 +21,8 @@ import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
+import { countryName } from "@/lib/countries";
+import type { Locale } from "@/i18n/routing";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -107,6 +109,16 @@ export default async function PartnerLandingPage({ params }: Props) {
 
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
+  const tCompany = await getTranslations("company");
+  const localizedCountry = partner.registrationCountryCode
+    ? countryName(partner.registrationCountryCode, locale as Locale)
+    : partner.country;
+  const formatLabels = {
+    offline_only: tCompany("businessFormatOffline"),
+    online_only: tCompany("businessFormatOnline"),
+    online_offline: tCompany("businessFormatHybrid"),
+    on_site_service: tCompany("businessFormatOnSite"),
+  } as const;
   const referralTranslations = {
     title: tr("title"),
     description: tr("description"),
@@ -223,6 +235,60 @@ export default async function PartnerLandingPage({ params }: Props) {
                   {partner.businessCategory.subcategory}
                 </div>
               </section>
+
+              {(partner.specializationDescription ||
+                partner.businessFormat ||
+                partner.registrationCountryCode ||
+                partner.serviceCountries.length > 0 ||
+                partner.servesWorldwide === 1) && (
+                <section className="border-t border-border pt-8">
+                  <p className="kclub-eyebrow">{tCompany("partnerSection")}</p>
+                  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+                    {localizedCountry && (
+                      <div>
+                        <dt className="text-muted-foreground">
+                          {tCompany("registrationCountryLabel")}
+                        </dt>
+                        <dd className="mt-1 font-medium">{localizedCountry}</dd>
+                      </div>
+                    )}
+                    {partner.businessFormat && (
+                      <div>
+                        <dt className="text-muted-foreground">
+                          {tCompany("businessFormatLabel")}
+                        </dt>
+                        <dd className="mt-1 font-medium">
+                          {formatLabels[partner.businessFormat]}
+                        </dd>
+                      </div>
+                    )}
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("serviceCountriesLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">
+                        {partner.servesWorldwide === 1
+                          ? tCompany("worldwideLabel")
+                          : partner.serviceCountries
+                              .map((item) =>
+                                countryName(item.countryCode, locale as Locale),
+                              )
+                              .join(", ")}
+                      </dd>
+                    </div>
+                    {partner.specializationDescription && (
+                      <div className="sm:col-span-2">
+                        <dt className="text-muted-foreground">
+                          {tCompany("specializationLabel")}
+                        </dt>
+                        <dd className="mt-1 whitespace-pre-wrap leading-6">
+                          {partner.specializationDescription}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                </section>
+              )}
             </div>
 
             <aside className="bg-muted/30 p-6 sm:p-8">

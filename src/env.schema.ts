@@ -157,6 +157,19 @@ export const serverSchema = z
           "TURNSTILE_SECRET_KEY is required in production while phone verification is disabled",
       });
     }
+
+    // Without a Resend key, sendEmail returns false and the outbox row is
+    // marked processed all the same: the FR-056 dunning notices (payment
+    // failed, grace expiring) silently never reach the member while the
+    // system believes it delivered them. Fail closed in production so the
+    // gap surfaces at boot rather than as an invisible non-delivery.
+    if (env.VERCEL_ENV === "production" && !env.RESEND_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["RESEND_API_KEY"],
+        message: "RESEND_API_KEY is required in production",
+      });
+    }
   });
 
 export const clientSchema = z.object({

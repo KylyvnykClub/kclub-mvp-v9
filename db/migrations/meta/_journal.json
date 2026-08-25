@@ -176,6 +176,20 @@
       "when": 1787400000000,
       "tag": "20260822120000_totp_secret_encryption",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1787565600000,
+      "tag": "20260824100000_localized_company_catalogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1787600400000,
+      "tag": "20260824194000_outbox_retention_indexes",
+      "breakpoints": true
     }
   ]
 }

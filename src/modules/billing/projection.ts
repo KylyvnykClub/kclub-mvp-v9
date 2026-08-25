@@ -3,6 +3,7 @@ import type { DbClient } from "@/data/db";
 import {
   findSubscriptionByStripeId,
   setCardTierForMember,
+  tierForSubscriptionStatus,
   upsertSubscription,
   type SubscriptionUpsert,
 } from "@/data/billing";
@@ -130,15 +131,15 @@ export async function foldSubscription(
 
     await upsertSubscription(tx, values);
     // A subscription without a company is a VIP membership (FR-050). The
-    // entitlement is projected onto the member's card tier.
-    // FR-056: past_due keeps access — Stripe is retrying payment during the
-    // 14-day dunning window. Only terminal states demote.
+    // entitlement is projected onto the member's card tier through the single
+    // access rule (data/billing.ts): FR-056 keeps past_due while Stripe retries,
+    // and every terminal status demotes.
     if (!values.companyId) {
-      const gracefulStatuses: Set<string> = new Set(["active", "past_due"]);
-      const newTier: "free" | "vip" = gracefulStatuses.has(subscription.status)
-        ? "vip"
-        : "free";
-      await setCardTierForMember(tx, values.memberId, newTier);
+      await setCardTierForMember(
+        tx,
+        values.memberId,
+        tierForSubscriptionStatus(subscription.status),
+      );
     }
     return "applied" as const;
   });

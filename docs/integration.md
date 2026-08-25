@@ -75,6 +75,25 @@ unavailable, nothing has been charged" — we do not queue a payment for later.
 Subscription reads failing during reconciliation abort the run and alert; a
 partial reconciliation is worse than none because it looks complete.
 
+**Dunning and access (dashboard settings the code depends on).** Access is
+projected from the subscription status: `active` and `past_due` grant VIP, every
+other status is `free` (`tierForSubscriptionStatus` in
+`src/data/billing-access.ts`). Two dashboard settings under **Settings → Billing
+→ Manage failed payments** must therefore be configured, because the code cannot
+read or enforce them:
+
+- **End-of-retries action = "cancel the subscription"** (or "mark as unpaid").
+  Either produces a terminal status (`deleted` or `unpaid`) that demotes the
+  member to `free`. If it is left as "leave the subscription past due", the
+  subscription stays `past_due` forever and the member keeps VIP indefinitely —
+  nothing in the code revokes a stuck `past_due`.
+- **Smart Retries window must equal `GRACE_PERIOD_DAYS` (14 days)** — currently
+  "retry up to 8 times within 2 weeks". A shorter window cancels access before
+  the FR-056 grace warning fires; a longer one warns and then keeps access past
+  the window. `GRACE_PERIOD_DAYS` is pinned by a test
+  (`tests/constraints/billing-access-rule.test.ts`); changing it there is the
+  signal to reconfigure Stripe to match, and vice versa.
+
 ### 2.2 Twilio Verify
 
 |Aspect|Detail|
