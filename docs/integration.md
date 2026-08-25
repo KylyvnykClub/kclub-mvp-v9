@@ -75,6 +75,25 @@ unavailable, nothing has been charged" — we do not queue a payment for later.
 Subscription reads failing during reconciliation abort the run and alert; a
 partial reconciliation is worse than none because it looks complete.
 
+**Dunning and access (dashboard settings the code depends on).** Access is
+projected from the subscription status: `active` and `past_due` grant VIP, every
+other status is `free` (`tierForSubscriptionStatus` in
+`src/data/billing-access.ts`). Two dashboard settings under **Settings → Billing
+→ Manage failed payments** must therefore be configured, because the code cannot
+read or enforce them:
+
+- **End-of-retries action = "cancel the subscription"** (or "mark as unpaid").
+  Either produces a terminal status (`deleted` or `unpaid`) that demotes the
+  member to `free`. If it is left as "leave the subscription past due", the
+  subscription stays `past_due` forever and the member keeps VIP indefinitely —
+  nothing in the code revokes a stuck `past_due`.
+- **Smart Retries window must equal `GRACE_PERIOD_DAYS` (14 days)** — currently
+  "retry up to 8 times within 2 weeks". A shorter window cancels access before
+  the FR-056 grace warning fires; a longer one warns and then keeps access past
+  the window. `GRACE_PERIOD_DAYS` is pinned by a test
+  (`tests/constraints/billing-access-rule.test.ts`); changing it there is the
+  signal to reconfigure Stripe to match, and vice versa.
+
 ### 2.2 Twilio Verify
 
 |Aspect|Detail|
@@ -108,7 +127,7 @@ we expect, and adding one is a deliberate act.
 
 |Aspect|Detail|
 |-|-|
-|Purpose|Transactional email: moderation outcomes, payment failures, referral notifications, security notices|
+|Purpose|Transactional email: moderation outcomes, payment failures, grace-expiry warnings, referral notifications, security notices|
 |Base URL(s)|`https://api.resend.com`|
 |Protocol|REST|
 |Authentication|API key|
@@ -190,12 +209,20 @@ internal identifier, a stack trace or a vendor's raw error string.
 |Job invocation|Inngest|Signature verification|The job's own step ids|Inngest retries per its policy|
 
 **The handler contract, identical for all of them:** verify the signature, insert
-the event id, write an outbox row, return 200 — and do nothing else. Projection
-happens in a worker. This is the single most important design rule in the
-integration surface, and it exists because a webhook handler that does real work
-will eventually be slow, and a slow handler makes the sender retry, and retries
-against a handler that is already half-finished are how double-provisioning
-happens.
+the event id, write an outbox row, return 200 — and do nothing else _before
+responding_. Projection happens in a worker. This is the single most important
+design rule in the integration surface, and it exists because a webhook handler
+that does real work will eventually be slow, and a slow handler makes the sender
+retry, and retries against a handler that is already half-finished are how
+double-provisioning happens.
+
+**The worker may run in the same invocation, after the response.** Since
+[ADR 0017](decisions/0017-project-entitlements-after-the-webhook-response.md)
+the Stripe handler schedules the outbox drain in a Next.js `after()` callback,
+which runs once the 200 is already on the wire. The rule above is about the
+sender's response timer, and `after()` is outside it; the outbox row and the
+scheduled drain remain the durable record and the retry path. Doing the same
+work _before_ responding is still forbidden, for exactly the reason given.
 
 **Out-of-order delivery** is treated as normal, not exceptional. Stripe does not
 guarantee order. Projection is a fold over the current subscription object, and

@@ -27,10 +27,15 @@
     "env:example": "tsx tools/gen-env-example.ts",
     "env:check:production": "tsx tools/check-production-env.ts",
     "smoke:deployment": "tsx tools/smoke-deployment.ts",
+    "stripe:check": "tsx tools/check-stripe-delivery.ts",
+    "beta:purge": "tsx tools/remove-beta-seed.ts",
     "i18n:check": "tsx tools/check-i18n-keys.ts",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:stripe-lifecycle": "vitest run --config vitest.stripe.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report",
     "test:watch": "vitest",
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit && pnpm build",
     "prepare": "husky"
@@ -81,10 +86,12 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.17.0",
     "@next/eslint-plugin-next": "^15.5.0",
+    "@playwright/test": "^1.62.1",
     "@testcontainers/postgresql": "^12.0.4",
     "@types/node": "^22.10.0",
     "@types/pg": "^8.20.3",

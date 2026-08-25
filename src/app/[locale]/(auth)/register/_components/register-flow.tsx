@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { PasswordInput } from "@/components/auth/password-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 
@@ -28,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 
 function SubmitButton({
   label,
@@ -48,6 +48,19 @@ function SubmitButton({
     >
       {pending ? pendingLabel || "..." : label}
     </Button>
+  );
+}
+
+/**
+ * Marks a field the form refuses to submit without. Hidden from assistive
+ * technology, which already hears "required" from the input's own attribute,
+ * so the mark is a visual cue and not a second announcement.
+ */
+function RequiredMark() {
+  return (
+    <span aria-hidden="true" className="ml-0.5 text-accent">
+      *
+    </span>
   );
 }
 
@@ -78,7 +91,17 @@ export function RegisterFlow({
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Only complain about what the applicant has actually typed: an empty field
+  // is not yet wrong, it is unfinished.
+  const passwordTooShort = password.length > 0 && password.length < 8;
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+  // confirmPassword never reaches the server - registerSchema has no such field
+  // - so this is the only place the two are compared at all.
+  const passwordsUsable = password.length >= 8 && password === confirmPassword;
 
   const consents = useMemo(() => {
     return [
@@ -105,10 +128,10 @@ export function RegisterFlow({
     ];
   }, [termsVersion, privacyVersion]);
 
-  const allAccepted =
-    termsVersion !== null &&
-    privacyVersion !== null &&
-    consents.every((c) => accepted[c.key]);
+  // The versions are what gets recorded, so a page that failed to load them
+  // must not submit: consentVersionsMatch would reject the empty strings and
+  // the applicant would be told the documents had changed.
+  const legalReady = termsVersion !== null && privacyVersion !== null;
 
   const [phoneState, submitPhone] = useActionState(
     async (_prevState: AuthActionResult, formData: FormData) => {
@@ -145,10 +168,11 @@ export function RegisterFlow({
       }
       formData.append(
         "consents",
+        // Every acknowledgement, not a filtered subset: with the checkboxes
+        // gone, submitting the form is the agreement, and an empty array here
+        // would sail past consentVersionsMatch and record nothing at all.
         JSON.stringify(
-          consents
-            .filter((c) => accepted[c.key])
-            .map(({ documentId, version }) => ({ documentId, version })),
+          consents.map(({ documentId, version }) => ({ documentId, version })),
         ),
       );
       const res = await registerAction(formData);
@@ -191,11 +215,14 @@ export function RegisterFlow({
             {step === 2 && t("step2Title")}
             {step === 3 && t("step3Title")}
           </CardTitle>
-          <CardDescription className="text-center text-sm font-light leading-6 text-muted-foreground">
-            {step === 1 && t("step1Subtitle")}
-            {step === 2 && t("step2Subtitle")}
-            {step === 3 && t("step3Subtitle")}
-          </CardDescription>
+          {/* Step 1 carries no subtitle: with SMS postponed (ADR 0012) there is
+              no code to announce, and an empty element would still take space. */}
+          {step !== 1 && (
+            <CardDescription className="text-center text-sm font-light leading-6 text-muted-foreground">
+              {step === 2 && t("step2Subtitle")}
+              {step === 3 && t("step3Subtitle")}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
           {step === 1 && (
@@ -281,14 +308,21 @@ export function RegisterFlow({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">{tAuth("passwordLabel")}</Label>
-                <Input
+                <Label htmlFor="password">
+                  {tAuth("passwordLabel")}
+                  <RequiredMark />
+                </Label>
+                <PasswordInput
                   id="password"
                   name="password"
-                  type="password"
                   required
                   minLength={8}
                   placeholder={tAuth("passwordPlaceholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  showLabel={tAuth("showPassword")}
+                  hideLabel={tAuth("hidePassword")}
+                  problem={passwordTooShort ? t("passwordMinLength") : null}
                   className="h-12 rounded-none bg-background"
                 />
               </div>
@@ -296,13 +330,18 @@ export function RegisterFlow({
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">
                   {t("passwordConfirmLabel")}
+                  <RequiredMark />
                 </Label>
-                <Input
+                <PasswordInput
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
                   required
                   minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  showLabel={tAuth("showPassword")}
+                  hideLabel={tAuth("hidePassword")}
+                  problem={passwordsMismatch ? t("passwordsNoMatch") : null}
                   className="h-12 rounded-none bg-background"
                 />
               </div>
@@ -334,108 +373,36 @@ export function RegisterFlow({
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="language">{t("languageLabel")}</Label>
-                <Select name="language" required defaultValue={locale}>
-                  <SelectTrigger id="language" className="h-12 rounded-none">
-                    <SelectValue placeholder={t("languageLabel")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["en", "uk", "ru"].map((l) => (
-                      <SelectItem key={l} value={l}>
-                        {t(`languages.${l}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* The language is no longer asked for: the locale the applicant
+                  is already reading the form in is the answer, and registerSchema
+                  still requires the field (FR-091). */}
+              <input type="hidden" name="language" value={locale} />
 
-              <div className="space-y-4 border-t border-border pt-5">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="consent-terms"
-                    checked={!!accepted.terms}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, terms: c === true }))
-                    }
-                  />
-                  <Label
-                    htmlFor="consent-terms"
-                    className="text-sm font-normal"
-                  >
-                    {t.rich("termsLabel", {
-                      terms: (chunks) => (
-                        <Link
-                          href={`/${locale}/legal/terms-of-use`}
-                          className="font-bold underline hover:text-accent"
-                        >
-                          {chunks}
-                        </Link>
-                      ),
-                    })}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="consent-privacy"
-                    checked={!!accepted.privacy}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, privacy: c === true }))
-                    }
-                  />
-                  <Label
-                    htmlFor="consent-privacy"
-                    className="text-sm font-normal"
-                  >
-                    {t.rich("privacyLabel", {
-                      privacy: (chunks) => (
-                        <Link
-                          href={`/${locale}/legal/privacy-policy`}
-                          className="font-bold underline hover:text-accent"
-                        >
-                          {chunks}
-                        </Link>
-                      ),
-                    })}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="consent-arbitration"
-                    checked={!!accepted.arbitration}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, arbitration: c === true }))
-                    }
-                  />
-                  <Label
-                    htmlFor="consent-arbitration"
-                    className="text-sm font-normal"
-                  >
-                    {t.rich("arbitrationLabel", {
-                      terms: (chunks) => (
-                        <Link
-                          href={`/${locale}/legal/terms-of-use`}
-                          className="font-bold underline hover:text-accent"
-                        >
-                          {chunks}
-                        </Link>
-                      ),
-                    })}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="consent-age"
-                    checked={!!accepted.age}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, age: c === true }))
-                    }
-                  />
-                  <Label htmlFor="consent-age" className="text-sm font-normal">
-                    {t("ageLabel")}
-                  </Label>
-                </div>
-              </div>
+              {/* The four acknowledgements are no longer ticked one by one;
+                  submitting the form is the act of agreement. Every document is
+                  still recorded in legal_acceptances at the version published at
+                  submit time (FR-093, FR-097), so the evidence is unchanged -
+                  only the interface is. */}
+              <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
+                {t.rich("legalNotice", {
+                  terms: (chunks) => (
+                    <Link
+                      href={`/${locale}/legal/terms-of-use`}
+                      className="font-bold underline hover:text-accent-ink"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                  privacy: (chunks) => (
+                    <Link
+                      href={`/${locale}/legal/privacy-policy`}
+                      className="font-bold underline hover:text-accent-ink"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </p>
 
               <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
@@ -447,7 +414,7 @@ export function RegisterFlow({
 
               <SubmitButton
                 label={t("createAccount")}
-                disabled={!allAccepted}
+                disabled={!legalReady || !passwordsUsable}
               />
             </form>
           )}
@@ -457,7 +424,7 @@ export function RegisterFlow({
             {t("haveAccount")}{" "}
             <Link
               href={`/${locale}/login`}
-              className="font-bold text-foreground hover:text-accent"
+              className="font-bold text-foreground hover:text-accent-ink"
             >
               {t("loginLink")}
             </Link>

@@ -25,6 +25,8 @@
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 
+import { betaSeedRefusal } from "./beta-seed-guard";
+
 config({ path: ".env.local" });
 
 // ── Configuration ────────────────────────────────────────────
@@ -535,10 +537,32 @@ function betaCardToken(i: number): string {
 async function seedBetaData(): Promise<void> {
   if (!isBeta) return;
 
-  if (isProduction) {
-    console.error(
-      "\n❌ Refusing to seed beta data in production mode. Beta seed is for staging/preview only.",
-    );
+  // The guard here used to key off the --production CLI flag. But `pnpm
+  // db:seed:beta` never passes that flag, so the flag reported "not production"
+  // regardless of which database DATABASE_URL actually pointed at - and it once
+  // seeded production, because a developer's .env.local held production
+  // credentials. Decide from the environment and the database's own contents
+  // instead (see tools/beta-seed-guard.ts). A database that already holds a
+  // member outside the beta phone set is a real, shared, or production database;
+  // the bootstrap staff owner is created earlier in this same run, so it is
+  // excluded and does not make a fresh staging database look real.
+  const guardBetaPhones = Array.from({ length: 50 }, (_, i) => betaPhone(i));
+  const ownerPhone = process.env.ADMIN_BOOTSTRAP_OWNER_PHONE ?? "";
+  const [contents] = (await sql`
+    SELECT count(*)::int AS real_members
+    FROM members
+    WHERE NOT (phone = ANY(${guardBetaPhones}))
+      AND phone <> ${ownerPhone}
+  `) as [{ real_members: number }];
+
+  const refusal = betaSeedRefusal({
+    isProductionFlag: isProduction,
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+    realMemberCount: contents.real_members,
+  });
+  if (refusal) {
+    console.error(`\n❌ Refusing to seed beta data. ${refusal}`);
     process.exit(1);
   }
 

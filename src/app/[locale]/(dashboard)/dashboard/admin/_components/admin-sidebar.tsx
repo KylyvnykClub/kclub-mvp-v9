@@ -175,7 +175,7 @@ export function AdminSidebar({
           href={`/${locale}/dashboard/admin`}
           className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
         >
-          <span className="text-sm font-black uppercase tracking-[0.18em] text-accent">
+          <span className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
             KCLUB
           </span>
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
@@ -211,7 +211,7 @@ export function AdminSidebar({
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="flex w-72 flex-col p-0">
           <SheetHeader className="border-b border-border p-4 text-left">
-            <SheetTitle className="text-sm font-black uppercase tracking-[0.18em] text-accent">
+            <SheetTitle className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
               KCLUB — {t("consoleLabel")}
             </SheetTitle>
           </SheetHeader>

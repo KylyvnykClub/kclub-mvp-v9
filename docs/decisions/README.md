@@ -70,7 +70,10 @@ that the folder cannot be trusted.
 |[0012](0012-postpone-phone-verification-turnstile-gate.md)|Postpone SMS phone verification and gate registration with Cloudflare Turnstile instead|Accepted|2026-08-15|
 |[0013](0013-partner-logos-as-external-urls.md)|Partner logos are member-supplied external URLs, not uploaded files|Accepted|2026-08-19|
 |[0014](0014-no-notification-log-table.md)|No dedicated notification log table|Accepted|2026-08-19|
-|[0015](0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Accepted|2026-08-18|
+|[0015](0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Superseded by 0018|2026-08-18|
+|[0016](0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|2026-08-22|
+|[0017](0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|2026-08-23|
+|[0018](0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|2026-08-23|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

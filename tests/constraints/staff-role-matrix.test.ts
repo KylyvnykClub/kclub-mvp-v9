@@ -169,6 +169,15 @@ const matrix: MatrixEntry[] = [
     admin: true,
     owner: true,
   },
+  // Owner only: a reset hands whoever performs it the member's account (ADR 0018).
+  {
+    action: "reset_password",
+    subject: "member",
+    support: false,
+    moderator: false,
+    admin: false,
+    owner: true,
+  },
   {
     action: "revoke",
     subject: "card",

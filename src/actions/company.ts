@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/data/db";
+import type { PageParams } from "@/data/pagination";
 import { appendAuditEntry } from "@/data/audit-log";
 import { enqueueOutbox } from "@/data/outbox";
 import {
@@ -15,6 +16,9 @@ import {
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
   listActiveSubcategories,
+  listLocalizedCategoryTree,
+  countApprovedCompaniesByIds,
+  listPartnerLocations,
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
   listCompanyIdsWithActiveSubscription,
@@ -80,6 +84,12 @@ export async function getSubcategoriesByCategoryAction(
   return listActiveSubcategories(db, block, category);
 }
 
+export async function getLocalizedCategoryTreeAction(
+  locale: "en" | "ru" | "uk",
+) {
+  return listLocalizedCategoryTree(db, locale);
+}
+
 export type CompanyFormState = { success: boolean; error?: string };
 
 function generateSlug(name: string): string {
@@ -123,8 +133,8 @@ export async function registerCompanyAction(
 
     const cityValid = await validateCityBelongsToCountry(
       db,
-      parsed.data.city,
-      parsed.data.country,
+      parsed.data.city ?? "",
+      parsed.data.registrationCountryCode,
     );
     if (!cityValid) {
       return {
@@ -148,23 +158,33 @@ export async function registerCompanyAction(
       }
     }
 
-    await insertCompany(db, {
-      ownerId: auth.member.id,
-      name: parsed.data.name,
-      slug: finalSlug,
-      legalName: parsed.data.legalName,
-      taxId: parsed.data.taxId,
-      website: parsed.data.website,
-      description: parsed.data.description,
-      businessCategoryId: parsed.data.businessCategoryId,
-      discount: parsed.data.discount,
-      logoUrl: parsed.data.logoUrl,
-      contactEmail: parsed.data.contactEmail,
-      contactPhone: parsed.data.contactPhone,
-      country: parsed.data.country,
-      city: parsed.data.city,
-      moderationStatus: "pending",
-    });
+    await insertCompany(
+      db,
+      {
+        ownerId: auth.member.id,
+        name: parsed.data.name,
+        slug: finalSlug,
+        legalName: parsed.data.legalName,
+        taxId: parsed.data.taxId,
+        website: parsed.data.website,
+        description: parsed.data.description,
+        businessCategoryId: parsed.data.businessCategoryId,
+        discount: parsed.data.discount,
+        logoUrl: parsed.data.logoUrl,
+        contactEmail: parsed.data.contactEmail,
+        contactPhone: parsed.data.contactPhone,
+        country: parsed.data.registrationCountryCode,
+        city: parsed.data.city || null,
+        registrationCountryCode: parsed.data.registrationCountryCode,
+        businessFormat: parsed.data.businessFormat,
+        administrativeLevel1: parsed.data.administrativeLevel1 || null,
+        administrativeLevel2: parsed.data.administrativeLevel2 || null,
+        specializationDescription: parsed.data.specializationDescription,
+        servesWorldwide: parsed.data.servesWorldwide === "true" ? 1 : 0,
+        moderationStatus: "pending",
+      },
+      parsed.data.serviceCountryCodes.split(",").filter(Boolean),
+    );
 
     // The application is now a company; the draft has served its purpose.
     await deleteCompanyDraft(db, auth.member.id);
@@ -280,9 +300,31 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
   return { success: true };
 }
 
-export async function getPartnersListAction(filters?: PartnerFilters) {
+/**
+ * The country/city options for the catalogue filter, scoped to partners the
+ * caller could actually see.
+ */
+export async function getPartnerLocationsAction() {
+  if (SKIP_DB_PRERENDER) return [];
+
+  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  if (activeCompanyIds.length === 0) return [];
+
+  return listPartnerLocations(db, activeCompanyIds);
+}
+
+/**
+ * One page of the catalogue, plus how many partners the filters match in total.
+ *
+ * The total is what lets the page render "page 2 of 7" rather than guessing
+ * from a short final page.
+ */
+export async function getPartnersListAction(
+  filters?: PartnerFilters,
+  page?: PageParams,
+) {
   if (SKIP_DB_PRERENDER) {
-    return [];
+    return { rows: [], total: 0 };
   }
 
   const auth = await getCurrentMember();
@@ -293,9 +335,14 @@ export async function getPartnersListAction(filters?: PartnerFilters) {
 
   const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
 
-  if (activeCompanyIds.length === 0) return [];
+  if (activeCompanyIds.length === 0) return { rows: [], total: 0 };
 
-  return listApprovedCompaniesByIds(db, activeCompanyIds, filters);
+  const [rows, total] = await Promise.all([
+    listApprovedCompaniesByIds(db, activeCompanyIds, filters, page),
+    countApprovedCompaniesByIds(db, activeCompanyIds, filters),
+  ]);
+
+  return { rows, total };
 }
 
 export async function getPublicShowcasePartners() {

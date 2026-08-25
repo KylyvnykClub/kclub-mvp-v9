@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { env } from "@/env";
 import { logger } from "@/lib/logger";
+import { safeErrorFields } from "@/lib/safe-error";
 
 const verificationCheckResponseSchema = z.object({
   status: z.string(),
@@ -47,9 +48,10 @@ export async function sendVerificationCode(phone: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    logger.error("Failed to send Twilio verification code", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    logger.error(
+      "Failed to send Twilio verification code",
+      safeErrorFields(error),
+    );
     return false;
   }
 }
@@ -102,9 +104,10 @@ export async function checkVerificationCode(
     const parsed = verificationCheckResponseSchema.safeParse(data);
     return parsed.success && parsed.data.status === "approved";
   } catch (error) {
-    logger.error("Failed to check Twilio verification code", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    logger.error(
+      "Failed to check Twilio verification code",
+      safeErrorFields(error),
+    );
     return false;
   }
 }

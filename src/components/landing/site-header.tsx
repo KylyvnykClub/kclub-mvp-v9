@@ -41,7 +41,7 @@ export function SiteHeader() {
             className="h-7 w-10 object-contain"
             priority
           />
-          <span className="text-lg font-black tracking-[0.06em] text-zinc-950 dark:text-accent">
+          <span className="text-lg font-black tracking-[0.06em] text-zinc-950 dark:text-accent-ink">
             KYLYVNYK CLUB
           </span>
         </Link>
@@ -74,8 +74,8 @@ export function SiteHeader() {
                 aria-pressed={locale === item}
                 className={`min-h-10 px-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
                   locale === item
-                    ? "text-accent"
-                    : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"
+                    ? "text-accent-ink"
+                    : "text-muted-foreground hover:text-zinc-950 dark:hover:text-white"
                 }`}
               >
                 {item}

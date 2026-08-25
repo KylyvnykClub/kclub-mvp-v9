@@ -28,7 +28,9 @@ export function HeroSection() {
           <p className="kclub-eyebrow">{t("hero.eyebrow")}</p>
           <h1 className="mt-8 text-[clamp(2.25rem,10vw,3.5rem)] font-black uppercase leading-[0.86] tracking-[-0.055em] text-zinc-950 dark:text-white sm:text-[clamp(3.5rem,8.5vw,7.5rem)]">
             <span className="block">{t("hero.titleLine1")}</span>
-            <span className="block text-accent">{t("hero.titleLine2")}</span>
+            <span className="block text-accent-ink">
+              {t("hero.titleLine2")}
+            </span>
           </h1>
           <p className="mt-8 max-w-2xl text-xl font-extralight leading-8 text-zinc-600 dark:text-white/70 sm:text-2xl">
             {t("hero.subline")}

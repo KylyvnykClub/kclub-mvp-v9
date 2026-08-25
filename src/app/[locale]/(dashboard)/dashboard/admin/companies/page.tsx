@@ -148,7 +148,7 @@ export default async function AdminCompaniesPage({
                       {company.slug}
                     </span>
                     {company.discount && (
-                      <span className="hidden text-xs text-accent sm:block">
+                      <span className="hidden text-xs text-accent-ink sm:block">
                         {company.discount}
                       </span>
                     )}

@@ -1,0 +1,279 @@
+---
+description: "Analyze codebase [--audit|--clarity|--deps|--naming|--comments|--debt|--history]"
+---
+
+Architecture advisor for improving codebase organization.
+
+## Philosophy
+
+**Constructive analysis** finds opportunities: code to unify, patterns to extract, modules to split. Default mode.
+
+**Defensive analysis** finds problems: missing error handling, type gaps, security issues. Use `--audit`.
+
+## Modes
+
+| Mode | Focus |
+|------|-------|
+| **Default** | Architecture & refactoring opportunities |
+| `--audit` | Issues & gaps to fix |
+| `--history` | Git churn & bug patterns |
+| `--deps` | Dependency health (outdated, unused, vulnerable) |
+| `--naming` | Naming consistency and clarity |
+| `--comments` | Comment quality (stale, misleading, redundant) |
+| `--debt` | Technical debt markers (TODOs, FIXMEs, temporary hacks) |
+| `--clarity` | AI comprehension audit—where assumptions don't match reality |
+
+## Phase 1: Understand & Scope
+
+Quick scan before spawning analyzers:
+- Languages, frameworks, directory structure
+- Largest files (>500 lines), deepest directories
+- Read `.state/state.json` (fall back to `.claude/state.json` in legacy repos) to avoid duplicating backlog items
+
+**Scope to what ships.** Analysis effort goes to production code — what runs when the product runs. Classify the tree before spawning:
+
+1. **Entry points**: deploy/build config (Dockerfile, compose, `package.json` main/scripts, pyproject entry points), server/app startup, framework conventions (`src/`, `app/`, `pages/`).
+2. **Production** = files reachable from those entry points via imports. This is where analyzers spend their tokens.
+3. **Support** = tests, CI, build scripts. Analyzed only when the mode is about them (e.g. test gaps in `--audit`); never flagged for duplication or style in default mode — test repetition is often intentional.
+4. **Noise** = mockups, prototypes, versioned experiments (`v1`…`v9`, `old/`, `archive/`, `draft`, `poc`, `playground`, `demo`, `sandbox`), design comps, generated or vendored output. Excluded entirely.
+
+Name patterns are signals, not verdicts — reachability decides both ways: a version-suffixed file the live app imports is production; a clean-looking module nothing imports is not. Explicit `$ARGUMENTS` paths override — if the user points at an excluded dir, analyze it.
+
+## Phase 2: Spawn Analyzers in Parallel
+
+**CRITICAL: Spawn all at once** in a single message with multiple Task calls.
+
+**Every analyzer receives the production scope** (root dirs or file list) with the instruction not to read outside it. Excluded areas are never opened — that's where the token savings come from, not from filtering findings afterwards.
+
+### Default Mode
+
+```
+┌────────────────────────────────────────────────────────┐
+│  SPAWN ALL AT ONCE                                     │
+├────────────────────────────────────────────────────────┤
+│  1. unification-finder                                 │
+│     → Similar code across files, copy-paste variants   │
+│     → Output: groups + unification strategy            │
+│                                                        │
+│  2. abstraction-detector                               │
+│     → Patterns repeating 3+ times                      │
+│     → Output: pattern + locations + suggested extract  │
+│                                                        │
+│  3. module-health-checker                              │
+│     → Files >400 lines, too many responsibilities      │
+│     → Output: split candidates with structure          │
+│                                                        │
+│  4. dependency-mapper                                  │
+│     → Import relationships, circular deps              │
+│     → Output: coupling insights + reorganization ideas │
+│                                                        │
+│  5. consistency-reviewer                               │
+│     → Same operation done multiple ways                │
+│     → Output: variants + standardization suggestion    │
+└────────────────────────────────────────────────────────┘
+```
+
+**Tooling:** finders should prefer `ast-grep` (structural AST search) over plain Grep when it's installed — it matches code *structure*, so it catches pattern variants, copy-paste clones, and call sites that line-based search misses; fall back to Glob+Grep otherwise.
+
+### Project-Type Specific (Auto-Detect)
+
+- **Multi-service** (docker-compose): Add `service-structure-reviewer`
+- **Agent system** (.claude/agents/, MCP): Add `agent-pattern-reviewer`
+
+### --audit Mode
+
+```
+┌────────────────────────────────────────────────────────┐
+│  SPAWN FOR --audit                                     │
+├────────────────────────────────────────────────────────┤
+│  A. test-coverage-auditor → untested critical paths    │
+│  B. type-safety-auditor → missing types, Any abuse     │
+│  C. error-handling-auditor → unprotected IO ops        │
+│  D. security-auditor → secrets, injection risks        │
+│  E. dead-code-finder → unused exports, orphan files    │
+└────────────────────────────────────────────────────────┘
+```
+
+### --history Mode
+
+```
+┌────────────────────────────────────────────────────────┐
+│  SPAWN FOR --history                                   │
+├────────────────────────────────────────────────────────┤
+│  H1. churn-analyzer → most modified, bug correlation   │
+│  H2. complexity-analyzer → cyclomatic, nesting depth   │
+│  H3. coupling-analyzer → fan-in/out, circular deps     │
+└────────────────────────────────────────────────────────┘
+```
+
+### --deps Mode
+
+Dependency health check. No parallel agents needed—sequential analysis:
+
+1. **Scan dependency files** (package.json, requirements.txt, go.mod, Cargo.toml, composer.json, etc.)
+2. **Detect available audit tools** — check what's installed (e.g., run `which npm` / `which pip-audit` / `which cargo-audit`), then use whatever exists. Don't assume specific tools are present.
+3. **Check for issues:**
+   - Outdated packages (major versions behind)
+   - Unused dependencies (declared but not imported)
+   - Duplicate dependencies (same thing, different packages)
+   - Known vulnerabilities (using whatever audit tool the project has)
+   - Pinning issues (loose versions that could break)
+
+**Output focus:** Actionable list with upgrade commands or removal candidates.
+
+### --naming Mode
+
+Naming consistency analysis. Spawn if codebase is large, otherwise analyze directly:
+
+- **Inconsistent conventions**: camelCase vs snake_case mixing, abbreviation inconsistency
+- **Misleading names**: functions that do something different from what name suggests
+- **Naming drift**: same concept with different names across files
+- **Vague names**: `data`, `info`, `handle`, `process`, `manager` without specificity
+- **Boolean naming**: missing `is`/`has`/`should` prefixes causing ambiguity
+
+**Why this matters for AI:** Claude infers behavior from names. Misleading names = wrong assumptions.
+
+### --comments Mode
+
+Comment quality analysis. Focus on AI-readability:
+
+- **Stale comments**: describe behavior that code no longer has
+- **Contradicting comments**: say one thing, code does another
+- **Obvious comments**: `// increment i` above `i++`
+- **Commented-out code**: dead code preserved "just in case"
+- **Missing context**: complex logic with no explanation of WHY
+
+**How to detect stale comments:**
+- Compare comment claims to actual code behavior
+- Look for comments referencing removed variables/functions
+- Check git blame—old comment on recently changed code is suspect
+
+**Output:** List with recommendation (update, delete, or add context).
+
+### --debt Mode
+
+Technical debt isn't marked with TODO comments—it's visible in the code's shape.
+
+**What debt looks like** (principles, not string matches):
+
+- **Deferred decisions**: Hardcoded values that should be configurable, magic numbers without explanation
+- **Complexity hotspots**: Deeply nested logic (>3 levels), functions doing multiple unrelated things, long parameter lists
+- **Fragile patterns**: Catch blocks that swallow errors, type assertions/casts bypassing safety, copy-pasted code with slight variations
+- **Stale code**: Files untouched for 12+ months in active areas, imports that are declared but unused, commented-out code blocks
+- **Test gaps**: Critical paths without test coverage, skipped/disabled tests, tests that assert nothing meaningful
+- **Implicit contracts**: Functions that assume caller state, undocumented preconditions, order-dependent operations
+
+**How to find it:**
+
+1. Use git history to identify active vs abandoned areas
+2. Look for complexity through code structure, not keywords
+3. Find patterns that suggest "someone meant to fix this later"
+4. Check for inconsistencies—where does the code not follow its own patterns?
+
+**Output format:**
+```markdown
+| Debt Type | Location | Evidence | Impact |
+|-----------|----------|----------|--------|
+| Complexity hotspot | file:line | 5-level nesting, 3 concerns | Hard to modify safely |
+| Deferred decision | file:line | Hardcoded API URL | Will break in other envs |
+```
+
+Prioritize by impact: What would hurt most if left unfixed? Offer to convert high-priority items to backlog.
+
+### --clarity Mode
+
+AI comprehension audit. Tests how easily an AI (or new developer) can understand the codebase correctly.
+
+**The process:**
+
+1. **First pass - Form assumptions** (before reading implementation):
+   - Scan file names, function names, class names, comments
+   - What do you think each module/function does?
+   - What's the assumed architecture?
+   - Document these assumptions explicitly
+
+2. **Second pass - Verify assumptions:**
+   - Read the actual implementations
+   - Where were you wrong?
+   - What misled you?
+
+3. **Report the gaps:**
+
+| What I assumed | What it actually does | What misled me |
+|----------------|----------------------|----------------|
+| `handleAuth()` manages login | It only refreshes tokens | Name suggests broader scope |
+| `utils/` has generic helpers | It has business logic | Directory name |
+| `// validates input` | It transforms, doesn't validate | Stale comment |
+
+**Categories of misleading signals:**
+- **Names that lie**: Function/file/class names suggesting wrong behavior
+- **Comments that mislead**: Descriptions that don't match code
+- **Structure that confuses**: Files in wrong directories, unclear boundaries
+- **Missing context**: Complex logic with no explanation of WHY
+- **Tribal knowledge**: Things you can only understand if you already know
+
+**Output:**
+```markdown
+## Clarity Audit: [Project]
+
+**First impression:** [What you thought this codebase was about]
+**Reality:** [What it actually is]
+
+## Where I Was Misled
+
+### 1. [Misleading element]
+- **Assumed:** [what you thought]
+- **Actually:** [what it does]
+- **Misled by:** [name/comment/structure]
+- **Suggestion:** [how to fix]
+
+## Suggestions for Clarity
+[Prioritized list of changes that would help AI/new devs understand faster]
+```
+
+## Phase 3: Synthesize
+
+Organize findings by impact:
+
+**High Impact**: Unifications saving >50 lines, abstractions simplifying 5+ call sites, splits separating concerns
+**Medium Impact**: Duplication reduction, clarity improvements
+**Quick Wins**: Minor standardizations
+
+## Output Format
+
+```markdown
+## Analysis Summary
+**Project:** [type/scale]  **Mode:** [mode]
+**Scope:** [production roots analyzed] — excluded: [dirs + one-word reason, e.g. "mockups/ (prototype), v4/ v5/ (unreferenced)"]
+**Key insight:** [one sentence]
+
+## High-Impact Opportunities
+### 1. [Title]
+**What:** [description]
+**Where:** [files:lines]
+**Gain:** [concrete, measured from analysis - e.g., "47 lines → 12", "5 files → 1 shared util", "8 call sites simplified"]
+**How:** [implementation approach]
+
+## Quick Wins
+- [item] → [gain]
+
+## Observations
+[non-actionable insights]
+```
+
+**Gain must be factual** - derived from actual line counts, file counts, or call site analysis. Not "improves maintainability" or "saves time" - those are guesses.
+
+## What Makes Good Findings
+
+- **Constructive**: "These could be unified" not "this is duplicated"
+- **Specific**: Exact files and lines
+- **Actionable**: Clear implementation path
+- **Worthwhile**: Improvement justifies effort
+
+Skip: tiny duplications (<5 lines), stylistic preferences, theoretical improvements without concrete path, and anything outside the production scope (a finding in a mockup or abandoned experiment is not a finding).
+
+## After Analysis
+
+Offer to implement the highest-impact opportunity.
+
+$ARGUMENTS

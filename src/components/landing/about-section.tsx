@@ -15,7 +15,7 @@ export function AboutSection() {
             <p className="kclub-copy">{t("about.community")}</p>
           </div>
           <div className="mt-10 border-l border-accent pl-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
               {t("about.mission.eyebrow")}
             </p>
             <h3 className="mt-3 text-2xl font-black uppercase leading-tight">

@@ -56,3 +56,6 @@ outputs/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+
+.codex

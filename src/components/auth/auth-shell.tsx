@@ -24,12 +24,12 @@ export function AuthShell({
   const homeHref = `/${locale}`;
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="dark min-h-screen bg-zinc-950 text-white">
       <div className="kclub-shell relative grid min-h-screen items-center gap-10 py-10 lg:grid-cols-[0.8fr_1fr] lg:py-14">
         <section className="hidden border-l border-accent pl-6 lg:block">
           <Link
             href={homeHref}
-            className="absolute left-0 top-10 inline-flex items-center gap-3 text-xs font-extralight uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring lg:top-14"
+            className="absolute left-0 top-10 inline-flex items-center gap-3 text-xs font-extralight uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring lg:top-14"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
             {tLegal("backToHome")}
@@ -47,7 +47,7 @@ export function AuthShell({
               priority
               className="h-auto w-16 object-contain"
             />
-            <span className="text-sm font-black uppercase tracking-[0.16em] text-accent">
+            <span className="text-sm font-black uppercase tracking-[0.16em] text-accent-ink">
               KYLYVNYK CLUB
             </span>
           </Link>
@@ -77,13 +77,13 @@ export function AuthShell({
                 priority
                 className="h-auto w-11 object-contain"
               />
-              <span className="text-sm font-black uppercase tracking-[0.16em] text-accent">
+              <span className="text-sm font-black uppercase tracking-[0.16em] text-accent-ink">
                 KYLYVNYK CLUB
               </span>
             </Link>
             <Link
               href={homeHref}
-              className="inline-flex min-h-11 items-center gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/55 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+              className="inline-flex min-h-11 items-center gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/55 hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
               <ArrowLeft className="size-3.5" aria-hidden="true" />
               {tLegal("backToHome")}

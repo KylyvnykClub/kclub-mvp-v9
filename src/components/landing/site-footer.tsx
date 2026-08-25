@@ -28,27 +28,27 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {t("footer.links")}
           </h2>
           <ul className="mt-5 grid gap-3 text-sm font-normal">
             <li>
-              <Link href="#about" className="hover:text-accent">
+              <Link href="#about" className="hover:text-accent-ink">
                 {t("nav.about")}
               </Link>
             </li>
             <li>
-              <Link href="#how-it-works" className="hover:text-accent">
+              <Link href="#how-it-works" className="hover:text-accent-ink">
                 {t("nav.how_it_works")}
               </Link>
             </li>
             <li>
-              <Link href="/register" className="hover:text-accent">
+              <Link href="/register" className="hover:text-accent-ink">
                 {t("footer.signUp")}
               </Link>
             </li>
             <li>
-              <Link href="/login" className="hover:text-accent">
+              <Link href="/login" className="hover:text-accent-ink">
                 {t("footer.signIn")}
               </Link>
             </li>
@@ -56,55 +56,70 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">
+          <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {t("footer.legal")}
           </h2>
           <ul className="mt-5 grid gap-3 text-sm font-normal">
             <li>
-              <Link href="/legal/terms-of-use" className="hover:text-accent">
+              <Link
+                href="/legal/terms-of-use"
+                className="hover:text-accent-ink"
+              >
                 {t("footer.terms")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/privacy-policy" className="hover:text-accent">
+              <Link
+                href="/legal/privacy-policy"
+                className="hover:text-accent-ink"
+              >
                 {t("footer.privacy")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/cookie-policy" className="hover:text-accent">
+              <Link
+                href="/legal/cookie-policy"
+                className="hover:text-accent-ink"
+              >
                 {t("footer.cookiePolicy")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/club-rules" className="hover:text-accent">
+              <Link href="/legal/club-rules" className="hover:text-accent-ink">
                 {t("footer.clubRules")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/partner-rules" className="hover:text-accent">
+              <Link
+                href="/legal/partner-rules"
+                className="hover:text-accent-ink"
+              >
                 {t("footer.partnerRules")}
               </Link>
             </li>
             <li>
               <Link
                 href="/legal/business-introduction-rules"
-                className="hover:text-accent"
+                className="hover:text-accent-ink"
               >
                 {t("footer.businessIntroRules")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/refund-policy" className="hover:text-accent">
+              <Link
+                href="/legal/refund-policy"
+                className="hover:text-accent-ink"
+              >
                 {t("footer.refundPolicy")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/disclaimer" className="hover:text-accent">
+              <Link href="/legal/disclaimer" className="hover:text-accent-ink">
                 {t("footer.disclaimer")}
               </Link>
             </li>
             <li>
-              <Link href="/legal/contact-us" className="hover:text-accent">
+              <Link href="/legal/contact-us" className="hover:text-accent-ink">
                 {t("footer.contactUs")}
               </Link>
             </li>
@@ -112,7 +127,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <div className="kclub-shell py-5 text-sm text-zinc-500">
+        <div className="kclub-shell py-5 text-sm text-muted-foreground">
           {new Date().getFullYear()} KYLYVNYK CLUB. {t("footer.copyright")}
         </div>
       </div>

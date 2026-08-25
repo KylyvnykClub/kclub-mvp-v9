@@ -34,7 +34,7 @@ export function KpiCard({
               values={sparklineValues}
               width={72}
               height={28}
-              className="shrink-0 text-accent"
+              className="shrink-0 text-accent-ink"
             />
           )}
         </div>

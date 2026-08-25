@@ -15,6 +15,8 @@ import type { DbClient } from "./db";
 import type { PageParams } from "./pagination";
 import {
   businessCategories,
+  businessCategoryTranslations,
+  companyServiceCountries,
   cities,
   companies,
   countries,
@@ -117,6 +119,65 @@ export async function deleteBusinessCategory(db: DbClient, categoryId: number) {
     .delete(businessCategories)
     .where(eq(businessCategories.id, categoryId));
 }
+
+/**
+ * Every active category triple, for a filter that has to cascade in the browser.
+ *
+ * One query rather than the three round-trips listActiveCategoryBlocks /
+ * ByBlock / listActiveSubcategories would cost: the caller groups these in
+ * memory, and the table is reference data measured in hundreds of rows.
+ */
+export async function listActiveCategoryTree(db: DbClient) {
+  return db.query.businessCategories.findMany({
+    where: eq(businessCategories.status, "ACTIVE"),
+    columns: { id: true, block: true, category: true, subcategory: true },
+    orderBy: [
+      asc(businessCategories.block),
+      asc(businessCategories.category),
+      asc(businessCategories.subcategory),
+    ],
+  });
+}
+
+export async function listLocalizedCategoryTree(
+  db: DbClient,
+  locale: "en" | "ru" | "uk",
+) {
+  return db
+    .select({
+      id: businessCategories.id,
+      block: sql<string>`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+      category: sql<string>`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+      subcategory: sql<string>`coalesce(${businessCategoryTranslations.subcategory}, ${businessCategories.subcategory})`,
+    })
+    .from(businessCategories)
+    .leftJoin(
+      businessCategoryTranslations,
+      and(
+        eq(
+          businessCategoryTranslations.businessCategoryId,
+          businessCategories.id,
+        ),
+        eq(businessCategoryTranslations.locale, locale),
+      ),
+    )
+    .where(eq(businessCategories.status, "ACTIVE"))
+    .orderBy(
+      asc(
+        sql`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+      ),
+      asc(
+        sql`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+      ),
+      asc(
+        sql`coalesce(${businessCategoryTranslations.subcategory}, ${businessCategories.subcategory})`,
+      ),
+    );
+}
+
+export type CategoryTreeRow = Awaited<
+  ReturnType<typeof listLocalizedCategoryTree>
+>[number];
 
 export async function listCountries(db: DbClient) {
   return db.query.countries.findMany({
@@ -281,8 +342,21 @@ export async function companySlugExists(
 export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
+  serviceCountryCodes: string[] = [],
 ): Promise<void> {
-  await db.insert(companies).values(values);
+  await db.transaction(async (tx) => {
+    const [company] = await tx.insert(companies).values(values).returning({
+      id: companies.id,
+    });
+    if (serviceCountryCodes.length > 0) {
+      await tx.insert(companyServiceCountries).values(
+        [...new Set(serviceCountryCodes)].map((countryCode) => ({
+          companyId: company!.id,
+          countryCode,
+        })),
+      );
+    }
+  });
 }
 
 export async function listCompanyIdsWithActiveSubscription(
@@ -297,14 +371,28 @@ export async function listCompanyIdsWithActiveSubscription(
 }
 
 export interface PartnerFilters {
+  /** A single business_categories row, i.e. a chosen subcategory. */
   categoryId?: number;
   block?: string;
+  /** Middle level of the category triple; only meaningful with a block. */
+  category?: string;
   query?: string;
   country?: string;
   city?: string;
+  serviceCountryCode?: string;
+  businessMode?: "online" | "offline";
+  administrativeLevel1?: string;
+  administrativeLevel2?: string;
 }
 
-export async function listApprovedCompaniesByIds(
+/**
+ * The catalogue's filter set, shared by the listing and its count so the two
+ * can never disagree about what "matching" means.
+ *
+ * Returns null when a filter rules out every row before the query runs - the
+ * block branch can discover there is no such category at all.
+ */
+async function approvedCompanyConditions(
   db: DbClient,
   ids: string[],
   filters?: PartnerFilters,
@@ -314,26 +402,89 @@ export async function listApprovedCompaniesByIds(
     inArray(companies.id, ids),
   );
 
+  // business_categories is a flat table of (block, category, subcategory)
+  // triples, so the most specific axis the caller gave wins: a categoryId is
+  // already one row, while block and category each stand for a set of them.
   if (filters?.categoryId) {
     conditions = and(
       conditions,
       eq(companies.businessCategoryId, filters.categoryId),
     );
   } else if (filters?.block) {
+    const where = filters.category
+      ? and(
+          eq(businessCategories.block, filters.block),
+          eq(businessCategories.category, filters.category),
+        )
+      : eq(businessCategories.block, filters.block);
+
     const catIds = await db
       .select({ id: businessCategories.id })
       .from(businessCategories)
-      .where(eq(businessCategories.block, filters.block));
+      .where(where);
     const ids2 = catIds.map((c) => c.id);
-    if (ids2.length > 0) {
-      conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
-    } else {
-      return [];
-    }
+    if (ids2.length === 0) return null;
+    conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
   }
 
-  if (filters?.country) {
+  if (filters?.serviceCountryCode) {
+    const serviceCompanies = await db
+      .select({ companyId: companyServiceCountries.companyId })
+      .from(companyServiceCountries)
+      .where(
+        eq(
+          companyServiceCountries.countryCode,
+          filters.serviceCountryCode.toUpperCase(),
+        ),
+      );
+    conditions = and(
+      conditions,
+      or(
+        eq(companies.servesWorldwide, 1),
+        inArray(
+          companies.id,
+          serviceCompanies.map((row) => row.companyId),
+        ),
+      ),
+    );
+  } else if (filters?.country) {
     conditions = and(conditions, ilike(companies.country, filters.country));
+  }
+
+  if (filters?.businessMode === "online") {
+    conditions = and(
+      conditions,
+      inArray(companies.businessFormat, ["online_only", "online_offline"]),
+    );
+  }
+  if (filters?.businessMode === "offline") {
+    conditions = and(
+      conditions,
+      inArray(companies.businessFormat, [
+        "offline_only",
+        "online_offline",
+        "on_site_service",
+      ]),
+      filters.serviceCountryCode
+        ? eq(
+            companies.registrationCountryCode,
+            filters.serviceCountryCode.toUpperCase(),
+          )
+        : undefined,
+    );
+  }
+
+  if (filters?.administrativeLevel1) {
+    conditions = and(
+      conditions,
+      ilike(companies.administrativeLevel1, filters.administrativeLevel1),
+    );
+  }
+  if (filters?.administrativeLevel2) {
+    conditions = and(
+      conditions,
+      ilike(companies.administrativeLevel2, filters.administrativeLevel2),
+    );
   }
 
   if (filters?.city) {
@@ -356,6 +507,18 @@ export async function listApprovedCompaniesByIds(
     );
   }
 
+  return conditions;
+}
+
+export async function listApprovedCompaniesByIds(
+  db: DbClient,
+  ids: string[],
+  filters?: PartnerFilters,
+  page?: PageParams,
+) {
+  const conditions = await approvedCompanyConditions(db, ids, filters);
+  if (conditions === null) return [];
+
   const orderBy = filters?.query
     ? [
         desc(sql`
@@ -365,13 +528,68 @@ export async function listApprovedCompaniesByIds(
       ]
     : [asc(companies.name)];
 
+  // Unpaged when no page is asked for, because every existing caller - the
+  // tests and the billing checks - reads the whole set.
   return db.query.companies.findMany({
     where: conditions,
     with: {
       businessCategory: true,
+      serviceCountries: true,
     },
     orderBy,
+    ...(page ? { limit: page.limit, offset: page.offset } : {}),
   });
+}
+
+/**
+ * How many partners the same filters match, for the catalogue's paging.
+ */
+/**
+ * The country/city pairs that actually occur among visible partners.
+ *
+ * Built from the companies rather than the countries/cities reference tables on
+ * purpose. The reference tables hold ISO codes and, today, no cities at all,
+ * while `companies.country` stores a display name - so a filter offering codes
+ * would match nothing, and a city select would be empty. Deriving the options
+ * from the data guarantees every one of them returns at least one partner.
+ */
+export async function listPartnerLocations(db: DbClient, ids: string[]) {
+  if (ids.length === 0) return [];
+
+  const rows = await db
+    .selectDistinct({ country: companies.country, city: companies.city })
+    .from(companies)
+    .where(
+      and(
+        eq(companies.moderationStatus, "approved"),
+        inArray(companies.id, ids),
+      ),
+    )
+    .orderBy(asc(companies.country), asc(companies.city));
+
+  return rows.filter((r): r is { country: string; city: string | null } =>
+    Boolean(r.country),
+  );
+}
+
+export type PartnerLocation = Awaited<
+  ReturnType<typeof listPartnerLocations>
+>[number];
+
+export async function countApprovedCompaniesByIds(
+  db: DbClient,
+  ids: string[],
+  filters?: PartnerFilters,
+): Promise<number> {
+  const conditions = await approvedCompanyConditions(db, ids, filters);
+  if (conditions === null) return 0;
+
+  const [row] = await db
+    .select({ value: count() })
+    .from(companies)
+    .where(conditions);
+
+  return row?.value ?? 0;
 }
 
 export type PartnerCompanyView = Awaited<
@@ -392,6 +610,7 @@ export async function listShowcaseCompanies(
     ),
     with: {
       businessCategory: true,
+      serviceCountries: true,
     },
     limit,
     orderBy: [asc(companies.showcaseRank), asc(companies.name)],
@@ -411,6 +630,7 @@ export async function findApprovedCompanyBySlug(
     ),
     with: {
       businessCategory: true,
+      serviceCountries: true,
       owner: {
         columns: {
           id: true,

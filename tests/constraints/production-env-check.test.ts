@@ -18,8 +18,12 @@ const baseProductionEnv = {
   STRIPE_VIP_PRICE_ID: "price_vip",
   STRIPE_LISTING_PRICE_ID: "price_listing",
   CRON_SECRET: "cron-secret",
+  // Staff TOTP seeds are unreadable without it, so production refuses to boot
+  // rather than let staff sign in against plaintext (ADR 0016).
+  TOTP_ENCRYPTION_KEY: "totp-fixture-key-".repeat(3),
   UPSTASH_REDIS_REST_URL: "https://redis.example",
   UPSTASH_REDIS_REST_TOKEN: "redis-token",
+  RESEND_API_KEY: "re_live_fixture",
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_123",
 };
 
@@ -29,6 +33,17 @@ describe("constraint: production environment check", () => {
       ok: true,
       issues: [],
     });
+  });
+
+  it("rejects production without the TOTP encryption key", () => {
+    const { TOTP_ENCRYPTION_KEY: _omitted, ...withoutKey } = baseProductionEnv;
+
+    const result = checkProductionEnv(withoutKey, "production");
+
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.key)).toContain(
+      "TOTP_ENCRYPTION_KEY",
+    );
   });
 
   it("rejects production dev bypass and test-only secrets", () => {

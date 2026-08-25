@@ -245,7 +245,8 @@ job lands in the dead-letter queue and pages. Member pays and the whole
 projection pipeline is down → the member sees "activating, this can take a few
 minutes"; access appears when the pipeline recovers, and nothing is lost because
 Stripe holds the truth. Card declined at renewal → dunning per FR-056; access
-survives the 14-day grace period, then the entitlement expiry sweep removes it.
+survives the 14-day grace period, the subscriber is warned three days before it
+ends, and then the entitlement expiry sweep removes it.
 
 ### 3.3 Partner onboarding to publication
 
@@ -379,6 +380,8 @@ shaped it without leaving the page.
 |[0013](decisions/0013-partner-logos-as-external-urls.md)|Partner logos are member-supplied external URLs, not uploaded files|Accepted|
 |[0014](decisions/0014-no-notification-log-table.md)|No dedicated notification log table|Accepted|
 |[0015](decisions/0015-password-reset-deferred-to-client.md)|Password reset stays unbuilt until the client answers the account-recovery question|Accepted|
+|[0016](decisions/0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|
+|[0017](decisions/0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|
 
 ---
 

@@ -18,3 +18,8 @@ yarn.lock
 
 # Claude Design canvas mockups - design references, not application code.
 src/admin/
+
+# Playwright output (generated).
+playwright-report/
+test-results/
+blob-report/
