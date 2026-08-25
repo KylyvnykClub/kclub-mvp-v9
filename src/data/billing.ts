@@ -9,11 +9,24 @@ import {
   sql,
 } from "drizzle-orm";
 
+import {
+  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+  GRACE_PERIOD_DAYS,
+} from "./billing-access";
 import type { Db, DbClient, DbTx } from "./db";
 import {
   BILLING_NOTIFICATION_TOPIC,
   GRACE_EXPIRY_WARNING_NOTIFICATION,
 } from "./outbox";
+
+// Re-exported so the access rule and dunning window keep their public import
+// path (@/data/billing) while their definitions live in the DB-free
+// billing-access module.
+export {
+  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+  GRACE_PERIOD_DAYS,
+  tierForSubscriptionStatus,
+} from "./billing-access";
 import {
   cards,
   members,
@@ -75,8 +88,6 @@ export type AnySubscriptionRow = Awaited<
   ReturnType<typeof listAllSubscriptions>
 >[number];
 
-const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "past_due"];
-
 export async function listActiveSubscriptionsForDeletion(
   db: DbClient,
   memberId: string,
@@ -84,7 +95,7 @@ export async function listActiveSubscriptionsForDeletion(
   return db.query.subscriptions.findMany({
     where: and(
       eq(subscriptions.memberId, memberId),
-      inArray(subscriptions.status, ACTIVE_SUBSCRIPTION_STATUSES),
+      inArray(subscriptions.status, [...ACCESS_GRANTING_SUBSCRIPTION_STATUSES]),
     ),
     with: { company: true },
   });
@@ -193,9 +204,6 @@ export async function findLapsedSubscriptions(
       ),
     );
 }
-
-/** FR-056: the dunning window Stripe is configured to retry across. */
-export const GRACE_PERIOD_DAYS = 14;
 
 /**
  * How far ahead of the grace deadline the subscriber is warned.
