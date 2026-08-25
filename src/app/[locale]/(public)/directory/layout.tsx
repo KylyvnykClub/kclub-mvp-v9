@@ -1,3 +1,4 @@
+import { getCurrentMember } from "@/actions/session";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 
@@ -14,14 +15,16 @@ import { SiteHeader } from "@/components/landing/site-header";
  * and wrapping that in site navigation would invite the scanner to wander into
  * the product instead of reading the one answer they came for.
  */
-export default function DirectoryLayout({
+export default async function DirectoryLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const current = await getCurrentMember();
+
   return (
     <>
-      <SiteHeader />
+      <SiteHeader member={Boolean(current?.member)} />
       {children}
       <SiteFooter />
     </>
