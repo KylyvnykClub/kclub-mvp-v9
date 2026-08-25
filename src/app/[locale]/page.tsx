@@ -15,6 +15,7 @@ import { ServicesSection } from "@/components/landing/services-section";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { StatsSection } from "@/components/landing/stats-section";
+import { buildActor, staffAtLeast } from "@/domain/actor";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
 import { localeAlternates } from "@/lib/seo";
 
@@ -37,12 +38,14 @@ export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const current = await getCurrentMember();
+  const actor = current?.member ? buildActor(current.member) : null;
+  const canAccessAdmin = actor ? staffAtLeast(actor, "staff_support") : false;
 
   return (
     <div className="min-h-screen bg-background selection:bg-accent/30">
       <JsonLd data={websiteLd()} />
       <JsonLd data={organizationLd()} />
-      <SiteHeader member={Boolean(current?.member)} />
+      <SiteHeader member={Boolean(current?.member)} admin={canAccessAdmin} />
       <main>
         <HeroSection />
         <StatsSection />

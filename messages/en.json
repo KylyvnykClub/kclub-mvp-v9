@@ -100,6 +100,7 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome, {name}",
+    "admin": "Admin",
     "profile": "Profile",
     "card": "Membership Card",
     "settings": "Settings",
