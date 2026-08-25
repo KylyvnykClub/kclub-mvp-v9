@@ -2,6 +2,21 @@ import { getAllLegalDocuments } from "@/lib/mdx";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
+import { localeAlternates } from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "legal" });
+  return {
+    title: t("title"),
+    description: t("indexDescription"),
+    alternates: localeAlternates(locale, "/legal"),
+  };
+}
 
 export default async function LegalIndexPage({
   params,

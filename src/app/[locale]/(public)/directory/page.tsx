@@ -11,6 +11,7 @@ import {
   pageParamsFromSearchParam,
 } from "@/data/pagination";
 import { isFeatureEnabled } from "@/actions/feature-flags";
+import { localeAlternates } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";
@@ -50,6 +51,9 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
+    // Canonical points at the unfiltered catalogue: the q/category/city/page/…
+    // params produce endless faceted URLs that must all consolidate here.
+    alternates: localeAlternates(locale, "/directory"),
   };
 }
 

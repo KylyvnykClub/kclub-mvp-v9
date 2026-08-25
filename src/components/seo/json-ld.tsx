@@ -50,6 +50,8 @@ export function partnerLd(partner: {
   logoUrl?: string | null;
   country?: string | null;
   city?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
 }): Record<string, unknown> {
   const node: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -60,6 +62,9 @@ export function partnerLd(partner: {
   if (partner.description) node.description = partner.description;
   if (partner.website) node.sameAs = [partner.website];
   if (partner.logoUrl) node.logo = partner.logoUrl;
+  // Business contacts already shown publicly on the partner page.
+  if (partner.contactPhone) node.telephone = partner.contactPhone;
+  if (partner.contactEmail) node.email = partner.contactEmail;
 
   if (partner.country || partner.city) {
     const address: Record<string, unknown> = { "@type": "PostalAddress" };
