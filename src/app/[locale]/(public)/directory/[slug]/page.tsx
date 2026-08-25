@@ -22,6 +22,8 @@ import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { countryName } from "@/lib/countries";
+import { localeAlternates } from "@/lib/seo";
+import { JsonLd, partnerLd } from "@/components/seo/json-ld";
 import type { Locale } from "@/i18n/routing";
 
 type Props = {
@@ -49,6 +51,7 @@ export async function generateMetadata(
   return {
     title,
     description,
+    alternates: localeAlternates(locale, `/directory/${slug}`),
     openGraph: {
       title,
       description,
@@ -133,27 +136,20 @@ export default async function PartnerLandingPage({ params }: Props) {
     errorMessage: tr("errorMessage"),
   };
 
-  // Generate JSON-LD Structured Data
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: partner.name,
-    image: partner.logoUrl || "",
-    description: partner.description || "",
-    url: partner.website || "",
-    telephone: partner.contactPhone || "",
-    email: partner.contactEmail || "",
-    address: {
-      "@type": "PostalAddress",
-      addressCountry: "UA", // Adjust based on your primary location
-    },
-  };
-
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd
+        data={partnerLd({
+          name: partner.name,
+          slug: partner.slug,
+          description: partner.description,
+          website: partner.website,
+          logoUrl: partner.logoUrl,
+          country: partner.country,
+          city: partner.city,
+          contactPhone: partner.contactPhone,
+          contactEmail: partner.contactEmail,
+        })}
       />
       <main className="min-h-screen bg-background pb-24">
         <section className="dark border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
