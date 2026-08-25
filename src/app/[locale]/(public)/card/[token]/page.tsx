@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getCardByPublicToken } from "@/actions/session";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { CheckCircle, XCircle, ShieldQuestion } from "lucide-react";
@@ -8,6 +9,21 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+
+/**
+ * A card URL carries a member's public QR token and must never be indexed,
+ * even though it is unauthenticated. This hard noindex overrides the root
+ * layout's launch-gated default, so the switch that opens the marketing pages
+ * to search never reaches the card. Pairs with the robots.txt card disallow.
+ */
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  },
+};
 
 export default async function CardVerificationPage({
   params,
