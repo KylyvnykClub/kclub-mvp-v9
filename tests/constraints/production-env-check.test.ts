@@ -16,7 +16,7 @@ const baseProductionEnv = {
   STRIPE_SECRET_KEY: "sk_live_123",
   STRIPE_WEBHOOK_SECRET: "whsec_123",
   STRIPE_VIP_PRICE_ID: "price_vip",
-  STRIPE_LISTING_PRICE_ID: "price_listing",
+  STRIPE_BUSINESS_PRICE_ID: "price_listing",
   CRON_SECRET: "cron-secret",
   // Staff TOTP seeds are unreadable without it, so production refuses to boot
   // rather than let staff sign in against plaintext (ADR 0016).
@@ -74,7 +74,7 @@ describe("constraint: production environment check", () => {
         STRIPE_SECRET_KEY: "sk_test_123",
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_123",
         STRIPE_VIP_PRICE_ID: "",
-        STRIPE_LISTING_PRICE_ID: "",
+        STRIPE_BUSINESS_PRICE_ID: "",
       },
       "production",
     );
@@ -85,7 +85,7 @@ describe("constraint: production environment check", () => {
         "STRIPE_SECRET_KEY",
         "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
         "STRIPE_VIP_PRICE_ID",
-        "STRIPE_LISTING_PRICE_ID",
+        "STRIPE_BUSINESS_PRICE_ID",
       ]),
     );
   });

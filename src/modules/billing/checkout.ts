@@ -5,8 +5,8 @@ export type CheckoutPlan = "vip" | "listing";
 export interface CheckoutPriceConfig {
   vipPriceId?: string;
   legacyVipPriceId?: string;
-  listingPriceId?: string;
-  legacyListingPriceId?: string;
+  businessPriceId?: string;
+  legacyBusinessPriceId?: string;
 }
 
 export function resolveCheckoutPriceId(
@@ -16,7 +16,7 @@ export function resolveCheckoutPriceId(
   const priceId =
     plan === "vip"
       ? (config.vipPriceId ?? config.legacyVipPriceId)
-      : (config.listingPriceId ?? config.legacyListingPriceId);
+      : (config.businessPriceId ?? config.legacyBusinessPriceId);
 
   if (!priceId) {
     throw new Error(`${plan} checkout price is not configured`);

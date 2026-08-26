@@ -63,10 +63,10 @@ function productionOnlyIssues(env: Record<string, unknown>): EnvCheckIssue[] {
     });
   }
 
-  if (!hasValue(env["STRIPE_LISTING_PRICE_ID"])) {
+  if (!hasValue(env["STRIPE_BUSINESS_PRICE_ID"])) {
     issues.push({
-      key: "STRIPE_LISTING_PRICE_ID",
-      message: "is required before selling listing subscriptions",
+      key: "STRIPE_BUSINESS_PRICE_ID",
+      message: "is required before selling business subscriptions",
     });
   }
 

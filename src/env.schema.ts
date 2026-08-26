@@ -63,9 +63,9 @@ export const serverSchema = z
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
     STRIPE_VIP_PRICE_ID: z.string().optional(),
-    STRIPE_LISTING_PRICE_ID: z.string().optional(),
+    STRIPE_BUSINESS_PRICE_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
-    NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID: z.string().optional(),
+    NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID: z.string().optional(),
 
     // ── Cron ────────────────────────────────────────────────
     CRON_SECRET: z.preprocess(
@@ -198,11 +198,11 @@ export const serverSchema = z
         });
       }
 
-      if (!env.STRIPE_LISTING_PRICE_ID) {
+      if (!env.STRIPE_BUSINESS_PRICE_ID) {
         ctx.addIssue({
           code: "custom",
-          path: ["STRIPE_LISTING_PRICE_ID"],
-          message: "STRIPE_LISTING_PRICE_ID is required in production",
+          path: ["STRIPE_BUSINESS_PRICE_ID"],
+          message: "STRIPE_BUSINESS_PRICE_ID is required in production",
         });
       }
     }

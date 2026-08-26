@@ -12,8 +12,8 @@ describe("billing checkout contract", () => {
 
     expect(
       resolveCheckoutPriceId("listing", {
-        listingPriceId: "price_listing",
-        legacyListingPriceId: "price_legacy_listing",
+        businessPriceId: "price_listing",
+        legacyBusinessPriceId: "price_legacy_listing",
       }),
     ).toBe("price_listing");
   });
