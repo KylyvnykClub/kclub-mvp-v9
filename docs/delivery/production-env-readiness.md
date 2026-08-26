@@ -119,9 +119,9 @@ External checks, when it is turned back on:
 |`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`|Yes|Stripe live publishable key|Confirm it starts with `pk_` and matches the same account as `STRIPE_SECRET_KEY`.|
 |`STRIPE_WEBHOOK_SECRET`|Yes|Stripe webhook endpoint|Confirm endpoint is `/api/webhooks/stripe` and replay a live-mode test event before promotion.|
 |`STRIPE_VIP_PRICE_ID`|Yes for VIP sale|Stripe product catalog|Confirm it is the production VIP subscription price.|
-|`STRIPE_LISTING_PRICE_ID`|Yes for listing sale|Stripe product catalog|Confirm it is the production partner listing subscription price.|
+|`STRIPE_BUSINESS_PRICE_ID`|Yes for business sale|Stripe product catalog|Confirm it is the production partner listing subscription price.|
 |`NEXT_PUBLIC_STRIPE_VIP_PRICE_ID`|Compatibility only|Stripe product catalog|Keep only if a deployed client still reads the public legacy key.|
-|`NEXT_PUBLIC_STRIPE_LISTING_PRICE_ID`|Compatibility only|Stripe product catalog|Keep only if a deployed client still reads the public legacy key.|
+|`NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID`|Compatibility only|Stripe product catalog|Keep only if a deployed client still reads the public legacy key.|
 
 Required external checks:
 

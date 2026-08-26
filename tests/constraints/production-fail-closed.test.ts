@@ -21,7 +21,7 @@ function productionBase(): Record<string, string> {
     STRIPE_SECRET_KEY: "sk_live_stub",
     STRIPE_WEBHOOK_SECRET: "whsec_stub",
     STRIPE_VIP_PRICE_ID: "price_vip_live",
-    STRIPE_LISTING_PRICE_ID: "price_listing_live",
+    STRIPE_BUSINESS_PRICE_ID: "price_listing_live",
     UPSTASH_REDIS_REST_URL: "https://redis.upstash.io",
     UPSTASH_REDIS_REST_TOKEN: "redis-token",
     CRON_SECRET: "cron-secret",
@@ -66,7 +66,7 @@ describe("constraint: production fail-closed env (FR-056)", () => {
   it("rejects production Stripe test mode and missing checkout prices", () => {
     const {
       STRIPE_VIP_PRICE_ID: _vipPrice,
-      STRIPE_LISTING_PRICE_ID: _listingPrice,
+      STRIPE_BUSINESS_PRICE_ID: _listingPrice,
       ...base
     } = productionBase();
 
@@ -90,8 +90,8 @@ describe("constraint: production fail-closed env (FR-056)", () => {
           "STRIPE_VIP_PRICE_ID is required in production",
         ],
         [
-          "STRIPE_LISTING_PRICE_ID",
-          "STRIPE_LISTING_PRICE_ID is required in production",
+          "STRIPE_BUSINESS_PRICE_ID",
+          "STRIPE_BUSINESS_PRICE_ID is required in production",
         ],
       ]),
     );
