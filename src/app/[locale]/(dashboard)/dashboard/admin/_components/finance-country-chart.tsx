@@ -39,6 +39,7 @@ type FinanceCountryChartProps = {
     ariaLabel: string;
     selected: string;
     unknownCountry: string;
+    noData: string;
   };
 };
 
@@ -72,6 +73,7 @@ export function FinanceCountryChart({
   const maxAmount = Math.max(...chartData.map((item) => item.amount), 1);
   const activeCountry = hoveredCountry ?? selectedCountry;
   const activeItem = chartData.find((item) => item.country === activeCountry);
+  const hasData = chartData.length > 0;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
@@ -82,9 +84,34 @@ export function FinanceCountryChart({
       >
         <svg viewBox="0 0 100 60" className="h-full w-full" aria-hidden="true">
           <path
-            d="M8 23c6-7 19-10 27-6 5 3 7 8 3 12-3 4-12 2-16 7-5 6-16 0-14-13Zm39-9c9-5 24-4 31 3 5 6 4 14-4 17-7 3-13-2-19 0-9 3-18-13-8-20Zm4 31c10-5 23-2 26 7 2 7-5 12-15 10-12-2-23-10-11-17Z"
+            d="M4 30h92M50 4v52M10 14c18 6 62 6 80 0M10 46c18-6 62-6 80 0M18 8c-7 11-7 33 0 44M82 8c7 11 7 33 0 44"
+            className="fill-none stroke-zinc-200 dark:stroke-zinc-800"
+            strokeWidth="0.35"
+          />
+          <path
+            d="M8 18c4-6 12-8 18-7 5 1 8 4 9 8 1 3-1 5-5 6-3 1-5 1-7 4-3 4-7 6-11 3-4-2-7-8-4-14Z"
             className="fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
-            strokeWidth="0.5"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M27 35c5 1 9 5 10 10 1 6-3 11-6 12-4-5-8-12-8-17 0-3 1-5 4-5Z"
+            className="fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M42 16c5-5 15-7 24-5 12 2 22 8 25 16 2 6-2 9-10 8-7-1-11-4-17-1-6 3-12 2-17-3-5-4-9-10-5-15Z"
+            className="fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M50 32c8-3 18 2 19 10 1 6-4 10-11 9-8-1-15-6-14-12 0-3 2-5 6-7Z"
+            className="fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M77 44c5-3 11-1 14 4 2 4 0 7-5 7-6 0-12-3-12-7 0-1 1-3 3-4Z"
+            className="fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
+            strokeWidth="0.45"
           />
         </svg>
 
@@ -141,49 +168,55 @@ export function FinanceCountryChart({
       </div>
 
       <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            layout="vertical"
-            margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          >
-            <XAxis
-              type="number"
-              tickFormatter={(value: number) => formatter.format(value / 100)}
-              tick={{ fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              dataKey="label"
-              type="category"
-              width={54}
-              tick={{ fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip
-              formatter={(value) =>
-                typeof value === "number"
-                  ? formatter.format(value / 100)
-                  : String(value ?? "")
-              }
-              cursor={{ fill: "hsl(var(--muted))" }}
-            />
-            <Bar dataKey="amount" radius={2}>
-              {chartData.map((item) => (
-                <Cell
-                  key={item.country}
-                  fill={
-                    item.country === selectedCountry
-                      ? "hsl(var(--accent))"
-                      : "hsl(var(--foreground))"
-                  }
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {hasData ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+            >
+              <XAxis
+                type="number"
+                tickFormatter={(value: number) => formatter.format(value / 100)}
+                tick={{ fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                dataKey="label"
+                type="category"
+                width={54}
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                formatter={(value) =>
+                  typeof value === "number"
+                    ? formatter.format(value / 100)
+                    : String(value ?? "")
+                }
+                cursor={{ fill: "hsl(var(--muted))" }}
+              />
+              <Bar dataKey="amount" radius={2}>
+                {chartData.map((item) => (
+                  <Cell
+                    key={item.country}
+                    fill={
+                      item.country === selectedCountry
+                        ? "hsl(var(--accent))"
+                        : "hsl(var(--foreground))"
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex h-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+            {mapLabels.noData}
+          </div>
+        )}
       </div>
     </div>
   );

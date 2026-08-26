@@ -35,9 +35,15 @@ function PeriodSwitcher({
   locale: string;
   labels: Record<DashboardPeriodDays, string>;
 }) {
+  const options = [
+    { days: 7, label: labels[7] },
+    { days: 30, label: labels[30] },
+    { days: 90, label: labels[90] },
+  ] satisfies Array<{ days: DashboardPeriodDays; label: string }>;
+
   return (
     <div className="inline-flex rounded-md border border-border p-0.5">
-      {PERIODS.map((days) => (
+      {options.map(({ days, label }) => (
         <Link
           key={days}
           href={`/${locale}/dashboard/admin?days=${days}`}
@@ -48,7 +54,7 @@ function PeriodSwitcher({
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          {labels[days]}
+          {label}
         </Link>
       ))}
     </div>
@@ -156,21 +162,16 @@ export default async function AdminDashboardPage({
             <CardDescription>{t("revenueByCountryDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
-            {Object.keys(metrics.revenueByCountry).length === 0 ? (
-              <div className="py-4 text-center text-muted-foreground">
-                {t("noData")}
-              </div>
-            ) : (
-              <FinanceCountryChart
-                revenueByCountry={metrics.revenueByCountry}
-                locale={locale}
-                mapLabels={{
-                  ariaLabel: t("revenueMapLabel"),
-                  selected: t("selectedCountry"),
-                  unknownCountry: t("unknownCountry"),
-                }}
-              />
-            )}
+            <FinanceCountryChart
+              revenueByCountry={metrics.revenueByCountry}
+              locale={locale}
+              mapLabels={{
+                ariaLabel: t("revenueMapLabel"),
+                selected: t("selectedCountry"),
+                unknownCountry: t("unknownCountry"),
+                noData: t("noData"),
+              }}
+            />
           </CardContent>
         </Card>
       </div>
