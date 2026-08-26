@@ -729,6 +729,7 @@
     "categoryPlaceholder": "Select a category...",
     "subcategoryLabel": "Subcategory (Activity)",
     "subcategoryPlaceholder": "Select specific activity...",
+    "subcategoryHint": "{count} of {max} selected",
     "detailsSection": "Company Details",
     "nameLabel": "Company Name",
     "namePlaceholder": "e.g. Acme Corp",

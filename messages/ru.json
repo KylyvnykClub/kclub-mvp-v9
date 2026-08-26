@@ -729,6 +729,7 @@
     "categoryPlaceholder": "Выберите категорию...",
     "subcategoryLabel": "Подкатегория (вид деятельности)",
     "subcategoryPlaceholder": "Выберите вид деятельности...",
+    "subcategoryHint": "Выбрано {count} из {max}",
     "detailsSection": "Данные компании",
     "nameLabel": "Название компании",
     "namePlaceholder": "напр. Acme Corp",

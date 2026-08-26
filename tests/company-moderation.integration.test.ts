@@ -480,7 +480,7 @@ describe("admin company detail: what the drawer can read", () => {
     const detail = await findCompanyForAdmin(db, company.id);
 
     expect(detail?.owner?.displayName).toBe(owner.displayName);
-    expect(detail?.businessCategory?.id).toBe(category.id);
+    expect(detail?.categories?.[0]?.businessCategory?.id).toBe(category.id);
   });
 
   it("scopes subscriptions to the company being looked at", async () => {

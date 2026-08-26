@@ -729,6 +729,7 @@
     "categoryPlaceholder": "Оберіть категорію...",
     "subcategoryLabel": "Підкатегорія (вид діяльності)",
     "subcategoryPlaceholder": "Оберіть вид діяльності...",
+    "subcategoryHint": "Обрано {count} з {max}",
     "detailsSection": "Дані компанії",
     "nameLabel": "Назва компанії",
     "namePlaceholder": "напр. Acme Corp",

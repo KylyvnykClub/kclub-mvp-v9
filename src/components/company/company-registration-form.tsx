@@ -50,7 +50,7 @@ const STEP_FIELDS: Record<number, string[]> = {
   2: [
     "block",
     "category",
-    "businessCategoryId",
+    "businessCategoryIds",
     "registrationCountryCode",
     "serviceCountryCodes",
     "servesWorldwide",
@@ -82,7 +82,9 @@ export function CompanyRegistrationForm() {
 
   const selectedBlock = values.block ?? "";
   const selectedCategory = values.category ?? "";
-  const selectedSubcategory = values.businessCategoryId ?? "";
+  const selectedCategoryIds = (values.businessCategoryIds ?? "")
+    .split(",")
+    .filter(Boolean);
   const countries = useMemo(() => countryOptions(locale), [locale]);
   const blocks = useMemo(
     () => [...new Set(taxonomy.map((row) => row.block))],
@@ -328,7 +330,7 @@ export function CompanyRegistrationForm() {
                   ...current,
                   block: e.target.value,
                   category: "",
-                  businessCategoryId: "",
+                  businessCategoryIds: "",
                 }));
               }}
               required
@@ -352,7 +354,7 @@ export function CompanyRegistrationForm() {
                 setValues((current) => ({
                   ...current,
                   category: e.target.value,
-                  businessCategoryId: "",
+                  businessCategoryIds: "",
                 }));
               }}
               required
@@ -366,22 +368,35 @@ export function CompanyRegistrationForm() {
             </select>
           </Field>
 
-          <Field id="businessCategoryId" label={t("subcategoryLabel")}>
+          <Field id="businessCategoryIds" label={t("subcategoryLabel")}>
             <select
-              id="businessCategoryId"
-              className={SELECT_CLASS}
-              value={selectedSubcategory}
+              id="businessCategoryIds"
+              className={`${SELECT_CLASS} h-32`}
+              multiple
               disabled={!selectedCategory}
-              onChange={(e) => set("businessCategoryId", e.target.value)}
+              value={selectedCategoryIds}
+              onChange={(e) => {
+                const selected = Array.from(
+                  e.currentTarget.selectedOptions,
+                  (option) => option.value,
+                );
+                if (selected.length > 7) return;
+                set("businessCategoryIds", selected.join(","));
+              }}
               required
             >
-              <option value="">{t("subcategoryPlaceholder")}</option>
               {subcategories.map((sc) => (
                 <option key={sc.id} value={String(sc.id)}>
                   {sc.subcategory}
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground">
+              {t("subcategoryHint", {
+                count: selectedCategoryIds.length,
+                max: 7,
+              })}
+            </p>
           </Field>
 
           <Field
@@ -547,10 +562,17 @@ export function CompanyRegistrationForm() {
               <div key={field} className="flex gap-4 p-3 text-sm">
                 <dt className="w-1/3 text-muted-foreground">{t(labelKey)}</dt>
                 <dd className="w-2/3 break-words">
-                  {field === "businessCategoryId"
-                    ? (subcategories.find(
-                        (sc) => String(sc.id) === selectedSubcategory,
-                      )?.subcategory ?? t("notProvided"))
+                  {field === "businessCategoryIds"
+                    ? selectedCategoryIds.length > 0
+                      ? selectedCategoryIds
+                          .map(
+                            (id) =>
+                              subcategories.find((sc) => String(sc.id) === id)
+                                ?.subcategory,
+                          )
+                          .filter(Boolean)
+                          .join(", ") || t("notProvided")
+                      : t("notProvided")
                     : (values[field] ?? "") || t("notProvided")}
                 </dd>
               </div>
@@ -602,7 +624,7 @@ const SUBMITTED_FIELDS = [
   "logoUrl",
   "description",
   "specializationDescription",
-  "businessCategoryId",
+  "businessCategoryIds",
   "registrationCountryCode",
   "serviceCountryCodes",
   "servesWorldwide",
@@ -622,7 +644,7 @@ const REVIEW_FIELDS: [string, string][] = [
   ["website", "websiteLabel"],
   ["description", "descriptionLabel"],
   ["specializationDescription", "specializationLabel"],
-  ["businessCategoryId", "subcategoryLabel"],
+  ["businessCategoryIds", "subcategoryLabel"],
   ["registrationCountryCode", "registrationCountryLabel"],
   ["serviceCountryCodes", "serviceCountriesLabel"],
   ["businessFormat", "businessFormatLabel"],

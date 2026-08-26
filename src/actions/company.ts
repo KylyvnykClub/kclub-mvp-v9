@@ -119,16 +119,17 @@ export async function registerCompanyAction(
       return { success: false, error: parsed.error.issues[0]?.message };
     }
 
-    const category = await findCategoryById(db, parsed.data.businessCategoryId);
-    if (!category) {
-      return { success: false, error: "Invalid business category" };
-    }
-
-    if (isProhibitedCategory(category)) {
-      return {
-        success: false,
-        error: "This business category is not permitted",
-      };
+    for (const catId of parsed.data.businessCategoryIds) {
+      const category = await findCategoryById(db, catId);
+      if (!category) {
+        return { success: false, error: "Invalid business category" };
+      }
+      if (isProhibitedCategory(category)) {
+        return {
+          success: false,
+          error: "This business category is not permitted",
+        };
+      }
     }
 
     const cityValid = await validateCityBelongsToCountry(
@@ -168,7 +169,7 @@ export async function registerCompanyAction(
         taxId: parsed.data.taxId,
         website: parsed.data.website,
         description: parsed.data.description,
-        businessCategoryId: parsed.data.businessCategoryId,
+        businessCategoryId: parsed.data.businessCategoryIds[0] ?? null,
         discount: parsed.data.discount,
         logoUrl: parsed.data.logoUrl,
         contactEmail: parsed.data.contactEmail,
@@ -184,6 +185,7 @@ export async function registerCompanyAction(
         moderationStatus: "pending",
       },
       parsed.data.serviceCountryCodes.split(",").filter(Boolean),
+      parsed.data.businessCategoryIds,
     );
 
     // The application is now a company; the draft has served its purpose.
@@ -702,7 +704,12 @@ export async function staffEditCompanyAction(
 const ownerEditSchema = z.object({
   companyId: z.string().uuid(),
   name: z.string().min(2).max(255).optional(),
-  businessCategoryId: z.coerce.number().int().positive().optional(),
+  businessCategoryIds: z.preprocess((val): unknown[] | undefined => {
+    if (Array.isArray(val)) return val as unknown[];
+    if (typeof val === "string" && val.trim())
+      return val.split(",").filter(Boolean);
+    return undefined;
+  }, z.array(z.coerce.number().int().positive()).min(1).max(7).optional()),
   description: z.string().max(1000).optional(),
   discount: z.string().max(255).optional(),
 });
@@ -739,11 +746,8 @@ export async function ownerEditCompanyAction(
     if (parsed.data.name !== undefined && parsed.data.name !== company.name) {
       changes.name = parsed.data.name;
     }
-    if (
-      parsed.data.businessCategoryId !== undefined &&
-      parsed.data.businessCategoryId !== company.businessCategoryId
-    ) {
-      changes.businessCategoryId = parsed.data.businessCategoryId;
+    if (parsed.data.businessCategoryIds !== undefined) {
+      changes.businessCategoryIds = parsed.data.businessCategoryIds;
     }
     if (
       parsed.data.description !== undefined &&

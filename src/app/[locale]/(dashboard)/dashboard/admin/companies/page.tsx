@@ -157,12 +157,16 @@ export default async function AdminCompaniesPage({
                     {company.owner?.displayName}
                   </TableCell>
                   <TableCell className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:table-cell">
-                    {[
-                      company.businessCategory?.block,
-                      company.businessCategory?.category,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {company.categories
+                      ?.map((c) =>
+                        [
+                          c.businessCategory?.block,
+                          c.businessCategory?.category,
+                        ]
+                          .filter(Boolean)
+                          .join(" / "),
+                      )
+                      .join(" · ") || "—"}
                   </TableCell>
                   <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(company.createdAt).toLocaleDateString(locale)}

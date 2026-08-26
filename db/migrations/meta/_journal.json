@@ -190,6 +190,13 @@
       "when": 1787600400000,
       "tag": "20260824194000_outbox_retention_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1787868000000,
+      "tag": "20260826100000_company_categories",
+      "breakpoints": true
     }
   ]
 }

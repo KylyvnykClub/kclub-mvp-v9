@@ -36,9 +36,11 @@ export const companies = pgTable("companies", {
     .notNull()
     .references(() => members.id, { onDelete: "cascade" }),
 
-  businessCategoryId: integer("business_category_id")
-    .notNull()
-    .references(() => businessCategories.id, { onDelete: "restrict" }),
+  /** @deprecated Use company_categories join table instead. Nullable after migration 27. */
+  businessCategoryId: integer("business_category_id").references(
+    () => businessCategories.id,
+    { onDelete: "restrict" },
+  ),
 
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(), // e.g. "acme-corp"

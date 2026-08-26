@@ -16,6 +16,7 @@ import type { PageParams } from "./pagination";
 import {
   businessCategories,
   businessCategoryTranslations,
+  companyCategories,
   companyServiceCountries,
   cities,
   companies,
@@ -108,8 +109,8 @@ export async function setCategoryStatus(
 export async function deleteBusinessCategory(db: DbClient, categoryId: number) {
   const [usage] = await db
     .select({ value: count() })
-    .from(companies)
-    .where(eq(companies.businessCategoryId, categoryId));
+    .from(companyCategories)
+    .where(eq(companyCategories.businessCategoryId, categoryId));
 
   if (countValue(usage) > 0) {
     throw new Error("Cannot delete a category that is referenced by companies");
@@ -343,11 +344,20 @@ export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
   serviceCountryCodes: string[] = [],
+  categoryIds: number[] = [],
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const [company] = await tx.insert(companies).values(values).returning({
       id: companies.id,
     });
+    if (categoryIds.length > 0) {
+      await tx.insert(companyCategories).values(
+        [...new Set(categoryIds)].map((businessCategoryId) => ({
+          companyId: company!.id,
+          businessCategoryId,
+        })),
+      );
+    }
     if (serviceCountryCodes.length > 0) {
       await tx.insert(companyServiceCountries).values(
         [...new Set(serviceCountryCodes)].map((countryCode) => ({
@@ -402,14 +412,14 @@ async function approvedCompanyConditions(
     inArray(companies.id, ids),
   );
 
-  // business_categories is a flat table of (block, category, subcategory)
-  // triples, so the most specific axis the caller gave wins: a categoryId is
-  // already one row, while block and category each stand for a set of them.
   if (filters?.categoryId) {
-    conditions = and(
-      conditions,
-      eq(companies.businessCategoryId, filters.categoryId),
-    );
+    const matchingCompanies = await db
+      .select({ companyId: companyCategories.companyId })
+      .from(companyCategories)
+      .where(eq(companyCategories.businessCategoryId, filters.categoryId));
+    const matchIds = matchingCompanies.map((r) => r.companyId);
+    if (matchIds.length === 0) return null;
+    conditions = and(conditions, inArray(companies.id, matchIds));
   } else if (filters?.block) {
     const where = filters.category
       ? and(
@@ -422,9 +432,15 @@ async function approvedCompanyConditions(
       .select({ id: businessCategories.id })
       .from(businessCategories)
       .where(where);
-    const ids2 = catIds.map((c) => c.id);
-    if (ids2.length === 0) return null;
-    conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
+    const catIdValues = catIds.map((c) => c.id);
+    if (catIdValues.length === 0) return null;
+    const matchingCompanies = await db
+      .select({ companyId: companyCategories.companyId })
+      .from(companyCategories)
+      .where(inArray(companyCategories.businessCategoryId, catIdValues));
+    const matchIds = [...new Set(matchingCompanies.map((r) => r.companyId))];
+    if (matchIds.length === 0) return null;
+    conditions = and(conditions, inArray(companies.id, matchIds));
   }
 
   if (filters?.serviceCountryCode) {
@@ -533,7 +549,7 @@ export async function listApprovedCompaniesByIds(
   return db.query.companies.findMany({
     where: conditions,
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
     },
     orderBy,
@@ -609,7 +625,7 @@ export async function listShowcaseCompanies(
       eq(companies.showcaseType, type),
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
     },
     limit,
@@ -629,7 +645,7 @@ export async function findApprovedCompanyBySlug(
       inArray(companies.id, ids),
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
       owner: {
         columns: {
@@ -669,7 +685,7 @@ export async function listPendingCompanies(db: DbClient) {
   return db.query.companies.findMany({
     where: eq(companies.moderationStatus, "pending"),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       owner: {
         columns: {
           id: true,
@@ -695,7 +711,7 @@ export interface CompanyAdminFilters {
 }
 
 const COMPANY_ADMIN_RELATIONS = {
-  businessCategory: true,
+  categories: { with: { businessCategory: true } },
   owner: {
     columns: {
       id: true,
@@ -838,7 +854,7 @@ export async function setCompanyShowcase(
 
 export interface PendingChanges {
   name?: string;
-  businessCategoryId?: number;
+  businessCategoryIds?: number[];
   description?: string;
   discount?: string;
 }
@@ -870,13 +886,25 @@ export async function applyCompanyPendingChanges(
   };
 
   if (changes.name !== undefined) updates.name = changes.name;
-  if (changes.businessCategoryId !== undefined)
-    updates.businessCategoryId = changes.businessCategoryId;
   if (changes.description !== undefined)
     updates.description = changes.description;
   if (changes.discount !== undefined) updates.discount = changes.discount;
 
   await db.update(companies).set(updates).where(eq(companies.id, companyId));
+
+  if (changes.businessCategoryIds !== undefined) {
+    await db
+      .delete(companyCategories)
+      .where(eq(companyCategories.companyId, companyId));
+    if (changes.businessCategoryIds.length > 0) {
+      await db.insert(companyCategories).values(
+        changes.businessCategoryIds.map((businessCategoryId) => ({
+          companyId,
+          businessCategoryId,
+        })),
+      );
+    }
+  }
 }
 
 export async function clearCompanyPendingChanges(
@@ -896,7 +924,7 @@ export async function listCompaniesWithPendingChanges(db: DbClient) {
       sql`${companies.pendingChanges} IS NOT NULL`,
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       owner: {
         columns: {
           id: true,

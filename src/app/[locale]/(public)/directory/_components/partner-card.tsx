@@ -34,9 +34,12 @@ export function PartnerCard({
 }) {
   const location = locationLabel(partner);
   const category =
-    partner.businessCategory?.subcategory ??
-    partner.businessCategory?.category ??
-    partner.businessCategory?.block;
+    partner.categories
+      ?.map((c) => c.businessCategory?.subcategory)
+      .filter(Boolean)
+      .join(", ") ||
+    partner.categories?.[0]?.businessCategory?.category ||
+    partner.categories?.[0]?.businessCategory?.block;
   const description = partner.description || noDescription;
   const initial = partner.name.charAt(0).toUpperCase();
 

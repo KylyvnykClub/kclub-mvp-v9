@@ -377,7 +377,7 @@ describe("FR-033: a partner detail page carries what a member needs to use the d
     expect(detail?.city).toBe("Kyiv");
     expect(detail?.contactEmail).toBe("hi@detail.example");
     expect(detail?.contactPhone).toBe("+380991112233");
-    expect(detail?.businessCategory?.subcategory).toBeTruthy();
+    expect(detail?.categories?.[0]?.businessCategory?.subcategory).toBeTruthy();
   });
 
   it("does not resolve the slug of a company that is not approved", async () => {
