@@ -42,6 +42,7 @@ export function RegistrationsChart({
   const numberFormatter = new Intl.NumberFormat(locale);
   const chartData = data.map((bucket) => ({
     ...bucket,
+    total: bucket.members + bucket.companies,
     label: dateFormatter.format(new Date(`${bucket.date}T00:00:00Z`)),
   }));
   const totals = chartData.reduce(
@@ -51,107 +52,150 @@ export function RegistrationsChart({
     }),
     { members: 0, companies: 0 },
   );
+  const maxDailyTotal = Math.max(...chartData.map((bucket) => bucket.total), 1);
+  const latestDays = chartData.slice(-7).reverse();
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div
-          className="rounded-md border px-4 py-3"
-          style={{
-            borderColor: SERIES.members.track,
-            backgroundColor: SERIES.members.track,
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: SERIES.members.color }}
-            />
-            <span className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              {membersLabel}
-            </span>
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(220px,0.85fr)]">
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div
+            className="rounded-md border px-4 py-3"
+            style={{
+              borderColor: SERIES.members.track,
+              backgroundColor: SERIES.members.track,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="size-2 rounded-full"
+                style={{ backgroundColor: SERIES.members.color }}
+              />
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                {membersLabel}
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-bold text-foreground">
+              {numberFormatter.format(totals.members)}
+            </p>
           </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">
-            {numberFormatter.format(totals.members)}
-          </p>
+          <div
+            className="rounded-md border px-4 py-3"
+            style={{
+              borderColor: SERIES.companies.track,
+              backgroundColor: SERIES.companies.track,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="size-2 rounded-full"
+                style={{ backgroundColor: SERIES.companies.color }}
+              />
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                {companiesLabel}
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-bold text-foreground">
+              {numberFormatter.format(totals.companies)}
+            </p>
+          </div>
         </div>
-        <div
-          className="rounded-md border px-4 py-3"
-          style={{
-            borderColor: SERIES.companies.track,
-            backgroundColor: SERIES.companies.track,
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: SERIES.companies.color }}
-            />
-            <span className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              {companiesLabel}
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-bold text-foreground">
-            {numberFormatter.format(totals.companies)}
-          </p>
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+            >
+              <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={28}
+              />
+              <Tooltip
+                cursor={{ fill: "hsl(var(--muted))" }}
+                formatter={(value, name) => [
+                  numberFormatter.format(Number(value)),
+                  name === "members" ? membersLabel : companiesLabel,
+                ]}
+                labelStyle={{ color: "hsl(var(--foreground))" }}
+                contentStyle={{
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 6,
+                  background: "hsl(var(--background))",
+                  color: "hsl(var(--foreground))",
+                }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: 12 }}
+                formatter={(value) =>
+                  value === "members" ? membersLabel : companiesLabel
+                }
+              />
+              <Bar
+                dataKey="members"
+                stackId="registrations"
+                fill={SERIES.members.color}
+                radius={[0, 0, 2, 2]}
+              />
+              <Bar
+                dataKey="companies"
+                stackId="registrations"
+                fill={SERIES.companies.color}
+                radius={[2, 2, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          >
-            <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              allowDecimals={false}
-              tick={{ fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={28}
-            />
-            <Tooltip
-              cursor={{ fill: "hsl(var(--muted))" }}
-              formatter={(value, name) => [
-                numberFormatter.format(Number(value)),
-                name === "members" ? membersLabel : companiesLabel,
-              ]}
-              labelStyle={{ color: "hsl(var(--foreground))" }}
-              contentStyle={{
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 6,
-                background: "hsl(var(--background))",
-                color: "hsl(var(--foreground))",
-              }}
-            />
-            <Legend
-              wrapperStyle={{ fontSize: 12 }}
-              formatter={(value) =>
-                value === "members" ? membersLabel : companiesLabel
-              }
-            />
-            <Bar
-              dataKey="members"
-              stackId="registrations"
-              fill={SERIES.members.color}
-              radius={[0, 0, 2, 2]}
-            />
-            <Bar
-              dataKey="companies"
-              stackId="registrations"
-              fill={SERIES.companies.color}
-              radius={[2, 2, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="space-y-2 rounded-md border bg-muted/15 p-3">
+        {latestDays.map((bucket) => (
+          <div key={bucket.date} className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                {bucket.label}
+              </span>
+              <span className="font-mono text-xs text-foreground">
+                {numberFormatter.format(bucket.total)}
+              </span>
+            </div>
+            <div className="flex h-2 overflow-hidden rounded-full bg-border">
+              <span
+                className="h-full"
+                style={{
+                  width: `${(bucket.members / maxDailyTotal) * 100}%`,
+                  backgroundColor: SERIES.members.color,
+                }}
+              />
+              <span
+                className="h-full"
+                style={{
+                  width: `${(bucket.companies / maxDailyTotal) * 100}%`,
+                  backgroundColor: SERIES.companies.color,
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+              <span>
+                {membersLabel}: {numberFormatter.format(bucket.members)}
+              </span>
+              <span>
+                {companiesLabel}: {numberFormatter.format(bucket.companies)}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
