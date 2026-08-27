@@ -8,7 +8,12 @@ import {
   deleteCity,
   deleteCountry,
 } from "@/data/companies.js";
-import { businessCategories, companies, members } from "@/data/schema/index.js";
+import {
+  businessCategories,
+  companies,
+  companyCategories,
+  members,
+} from "@/data/schema/index.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 function testDbClient(): DbClient {
@@ -50,6 +55,12 @@ async function seedCompany(
       moderationStatus: "approved",
     })
     .returning();
+
+  // The category lives in the join table now - companies.business_category_id
+  // is the deprecated column, and deleteBusinessCategory counts join rows.
+  await db
+    .insert(companyCategories)
+    .values({ companyId: company!.id, businessCategoryId: input.categoryId });
 
   return company!;
 }
