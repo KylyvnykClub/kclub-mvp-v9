@@ -178,7 +178,7 @@ quickly.
 |-|-|-|
 |`/health/live`|The process is running and can serve a response. No dependency is touched|Platform restarts|
 |`/health/ready`|Database reachable (`SELECT 1` with a 2 s timeout), Redis reachable, required environment variables present and valid|Load balancer routing, deployment gate|
-|`/health/deep`|Everything in `/health/ready` plus: Stripe API reachable, Twilio API reachable, outbox age under 10 minutes, last reconciliation under 26 hours old|Synthetic monitoring every 5 minutes, and the first thing a responder opens|
+|`/health/deep`|**Built:** outbox age under 10 minutes, with the pending depth and the age of the oldest waiting row in the body. **Not built yet:** Stripe API reachable, Twilio API reachable, last reconciliation under 26 hours old — see the backlog item `health-deep-covers-only-the-outbox`|Synthetic monitoring every 5 minutes, and the first thing a responder opens|
 |`card.kclub.com/v/<known-test-token>`|The full critical path end to end, from edge to database to render|Synthetic check every 60 s from three regions|
 
 Readiness checks dependencies and liveness does not — deliberately. A liveness
@@ -188,6 +188,16 @@ the most common way a health check makes an incident worse.
 
 `/health/deep` is never used for automated routing decisions, only for humans
 and alerts, because "Stripe is down" must not remove our instances from service.
+It answers 200 whatever it finds, for the same reason: the verdict is in the
+body, and a status code is too easily wired to something that reroutes traffic.
+
+The outbox check is there because it is the one thing readiness structurally
+cannot catch. On 2026-08-27 a billing projection sat unprocessed for hours —
+a member had paid and held a free card — while `/health/ready` returned 200
+throughout, correctly, because the database and Redis were reachable the whole
+time. Depth alone is not the signal either: a hundred rows written a second ago
+are healthy and one row written yesterday is not, so the check is on the age of
+the oldest waiting row.
 
 ---
 
