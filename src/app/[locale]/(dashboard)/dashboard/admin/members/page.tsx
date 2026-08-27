@@ -12,11 +12,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MEMBER_ADMIN_STATUSES } from "@/data/members";
+import { MEMBER_ADMIN_PLANS, MEMBER_ADMIN_STATUSES } from "@/data/members";
+import { memberPlansOf } from "@/data/billing-access";
 import { AdminSearchInput } from "../_components/admin-search-input";
 import { AdminFilterChips } from "../_components/admin-filter-chips";
 import { AdminPagination } from "../_components/admin-pagination";
-import { StatusBadge, memberStatusTone } from "../_components/status-badge";
+import {
+  StatusBadge,
+  memberPlanTone,
+  memberStatusTone,
+} from "../_components/status-badge";
 import { MemberDetailSheet } from "./_components/member-detail-sheet";
 
 const STATUS_LABEL_KEYS = {
@@ -25,12 +30,23 @@ const STATUS_LABEL_KEYS = {
   pending_deletion: "statusPendingDeletion",
 } as const;
 
+const PLAN_LABEL_KEYS = {
+  vip: "planVip",
+  business: "planBusiness",
+  free: "planFree",
+} as const;
+
 export default async function AdminMembersPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    plan?: string;
+    page?: string;
+  }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -51,14 +67,15 @@ export default async function AdminMembersPage({
   const canManageMembers = can(actor, "block", "member");
   const canExportMembers = can(actor, "export_data", "member");
 
-  const { q, status, page } = await searchParams;
-  const list = await getMembersListAction({ query: q, status, page });
+  const { q, status, plan, page } = await searchParams;
+  const list = await getMembersListAction({ query: q, status, plan, page });
   const totalPages = Math.max(1, Math.ceil(list.total / list.pageSize));
 
   const buildHref = (target: number) => {
     const query = new URLSearchParams();
     if (q) query.set("q", q);
     if (status) query.set("status", status);
+    if (plan) query.set("plan", plan);
     if (target > 1) query.set("page", String(target));
     const search = query.toString();
     return search
@@ -97,6 +114,16 @@ export default async function AdminMembersPage({
           }))}
         />
 
+        <AdminFilterChips
+          paramName="plan"
+          allLabel={tShell("filterAll")}
+          options={MEMBER_ADMIN_PLANS.map((value) => ({
+            value,
+            label: t(PLAN_LABEL_KEYS[value]),
+            count: list.planCounts[value],
+          }))}
+        />
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -107,6 +134,7 @@ export default async function AdminMembersPage({
               <TableHead className="hidden lg:table-cell">
                 {t("colCards")}
               </TableHead>
+              <TableHead>{t("colPlan")}</TableHead>
               <TableHead className="hidden md:table-cell">
                 {t("colJoined")}
               </TableHead>
@@ -118,7 +146,7 @@ export default async function AdminMembersPage({
             {list.rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   {t("noResults")}
@@ -160,6 +188,19 @@ export default async function AdminMembersPage({
                         {t("noCards")}
                       </span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    {/* A member can hold VIP and a listing at once, so this
+                        renders every plan rather than picking a winner. */}
+                    <div className="flex flex-wrap gap-1">
+                      {memberPlansOf(m.subscriptions).map((memberPlan) => (
+                        <StatusBadge
+                          key={memberPlan}
+                          tone={memberPlanTone(memberPlan)}
+                          label={t(PLAN_LABEL_KEYS[memberPlan])}
+                        />
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(m.createdAt).toLocaleDateString(locale)}

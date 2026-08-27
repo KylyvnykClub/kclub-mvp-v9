@@ -42,3 +42,13 @@ export function memberStatusTone(status: string): StatusTone {
   if (status === "pending_deletion") return "warning";
   return "positive";
 }
+
+/**
+ * Tone per plan, for the same reason. Free is `neutral` rather than negative:
+ * a member on no subscription is the ordinary case, not a problem to flag.
+ */
+export function memberPlanTone(plan: string): StatusTone {
+  if (plan === "vip") return "positive";
+  if (plan === "business") return "warning";
+  return "neutral";
+}

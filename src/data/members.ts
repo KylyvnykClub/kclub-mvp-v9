@@ -11,6 +11,10 @@ import {
   type SQL,
 } from "drizzle-orm";
 
+import {
+  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+  type MemberPlan,
+} from "./billing-access";
 import type { DbClient } from "./db";
 import type { PageParams } from "./pagination";
 import {
@@ -96,9 +100,46 @@ export const MEMBER_ADMIN_STATUSES = [
 
 export type MemberAdminStatus = (typeof MEMBER_ADMIN_STATUSES)[number];
 
+/** The plan chips, in the order the console shows them. */
+export const MEMBER_ADMIN_PLANS = ["vip", "business", "free"] as const;
+
 export interface MemberAdminFilters {
   query?: string;
   status?: MemberAdminStatus;
+  plan?: MemberPlan;
+}
+
+/**
+ * "Has a subscription of this kind that still grants access", as SQL.
+ *
+ * The same rule as `memberPlansOf`, which the rendered badge uses. Two
+ * expressions of one rule is a risk, so the integration test asserts they agree
+ * on the same member: a filter that disagrees with the badge it filters on is
+ * worse than no filter.
+ */
+function hasAccessGrantingSubscription(companyIdIsNull: boolean): SQL {
+  const companyPredicate = companyIdIsNull
+    ? sql`member_subscription.company_id is null`
+    : sql`member_subscription.company_id is not null`;
+
+  // The subquery names its own columns for the same reason the card-serial one
+  // does: inside a relational query drizzle rewrites embedded column
+  // references to the outer alias.
+  return sql`exists (
+    select 1 from ${subscriptions} as member_subscription
+    where member_subscription.member_id = ${members.id}
+      and ${companyPredicate}
+      and member_subscription.status in ${ACCESS_GRANTING_SUBSCRIPTION_STATUSES}
+  )`;
+}
+
+function planCondition(plan: MemberPlan): SQL {
+  if (plan === "vip") return hasAccessGrantingSubscription(true);
+  if (plan === "business") return hasAccessGrantingSubscription(false);
+
+  // Free is the absence of both, not a plan of its own - so it is the negation
+  // of the union rather than a third predicate that could drift from them.
+  return sql`not (${hasAccessGrantingSubscription(true)}) and not (${hasAccessGrantingSubscription(false)})`;
 }
 
 const MEMBER_ADMIN_RELATIONS = {
@@ -140,6 +181,10 @@ function memberAdminWhere(filters: MemberAdminFilters): SQL {
 
   if (filters.status) {
     conditions.push(eq(members.status, filters.status));
+  }
+
+  if (filters.plan) {
+    conditions.push(planCondition(filters.plan));
   }
 
   return and(...conditions)!;
@@ -199,6 +244,33 @@ export async function countMembersByStatus(
   }
 
   return counts;
+}
+
+/**
+ * Counts for the plan filter chips, on the same "ignore my own filter" rule as
+ * the status counts.
+ *
+ * Three counts rather than one grouped query, because a plan is not a column:
+ * it is a predicate over another table, and a member can satisfy two of them at
+ * once. That also means these do not sum to the total, which is correct - a
+ * member holding both VIP and a listing is counted under both.
+ */
+export async function countMembersByPlan(
+  db: DbClient,
+  filters: Omit<MemberAdminFilters, "plan"> = {},
+): Promise<Record<MemberPlan, number>> {
+  const entries = await Promise.all(
+    MEMBER_ADMIN_PLANS.map(async (plan) => {
+      const [row] = await db
+        .select({ value: count() })
+        .from(members)
+        .where(memberAdminWhere({ ...filters, plan }));
+
+      return [plan, row?.value ?? 0] as const;
+    }),
+  );
+
+  return Object.fromEntries(entries) as Record<MemberPlan, number>;
 }
 
 export type MemberAdminView = Awaited<ReturnType<typeof searchMembers>>[number];
