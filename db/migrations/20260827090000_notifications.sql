@@ -1,6 +1,8 @@
 -- NOTE: hand-written migration. Do not use semicolons inside comments.
 
--- UP: the member-facing inbox (FR-099, ADR 0020)
+-- The member-facing inbox (FR-099, ADR 0020). The rollback lives in the
+-- matching .down.sql - the runner in tests/setup/migrations.ts applies this
+-- whole file, so a DOWN section kept here would drop the table it just made.
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_kind') THEN
@@ -43,10 +45,3 @@ CREATE INDEX IF NOT EXISTS notifications_member_unread_idx
 CREATE UNIQUE INDEX IF NOT EXISTS notifications_dedupe_idx
   ON notifications (dedupe_key)
   WHERE dedupe_key IS NOT NULL;
-
--- DOWN: drop the inbox and its enum
-DROP INDEX IF EXISTS notifications_dedupe_idx;
-DROP INDEX IF EXISTS notifications_member_unread_idx;
-DROP INDEX IF EXISTS notifications_member_created_idx;
-DROP TABLE IF EXISTS notifications;
-DROP TYPE IF EXISTS notification_kind;
