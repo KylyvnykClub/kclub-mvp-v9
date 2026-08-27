@@ -886,7 +886,11 @@
       "resetPasswordHint": "Verify who you are speaking to before resetting. All of this member's sessions will be signed out.",
       "reasonRequiredReset": "State how you verified this person before resetting",
       "passwordTooShort": "Password must be at least 8 characters",
-      "passwordReset": "Password reset and sessions revoked"
+      "passwordReset": "Password reset and sessions revoked",
+      "colPlan": "Plan",
+      "planVip": "VIP",
+      "planBusiness": "Business",
+      "planFree": "Free"
     },
     "companies": {
       "title": "Company Moderation",

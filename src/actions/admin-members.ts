@@ -8,10 +8,12 @@ import {
 } from "@/data/identity";
 import {
   countMembers,
+  countMembersByPlan,
   countMembersByStatus,
   findCardById,
   findMemberAdminById,
   insertCard,
+  MEMBER_ADMIN_PLANS,
   MEMBER_ADMIN_STATUSES,
   revokeCardById,
   revokeValidCardsByMemberId,
@@ -66,21 +68,30 @@ const resetPasswordSchema = z.object({
 const membersListParamsSchema = z.object({
   query: z.string().trim().max(120).optional().catch(undefined),
   status: z.enum(MEMBER_ADMIN_STATUSES).optional().catch(undefined),
+  plan: z.enum(MEMBER_ADMIN_PLANS).optional().catch(undefined),
   page: z.coerce.number().int().min(1).max(10_000).default(1).catch(1),
 });
 
 export async function getMembersListAction(
-  params: { query?: string; status?: string; page?: string | number } = {},
+  params: {
+    query?: string;
+    status?: string;
+    plan?: string;
+    page?: string | number;
+  } = {},
 ) {
   const session = await getCurrentMember();
   requireAuthorized(session?.member, "read", "member");
 
-  const { query, status, page } = membersListParamsSchema.parse(params);
-  const filters = { query: query || undefined, status };
+  const { query, status, plan, page } = membersListParamsSchema.parse(params);
+  const filters = { query: query || undefined, status, plan };
 
-  const [total, statusCounts] = await Promise.all([
+  // Each chip set ignores its own filter and honours the other, so the numbers
+  // describe what selecting that chip would find from here.
+  const [total, statusCounts, planCounts] = await Promise.all([
     countMembers(db, filters),
-    countMembersByStatus(db, { query: filters.query }),
+    countMembersByStatus(db, { query: filters.query, plan: filters.plan }),
+    countMembersByPlan(db, { query: filters.query, status: filters.status }),
   ]);
 
   // The count comes first so a page past the end lands on the last real page
@@ -99,6 +110,7 @@ export async function getMembersListAction(
     page: currentPage,
     pageSize: DEFAULT_PAGE_SIZE,
     statusCounts,
+    planCounts,
   };
 }
 

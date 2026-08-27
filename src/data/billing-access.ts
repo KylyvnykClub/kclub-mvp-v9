@@ -36,6 +36,41 @@ export function tierForSubscriptionStatus(status: string): "vip" | "free" {
 }
 
 /**
+ * What a member is currently paying for.
+ *
+ * `vip` is a membership subscription, which is one with no company attached
+ * (FR-050). `business` is a company listing (FR-051) - it belongs to a company
+ * the member owns, so a member can hold both at once and this returns both.
+ * `free` means neither, and is never returned alongside another plan.
+ *
+ * Derived from `ACCESS_GRANTING_SUBSCRIPTION_STATUSES` rather than from
+ * `status === "active"`, which matters during dunning: FR-056 keeps access
+ * through `past_due` while Stripe retries, so a member in the grace window is
+ * still VIP. Reading it any other way would show staff `free` for someone who
+ * has paid and has not lost anything - money and access disagreeing on a
+ * screen instead of in the database.
+ */
+export type MemberPlan = "vip" | "business" | "free";
+
+export function memberPlansOf(
+  subscriptions: readonly { companyId: string | null; status: string }[],
+): MemberPlan[] {
+  const paid = subscriptions.filter((subscription) =>
+    ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
+  );
+
+  const plans: MemberPlan[] = [];
+  if (paid.some((subscription) => subscription.companyId === null)) {
+    plans.push("vip");
+  }
+  if (paid.some((subscription) => subscription.companyId !== null)) {
+    plans.push("business");
+  }
+
+  return plans.length > 0 ? plans : ["free"];
+}
+
+/**
  * FR-056: the dunning window Stripe retries a failed payment across. This MUST
  * match the Stripe Smart Retries schedule in the dashboard (Settings → Billing →
  * Manage failed payments): today "retry up to 8 times within 2 weeks", with the
