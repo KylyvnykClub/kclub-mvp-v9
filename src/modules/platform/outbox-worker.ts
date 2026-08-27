@@ -11,12 +11,14 @@ import {
   claimOutboxRow,
   drainOutbox,
   markProcessed,
+  recordOutboxFailure,
   type OutboxEntry,
 } from "@/data/outbox";
 import {
   BILLING_OUTBOX_TOPIC,
   BILLING_NOTIFICATION_TOPIC,
   reconcileSubscription,
+  subscriptionFetcherFor,
   type ProjectionResult,
   type SubscriptionFetcher,
 } from "@/modules/billing/projection";
@@ -89,7 +91,12 @@ export async function productionDrainDeps(): Promise<DrainDeps> {
     import("@/data/db"),
     getStripe(),
   ]);
-  return { db, fetchSubscription: stripe.subscriptions.retrieve.bind(stripe) };
+  // Through subscriptionFetcherFor rather than binding the method here. This
+  // line used to read `.bind(stripe)`, which detaches `retrieve` from the
+  // receiver it needs and killed every projection - see the note on that
+  // function. No test caught it because every test injects its own fetcher and
+  // never constructs these deps.
+  return { db, fetchSubscription: subscriptionFetcherFor(stripe) };
 }
 
 /** Result of the drain, for observability. */
@@ -189,6 +196,23 @@ export async function runOutboxDrain(
       console.error(
         `[outbox-drain] failed for row ${candidate.id} on topic ${candidate.topic}: ${message}`,
       );
+
+      // Outside the rolled-back transaction, so the count survives the failure
+      // it is counting. Its own try/catch because bookkeeping must never be
+      // what turns one failed row into a failed batch - if the connection is
+      // what broke, this breaks too, and the row is simply retried later with
+      // one attempt unrecorded.
+      try {
+        await recordOutboxFailure(deps.db, candidate.id, message);
+      } catch (bookkeepingError) {
+        const reason =
+          bookkeepingError instanceof Error
+            ? bookkeepingError.message
+            : "Unknown error";
+        console.error(
+          `[outbox-drain] could not record the failure of row ${candidate.id}: ${reason}`,
+        );
+      }
     }
   }
 

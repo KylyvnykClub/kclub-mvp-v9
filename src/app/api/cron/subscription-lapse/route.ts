@@ -4,11 +4,14 @@ import { db } from "@/data/db";
 import { findLapsedSubscriptions } from "@/data/billing";
 import { env } from "@/env";
 import { runGraceExpiryWarningSweep } from "@/modules/billing/grace-warning";
-import { reconcileSubscription } from "@/modules/billing/projection";
+import {
+  reconcileSubscription,
+  subscriptionFetcherFor,
+} from "@/modules/billing/projection";
 import { authorizeCronRequest } from "@/modules/platform";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
-const fetchSubscription = stripe.subscriptions.retrieve.bind(stripe);
+const fetchSubscription = subscriptionFetcherFor(stripe);
 
 export interface LapseResult {
   checked: number;

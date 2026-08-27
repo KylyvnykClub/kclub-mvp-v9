@@ -715,6 +715,17 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Unauthenticated like its two siblings, because synthetic monitoring has
+    // no session to present. It discloses queue depth and the age of the
+    // oldest waiting row - operational shape, no member data.
+    method: "GET",
+    path: "/health/deep",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/.well-known/security.txt",
     action: "read",

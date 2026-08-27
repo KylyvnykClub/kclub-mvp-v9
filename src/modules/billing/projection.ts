@@ -27,6 +27,25 @@ export type SubscriptionFetcher = (
   subscriptionId: string,
 ) => Promise<Stripe.Subscription>;
 
+/**
+ * The one place that turns a Stripe client into a `SubscriptionFetcher`.
+ *
+ * It exists because every caller previously wrote
+ * `stripe.subscriptions.retrieve.bind(stripe)`, which is wrong in a way nothing
+ * catches: `retrieve` calls `this._makeRequest`, and that lives on the
+ * Subscriptions resource rather than on the client, so the bound method throws
+ * `this._makeRequest is not a function` before it makes a request. All three
+ * copies had it - the outbox drain, the lapse sweep and the daily
+ * reconciliation - which is to say every path that projects subscription state
+ * from Stripe was dead, and a member who paid kept a free card.
+ *
+ * Wrapping instead of binding keeps the receiver, and having exactly one copy
+ * means the next caller cannot get it wrong privately.
+ */
+export function subscriptionFetcherFor(stripe: Stripe): SubscriptionFetcher {
+  return (subscriptionId) => stripe.subscriptions.retrieve(subscriptionId);
+}
+
 /** Result of projecting one subscription from Stripe. */
 export type ProjectionResult = "applied" | "stale" | "deleted";
 

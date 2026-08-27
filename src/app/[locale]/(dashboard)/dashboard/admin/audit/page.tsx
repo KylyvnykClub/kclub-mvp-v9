@@ -47,7 +47,7 @@ export default async function AdminAuditPage({
   const logs = await getAuditLogsAction(filters);
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full space-y-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
           {t("title")}

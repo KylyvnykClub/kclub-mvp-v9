@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  integer,
   jsonb,
   pgTable,
   text,
@@ -18,6 +19,19 @@ export const outbox = pgTable(
     topic: text("topic").notNull(),
     payload: jsonb("payload").notNull(),
     processedAt: timestamp("processed_at", { withTimezone: true }),
+
+    /**
+     * Failed attempts only. A row that goes through is marked processed inside
+     * the same transaction, so this never counts a success - it reads as how
+     * many times the row has refused. Without it a permanently failing row
+     * looks exactly like one the drain has not reached yet, which is how a
+     * stuck billing projection went unnoticed until the member who paid for
+     * it reported a free card.
+     */
+    attempts: integer("attempts").notNull().default(0),
+
+    /** The message from the most recent failure, for the same reason. */
+    lastError: text("last_error"),
   },
   (table) => [
     // drainOutbox / countPending only ever look at unprocessed rows ordered by
