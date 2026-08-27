@@ -3,6 +3,8 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
+import { db } from "@/data/db";
+import { countUnreadForMember } from "@/data/notifications";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import { DashboardChrome } from "./_components/dashboard-chrome";
 
@@ -35,9 +37,17 @@ export default async function DashboardLayout({ children, params }: Props) {
   const actor = buildActor(result.member);
   const canAccessAdmin = staffAtLeast(actor, "staff_support");
 
+  // The badge count is fetched here rather than inside SiteHeader, because that
+  // header is also the marketing header on every public page - giving it a
+  // query of its own would put one on routes that have no member at all
+  // (FR-099). Public pages render it with no prop and no badge.
+  const unreadCount = await countUnreadForMember(db, result.member.id);
+
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
-      <DashboardChrome admin={canAccessAdmin}>{children}</DashboardChrome>
+      <DashboardChrome admin={canAccessAdmin} unreadCount={unreadCount}>
+        {children}
+      </DashboardChrome>
     </div>
   );
 }

@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useActionState, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useActionState,
+  useMemo,
+  useRef,
+  useTransition,
+} from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import {
@@ -9,6 +16,7 @@ import {
   getCompanyDraftAction,
   getLocalizedCategoryTreeAction,
 } from "@/actions/company";
+import { createCheckoutSessionAction } from "@/actions/stripe";
 import {
   COMPANY_FORM_STEPS,
   COMPANY_STEP_SCHEMAS,
@@ -50,7 +58,7 @@ const STEP_FIELDS: Record<number, string[]> = {
   2: [
     "block",
     "category",
-    "businessCategoryId",
+    "businessCategoryIds",
     "registrationCountryCode",
     "serviceCountryCodes",
     "servesWorldwide",
@@ -74,6 +82,9 @@ export function CompanyRegistrationForm() {
   const [stepError, setStepError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [openingCheckout, startCheckout] = useTransition();
+  const checkoutStarted = useRef(false);
 
   const [taxonomy, setTaxonomy] = useState<CategoryTreeRow[]>([]);
   const [subcategories, setSubcategories] = useState<
@@ -82,7 +93,9 @@ export function CompanyRegistrationForm() {
 
   const selectedBlock = values.block ?? "";
   const selectedCategory = values.category ?? "";
-  const selectedSubcategory = values.businessCategoryId ?? "";
+  const selectedCategoryIds = (values.businessCategoryIds ?? "")
+    .split(",")
+    .filter(Boolean);
   const countries = useMemo(() => countryOptions(locale), [locale]);
   const blocks = useMemo(
     () => [...new Set(taxonomy.map((row) => row.block))],
@@ -176,6 +189,34 @@ export function CompanyRegistrationForm() {
     );
   }
 
+  /**
+   * Hand the freshly created company off to listing checkout (ADR 0019).
+   *
+   * `createCheckoutSessionAction` ends in a redirect to Stripe, so on the happy
+   * path nothing after it runs. A throw that does land here is a real failure,
+   * and the application is already saved - the owner keeps the retry button and
+   * can also pay later from Profile > Companies.
+   */
+  function openCheckout(companyId: string) {
+    setCheckoutError(null);
+    startCheckout(async () => {
+      try {
+        await createCheckoutSessionAction(companyId);
+      } catch {
+        setCheckoutError(t("checkoutFailed"));
+      }
+    });
+  }
+
+  // Submitting is the moment of intent, so checkout opens on its own rather
+  // than waiting for a second click. The ref keeps it to one attempt.
+  useEffect(() => {
+    if (!state?.success || !state.companyId || checkoutStarted.current) return;
+    checkoutStarted.current = true;
+    openCheckout(state.companyId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.success, state?.companyId]);
+
   function goBack() {
     setStepError(null);
     setStep((current) =>
@@ -185,14 +226,29 @@ export function CompanyRegistrationForm() {
 
   if (state?.success) {
     return (
-      <div className="text-sm text-green-500 bg-green-500/10 p-4 rounded-none border border-green-500/20">
-        <p className="font-bold mb-2">{t("successTitle")}</p>
-        <Link
-          href="/dashboard/profile"
-          className="underline hover:text-green-400"
-        >
-          {t("returnToProfile")}
-        </Link>
+      <div className="space-y-4 border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-500">
+        <p className="font-bold">{t("successTitle")}</p>
+        <p className="text-muted-foreground">{t("checkoutHandoff")}</p>
+        {checkoutError && (
+          <p className="text-destructive" role="alert">
+            {checkoutError}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-4">
+          <Button
+            type="button"
+            disabled={openingCheckout || !state.companyId}
+            onClick={() => state.companyId && openCheckout(state.companyId)}
+          >
+            {openingCheckout ? t("checkoutOpening") : t("checkoutContinue")}
+          </Button>
+          <Link
+            href="/dashboard/profile"
+            className="underline hover:text-green-400"
+          >
+            {t("returnToProfile")}
+          </Link>
+        </div>
       </div>
     );
   }
@@ -328,7 +384,7 @@ export function CompanyRegistrationForm() {
                   ...current,
                   block: e.target.value,
                   category: "",
-                  businessCategoryId: "",
+                  businessCategoryIds: "",
                 }));
               }}
               required
@@ -352,7 +408,7 @@ export function CompanyRegistrationForm() {
                 setValues((current) => ({
                   ...current,
                   category: e.target.value,
-                  businessCategoryId: "",
+                  businessCategoryIds: "",
                 }));
               }}
               required
@@ -366,22 +422,35 @@ export function CompanyRegistrationForm() {
             </select>
           </Field>
 
-          <Field id="businessCategoryId" label={t("subcategoryLabel")}>
+          <Field id="businessCategoryIds" label={t("subcategoryLabel")}>
             <select
-              id="businessCategoryId"
-              className={SELECT_CLASS}
-              value={selectedSubcategory}
+              id="businessCategoryIds"
+              className={`${SELECT_CLASS} h-32`}
+              multiple
               disabled={!selectedCategory}
-              onChange={(e) => set("businessCategoryId", e.target.value)}
+              value={selectedCategoryIds}
+              onChange={(e) => {
+                const selected = Array.from(
+                  e.currentTarget.selectedOptions,
+                  (option) => option.value,
+                );
+                if (selected.length > 7) return;
+                set("businessCategoryIds", selected.join(","));
+              }}
               required
             >
-              <option value="">{t("subcategoryPlaceholder")}</option>
               {subcategories.map((sc) => (
                 <option key={sc.id} value={String(sc.id)}>
                   {sc.subcategory}
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground">
+              {t("subcategoryHint", {
+                count: selectedCategoryIds.length,
+                max: 7,
+              })}
+            </p>
           </Field>
 
           <Field
@@ -547,10 +616,17 @@ export function CompanyRegistrationForm() {
               <div key={field} className="flex gap-4 p-3 text-sm">
                 <dt className="w-1/3 text-muted-foreground">{t(labelKey)}</dt>
                 <dd className="w-2/3 break-words">
-                  {field === "businessCategoryId"
-                    ? (subcategories.find(
-                        (sc) => String(sc.id) === selectedSubcategory,
-                      )?.subcategory ?? t("notProvided"))
+                  {field === "businessCategoryIds"
+                    ? selectedCategoryIds.length > 0
+                      ? selectedCategoryIds
+                          .map(
+                            (id) =>
+                              subcategories.find((sc) => String(sc.id) === id)
+                                ?.subcategory,
+                          )
+                          .filter(Boolean)
+                          .join(", ") || t("notProvided")
+                      : t("notProvided")
                     : (values[field] ?? "") || t("notProvided")}
                 </dd>
               </div>
@@ -602,7 +678,7 @@ const SUBMITTED_FIELDS = [
   "logoUrl",
   "description",
   "specializationDescription",
-  "businessCategoryId",
+  "businessCategoryIds",
   "registrationCountryCode",
   "serviceCountryCodes",
   "servesWorldwide",
@@ -622,7 +698,7 @@ const REVIEW_FIELDS: [string, string][] = [
   ["website", "websiteLabel"],
   ["description", "descriptionLabel"],
   ["specializationDescription", "specializationLabel"],
-  ["businessCategoryId", "subcategoryLabel"],
+  ["businessCategoryIds", "subcategoryLabel"],
   ["registrationCountryCode", "registrationCountryLabel"],
   ["serviceCountryCodes", "serviceCountriesLabel"],
   ["businessFormat", "businessFormatLabel"],

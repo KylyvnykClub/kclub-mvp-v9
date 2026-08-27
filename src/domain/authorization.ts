@@ -32,6 +32,7 @@ export type Subject =
   | "own_card"
   | "own_session"
   | "own_referral"
+  | "own_notification"
   | "card_verification"
   | "referral"
   | "member"
@@ -92,6 +93,20 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "update",
     subject: "own_referral",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+
+  // The inbox (FR-099). Deliberately "own_" and nothing else: there is no
+  // action that reads another member's notifications, because there is no
+  // subject that would let one be requested (ADR 0005).
+  {
+    action: "read",
+    subject: "own_notification",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+  {
+    action: "update",
+    subject: "own_notification",
     check: (a) => a.type === "member" || a.type === "partner_owner",
   },
 

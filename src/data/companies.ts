@@ -6,16 +6,19 @@ import {
   eq,
   ilike,
   inArray,
+  ne,
   or,
   sql,
   type SQL,
 } from "drizzle-orm";
 
 import type { DbClient } from "./db";
+import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
 import type { PageParams } from "./pagination";
 import {
   businessCategories,
   businessCategoryTranslations,
+  companyCategories,
   companyServiceCountries,
   cities,
   companies,
@@ -23,7 +26,13 @@ import {
   subscriptions,
 } from "./schema";
 
-const PUBLISHABLE_LISTING_STATUSES = ["active", "past_due"];
+/**
+ * A listing is publishable exactly while its subscription grants access. This is
+ * the same rule the entitlement projection uses, imported rather than copied:
+ * money and access must never disagree (ADR 0004), and since ADR 0019 payment
+ * precedes moderation, two drifting copies would decide publication differently.
+ */
+const PUBLISHABLE_LISTING_STATUSES = ACCESS_GRANTING_SUBSCRIPTION_STATUSES;
 
 export async function listActiveCategoryBlocks(db: DbClient) {
   const rows = await db.query.businessCategories.findMany({
@@ -108,8 +117,8 @@ export async function setCategoryStatus(
 export async function deleteBusinessCategory(db: DbClient, categoryId: number) {
   const [usage] = await db
     .select({ value: count() })
-    .from(companies)
-    .where(eq(companies.businessCategoryId, categoryId));
+    .from(companyCategories)
+    .where(eq(companyCategories.businessCategoryId, categoryId));
 
   if (countValue(usage) > 0) {
     throw new Error("Cannot delete a category that is referenced by companies");
@@ -339,15 +348,25 @@ export async function companySlugExists(
   return existing !== undefined;
 }
 
+/** Returns the new company's id, which the caller needs to open checkout (ADR 0019). */
 export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
   serviceCountryCodes: string[] = [],
-): Promise<void> {
-  await db.transaction(async (tx) => {
+  categoryIds: number[] = [],
+): Promise<string> {
+  return db.transaction(async (tx) => {
     const [company] = await tx.insert(companies).values(values).returning({
       id: companies.id,
     });
+    if (categoryIds.length > 0) {
+      await tx.insert(companyCategories).values(
+        [...new Set(categoryIds)].map((businessCategoryId) => ({
+          companyId: company!.id,
+          businessCategoryId,
+        })),
+      );
+    }
     if (serviceCountryCodes.length > 0) {
       await tx.insert(companyServiceCountries).values(
         [...new Set(serviceCountryCodes)].map((countryCode) => ({
@@ -356,6 +375,7 @@ export async function insertCompany(
         })),
       );
     }
+    return company!.id;
   });
 }
 
@@ -402,14 +422,14 @@ async function approvedCompanyConditions(
     inArray(companies.id, ids),
   );
 
-  // business_categories is a flat table of (block, category, subcategory)
-  // triples, so the most specific axis the caller gave wins: a categoryId is
-  // already one row, while block and category each stand for a set of them.
   if (filters?.categoryId) {
-    conditions = and(
-      conditions,
-      eq(companies.businessCategoryId, filters.categoryId),
-    );
+    const matchingCompanies = await db
+      .select({ companyId: companyCategories.companyId })
+      .from(companyCategories)
+      .where(eq(companyCategories.businessCategoryId, filters.categoryId));
+    const matchIds = matchingCompanies.map((r) => r.companyId);
+    if (matchIds.length === 0) return null;
+    conditions = and(conditions, inArray(companies.id, matchIds));
   } else if (filters?.block) {
     const where = filters.category
       ? and(
@@ -422,9 +442,15 @@ async function approvedCompanyConditions(
       .select({ id: businessCategories.id })
       .from(businessCategories)
       .where(where);
-    const ids2 = catIds.map((c) => c.id);
-    if (ids2.length === 0) return null;
-    conditions = and(conditions, inArray(companies.businessCategoryId, ids2));
+    const catIdValues = catIds.map((c) => c.id);
+    if (catIdValues.length === 0) return null;
+    const matchingCompanies = await db
+      .select({ companyId: companyCategories.companyId })
+      .from(companyCategories)
+      .where(inArray(companyCategories.businessCategoryId, catIdValues));
+    const matchIds = [...new Set(matchingCompanies.map((r) => r.companyId))];
+    if (matchIds.length === 0) return null;
+    conditions = and(conditions, inArray(companies.id, matchIds));
   }
 
   if (filters?.serviceCountryCode) {
@@ -533,7 +559,7 @@ export async function listApprovedCompaniesByIds(
   return db.query.companies.findMany({
     where: conditions,
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
     },
     orderBy,
@@ -609,7 +635,7 @@ export async function listShowcaseCompanies(
       eq(companies.showcaseType, type),
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
     },
     limit,
@@ -629,7 +655,7 @@ export async function findApprovedCompanyBySlug(
       inArray(companies.id, ids),
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       serviceCountries: true,
       owner: {
         columns: {
@@ -669,7 +695,7 @@ export async function listPendingCompanies(db: DbClient) {
   return db.query.companies.findMany({
     where: eq(companies.moderationStatus, "pending"),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       owner: {
         columns: {
           id: true,
@@ -695,7 +721,7 @@ export interface CompanyAdminFilters {
 }
 
 const COMPANY_ADMIN_RELATIONS = {
-  businessCategory: true,
+  categories: { with: { businessCategory: true } },
   owner: {
     columns: {
       id: true,
@@ -808,20 +834,34 @@ export async function countCompaniesByStatus(
   return counts;
 }
 
+/**
+ * Move a company to a moderation outcome, once.
+ *
+ * Returns false when the company was already in that status, so the caller can
+ * stop rather than repeat the decision's side effects. Since ADR 0019 a
+ * rejection cancels a subscription and refunds an invoice, and a double-clicked
+ * reject must not do either of those twice. The guard is in the WHERE clause
+ * rather than in a prior read, so two concurrent requests cannot both pass it.
+ */
 export async function setCompanyModerationStatus(
   db: DbClient,
   companyId: string,
   status: "approved" | "rejected",
   reason: string | null,
-): Promise<void> {
-  await db
+): Promise<boolean> {
+  const changed = await db
     .update(companies)
     .set({
       moderationStatus: status,
       rejectionReason: reason,
       updatedAt: new Date(),
     })
-    .where(eq(companies.id, companyId));
+    .where(
+      and(eq(companies.id, companyId), ne(companies.moderationStatus, status)),
+    )
+    .returning({ id: companies.id });
+
+  return changed.length > 0;
 }
 
 export async function setCompanyShowcase(
@@ -838,7 +878,7 @@ export async function setCompanyShowcase(
 
 export interface PendingChanges {
   name?: string;
-  businessCategoryId?: number;
+  businessCategoryIds?: number[];
   description?: string;
   discount?: string;
 }
@@ -870,13 +910,25 @@ export async function applyCompanyPendingChanges(
   };
 
   if (changes.name !== undefined) updates.name = changes.name;
-  if (changes.businessCategoryId !== undefined)
-    updates.businessCategoryId = changes.businessCategoryId;
   if (changes.description !== undefined)
     updates.description = changes.description;
   if (changes.discount !== undefined) updates.discount = changes.discount;
 
   await db.update(companies).set(updates).where(eq(companies.id, companyId));
+
+  if (changes.businessCategoryIds !== undefined) {
+    await db
+      .delete(companyCategories)
+      .where(eq(companyCategories.companyId, companyId));
+    if (changes.businessCategoryIds.length > 0) {
+      await db.insert(companyCategories).values(
+        changes.businessCategoryIds.map((businessCategoryId) => ({
+          companyId,
+          businessCategoryId,
+        })),
+      );
+    }
+  }
 }
 
 export async function clearCompanyPendingChanges(
@@ -896,7 +948,7 @@ export async function listCompaniesWithPendingChanges(db: DbClient) {
       sql`${companies.pendingChanges} IS NOT NULL`,
     ),
     with: {
-      businessCategory: true,
+      categories: { with: { businessCategory: true } },
       owner: {
         columns: {
           id: true,
@@ -944,17 +996,22 @@ export type CompanyRow = Awaited<
   ReturnType<typeof listCompaniesByOwner>
 >[number];
 
-export async function findApprovedCompanyByOwner(
+/**
+ * One company the caller owns, whatever its moderation status.
+ *
+ * Deliberately unfiltered by status (ADR 0019): listing checkout now happens
+ * before moderation, so the eligibility rule lives in the action - which
+ * refuses only a company already rejected - and the checkout result pages use
+ * the same lookup to name what was paid for. Publication still requires
+ * approved AND an active subscription (FR-044); nothing here changes that.
+ */
+export async function findCompanyByOwner(
   db: DbClient,
   companyId: string,
   ownerId: string,
 ) {
   return db.query.companies.findFirst({
-    where: and(
-      eq(companies.id, companyId),
-      eq(companies.ownerId, ownerId),
-      eq(companies.moderationStatus, "approved"),
-    ),
+    where: and(eq(companies.id, companyId), eq(companies.ownerId, ownerId)),
   });
 }
 

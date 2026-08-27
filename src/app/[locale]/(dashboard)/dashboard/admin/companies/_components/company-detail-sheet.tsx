@@ -203,7 +203,14 @@ export function CompanyDetailSheet({
           <Field label={t("ownerLabel")} value={company.owner?.displayName} />
           <Field
             label={t("categoryLabel")}
-            value={`${company.businessCategory?.block} / ${company.businessCategory?.category}`}
+            value={
+              company.categories
+                ?.map(
+                  (c) =>
+                    `${c.businessCategory?.block} / ${c.businessCategory?.category}`,
+                )
+                .join(", ") || "—"
+            }
           />
           <Field
             label={t("slugLabel")}

@@ -12,6 +12,8 @@ export * from "./referrals";
 export * from "./relations";
 export * from "./business-categories";
 export * from "./business-category-translations";
+export * from "./company-categories";
+export * from "./notifications";
 export * from "./company-service-countries";
 export * from "./countries";
 export * from "./cities";

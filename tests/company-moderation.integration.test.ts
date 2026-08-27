@@ -189,6 +189,43 @@ describe("FR-042: a submitted company enters moderation and is invisible until a
 
     expect(company.moderationStatus).toBe("pending");
   });
+
+  /**
+   * FR-101 / ADR 0019: since a rejection now cancels a subscription and refunds
+   * an invoice, applying the same decision twice must be impossible. The guard
+   * is in the UPDATE's own WHERE, so the second caller learns it changed
+   * nothing rather than repeating the decision's side effects.
+   */
+  it("FR-101: reports whether the decision actually changed anything, so a repeat cannot refund twice", async () => {
+    const db = testDbClient();
+    const { company } = await seedCompany(db, { moderationStatus: "pending" });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "rejected", "Not a fit"),
+    ).resolves.toBe(true);
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "rejected", "Not a fit"),
+    ).resolves.toBe(false);
+  });
+
+  it("FR-101: still allows a genuine change of mind from rejected to approved", async () => {
+    const db = testDbClient();
+    const { company } = await seedCompany(db, { moderationStatus: "pending" });
+
+    await setCompanyModerationStatus(db, company.id, "rejected", "Not a fit");
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null),
+    ).resolves.toBe(true);
+  });
+
+  it("FR-101: reports no change for a company id that does not exist", async () => {
+    const db = testDbClient();
+
+    await expect(
+      setCompanyModerationStatus(db, crypto.randomUUID(), "rejected", "gone"),
+    ).resolves.toBe(false);
+  });
 });
 
 describe("FR-043: staff approve, or reject with a reason", () => {
@@ -480,7 +517,7 @@ describe("admin company detail: what the drawer can read", () => {
     const detail = await findCompanyForAdmin(db, company.id);
 
     expect(detail?.owner?.displayName).toBe(owner.displayName);
-    expect(detail?.businessCategory?.id).toBe(category.id);
+    expect(detail?.categories?.[0]?.businessCategory?.id).toBe(category.id);
   });
 
   it("scopes subscriptions to the company being looked at", async () => {

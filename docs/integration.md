@@ -57,7 +57,7 @@ try harder.
 |Base URL(s)|`https://api.stripe.com` (live and test are distinguished by the key, not the URL — a fact that has caused production charges in test flows elsewhere, so the key's mode is asserted at boot against the environment name)|
 |Protocol|REST, official `stripe-node` SDK, API version **pinned** in code and in the dashboard|
 |Authentication|Secret key in `STRIPE_SECRET_KEY`; webhook signature with `STRIPE_WEBHOOK_SECRET`. See [security.md §4](security.md#4-secrets-management)|
-|Operations used|`checkout.sessions.create`, `billingPortal.sessions.create`, `subscriptions.retrieve/update/cancel`, `customers.create/retrieve/delete`, `prices.create`, `products.create`, `invoices.list`, `events.list` (reconciliation)|
+|Operations used|`checkout.sessions.create`, `billingPortal.sessions.create`, `subscriptions.retrieve/update/cancel`, `customers.create/retrieve/delete`, `prices.create`, `products.create`, `invoices.list`, `refunds.create` (rejected listings, [ADR 0019](decisions/0019-payment-before-moderation.md)), `events.list` (reconciliation)|
 |Timeout|10 s, 1 automatic SDK retry|
 |Retry policy|3 attempts, exponential backoff with jitter. **Every mutating call carries an `Idempotency-Key`** derived from our own intent row id, so a retry can never create a second subscription or a second charge|
 |Rate limit|100 read/s, 100 write/s in live mode. We are nowhere near it; the reconciliation job pages through with `limit=100` and a small delay|
@@ -74,6 +74,17 @@ the "never leaves the system" list in
 unavailable, nothing has been charged" — we do not queue a payment for later.
 Subscription reads failing during reconciliation abort the run and alert; a
 partial reconciliation is worse than none because it looks complete.
+
+**Refunding a rejected listing** ([ADR 0019](decisions/0019-payment-before-moderation.md))
+is the one Stripe call we _do_ queue for later. Payment now precedes moderation,
+so rejecting a company means cancelling its subscription and refunding the last
+invoice — and a moderator's decision must not be blocked by Stripe being
+unreachable. The rejection, its audit entry and the applicant's notification
+commit first; the money is undone afterwards, and a failure is audited and
+retried through the outbox rather than surfaced to the moderator. The refund's
+`Idempotency-Key` is derived from the company and subscription ids with **no
+time component**, unlike the checkout key's minute bucket: a repeated checkout a
+day later is a new intent, whereas a repeated refund never is.
 
 **Dunning and access (dashboard settings the code depends on).** Access is
 projected from the subscription status: `active` and `past_due` grant VIP, every

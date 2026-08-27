@@ -185,8 +185,8 @@ export default async function PartnerLandingPage({ params }: Props) {
               <div>
                 <div className="flex flex-wrap gap-2">
                   <Badge className="rounded-none bg-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-accent-foreground hover:bg-accent">
-                    {partner.businessCategory?.block} /{" "}
-                    {partner.businessCategory?.category}
+                    {partner.categories?.[0]?.businessCategory?.block} /{" "}
+                    {partner.categories?.[0]?.businessCategory?.category}
                   </Badge>
                 </div>
                 <h1 className="mt-5 text-5xl font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-7xl">
@@ -229,8 +229,15 @@ export default async function PartnerLandingPage({ params }: Props) {
                 <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
                   {tc("activitiesSection")}
                 </h2>
-                <div className="mt-5 inline-flex border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]">
-                  {partner.businessCategory.subcategory}
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {partner.categories?.map((c) => (
+                    <span
+                      key={c.businessCategoryId}
+                      className="inline-flex border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                    >
+                      {c.businessCategory?.subcategory}
+                    </span>
+                  ))}
                 </div>
               </section>
 

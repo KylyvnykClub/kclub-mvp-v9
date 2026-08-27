@@ -4,6 +4,7 @@ import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
 import { findActiveVipSubscription } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
+import { createNotification } from "@/data/notifications";
 import {
   countReferralsByStatus,
   countReferralsForAdmin,
@@ -162,6 +163,32 @@ export async function moderateReferralAction(
     subjectId: referralId,
     ip: "unknown",
   });
+
+  // FR-074: approval is the point at which the recipient is notified. Until
+  // ADR 0020 nothing happened here at all - a partner was introduced a client
+  // and was told by no channel whatsoever.
+  //
+  // The notification names the recipient's OWN company and carries no word
+  // about who sent it. Who introduced whom is between the two businesses on
+  // the referrals screen; an inbox row is not the place to widen what one
+  // member learns about another (ADR 0005).
+  if (newStatus === "delivered") {
+    const referral = await findReferralWithRecipientCompany(db, referralId);
+    if (referral?.recipientCompany) {
+      await createNotification(db, {
+        memberId: referral.recipientCompany.ownerId,
+        kind: "referral_received",
+        params: {
+          referralId,
+          companyId: referral.recipientCompany.id,
+          companyName: referral.recipientCompany.name,
+        },
+        // Moderation is once-per-referral, but a re-run of a stuck queue must
+        // not deliver a second copy of the same introduction.
+        dedupeKey: `referral_received:${referralId}`,
+      });
+    }
+  }
 
   revalidatePath("/dashboard/admin/referrals");
 }

@@ -29,10 +29,17 @@ export const companyDetailsStepSchema = z.object({
 
 export const companyLocationStepSchema = z
   .object({
-    businessCategoryId: z.coerce
-      .number()
-      .int()
-      .positive("Please select a business category"),
+    businessCategoryIds: z.preprocess(
+      (val): unknown[] => {
+        if (Array.isArray(val)) return val as unknown[];
+        if (typeof val === "string") return val.split(",").filter(Boolean);
+        return [];
+      },
+      z
+        .array(z.coerce.number().int().positive())
+        .min(1, "Please select at least one activity")
+        .max(7, "You can select up to 7 activities"),
+    ),
     registrationCountryCode: z
       .string()
       .regex(/^[A-Z]{2}$/, "Country is required"),

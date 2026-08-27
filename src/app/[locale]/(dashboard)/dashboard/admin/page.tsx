@@ -260,7 +260,7 @@ export default async function AdminDashboardPage({
                           variant="outline"
                           className="shrink-0 bg-muted/50 text-[10px] uppercase text-muted-foreground"
                         >
-                          {company.businessCategory?.category}
+                          {company.categories?.[0]?.businessCategory?.category}
                         </Badge>
                       </div>
                       <p className="truncate text-xs text-muted-foreground">

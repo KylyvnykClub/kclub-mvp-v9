@@ -5,6 +5,7 @@ import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
 import { listCompaniesByOwner } from "@/data/companies";
+import { listNotificationsForMember } from "@/data/notifications";
 import {
   listActiveSubscriptionsForDeletion,
   listSubscriptionsByMember,
@@ -19,6 +20,7 @@ import { PersonalInfoForm } from "@/components/profile/personal-info-form";
 import { PhoneChangeForm } from "@/components/profile/phone-change-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
+import { NotificationList } from "./_components/notification-list";
 import { CardQr } from "./_components/card-qr";
 import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
 import { ActiveSessions } from "@/components/profile/active-sessions";
@@ -50,6 +52,8 @@ export default async function ProfilePage({ params }: Props) {
   const profile = await findProfileByMemberId(db, member.id);
 
   const myCompanies = await listCompaniesByOwner(db, member.id);
+
+  const myNotifications = await listNotificationsForMember(db, member.id);
 
   const mySubscriptions = await listSubscriptionsByMember(db, member.id);
   const deletionSubscriptions = await listActiveSubscriptionsForDeletion(
@@ -101,6 +105,7 @@ export default async function ProfilePage({ params }: Props) {
           <TabsTrigger value="companies">
             {tDashboard("tabCompanies")}
           </TabsTrigger>
+          <TabsTrigger value="inbox">{tDashboard("tabInbox")}</TabsTrigger>
           <TabsTrigger value="settings">
             {tDashboard("tabSettings")}
           </TabsTrigger>
@@ -261,6 +266,10 @@ export default async function ProfilePage({ params }: Props) {
             companies={myCompanies}
             subscriptions={mySubscriptions}
           />
+        </TabsContent>
+
+        <TabsContent value="inbox">
+          <NotificationList notifications={myNotifications} locale={locale} />
         </TabsContent>
 
         <TabsContent value="settings">

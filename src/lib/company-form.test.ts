@@ -26,7 +26,7 @@ const DETAILS = {
   specializationDescription: "Coffee roasting and tasting sessions",
 };
 const LOCATION = {
-  businessCategoryId: "7",
+  businessCategoryIds: "7,12",
   registrationCountryCode: "UA",
   serviceCountryCodes: "UA,PL",
   servesWorldwide: "false",
@@ -60,9 +60,9 @@ describe("FR-040: four-step company submission form", () => {
     expect(companyLocationStepSchema.safeParse({}).success).toBe(false);
   });
 
-  it("coerces the category id from the string a select element submits", () => {
+  it("coerces category ids from the comma-separated string a multi-select submits", () => {
     const parsed = companyLocationStepSchema.parse(LOCATION);
-    expect(parsed.businessCategoryId).toBe(7);
+    expect(parsed.businessCategoryIds).toEqual([7, 12]);
   });
 
   it("allows an online company to omit city and administrative levels", () => {

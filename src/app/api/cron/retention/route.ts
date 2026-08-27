@@ -10,6 +10,7 @@ import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
 } from "@/data/company-drafts";
+import { deleteExpiredNotifications } from "@/data/notifications";
 import { deleteProcessedOutboxRows } from "@/data/outbox";
 import { env } from "@/env";
 import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
@@ -22,6 +23,7 @@ export interface RetentionResult {
   accountsErased: number;
   accountErasuresFailed: number;
   outboxRowsDeleted: number;
+  notificationsDeleted: number;
 }
 
 /**
@@ -52,6 +54,10 @@ export async function GET(req: Request) {
   // once past the dedupe window they are pure history and the table should not
   // keep them forever.
   const outboxRowsDeleted = await deleteProcessedOutboxRows(db, now);
+
+  // FR-099: an inbox is a record of recent events. Read or unread alike, a
+  // notification nobody opened in six months is not one still being waited for.
+  const notificationsDeleted = await deleteExpiredNotifications(db, now);
 
   // FR-009: the 30-day clock on a deletion request runs out here.
   const due = await findMembersDueForErasure(db, now);
@@ -100,6 +106,7 @@ export async function GET(req: Request) {
     accountsErased,
     accountErasuresFailed,
     outboxRowsDeleted,
+    notificationsDeleted,
   };
 
   return NextResponse.json({ success: true, ...result });

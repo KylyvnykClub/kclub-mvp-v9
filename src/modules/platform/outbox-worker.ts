@@ -3,7 +3,9 @@ import type { Db, DbClient } from "@/data/db";
 import { findMemberByStripeCustomerId } from "@/data/billing";
 import { findCompanyById } from "@/data/companies";
 import { findMemberLanguage } from "@/data/members";
+import { createNotification } from "@/data/notifications";
 import {
+  BILLING_REFUND_RETRY_TOPIC,
   GRACE_EXPIRY_WARNING_NOTIFICATION,
   PAYMENT_FAILED_NOTIFICATION,
   claimOutboxRow,
@@ -232,6 +234,24 @@ async function handleEntry(
     return "notified";
   }
 
+  if (entry.topic === BILLING_REFUND_RETRY_TOPIC) {
+    // The rejection already committed; this is the money half retrying after
+    // Stripe was unreachable (ADR 0019). Throwing leaves processed_at null, so
+    // a still-unreachable Stripe simply gets tried again next drain.
+    const { companyId } = entry.payload as { companyId?: string };
+    if (!companyId) {
+      console.error(`[listing-refund] outbox row ${entry.id} has no companyId`);
+      await markProcessed(tx, entry.id);
+      return "malformed";
+    }
+
+    const { refundListingForCompany, productionRefundDeps } =
+      await import("@/modules/billing/refund");
+    await refundListingForCompany(tx, await productionRefundDeps(), companyId);
+    await markProcessed(tx, entry.id);
+    return "notified";
+  }
+
   if (entry.topic !== BILLING_OUTBOX_TOPIC) {
     await markProcessed(tx, entry.id);
     return "ignored";
@@ -336,41 +356,66 @@ async function processNotification(
     return;
   }
 
-  switch (payload.type) {
-    case PAYMENT_FAILED_NOTIFICATION: {
-      const recipient = await resolveRecipient(client, payload.customerId);
-      if (!recipient) return;
-
-      const { sendPaymentFailedEmail } =
-        await import("@/modules/notifications/email");
-      await sendPaymentFailedEmail({
-        to: recipient.email,
-        displayName: recipient.displayName,
-        locale: recipient.locale,
-      });
-      return;
-    }
-
-    case GRACE_EXPIRY_WARNING_NOTIFICATION: {
-      const recipient = await resolveRecipient(client, payload.customerId);
-      if (!recipient) return;
-
-      const { sendGraceExpiryWarningEmail } =
-        await import("@/modules/notifications/email");
-      await sendGraceExpiryWarningEmail({
-        to: recipient.email,
-        displayName: recipient.displayName,
-        locale: recipient.locale,
-      });
-      return;
-    }
-
-    default:
-      console.warn(
-        `[billing-notification] unhandled notification type: ${payload.type ?? "<none>"}`,
-      );
-      return;
+  if (
+    payload.type !== PAYMENT_FAILED_NOTIFICATION &&
+    payload.type !== GRACE_EXPIRY_WARNING_NOTIFICATION
+  ) {
+    console.warn(
+      `[billing-notification] unhandled notification type: ${payload.type ?? "<none>"}`,
+    );
+    return;
   }
+
+  // The inbox row is written from the member lookup alone, before and
+  // independently of the email (ADR 0020). `resolveRecipient` returns null when
+  // Stripe holds no email address - and a member with no email is precisely the
+  // one for whom in-product state has to be authoritative, so writing the row
+  // only on the email path would drop it exactly where it matters most.
+  const member = await findMemberByStripeCustomerId(client, payload.customerId);
+  if (member) {
+    await createNotification(client, {
+      memberId: member.memberId,
+      kind:
+        payload.type === PAYMENT_FAILED_NOTIFICATION
+          ? "payment_failed"
+          : "grace_expiry_warning",
+      params: {
+        ...(payload.subscriptionId
+          ? { subscriptionId: payload.subscriptionId }
+          : {}),
+        ...(payload.graceEndsAt ? { graceEndsAt: payload.graceEndsAt } : {}),
+      },
+      // A redelivered webhook carries the same attempt and is suppressed; a
+      // genuinely later retry carries a new one and gets its own row.
+      dedupeKey: [
+        payload.type,
+        payload.subscriptionId ?? payload.customerId,
+        payload.attemptCount ?? payload.graceEndsAt ?? "",
+      ].join(":"),
+    });
+  }
+
+  const recipient = await resolveRecipient(client, payload.customerId);
+  if (!recipient) return;
+
+  if (payload.type === PAYMENT_FAILED_NOTIFICATION) {
+    const { sendPaymentFailedEmail } =
+      await import("@/modules/notifications/email");
+    await sendPaymentFailedEmail({
+      to: recipient.email,
+      displayName: recipient.displayName,
+      locale: recipient.locale,
+    });
+    return;
+  }
+
+  const { sendGraceExpiryWarningEmail } =
+    await import("@/modules/notifications/email");
+  await sendGraceExpiryWarningEmail({
+    to: recipient.email,
+    displayName: recipient.displayName,
+    locale: recipient.locale,
+  });
 }
 
 async function processCompanyModeration(

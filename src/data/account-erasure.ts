@@ -5,6 +5,7 @@ import {
   accountDeletionRequests,
   cards,
   members,
+  notifications,
   referrals,
   sessions,
 } from "./schema";
@@ -88,9 +89,14 @@ export async function findMembersDueForErasure(
  * listing, since catalogue visibility is projected from subscription status,
  * not a flag on the company - is an external call, handled by
  * `eraseStripeCustomerForMember` (src/modules/billing/erasure.ts) before this
- * runs. Deleting R2 images and clearing a notification log are not part of
- * this procedure: neither R2 uploads nor a notification log exist by design
- * (ADR 0013, ADR 0014), so there is nothing there to erase.
+ * runs. Deleting R2 images is not part of it either: no R2 uploads exist by
+ * design (ADR 0013).
+ *
+ * There is still no notification *delivery log* to clear (ADR 0014), but since
+ * ADR 0020 there is an in-product inbox, and it is deleted here explicitly.
+ * The `ON DELETE CASCADE` on `notifications.member_id` is no help: this
+ * procedure anonymises the member row rather than deleting it, so the cascade
+ * never fires and the notifications would outlive the person they describe.
  */
 export async function eraseMemberTx(
   db: DbClient,
@@ -138,5 +144,9 @@ export async function eraseMemberTx(
         note: null,
       })
       .where(eq(referrals.senderId, memberId));
+
+    // The inbox describes things that happened to this person and names their
+    // companies; none of it survives them (ADR 0020).
+    await tx.delete(notifications).where(eq(notifications.memberId, memberId));
   });
 }

@@ -8,12 +8,14 @@ import { tags, profileTags } from "./tags";
 import { companies } from "./companies";
 import { businessCategories } from "./business-categories";
 import { businessCategoryTranslations } from "./business-category-translations";
+import { companyCategories } from "./company-categories";
 import { companyServiceCountries } from "./company-service-countries";
 import { cities } from "./cities";
 import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
 import { referrals } from "./referrals";
 import { accountDeletionRequests } from "./account-deletion-requests";
+import { notifications } from "./notifications";
 import { countries } from "./countries";
 
 export const membersRelations = relations(members, ({ one, many }) => ({
@@ -92,6 +94,7 @@ export const companiesRelations = relations(companies, ({ one, many }) => ({
   }),
   subscriptions: many(subscriptions),
   receivedReferrals: many(referrals),
+  categories: many(companyCategories),
   serviceCountries: many(companyServiceCountries),
 }));
 
@@ -129,6 +132,20 @@ export const businessCategoryTranslationsRelations = relations(
   ({ one }) => ({
     businessCategory: one(businessCategories, {
       fields: [businessCategoryTranslations.businessCategoryId],
+      references: [businessCategories.id],
+    }),
+  }),
+);
+
+export const companyCategoriesRelations = relations(
+  companyCategories,
+  ({ one }) => ({
+    company: one(companies, {
+      fields: [companyCategories.companyId],
+      references: [companies.id],
+    }),
+    businessCategory: one(businessCategories, {
+      fields: [companyCategories.businessCategoryId],
       references: [businessCategories.id],
     }),
   }),
@@ -179,3 +196,10 @@ export const accountDeletionRequestsRelations = relations(
     }),
   }),
 );
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  member: one(members, {
+    fields: [notifications.memberId],
+    references: [members.id],
+  }),
+}));
