@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/data/db";
 import { env } from "@/env";
+import { subscriptionFetcherFor } from "@/modules/billing/projection";
 import { reconcileLocalSubscriptions } from "@/modules/billing/reconciliation";
 import { authorizeCronRequest } from "@/modules/platform";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
-const fetchSubscription = stripe.subscriptions.retrieve.bind(stripe);
+const fetchSubscription = subscriptionFetcherFor(stripe);
 
 /**
  * FR-058: daily reconciliation compares local subscription projection against

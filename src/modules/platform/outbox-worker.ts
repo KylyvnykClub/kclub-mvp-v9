@@ -18,6 +18,7 @@ import {
   BILLING_OUTBOX_TOPIC,
   BILLING_NOTIFICATION_TOPIC,
   reconcileSubscription,
+  subscriptionFetcherFor,
   type ProjectionResult,
   type SubscriptionFetcher,
 } from "@/modules/billing/projection";
@@ -90,7 +91,12 @@ export async function productionDrainDeps(): Promise<DrainDeps> {
     import("@/data/db"),
     getStripe(),
   ]);
-  return { db, fetchSubscription: stripe.subscriptions.retrieve.bind(stripe) };
+  // Through subscriptionFetcherFor rather than binding the method here. This
+  // line used to read `.bind(stripe)`, which detaches `retrieve` from the
+  // receiver it needs and killed every projection - see the note on that
+  // function. No test caught it because every test injects its own fetcher and
+  // never constructs these deps.
+  return { db, fetchSubscription: subscriptionFetcherFor(stripe) };
 }
 
 /** Result of the drain, for observability. */
