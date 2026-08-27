@@ -12,17 +12,30 @@ import {
 } from "recharts";
 
 import {
-  WORLD_COUNTRIES,
-  WORLD_MAP_HEIGHT,
-  WORLD_MAP_WIDTH,
-} from "./world-map-paths";
+  COUNTRY_POSITIONS,
+  MAP_DOTS,
+  MAP_HEIGHT,
+  MAP_STEP,
+  MAP_WIDTH,
+} from "./dotted-world-map";
 
-const COUNTRY_POINTS: Map<string, { x: number; y: number }> = new Map(
-  WORLD_COUNTRIES.map((country) => [
-    country.id,
-    { x: country.x, y: country.y },
-  ]),
-);
+/**
+ * The land dots as a single <path>. 1365 separate <circle> elements would be
+ * 1365 DOM nodes that never change; one path is one node. Built once at module
+ * scope because the map is the same on every render and for every viewer.
+ */
+const DOT_RADIUS = MAP_STEP * 0.36;
+const LAND_PATH = (() => {
+  const parts: string[] = [];
+  for (let i = 0; i < MAP_DOTS.length; i += 2) {
+    const x = MAP_DOTS[i]!;
+    const y = MAP_DOTS[i + 1]!;
+    parts.push(
+      `M${x - DOT_RADIUS} ${y}a${DOT_RADIUS} ${DOT_RADIUS} 0 1 0 ${DOT_RADIUS * 2} 0a${DOT_RADIUS} ${DOT_RADIUS} 0 1 0 ${-DOT_RADIUS * 2} 0`,
+    );
+  }
+  return parts.join("");
+})();
 
 type FinanceCountryChartProps = {
   revenueByCountry: Record<string, number>;
@@ -63,9 +76,6 @@ export function FinanceCountryChart({
     .sort((a, b) => b.amount - a.amount);
 
   const maxAmount = Math.max(...chartData.map((item) => item.amount), 1);
-  const amountByCountry = new Map(
-    chartData.map((item) => [item.country, item.amount]),
-  );
   const activeCountry = hoveredCountry ?? selectedCountry;
   const activeItem = chartData.find((item) => item.country === activeCountry);
   const hasData = chartData.length > 0;
@@ -78,88 +88,72 @@ export function FinanceCountryChart({
         role="group"
       >
         <svg
-          viewBox={`0 0 ${WORLD_MAP_WIDTH} ${WORLD_MAP_HEIGHT}`}
+          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="h-full w-full"
         >
+          {/* Land. Decorative: the countries carrying revenue are the pins
+              below, and each of those has its own accessible name. */}
           <path
-            d={`M5 ${WORLD_MAP_HEIGHT / 2}h90M50 3v${WORLD_MAP_HEIGHT - 6}M11 ${WORLD_MAP_HEIGHT * 0.25}c18 4 60 4 78 0M11 ${WORLD_MAP_HEIGHT * 0.75}c18-4 60-4 78 0`}
-            className="fill-none stroke-zinc-200/70 dark:stroke-zinc-800/70"
-            strokeWidth="0.35"
+            d={LAND_PATH}
+            className="fill-zinc-300 dark:fill-zinc-700"
             aria-hidden="true"
           />
-          <g strokeWidth="0.14" strokeLinejoin="round" aria-hidden="true">
-            {WORLD_COUNTRIES.map((country) => {
-              const amount = amountByCountry.get(country.id) ?? 0;
-              const active = country.id === activeCountry;
-              const intensity = Math.min(amount / maxAmount, 1);
-              const fill =
-                !active && amount > 0
-                  ? `rgba(212, 175, 55, ${0.28 + intensity * 0.48})`
-                  : undefined;
-
-              return (
-                <path
-                  key={country.id}
-                  d={country.d}
-                  className={
-                    active
-                      ? "fill-accent stroke-accent-foreground"
-                      : "fill-zinc-200 stroke-zinc-300 dark:fill-zinc-800 dark:stroke-zinc-700"
-                  }
-                  style={{ fill }}
-                />
-              );
-            })}
-          </g>
 
           {chartData
-            .filter((item) => COUNTRY_POINTS.has(item.country))
+            .filter((item) => COUNTRY_POSITIONS[item.country])
             .map((item) => {
-              const point = COUNTRY_POINTS.get(item.country) ?? {
-                x: WORLD_MAP_WIDTH / 2,
-                y: WORLD_MAP_HEIGHT / 2,
-              };
-              const radius = 0.55 + (item.amount / maxAmount) * 1.15;
+              const [x, y] = COUNTRY_POSITIONS[item.country]!;
+              const share = item.amount / maxAmount;
+              const radius = MAP_STEP * (0.9 + share * 1.1);
               const active = item.country === activeCountry;
 
               return (
-                <circle
-                  key={item.country}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={item.country === selectedCountry}
-                  aria-label={`${item.label}: ${formatter.format(item.amount / 100)}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={radius}
-                  onClick={() =>
-                    setSelectedCountry((current) =>
-                      current === item.country ? null : item.country,
-                    )
-                  }
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
+                <g key={item.country}>
+                  {/* A halo, so a pin on a dense part of the grid still reads
+                      as a marker rather than as a slightly larger dot. */}
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={radius * 2.1}
+                    className="fill-accent/20"
+                    aria-hidden="true"
+                  />
+                  <circle
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={item.country === selectedCountry}
+                    aria-label={`${item.label}: ${formatter.format(item.amount / 100)}`}
+                    cx={x}
+                    cy={y}
+                    r={radius}
+                    onClick={() =>
                       setSelectedCountry((current) =>
                         current === item.country ? null : item.country,
-                      );
+                      )
                     }
-                  }}
-                  onMouseEnter={() => setHoveredCountry(item.country)}
-                  onMouseLeave={() => setHoveredCountry(null)}
-                  onFocus={() => setHoveredCountry(item.country)}
-                  onBlur={() => setHoveredCountry(null)}
-                  className="cursor-pointer transition-transform focus-visible:outline-none"
-                  style={{
-                    fill: active
-                      ? "hsl(var(--accent))"
-                      : "rgba(212, 175, 55, 0.62)",
-                    stroke: active
-                      ? "hsl(var(--foreground))"
-                      : "hsl(var(--background))",
-                    strokeWidth: active ? 0.42 : 0.32,
-                  }}
-                />
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedCountry((current) =>
+                          current === item.country ? null : item.country,
+                        );
+                      }
+                    }}
+                    onMouseEnter={() => setHoveredCountry(item.country)}
+                    onMouseLeave={() => setHoveredCountry(null)}
+                    onFocus={() => setHoveredCountry(item.country)}
+                    onBlur={() => setHoveredCountry(null)}
+                    // Tailwind classes rather than style={{ fill: "hsl(var(--accent))" }}.
+                    // The theme tokens are oklch, so wrapping them in hsl()
+                    // produces an invalid colour and the browser falls back to
+                    // black - which is what the previous version did to the
+                    // selected pin.
+                    className={`cursor-pointer stroke-background transition-all focus-visible:outline-none ${
+                      active ? "fill-foreground" : "fill-accent"
+                    }`}
+                    style={{ strokeWidth: MAP_STEP * 0.4 }}
+                  />
+                </g>
               );
             })}
         </svg>

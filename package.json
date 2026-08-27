@@ -38,7 +38,8 @@
     "test:e2e:report": "playwright show-report",
     "test:watch": "vitest",
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit && pnpm build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "map:generate": "tsx tools/generate-dotted-map.ts && prettier --write \"src/app/[locale]/(dashboard)/dashboard/admin/_components/dotted-world-map.ts\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -62,6 +63,7 @@
     "argon2": "^0.45.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotted-map": "^3.1.0",
     "drizzle-orm": "^0.45.2",
     "gray-matter": "^4.0.3",
     "import-in-the-middle": "^3.3.3",
