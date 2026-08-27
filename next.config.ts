@@ -31,6 +31,21 @@ const securityHeaders = [
 const config: NextConfig = {
   reactStrictMode: true,
 
+  /**
+   * Where the build output goes. `.next` unless NEXT_BUILD_DIR says otherwise.
+   *
+   * `pnpm verify` sets it, because `next build` writing into `.next` is the
+   * same directory `next dev` is serving from: running verify while a dev
+   * server is up replaces the chunks that server has already resolved, and the
+   * next page load dies with `Cannot find module './vendor-chunks/...'`. That
+   * reads like a broken dependency and is not one, and recovering costs a stop,
+   * an rm -rf and a cold compile.
+   *
+   * Unset everywhere else, so Vercel and a plain `pnpm build` keep writing to
+   * `.next` exactly as before.
+   */
+  distDir: process.env.NEXT_BUILD_DIR || ".next",
+
   // A type or lint error must fail the build, not be deferred to CI and then
   // ignored. Next.js defaults both of these to false; they are set explicitly
   // so nobody has to remember that the default is the safe one.

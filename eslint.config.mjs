@@ -24,6 +24,8 @@ export default tseslint.config(
       "node_modules/**",
       ".next/**",
       ".next-stale-*/**",
+      // pnpm verify builds here, see tools/verify-build.ts
+      ".next-verify/**",
       "next-env.d.ts",
       "coverage/**",
       "docs/**",
