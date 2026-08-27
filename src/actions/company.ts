@@ -64,11 +64,16 @@ import {
 import {
   COMPANY_STEP_SCHEMAS,
   companyDraftDataSchema,
+  describeCompanyIssue,
   isCompanyStep,
   registerCompanySchema,
   type CompanyDraftData,
+  type CompanyFormIssue,
   type CompanyStepNumber,
 } from "@/lib/company-form";
+import { companySlug } from "@/lib/slug";
+import { logger } from "@/lib/logger";
+import { safeErrorFields } from "@/lib/safe-error";
 import { isProhibitedCategory } from "@/lib/prohibited-categories";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
@@ -98,7 +103,13 @@ export async function getLocalizedCategoryTreeAction(
 
 export type CompanyFormState = {
   success: boolean;
-  error?: string;
+  /**
+   * Why the submission was refused, as a code the form renders in the
+   * applicant's own language. Never a raw exception message: a Drizzle failure
+   * carries the statement and its bound values, which security.md §3 forbids
+   * even in a log, let alone in a page.
+   */
+  issue?: CompanyFormIssue;
   /**
    * Set only by `registerCompanyAction`. The form uses it to open listing
    * checkout in a second call (ADR 0019) - this action cannot `redirect()`
@@ -107,13 +118,6 @@ export type CompanyFormState = {
   companyId?: string;
 };
 
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
-
 export async function registerCompanyAction(
   _prevState: CompanyFormState | null,
   formData: FormData,
@@ -121,7 +125,7 @@ export async function registerCompanyAction(
   try {
     const auth = await getCurrentMember();
     if (!auth || !auth.member) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, issue: { code: "unauthorized" } };
     }
 
     const actor = buildActor(auth.member);
@@ -131,18 +135,21 @@ export async function registerCompanyAction(
     const parsed = registerCompanySchema.safeParse(data);
 
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message };
+      return { success: false, issue: describeCompanyIssue(parsed.error) };
     }
 
     for (const catId of parsed.data.businessCategoryIds) {
       const category = await findCategoryById(db, catId);
       if (!category) {
-        return { success: false, error: "Invalid business category" };
+        return {
+          success: false,
+          issue: { code: "categoryUnknown", field: "businessCategoryIds" },
+        };
       }
       if (isProhibitedCategory(category)) {
         return {
           success: false,
-          error: "This business category is not permitted",
+          issue: { code: "categoryProhibited", field: "businessCategoryIds" },
         };
       }
     }
@@ -155,11 +162,11 @@ export async function registerCompanyAction(
     if (!cityValid) {
       return {
         success: false,
-        error: "The selected city does not belong to the selected country",
+        issue: { code: "cityCountryMismatch", field: "city" },
       };
     }
 
-    const baseSlug = generateSlug(parsed.data.name);
+    const baseSlug = companySlug(parsed.data.name);
     let finalSlug = baseSlug;
 
     let isUnique = false;
@@ -208,13 +215,12 @@ export async function registerCompanyAction(
 
     return { success: true, companyId };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred";
-    return { success: false, error: message };
+    logger.error("Company registration failed", safeErrorFields(error));
+    return { success: false, issue: { code: "unexpected" } };
   }
 }
 
-export type CompanyDraftState = { success: boolean; error?: string };
+export type CompanyDraftState = { success: boolean; issue?: CompanyFormIssue };
 
 export type CompanyDraftSnapshot = {
   step: CompanyStepNumber;
@@ -235,14 +241,14 @@ export async function saveCompanyDraftAction(
   try {
     const auth = await getCurrentMember();
     if (!auth?.member) {
-      return { success: false, error: "Unauthorized" };
+      return { success: false, issue: { code: "unauthorized" } };
     }
 
     const actor = buildActor(auth.member);
     assertCan(actor, "create", "own_company");
 
     if (!isCompanyStep(step)) {
-      return { success: false, error: "Unknown step" };
+      return { success: false, issue: { code: "unknownStep" } };
     }
 
     const stepSchema =
@@ -250,7 +256,10 @@ export async function saveCompanyDraftAction(
     if (stepSchema) {
       const parsedStep = stepSchema.safeParse(values);
       if (!parsedStep.success) {
-        return { success: false, error: parsedStep.error.issues[0]?.message };
+        return {
+          success: false,
+          issue: describeCompanyIssue(parsedStep.error),
+        };
       }
     }
 
@@ -271,9 +280,8 @@ export async function saveCompanyDraftAction(
 
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred";
-    return { success: false, error: message };
+    logger.error("Company draft save failed", safeErrorFields(error));
+    return { success: false, issue: { code: "unexpected" } };
   }
 }
 
@@ -306,7 +314,7 @@ export async function getCompanyDraftAction(): Promise<CompanyDraftSnapshot | nu
 export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
   const auth = await getCurrentMember();
   if (!auth?.member) {
-    return { success: false, error: "Unauthorized" };
+    return { success: false, issue: { code: "unauthorized" } };
   }
 
   const actor = buildActor(auth.member);
@@ -830,10 +838,13 @@ const ownerEditSchema = z.object({
   discount: z.string().max(255).optional(),
 });
 
+/** The owner-edit form still reports a message rather than a code (FR-042). */
+export type CompanyEditState = { success: boolean; error?: string };
+
 export async function ownerEditCompanyAction(
-  _prevState: CompanyFormState | null,
+  _prevState: CompanyEditState | null,
   formData: FormData,
-): Promise<CompanyFormState> {
+): Promise<CompanyEditState> {
   try {
     const auth = await getCurrentMember();
     if (!auth?.member) {

@@ -787,7 +787,24 @@
     "back": "Back",
     "reviewSection": "Review and confirm",
     "reviewNote": "Check your answers. Nothing is charged yet - your application is reviewed within 1-3 business days.",
-    "notProvided": "Not provided"
+    "notProvided": "Not provided",
+    "errors": {
+      "aboutField": "{field}: {reason}",
+      "required": "this is required",
+      "tooShort": "must be at least {limit} characters",
+      "tooLong": "must be at most {limit} characters",
+      "tooFew": "select at least {limit}",
+      "tooMany": "select at most {limit}",
+      "invalidFormat": "is not in the expected format",
+      "invalidChoice": "is not one of the available options",
+      "invalidField": "is not valid",
+      "unauthorized": "Your session has expired. Sign in again and your application will be waiting.",
+      "categoryUnknown": "that activity is no longer available - choose another",
+      "categoryProhibited": "we cannot list companies in that activity",
+      "cityCountryMismatch": "does not belong to the country of registration",
+      "unknownStep": "That step does not exist.",
+      "unexpected": "Something went wrong on our side. Your application is saved - please try again."
+    }
   },
   "admin": {
     "nav": {

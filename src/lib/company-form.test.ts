@@ -147,6 +147,73 @@ describe("FR-040: four-step company submission form", () => {
     expect(parsed.category).toBe("Food");
   });
 
+  /**
+   * A browser serialising a form rewrites every line break as CRLF, so a value
+   * the textarea counted as 500 characters reaches the Server Action as 503.
+   * Steps 1-3 are saved through a Server Action call that carries the string
+   * unchanged, and only step 4 is a real form post - so without normalisation
+   * the last step rejects text every earlier step accepted.
+   */
+  const atLimit = (limit: number) => {
+    const paragraph = "a".repeat(Math.floor(limit / 3) - 1);
+    const text = [paragraph, paragraph, paragraph].join("\n");
+    return text + "a".repeat(limit - text.length);
+  };
+  const asBrowserSends = (text: string) => text.replace(/\n/g, "\r\n");
+
+  it("accepts a specialization at the limit that the browser sends with CRLF breaks", () => {
+    const text = atLimit(500);
+    expect(text).toHaveLength(500);
+    expect(asBrowserSends(text).length).toBeGreaterThan(500);
+
+    const result = companyDetailsStepSchema.safeParse({
+      ...DETAILS,
+      specializationDescription: asBrowserSends(text),
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("stores the normalised text, so a value at the limit still fits its column", () => {
+    const parsed = companyDetailsStepSchema.parse({
+      ...DETAILS,
+      description: asBrowserSends(atLimit(1000)),
+      specializationDescription: asBrowserSends(atLimit(500)),
+    });
+
+    expect(parsed.specializationDescription).toHaveLength(500);
+    expect(parsed.specializationDescription).not.toContain("\r");
+    expect(parsed.description).toHaveLength(1000);
+    expect(parsed.description).not.toContain("\r");
+  });
+
+  it("still rejects text that is over the limit once the breaks are normalised", () => {
+    const result = companyDetailsStepSchema.safeParse({
+      ...DETAILS,
+      specializationDescription: "a".repeat(501),
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts on step 4 what step 1 accepted, for the same typed text", () => {
+    const typed = atLimit(500);
+    const submission = {
+      ...DETAILS,
+      ...LOCATION,
+      ...OFFER,
+      specializationDescription: asBrowserSends(typed),
+    };
+
+    expect(
+      companyDetailsStepSchema.safeParse({
+        ...DETAILS,
+        specializationDescription: typed,
+      }).success,
+    ).toBe(true);
+    expect(registerCompanySchema.safeParse(submission).success).toBe(true);
+  });
+
   it("does not let the breadcrumbs reach a submission", () => {
     const parsed = registerCompanySchema.parse({
       ...DETAILS,

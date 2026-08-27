@@ -18,8 +18,11 @@ import {
 } from "@/actions/company";
 import { createCheckoutSessionAction } from "@/actions/stripe";
 import {
+  COMPANY_FIELD_LABEL_KEYS,
   COMPANY_FORM_STEPS,
   COMPANY_STEP_SCHEMAS,
+  describeCompanyIssue,
+  type CompanyFormIssue,
   type CompanyStepNumber,
 } from "@/lib/company-form";
 import { Button } from "@/components/ui/button";
@@ -79,7 +82,7 @@ export function CompanyRegistrationForm() {
   const [values, setValues] = useState<FormValues>({
     servesWorldwide: "false",
   });
-  const [stepError, setStepError] = useState<string | null>(null);
+  const [stepIssue, setStepIssue] = useState<CompanyFormIssue | null>(null);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -154,7 +157,7 @@ export function CompanyRegistrationForm() {
   }, [taxonomy, selectedBlock, selectedCategory]);
 
   async function goNext() {
-    setStepError(null);
+    setStepIssue(null);
 
     const fields = STEP_FIELDS[step] ?? [];
     const stepValues = Object.fromEntries(
@@ -168,7 +171,7 @@ export function CompanyRegistrationForm() {
     if (schema) {
       const parsed = schema.safeParse(stepValues);
       if (!parsed.success) {
-        setStepError(parsed.error.issues[0]?.message ?? null);
+        setStepIssue(describeCompanyIssue(parsed.error));
         return;
       }
     }
@@ -178,7 +181,7 @@ export function CompanyRegistrationForm() {
     setSaving(false);
 
     if (!saved.success) {
-      setStepError(saved.error ?? null);
+      setStepIssue(saved.issue ?? { code: "unexpected" });
       return;
     }
 
@@ -217,8 +220,27 @@ export function CompanyRegistrationForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.success, state?.companyId]);
 
+  /**
+   * Turn a refusal into a sentence in the applicant's own language, naming the
+   * field they have to go back and change.
+   *
+   * The action reports a code rather than prose precisely so this can happen
+   * here: Zod's own messages are English, and one of them - "Invalid input" -
+   * says nothing at all about which of eighteen fields is wrong.
+   */
+  function issueMessage(reported: CompanyFormIssue): string {
+    const reason = t(`errors.${reported.code}`, { limit: reported.limit ?? 0 });
+    const labelKey = reported.field
+      ? COMPANY_FIELD_LABEL_KEYS[reported.field]
+      : undefined;
+
+    return labelKey
+      ? t("errors.aboutField", { field: t(labelKey), reason })
+      : reason;
+  }
+
   function goBack() {
-    setStepError(null);
+    setStepIssue(null);
     setStep((current) =>
       current > 1 ? ((current - 1) as CompanyStepNumber) : current,
     );
@@ -253,6 +275,8 @@ export function CompanyRegistrationForm() {
     );
   }
 
+  const issue = stepIssue ?? state?.issue ?? null;
+
   if (!hydrated) {
     return <p className="text-sm text-muted-foreground">{t("draftLoading")}</p>;
   }
@@ -279,12 +303,12 @@ export function CompanyRegistrationForm() {
         </ol>
       </div>
 
-      {(stepError ?? state?.error) && (
+      {issue && (
         <p
           role="alert"
           className="text-sm text-red-500 bg-red-500/10 p-3 rounded-none border border-red-500/20"
         >
-          {stepError ?? state?.error}
+          {issueMessage(issue)}
         </p>
       )}
 
@@ -612,9 +636,11 @@ export function CompanyRegistrationForm() {
           <p className="text-sm text-muted-foreground">{t("reviewNote")}</p>
 
           <dl className="divide-y divide-border/50 border border-border/50">
-            {REVIEW_FIELDS.map(([field, labelKey]) => (
+            {REVIEW_FIELDS.map((field) => (
               <div key={field} className="flex gap-4 p-3 text-sm">
-                <dt className="w-1/3 text-muted-foreground">{t(labelKey)}</dt>
+                <dt className="w-1/3 text-muted-foreground">
+                  {t(COMPANY_FIELD_LABEL_KEYS[field] ?? field)}
+                </dt>
                 <dd className="w-2/3 break-words">
                   {field === "businessCategoryIds"
                     ? selectedCategoryIds.length > 0
@@ -691,24 +717,25 @@ const SUBMITTED_FIELDS = [
   "contactPhone",
 ] as const;
 
-const REVIEW_FIELDS: [string, string][] = [
-  ["name", "nameLabel"],
-  ["legalName", "legalNameLabel"],
-  ["taxId", "taxIdLabel"],
-  ["website", "websiteLabel"],
-  ["description", "descriptionLabel"],
-  ["specializationDescription", "specializationLabel"],
-  ["businessCategoryIds", "subcategoryLabel"],
-  ["registrationCountryCode", "registrationCountryLabel"],
-  ["serviceCountryCodes", "serviceCountriesLabel"],
-  ["businessFormat", "businessFormatLabel"],
-  ["administrativeLevel1", "administrativeLevel1Label"],
-  ["administrativeLevel2", "administrativeLevel2Label"],
-  ["city", "cityLabel"],
-  ["discount", "discountLabel"],
-  ["contactEmail", "contactEmailLabel"],
-  ["contactPhone", "contactPhoneLabel"],
-];
+/** Review order. The label for each comes from the shared field-label map. */
+const REVIEW_FIELDS = [
+  "name",
+  "legalName",
+  "taxId",
+  "website",
+  "description",
+  "specializationDescription",
+  "businessCategoryIds",
+  "registrationCountryCode",
+  "serviceCountryCodes",
+  "businessFormat",
+  "administrativeLevel1",
+  "administrativeLevel2",
+  "city",
+  "discount",
+  "contactEmail",
+  "contactPhone",
+] as const;
 
 function Field({
   id,
