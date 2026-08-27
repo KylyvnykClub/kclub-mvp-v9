@@ -3,7 +3,13 @@ import { and, desc, eq, ne, or } from "drizzle-orm";
 
 import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
-import { cards, legalAcceptances, members, sessions } from "./schema";
+import {
+  cards,
+  legalAcceptances,
+  members,
+  notifications,
+  sessions,
+} from "./schema";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 import { hashSessionToken } from "@/lib/session-token";
 
@@ -78,6 +84,16 @@ export async function registerMemberTx(
       tokenHash: sessionTokenHash,
       userAgent: input.userAgent,
       ipAddress: input.ipAddress,
+    });
+
+    // The first thing in the new member's inbox (FR-099, ADR 0020), written in
+    // the registration transaction as architecture.md §3.1 has always specified
+    // - a welcome that could arrive without an account, or an account without
+    // its welcome, is worth neither.
+    await tx.insert(notifications).values({
+      memberId: member!.id,
+      kind: "welcome",
+      dedupeKey: `welcome:${member!.id}`,
     });
 
     await appendAuditEntry(tx, {

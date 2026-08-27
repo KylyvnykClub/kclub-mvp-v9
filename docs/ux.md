@@ -89,6 +89,7 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Referrals — sent|Track introductions I made|member_vip|Status per referral|
 |Referrals — received|Act on incoming introductions|partner_owner|Accept/decline; contact revealed only on accept|
 |Send a referral|Introduce a client|member_vip|Consent attestation, quota shown before submitting|
+|Inbox|See what the system did to me and when|member|A tab under Profile, not a fifth navigation item. Unread count in the header; each row rendered in the member's current language ([decisions/0020](decisions/0020-member-inbox.md))|
 |Settings — profile|Change name, language, country|member||
 |Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|

@@ -59,9 +59,22 @@ describe("Checkout Success Page (T-4.1)", () => {
     );
 
     expect(source).toContain("deliberately grants NO entitlement");
-    expect(source).not.toContain("@/data/");
     expect(source).not.toContain("@/actions/stripe");
     expect(source).not.toContain("setCardTierForMember");
+
+    // Since ADR 0019 the page reads the company so it can name it and say the
+    // application is under review. Reading is fine; what must never appear is a
+    // write, so the ban is on mutation rather than on touching the data layer
+    // at all - which is the property "grants no entitlement" actually means.
+    for (const mutation of [
+      "insert(",
+      "update(",
+      "delete(",
+      "upsert",
+      "transaction(",
+    ]) {
+      expect(source).not.toContain(mutation);
+    }
 
     // Ensure the tier remains unchanged.
     const finalTier = await cardTierOf(db, memberId);

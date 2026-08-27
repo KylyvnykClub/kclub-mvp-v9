@@ -107,6 +107,7 @@ account inherit staff scope.
 |`staff_user`|An employee of the club|1:N audit entries|4 → 12|
 |`audit_log`|What a staff user or the system changed|N:1 actor|2,000 → 150,000/year|
 |`outbox`|Committed intent to do something outside the transaction|—|drained continuously|
+|`notifications`|One thing the system did to a member, as the member reads it|N:1 member|5,000 → 200,000/year|
 
 **Conventions applied to every table:** `id` is a UUIDv7 (time-ordered, so
 b-tree inserts stay local and an id does not leak a sequence count);
@@ -180,6 +181,7 @@ security control first and a cost control second.
 |Referral shell (who referred whom, when, outcome)|24 months|Hard delete|Abuse and dispute handling|
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
+|Member inbox (`notifications`)|180 days from creation, read or unread alike|Hard delete by the retention sweep. On member erasure, deleted **explicitly** — the anonymise-not-delete rule above means the `ON DELETE CASCADE` on `member_id` never fires|An inbox is a record of recent events ([decisions/0020](decisions/0020-member-inbox.md))|
 |Application logs|30 days|Automatic expiry in Axiom|Cost and minimisation|
 |Database backups|30 days point-in-time, 12 monthly snapshots|Automatic expiry|Recovery window|
 
@@ -200,10 +202,14 @@ to end — a deletion that stops at the primary database is not a deletion:
 3. On day 30 an Inngest job runs the erasure: anonymise the member row; delete
    sessions, trusted devices, verification records and the card's QR token;
    delete or anonymise owned companies (unpublishing any that are live);
-   hard-delete any referral contact data they submitted. There is no
-   notification log to clear ([ADR 0014](decisions/0014-no-notification-log-table.md))
-   and no KCLUB-hosted company image to delete — logos are external URLs the
-   member supplied, not files we stored ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
+   hard-delete any referral contact data they submitted; and hard-delete their
+   inbox ([ADR 0020](decisions/0020-member-inbox.md)) — **explicitly**, because
+   step 3 anonymises the member row rather than deleting it, so the
+   `ON DELETE CASCADE` on `notifications.member_id` never fires. There is still
+   no notification _delivery_ log to clear
+   ([ADR 0014](decisions/0014-no-notification-log-table.md)) and no KCLUB-hosted
+   company image to delete — logos are external URLs the member supplied, not
+   files we stored ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
 4. Stripe: the Customer object is deleted through the API, which removes the
    payment method and the billing address. Invoices remain in Stripe, as
    required by tax law and stated in the Privacy Policy.

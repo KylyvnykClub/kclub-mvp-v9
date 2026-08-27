@@ -211,6 +211,9 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-094|The system must be able to export everything it holds about one member in a machine-readable form within 30 days of a request|staff_owner|M|
 |FR-095|Transactional notifications (moderation outcome, payment failure, referral received) must be delivered by email where an address is known and by SMS where it is not, in the member's language|system|S|
 |FR-096|The application must be installable as a PWA on iOS and Android home screens|member|C|
+|FR-099|Every member must have an in-product inbox that records the outcome of anything the system did to them — moderation decisions, incoming client referrals, payment events and their welcome — showing each in the member's current language, with an unread count, and readable only by that member|member|M|
+|FR-100|Listing checkout must be reachable as soon as a company is submitted, before moderation, and must be refused only for a company the caller does not own or that has already been rejected|partner_owner|M|
+|FR-101|Rejecting a company whose listing subscription was already paid must cancel that subscription and refund its last invoice, exactly once however many times the rejection is submitted|staff_moderator|M|
 
 ---
 
@@ -334,10 +337,10 @@ before the largest surface (the staff console) is built.
 |0 — Foundations|1–2|Repository, CI, environments, design tokens, i18n scaffolding, schema baseline, observability wired, FR-090…FR-092|A trivial change reaches staging automatically, with tests and a rollback|
 |1 — Identity and card|2–5|FR-001…FR-027, FR-093, FR-097|A stranger can register by phone and show a card that verifies by QR|
 |2 — Catalogue and onboarding|4–8|FR-030…FR-048|A partner can apply, be moderated, and appear in a searchable catalogue|
-|3 — Billing|7–10|FR-050…FR-060, FR-098|Both subscriptions sell, lapse, recover and reconcile correctly against Stripe test clocks|
+|3 — Billing|7–10|FR-050…FR-060, FR-098, FR-100, FR-101|Both subscriptions sell, lapse, recover and reconcile correctly against Stripe test clocks|
 |4 — Private beta|10|Milestone in [brief.md](brief.md#first-milestone)|30 seeded partners, 50 invited members, English only|
 |5 — Staff console|9–13|FR-080…FR-089, FR-094|Staff run the club without database access|
-|6 — Referrals|11–14|FR-070…FR-078, FR-095|End-to-end referral with consent, quotas and moderation|
+|6 — Referrals|11–14|FR-070…FR-078, FR-095, FR-099|End-to-end referral with consent, quotas and moderation|
 |7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous

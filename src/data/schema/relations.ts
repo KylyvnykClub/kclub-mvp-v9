@@ -15,6 +15,7 @@ import { subscriptions } from "./subscriptions";
 import { stripeCustomers } from "./stripe-customers";
 import { referrals } from "./referrals";
 import { accountDeletionRequests } from "./account-deletion-requests";
+import { notifications } from "./notifications";
 import { countries } from "./countries";
 
 export const membersRelations = relations(members, ({ one, many }) => ({
@@ -195,3 +196,10 @@ export const accountDeletionRequestsRelations = relations(
     }),
   }),
 );
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  member: one(members, {
+    fields: [notifications.memberId],
+    references: [members.id],
+  }),
+}));

@@ -74,6 +74,8 @@ that the folder cannot be trusted.
 |[0016](0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|2026-08-22|
 |[0017](0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|2026-08-23|
 |[0018](0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|2026-08-23|
+|[0019](0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Accepted|2026-08-26|
+|[0020](0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|2026-08-27|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

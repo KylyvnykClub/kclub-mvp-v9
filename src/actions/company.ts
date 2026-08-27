@@ -3,7 +3,8 @@
 import { db } from "@/data/db";
 import type { PageParams } from "@/data/pagination";
 import { appendAuditEntry } from "@/data/audit-log";
-import { enqueueOutbox } from "@/data/outbox";
+import { BILLING_REFUND_RETRY_TOPIC, enqueueOutbox } from "@/data/outbox";
+import { createNotification } from "@/data/notifications";
 import {
   companySlugExists,
   COMPANY_ADMIN_STATUSES,
@@ -21,6 +22,7 @@ import {
   listPartnerLocations,
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
+  type CompanyAdminView,
   listCompanyIdsWithActiveSubscription,
   listPendingCompanies,
   listShowcaseCompanies,
@@ -56,6 +58,10 @@ import { buildActor } from "@/domain/actor";
 import { assertCan, can } from "@/domain/authorization";
 import { COMPANY_MODERATION_TOPIC } from "@/modules/moderation/outbox";
 import {
+  productionRefundDeps,
+  refundListingForCompany,
+} from "@/modules/billing/refund";
+import {
   COMPANY_STEP_SCHEMAS,
   companyDraftDataSchema,
   isCompanyStep,
@@ -90,7 +96,16 @@ export async function getLocalizedCategoryTreeAction(
   return listLocalizedCategoryTree(db, locale);
 }
 
-export type CompanyFormState = { success: boolean; error?: string };
+export type CompanyFormState = {
+  success: boolean;
+  error?: string;
+  /**
+   * Set only by `registerCompanyAction`. The form uses it to open listing
+   * checkout in a second call (ADR 0019) - this action cannot `redirect()`
+   * itself, because its own try/catch would swallow the NEXT_REDIRECT throw.
+   */
+  companyId?: string;
+};
 
 function generateSlug(name: string): string {
   return name
@@ -159,7 +174,7 @@ export async function registerCompanyAction(
       }
     }
 
-    await insertCompany(
+    const companyId = await insertCompany(
       db,
       {
         ownerId: auth.member.id,
@@ -191,7 +206,7 @@ export async function registerCompanyAction(
     // The application is now a company; the draft has served its purpose.
     await deleteCompanyDraft(db, auth.member.id);
 
-    return { success: true };
+    return { success: true, companyId };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "An unexpected error occurred";
@@ -409,7 +424,7 @@ const companiesListParamsSchema = z.object({
 });
 
 const EMPTY_COMPANY_PAGE = {
-  rows: [],
+  rows: [] as (CompanyAdminView & { paid: boolean })[],
   total: 0,
   page: 1,
   pageSize: DEFAULT_PAGE_SIZE,
@@ -441,11 +456,21 @@ export async function getCompaniesForAdminAction(
   // instead of an empty table under a heading that claims otherwise.
   const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const rows = await listCompaniesForAdmin(
+  const page_ = await listCompaniesForAdmin(
     db,
     filters,
     pageParamsFromSearchParam(currentPage, DEFAULT_PAGE_SIZE),
   );
+
+  // Since ADR 0019 a company can reach the queue unpaid, because checkout may
+  // have been abandoned. The queue still shows it - FR-042 says a submitted
+  // company enters the queue, and filtering here would also hide one whose
+  // webhook has merely not landed yet - so moderators get an indicator and
+  // paid-first ordering instead, and triage rather than guess.
+  const paidIds = new Set(await listCompanyIdsWithActiveSubscription(db));
+  const rows = page_
+    .map((company) => ({ ...company, paid: paidIds.has(company.id) }))
+    .sort((a, b) => Number(b.paid) - Number(a.paid));
 
   return {
     success: true,
@@ -504,6 +529,64 @@ export async function getCompanyAdminDetailAction(companyId: string) {
   };
 }
 
+/**
+ * Cancel and refund a rejected company's listing subscription (ADR 0019).
+ *
+ * Deliberately never throws. The moderation decision, its audit entry and the
+ * applicant's notification have already committed by the time this runs, and a
+ * moderator must not be blocked - or shown a failure - because Stripe is
+ * unreachable. A failure is audited and enqueued for the next drain instead,
+ * which is the same at-least-once shape the outbox gives every other external
+ * effect in this codebase.
+ */
+async function undoListingPaymentForRejection(
+  companyId: string,
+  staffId: string,
+): Promise<void> {
+  try {
+    const result = await refundListingForCompany(
+      db,
+      await productionRefundDeps(),
+      companyId,
+    );
+
+    if (result.outcome === "nothing_to_refund") return;
+
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: staffId,
+      action: "company.listing_refunded",
+      subjectType: "company",
+      subjectId: companyId,
+      meta:
+        result.outcome === "refunded"
+          ? {
+              outcome: result.outcome,
+              subscriptionId: result.subscriptionId,
+              invoiceId: result.invoiceId,
+              amountMinor: result.amountMinor,
+            }
+          : { outcome: result.outcome, subscriptionId: result.subscriptionId },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      `[listing-refund] failed for company ${companyId}: ${message}`,
+    );
+
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: staffId,
+      action: "company.listing_refund_failed",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { error: message },
+    });
+
+    await enqueueOutbox(db, BILLING_REFUND_RETRY_TOPIC, { companyId });
+  }
+}
+
 export async function moderateCompanyAction(
   id: string,
   status: "approved" | "rejected",
@@ -519,7 +602,18 @@ export async function moderateCompanyAction(
     return { success: false, error: "Unauthorized" };
   }
 
-  await setCompanyModerationStatus(db, id, status, reason ?? null);
+  // Idempotency for the whole decision, enforced in the UPDATE's own WHERE so
+  // two concurrent requests cannot both pass it. A repeat must not re-audit,
+  // re-notify, or - since ADR 0019 - refund a second time.
+  const changed = await setCompanyModerationStatus(
+    db,
+    id,
+    status,
+    reason ?? null,
+  );
+  if (!changed) {
+    return { success: true, alreadyApplied: true };
+  }
 
   await appendAuditEntry(db, {
     actorType: "staff",
@@ -529,6 +623,28 @@ export async function moderateCompanyAction(
     subjectId: id,
     meta: { status, reason: reason ?? null },
   });
+
+  // The inbox is written here rather than in the outbox worker, because the
+  // worker drains once a day and in-product state is authoritative
+  // (reliability.md, ADR 0020). The outbox below still carries the email.
+  const company = await findCompanyById(db, id);
+  if (company) {
+    await createNotification(db, {
+      memberId: company.ownerId,
+      kind: status === "approved" ? "company_approved" : "company_rejected",
+      params: {
+        companyId: id,
+        companyName: company.name,
+        // Free text a human wrote; no translation reaches it, so the UI renders
+        // it as a quoted moderator note beside the localised shell (FR-090).
+        ...(status === "rejected" && reason ? { reason } : {}),
+      },
+    });
+  }
+
+  if (status === "rejected") {
+    await undoListingPaymentForRejection(id, auth.member.id);
+  }
 
   await enqueueOutbox(db, COMPANY_MODERATION_TOPIC, {
     companyId: id,

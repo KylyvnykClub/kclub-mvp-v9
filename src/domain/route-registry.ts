@@ -426,6 +426,24 @@ const staticRoutes: RouteEntry[] = [
     mutating: true,
     staffOnly: false,
   },
+  // The inbox (FR-099). Both are scoped to the caller's own rows; there is
+  // deliberately no entry that reads another member's notifications.
+  {
+    method: "POST",
+    path: "action:markNotificationReadAction",
+    action: "update",
+    subject: "own_notification",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:markAllNotificationsReadAction",
+    action: "update",
+    subject: "own_notification",
+    mutating: true,
+    staffOnly: false,
+  },
   {
     method: "POST",
     path: "action:createVipCheckoutAction",

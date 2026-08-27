@@ -6,12 +6,14 @@ import {
   eq,
   ilike,
   inArray,
+  ne,
   or,
   sql,
   type SQL,
 } from "drizzle-orm";
 
 import type { DbClient } from "./db";
+import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
 import type { PageParams } from "./pagination";
 import {
   businessCategories,
@@ -24,7 +26,13 @@ import {
   subscriptions,
 } from "./schema";
 
-const PUBLISHABLE_LISTING_STATUSES = ["active", "past_due"];
+/**
+ * A listing is publishable exactly while its subscription grants access. This is
+ * the same rule the entitlement projection uses, imported rather than copied:
+ * money and access must never disagree (ADR 0004), and since ADR 0019 payment
+ * precedes moderation, two drifting copies would decide publication differently.
+ */
+const PUBLISHABLE_LISTING_STATUSES = ACCESS_GRANTING_SUBSCRIPTION_STATUSES;
 
 export async function listActiveCategoryBlocks(db: DbClient) {
   const rows = await db.query.businessCategories.findMany({
@@ -340,13 +348,14 @@ export async function companySlugExists(
   return existing !== undefined;
 }
 
+/** Returns the new company's id, which the caller needs to open checkout (ADR 0019). */
 export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
   serviceCountryCodes: string[] = [],
   categoryIds: number[] = [],
-): Promise<void> {
-  await db.transaction(async (tx) => {
+): Promise<string> {
+  return db.transaction(async (tx) => {
     const [company] = await tx.insert(companies).values(values).returning({
       id: companies.id,
     });
@@ -366,6 +375,7 @@ export async function insertCompany(
         })),
       );
     }
+    return company!.id;
   });
 }
 
@@ -824,20 +834,34 @@ export async function countCompaniesByStatus(
   return counts;
 }
 
+/**
+ * Move a company to a moderation outcome, once.
+ *
+ * Returns false when the company was already in that status, so the caller can
+ * stop rather than repeat the decision's side effects. Since ADR 0019 a
+ * rejection cancels a subscription and refunds an invoice, and a double-clicked
+ * reject must not do either of those twice. The guard is in the WHERE clause
+ * rather than in a prior read, so two concurrent requests cannot both pass it.
+ */
 export async function setCompanyModerationStatus(
   db: DbClient,
   companyId: string,
   status: "approved" | "rejected",
   reason: string | null,
-): Promise<void> {
-  await db
+): Promise<boolean> {
+  const changed = await db
     .update(companies)
     .set({
       moderationStatus: status,
       rejectionReason: reason,
       updatedAt: new Date(),
     })
-    .where(eq(companies.id, companyId));
+    .where(
+      and(eq(companies.id, companyId), ne(companies.moderationStatus, status)),
+    )
+    .returning({ id: companies.id });
+
+  return changed.length > 0;
 }
 
 export async function setCompanyShowcase(
@@ -972,17 +996,22 @@ export type CompanyRow = Awaited<
   ReturnType<typeof listCompaniesByOwner>
 >[number];
 
-export async function findApprovedCompanyByOwner(
+/**
+ * One company the caller owns, whatever its moderation status.
+ *
+ * Deliberately unfiltered by status (ADR 0019): listing checkout now happens
+ * before moderation, so the eligibility rule lives in the action - which
+ * refuses only a company already rejected - and the checkout result pages use
+ * the same lookup to name what was paid for. Publication still requires
+ * approved AND an active subscription (FR-044); nothing here changes that.
+ */
+export async function findCompanyByOwner(
   db: DbClient,
   companyId: string,
   ownerId: string,
 ) {
   return db.query.companies.findFirst({
-    where: and(
-      eq(companies.id, companyId),
-      eq(companies.ownerId, ownerId),
-      eq(companies.moderationStatus, "approved"),
-    ),
+    where: and(eq(companies.id, companyId), eq(companies.ownerId, ownerId)),
   });
 }
 

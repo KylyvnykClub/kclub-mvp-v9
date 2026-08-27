@@ -19,6 +19,17 @@ export const BILLING_NOTIFICATION_TOPIC = "billing.notification";
 export const PAYMENT_FAILED_NOTIFICATION = "payment_failed";
 export const GRACE_EXPIRY_WARNING_NOTIFICATION = "grace_expiry_warning";
 
+/**
+ * Retry for the cancel-and-refund a rejection owes a paid company (ADR 0019).
+ *
+ * A moderator's decision must never be blocked by Stripe being unreachable, so
+ * the rejection commits first and the money is undone afterwards. When that
+ * fails, a row on this topic carries it to the next drain. Payload:
+ * `{ companyId }` - the refund re-derives the subscription, because by then the
+ * one it saw may have changed.
+ */
+export const BILLING_REFUND_RETRY_TOPIC = "billing.refund.retry";
+
 export async function enqueueOutbox(
   db: DbClient,
   topic: string,

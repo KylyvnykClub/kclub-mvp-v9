@@ -7,7 +7,7 @@ import {
   findStripeCustomerIdByMember,
   upsertStripeCustomerMapping,
 } from "@/data/billing";
-import { findApprovedCompanyByOwner } from "@/data/companies";
+import { findCompanyByOwner } from "@/data/companies";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/env";
@@ -96,6 +96,10 @@ async function createSubscriptionCheckout(params: {
     metadata.companyId = params.companyId;
   }
 
+  const companyQuery = params.companyId
+    ? `?company=${encodeURIComponent(params.companyId)}`
+    : "";
+
   const session = await stripe.checkout.sessions.create(
     {
       customer: stripeCustomerId,
@@ -111,8 +115,11 @@ async function createSubscriptionCheckout(params: {
       subscription_data: {
         metadata,
       },
-      success_url: `${origin}/${locale}/dashboard/checkout/success`,
-      cancel_url: `${origin}/${locale}/dashboard/checkout/canceled`,
+      // The company id lets the result pages name what was paid for and say
+      // what happens next. It selects copy and nothing else - entitlement is
+      // projected from the webhook alone (ADR 0004).
+      success_url: `${origin}/${locale}/dashboard/checkout/success${companyQuery}`,
+      cancel_url: `${origin}/${locale}/dashboard/checkout/canceled${companyQuery}`,
     },
     {
       idempotencyKey: checkoutIdempotencyKey({
@@ -138,18 +145,23 @@ export async function createVipCheckoutAction() {
   });
 }
 
+/**
+ * Open listing checkout for a company the caller owns (FR-051).
+ *
+ * Since ADR 0019 this runs immediately after submission, before moderation, so
+ * a `pending` company is eligible. Only a company that has already been
+ * rejected is refused - paying for a listing that will not be published buys
+ * nothing. Publication still requires approved AND an active subscription
+ * (FR-044); the two gates are ANDed at read time and neither is relaxed here.
+ */
 export async function createCheckoutSessionAction(companyId: string) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
     throw new Error("Unauthorized");
   }
 
-  const company = await findApprovedCompanyByOwner(
-    db,
-    companyId,
-    auth.member.id,
-  );
-  if (!company) {
+  const company = await findCompanyByOwner(db, companyId, auth.member.id);
+  if (!company || company.moderationStatus === "rejected") {
     throw new Error("Company is not eligible for listing checkout");
   }
 

@@ -8,9 +8,11 @@ import { SiteHeader } from "@/components/landing/site-header";
 export function DashboardChrome({
   children,
   admin = false,
+  unreadCount = 0,
 }: {
   children: ReactNode;
   admin?: boolean;
+  unreadCount?: number;
 }) {
   const pathname = usePathname();
   const isAdmin = pathname.includes("/dashboard/admin");
@@ -21,7 +23,7 @@ export function DashboardChrome({
 
   return (
     <>
-      <SiteHeader member admin={admin} />
+      <SiteHeader member admin={admin} unreadCount={unreadCount} />
       <main className="flex-1">
         <div className="kclub-shell py-8 sm:py-10">{children}</div>
       </main>

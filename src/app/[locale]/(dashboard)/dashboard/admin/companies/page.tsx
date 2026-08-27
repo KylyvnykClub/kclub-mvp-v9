@@ -126,6 +126,9 @@ export default async function AdminCompaniesPage({
                 {t("colSubmitted")}
               </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
+              <TableHead className="hidden sm:table-cell">
+                {t("colListing")}
+              </TableHead>
               <TableHead>{t("colActions")}</TableHead>
             </TableRow>
           </TableHeader>
@@ -133,7 +136,7 @@ export default async function AdminCompaniesPage({
             {data.rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   {t("empty")}
@@ -175,6 +178,19 @@ export default async function AdminCompaniesPage({
                     <StatusBadge
                       tone={STATUS_TONES[company.moderationStatus]}
                       label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
+                    />
+                  </TableCell>
+                  {/*
+                    Payment now precedes moderation (ADR 0019), so an unpaid row
+                    is an abandoned checkout rather than an error. Paid rows sort
+                    first; this tells the moderator which is which.
+                  */}
+                  <TableCell className="hidden sm:table-cell">
+                    <StatusBadge
+                      tone={company.paid ? "positive" : "warning"}
+                      label={
+                        company.paid ? t("listingPaid") : t("listingUnpaid")
+                      }
                     />
                   </TableCell>
                   <TableCell>

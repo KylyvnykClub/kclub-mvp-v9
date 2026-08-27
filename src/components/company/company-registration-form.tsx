@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useActionState, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useActionState,
+  useMemo,
+  useRef,
+  useTransition,
+} from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import {
@@ -9,6 +16,7 @@ import {
   getCompanyDraftAction,
   getLocalizedCategoryTreeAction,
 } from "@/actions/company";
+import { createCheckoutSessionAction } from "@/actions/stripe";
 import {
   COMPANY_FORM_STEPS,
   COMPANY_STEP_SCHEMAS,
@@ -74,6 +82,9 @@ export function CompanyRegistrationForm() {
   const [stepError, setStepError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [openingCheckout, startCheckout] = useTransition();
+  const checkoutStarted = useRef(false);
 
   const [taxonomy, setTaxonomy] = useState<CategoryTreeRow[]>([]);
   const [subcategories, setSubcategories] = useState<
@@ -178,6 +189,34 @@ export function CompanyRegistrationForm() {
     );
   }
 
+  /**
+   * Hand the freshly created company off to listing checkout (ADR 0019).
+   *
+   * `createCheckoutSessionAction` ends in a redirect to Stripe, so on the happy
+   * path nothing after it runs. A throw that does land here is a real failure,
+   * and the application is already saved - the owner keeps the retry button and
+   * can also pay later from Profile > Companies.
+   */
+  function openCheckout(companyId: string) {
+    setCheckoutError(null);
+    startCheckout(async () => {
+      try {
+        await createCheckoutSessionAction(companyId);
+      } catch {
+        setCheckoutError(t("checkoutFailed"));
+      }
+    });
+  }
+
+  // Submitting is the moment of intent, so checkout opens on its own rather
+  // than waiting for a second click. The ref keeps it to one attempt.
+  useEffect(() => {
+    if (!state?.success || !state.companyId || checkoutStarted.current) return;
+    checkoutStarted.current = true;
+    openCheckout(state.companyId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.success, state?.companyId]);
+
   function goBack() {
     setStepError(null);
     setStep((current) =>
@@ -187,14 +226,29 @@ export function CompanyRegistrationForm() {
 
   if (state?.success) {
     return (
-      <div className="text-sm text-green-500 bg-green-500/10 p-4 rounded-none border border-green-500/20">
-        <p className="font-bold mb-2">{t("successTitle")}</p>
-        <Link
-          href="/dashboard/profile"
-          className="underline hover:text-green-400"
-        >
-          {t("returnToProfile")}
-        </Link>
+      <div className="space-y-4 border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-500">
+        <p className="font-bold">{t("successTitle")}</p>
+        <p className="text-muted-foreground">{t("checkoutHandoff")}</p>
+        {checkoutError && (
+          <p className="text-destructive" role="alert">
+            {checkoutError}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-4">
+          <Button
+            type="button"
+            disabled={openingCheckout || !state.companyId}
+            onClick={() => state.companyId && openCheckout(state.companyId)}
+          >
+            {openingCheckout ? t("checkoutOpening") : t("checkoutContinue")}
+          </Button>
+          <Link
+            href="/dashboard/profile"
+            className="underline hover:text-green-400"
+          >
+            {t("returnToProfile")}
+          </Link>
+        </div>
       </div>
     );
   }

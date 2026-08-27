@@ -22,9 +22,16 @@ const navigation = [
 export function SiteHeader({
   member = false,
   admin = false,
+  unreadCount = 0,
 }: {
   member?: boolean;
   admin?: boolean;
+  /**
+   * Unread inbox count (FR-099), supplied by the dashboard layout. Public pages
+   * render this header with no member and no prop, so they run no query and
+   * show no badge.
+   */
+  unreadCount?: number;
 }) {
   const t = useTranslations("home");
   const tAuth = useTranslations("auth");
@@ -110,9 +117,13 @@ export function SiteHeader({
               )}
               <Link
                 href="/dashboard/profile"
-                className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
+                className="hidden items-center gap-2 px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
               >
                 {tDashboard("profile")}
+                <UnreadBadge
+                  count={unreadCount}
+                  label={tDashboard("unreadLabel", { count: unreadCount })}
+                />
               </Link>
               <Button
                 type="button"
@@ -199,9 +210,13 @@ export function SiteHeader({
                   <Link
                     href="/dashboard/profile"
                     onClick={() => setOpen(false)}
-                    className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                    className="flex items-center gap-2 border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
                   >
                     {tDashboard("profile")}
+                    <UnreadBadge
+                      count={unreadCount}
+                      label={tDashboard("unreadLabel", { count: unreadCount })}
+                    />
                   </Link>
                   <Button
                     type="button"
@@ -239,5 +254,26 @@ export function SiteHeader({
         </nav>
       )}
     </header>
+  );
+}
+
+/**
+ * The unread inbox count (FR-099), rendered beside the Profile link in both the
+ * desktop bar and the mobile drawer - the two member-link blocks in this file
+ * are hand-duplicated, so a shared component is what keeps them from drifting.
+ *
+ * Renders nothing at zero: an empty badge is noise, and its absence is already
+ * the message.
+ */
+function UnreadBadge({ count, label }: { count: number; label: string }) {
+  if (count <= 0) return null;
+
+  return (
+    <span
+      aria-label={label}
+      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-black text-accent-foreground"
+    >
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }
