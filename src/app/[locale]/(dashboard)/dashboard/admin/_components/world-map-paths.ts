@@ -1,4 +1,14 @@
 // Generated from Natural Earth 1:110m Admin 0 countries (public domain).
+//
+// BUILD INPUT ONLY - nothing imports this any more. The finance map now draws
+// dots from dotted-world-map.ts, and this file survives as the source of the
+// per-country anchor points that tools/generate-dotted-map.ts reads, as text,
+// to place them. Deleting it breaks `pnpm map:generate`, not the app.
+//
+// Note the two entries whose `id` is wrong: "Turkish Republic of Northern
+// Cyprus" carries CN and "Somaliland" carries SL, because neither has an ISO
+// 3166-1 code of its own. The generator drops both by name. See the backlog
+// item world-map-paths-miscodes-two-territories.
 export const WORLD_MAP_WIDTH = 100;
 export const WORLD_MAP_HEIGHT = 40;
 export const WORLD_COUNTRIES = [
