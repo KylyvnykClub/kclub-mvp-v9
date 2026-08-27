@@ -90,6 +90,7 @@ async function seedPartner(
       ...rest,
     },
     serviceCountryCodes,
+    [categoryId ?? category!.id],
   );
 
   return id;

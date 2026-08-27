@@ -81,17 +81,22 @@ async function seedCompany(
   const category = await seedCategory(db);
   const id = crypto.randomUUID();
 
-  await insertCompany(db, {
-    id,
-    ownerId: owner.id,
-    businessCategoryId: category.id,
-    name: `Company ${id.slice(0, 8)}`,
-    slug: `company-${id.slice(0, 8)}`,
-    country: "Ukraine",
-    city: "Kyiv",
-    description: "A place that sells coffee",
-    ...overrides,
-  });
+  await insertCompany(
+    db,
+    {
+      id,
+      ownerId: owner.id,
+      businessCategoryId: category.id,
+      name: `Company ${id.slice(0, 8)}`,
+      slug: `company-${id.slice(0, 8)}`,
+      country: "Ukraine",
+      city: "Kyiv",
+      description: "A place that sells coffee",
+      ...overrides,
+    },
+    [],
+    [category.id],
+  );
 
   const company = await findCompanyById(db, id);
   return { company: company!, owner, category };
