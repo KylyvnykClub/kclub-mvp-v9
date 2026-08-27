@@ -64,7 +64,7 @@ export default async function AdminReferralsPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="w-full space-y-8">
       <div>
         <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
           {t("title")}

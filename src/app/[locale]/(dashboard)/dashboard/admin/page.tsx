@@ -99,7 +99,7 @@ export default async function AdminDashboardPage({
     value.toLocaleString(locale, { style: "currency", currency: "USD" });
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="w-full space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
