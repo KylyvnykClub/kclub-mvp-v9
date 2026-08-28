@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { updateProfileAction } from "@/actions/profile";
 import type { ProfileView } from "@/data/profiles";
@@ -8,27 +8,84 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AVATAR_SERVE_PATH } from "@/lib/avatar-path";
+
+const AVATAR_ERROR_KEYS: Record<string, string> = {
+  too_large: "avatarErrorTooLarge",
+  unreadable: "avatarErrorUnreadable",
+  unsupported_format: "avatarErrorUnsupportedFormat",
+  processing_failed: "avatarErrorProcessingFailed",
+};
 
 export function EditProfileForm({ profile }: { profile: ProfileView }) {
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
   const [state, action, pending] = useActionState(updateProfileAction, null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+
+  const avatarErrorKey = state?.error
+    ? AVATAR_ERROR_KEYS[state.error]
+    : undefined;
+  const errorMessage = avatarErrorKey
+    ? t(avatarErrorKey)
+    : (state?.error ?? null);
+
+  const currentAvatarSrc =
+    preview ?? (profile?.avatarUrl ? AVATAR_SERVE_PATH : null);
 
   return (
     <form action={action} className="space-y-4">
-      {state?.error && <p className="text-sm text-red-500">{state.error}</p>}
+      {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
       {state?.success && (
         <p className="text-sm text-green-500">{t("profileUpdated")}</p>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="avatarUrl">{t("avatarLabel")}</Label>
-        <Input
-          id="avatarUrl"
-          name="avatarUrl"
-          placeholder="https://example.com/avatar.jpg"
-          defaultValue={profile?.avatarUrl || ""}
-        />
+        <Label htmlFor="avatar">{t("avatarLabel")}</Label>
+        <div className="flex items-center gap-4">
+          {currentAvatarSrc && !removeAvatar ? (
+            // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes; next/image adds nothing here
+            <img
+              src={currentAvatarSrc}
+              alt=""
+              className="size-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="size-16 rounded-full bg-muted" aria-hidden="true" />
+          )}
+          <Input
+            id="avatar"
+            name="avatar"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="max-w-xs"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) {
+                setPreview(null);
+                return;
+              }
+              setRemoveAvatar(false);
+              setPreview(URL.createObjectURL(file));
+            }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
+        {profile?.avatarUrl && (
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              name="removeAvatar"
+              checked={removeAvatar}
+              onChange={(e) => {
+                setRemoveAvatar(e.target.checked);
+                if (e.target.checked) setPreview(null);
+              }}
+            />
+            {t("avatarRemoveLabel")}
+          </label>
+        )}
       </div>
 
       <div className="space-y-2">

@@ -89,8 +89,11 @@ export async function findMembersDueForErasure(
  * listing, since catalogue visibility is projected from subscription status,
  * not a flag on the company - is an external call, handled by
  * `eraseStripeCustomerForMember` (src/modules/billing/erasure.ts) before this
- * runs. Deleting R2 images is not part of it either: no R2 uploads exist by
- * design (ADR 0013).
+ * runs. Deleting the member's R2 avatar object is also an external call,
+ * handled the same way by the caller (src/app/api/cron/retention/route.ts),
+ * best-effort, after this transaction commits (ADR 0021). Company images
+ * remain untouched: partner logos are still external URLs, not R2 uploads
+ * (ADR 0013).
  *
  * There is still no notification *delivery log* to clear (ADR 0014), but since
  * ADR 0020 there is an in-product inbox, and it is deleted here explicitly.

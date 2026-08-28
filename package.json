@@ -43,6 +43,7 @@
     "verify:build": "tsx tools/verify-build.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1120.0",
     "@neondatabase/serverless": "^1.1.0",
     "@oslojs/encoding": "^1.1.0",
     "@oslojs/otp": "^1.1.0",
@@ -80,6 +81,7 @@
     "recharts": "^3.10.1",
     "require-in-the-middle": "^8.0.1",
     "resend": "^6.19.0",
+    "sharp": "^0.35.3",
     "sonner": "^2.0.7",
     "stripe": "^22.4.0",
     "tailwind-merge": "^3.6.0",
