@@ -97,7 +97,7 @@ export default async function ProfilePage({ params }: Props) {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-6 h-auto w-full justify-start overflow-x-auto rounded-none border border-border bg-muted/30 p-1">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 rounded-none border border-border bg-muted/30 p-1 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="overview">
             {tDashboard("tabOverview")}
           </TabsTrigger>
@@ -274,7 +274,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="settings">
           <div className="space-y-6">
-            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+            <Card className="rounded-none border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("personalInfo")}
@@ -289,7 +289,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+            <Card className="rounded-none border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("changePhoneTitle")}
@@ -300,7 +300,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+            <Card className="rounded-none border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tSessions("title")}
@@ -315,7 +315,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="edit">
           <div className="space-y-6">
-            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+            <Card className="rounded-none border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("publicProfile")}
@@ -326,7 +326,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="max-w-2xl rounded-none border-border bg-background shadow-none">
+            <Card className="rounded-none border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("dataPrivacy")}
@@ -346,7 +346,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="max-w-2xl rounded-none border-destructive/40 bg-background shadow-none">
+            <Card className="rounded-none border-destructive/40 bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em] text-destructive">
                   {tDashboard("deleteAccount")}

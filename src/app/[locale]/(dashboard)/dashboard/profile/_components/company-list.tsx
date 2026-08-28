@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   createCheckoutSessionAction,
   createPortalSessionAction,
@@ -17,6 +17,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { countryName } from "@/lib/countries";
+import type { Locale } from "@/i18n/routing";
 
 export function CompanyList({
   companies,
@@ -27,7 +29,15 @@ export function CompanyList({
 }) {
   const t = useTranslations("billing");
   const tCompany = useTranslations("company");
+  const locale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
+
+  const formatLabels = {
+    offline_only: tCompany("businessFormatOffline"),
+    online_only: tCompany("businessFormatOnline"),
+    online_offline: tCompany("businessFormatHybrid"),
+    on_site_service: tCompany("businessFormatOnSite"),
+  } as const;
 
   const handleCheckout = (companyId: string) => {
     startTransition(async () => {
@@ -57,7 +67,7 @@ export function CompanyList({
 
   if (companies.length === 0) {
     return (
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm">
         <CardContent className="p-8 text-center text-muted-foreground">
           {t("noCompanies")}
         </CardContent>
@@ -66,7 +76,7 @@ export function CompanyList({
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4">
       {companies.map((company) => {
         const sub = subscriptions.find((s) => s.companyId === company.id);
         const isActive = sub?.status === "active";
@@ -127,6 +137,143 @@ export function CompanyList({
                     {isPending ? t("loading") : t("subscribeListing")}
                   </Button>
                 </div>
+              )}
+
+              {company.moderationStatus === "approved" && (
+                <dl className="mt-6 grid gap-4 border-t border-border/50 pt-6 text-sm sm:grid-cols-2">
+                  {company.legalName && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("legalNameLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">{company.legalName}</dd>
+                    </div>
+                  )}
+                  {company.taxId && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("taxIdLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">{company.taxId}</dd>
+                    </div>
+                  )}
+                  {company.website && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("websiteLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium break-words">
+                        {company.website}
+                      </dd>
+                    </div>
+                  )}
+                  {(company.contactEmail || company.contactPhone) && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("contactEmailLabel")} /{" "}
+                        {tCompany("contactPhoneLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium break-words">
+                        {[company.contactEmail, company.contactPhone]
+                          .filter(Boolean)
+                          .join(" / ") || tCompany("notProvided")}
+                      </dd>
+                    </div>
+                  )}
+                  {company.description && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("descriptionLabel")}
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap leading-6">
+                        {company.description}
+                      </dd>
+                    </div>
+                  )}
+                  {company.specializationDescription && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("specializationLabel")}
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap leading-6">
+                        {company.specializationDescription}
+                      </dd>
+                    </div>
+                  )}
+                  {company.categories.length > 0 && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("subcategoryLabel")}
+                      </dt>
+                      <dd className="mt-2 flex flex-wrap gap-2">
+                        {company.categories.map((c) => (
+                          <span
+                            key={c.businessCategoryId}
+                            className="inline-flex border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em]"
+                          >
+                            {c.businessCategory?.subcategory}
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  )}
+                  {company.registrationCountryCode && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("registrationCountryLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">
+                        {countryName(company.registrationCountryCode, locale)}
+                      </dd>
+                    </div>
+                  )}
+                  {company.businessFormat && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("businessFormatLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">
+                        {formatLabels[company.businessFormat]}
+                      </dd>
+                    </div>
+                  )}
+                  {(company.city || company.administrativeLevel1) && (
+                    <div>
+                      <dt className="text-muted-foreground">
+                        {tCompany("cityLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">
+                        {[
+                          company.city,
+                          company.administrativeLevel1,
+                          company.administrativeLevel2,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </dd>
+                    </div>
+                  )}
+                  <div className="sm:col-span-2">
+                    <dt className="text-muted-foreground">
+                      {tCompany("serviceCountriesLabel")}
+                    </dt>
+                    <dd className="mt-1 font-medium">
+                      {company.servesWorldwide === 1
+                        ? tCompany("worldwideLabel")
+                        : company.serviceCountries
+                            .map((sc) => countryName(sc.countryCode, locale))
+                            .join(", ") || tCompany("notProvided")}
+                    </dd>
+                  </div>
+                  {company.discount && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("discountLabel")}
+                      </dt>
+                      <dd className="mt-1 font-medium">{company.discount}</dd>
+                    </div>
+                  )}
+                </dl>
               )}
             </CardContent>
           </Card>

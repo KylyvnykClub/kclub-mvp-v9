@@ -989,6 +989,10 @@ export async function updateCompanyFields(
 export async function listCompaniesByOwner(db: DbClient, ownerId: string) {
   return db.query.companies.findMany({
     where: eq(companies.ownerId, ownerId),
+    with: {
+      categories: { with: { businessCategory: true } },
+      serviceCountries: true,
+    },
   });
 }
 
