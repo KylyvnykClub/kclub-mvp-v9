@@ -26,6 +26,7 @@ import {
   type CompanyStepNumber,
 } from "@/lib/company-form";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -447,28 +448,47 @@ export function CompanyRegistrationForm() {
           </Field>
 
           <Field id="businessCategoryIds" label={t("subcategoryLabel")}>
-            <select
+            <div
               id="businessCategoryIds"
-              className={`${SELECT_CLASS} h-32`}
-              multiple
-              disabled={!selectedCategory}
-              value={selectedCategoryIds}
-              onChange={(e) => {
-                const selected = Array.from(
-                  e.currentTarget.selectedOptions,
-                  (option) => option.value,
-                );
-                if (selected.length > 7) return;
-                set("businessCategoryIds", selected.join(","));
-              }}
-              required
+              role="group"
+              aria-label={t("subcategoryLabel")}
+              className={`grid gap-x-4 gap-y-2 border border-input bg-background p-3 max-h-64 overflow-y-auto ${
+                subcategories.length > 6 ? "sm:grid-cols-2" : ""
+              } ${!selectedCategory ? "opacity-50" : ""}`}
             >
-              {subcategories.map((sc) => (
-                <option key={sc.id} value={String(sc.id)}>
-                  {sc.subcategory}
-                </option>
-              ))}
-            </select>
+              {subcategories.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("subcategoryPlaceholder")}
+                </p>
+              ) : (
+                subcategories.map((sc) => {
+                  const value = String(sc.id);
+                  const checked = selectedCategoryIds.includes(value);
+                  const disabled =
+                    !selectedCategory ||
+                    (!checked && selectedCategoryIds.length >= 7);
+
+                  return (
+                    <label
+                      key={sc.id}
+                      className="flex items-center gap-2 text-sm leading-tight"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        disabled={disabled}
+                        onCheckedChange={(next) => {
+                          const nextSelected = next
+                            ? [...selectedCategoryIds, value]
+                            : selectedCategoryIds.filter((id) => id !== value);
+                          set("businessCategoryIds", nextSelected.join(","));
+                        }}
+                      />
+                      {sc.subcategory}
+                    </label>
+                  );
+                })
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {t("subcategoryHint", {
                 count: selectedCategoryIds.length,
