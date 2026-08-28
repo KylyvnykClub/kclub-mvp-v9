@@ -41,7 +41,7 @@ export function BillingSection({ tier }: { tier: "free" | "vip" }) {
   };
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm max-w-2xl">
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
