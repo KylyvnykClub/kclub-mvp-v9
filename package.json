@@ -37,9 +37,10 @@
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
     "test:watch": "vitest",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit && pnpm build",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test:unit && pnpm verify:build",
     "prepare": "husky",
-    "map:generate": "tsx tools/generate-dotted-map.ts && prettier --write \"src/app/[locale]/(dashboard)/dashboard/admin/_components/dotted-world-map.ts\""
+    "map:generate": "tsx tools/generate-dotted-map.ts && prettier --write \"src/app/[locale]/(dashboard)/dashboard/admin/_components/dotted-world-map.ts\"",
+    "verify:build": "tsx tools/verify-build.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

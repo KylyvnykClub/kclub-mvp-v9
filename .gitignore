@@ -5,6 +5,8 @@ node_modules/
 # Build output
 .next/
 .next-stale-*/
+# pnpm verify builds here so it cannot clobber a running dev server
+.next-verify/
 out/
 build/
 dist/

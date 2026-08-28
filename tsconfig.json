@@ -12,7 +12,6 @@
     "isolatedModules": true,
     "incremental": true,
     "noEmit": true,
-
     // docs/technology.md §8: strict, plus noUncheckedIndexedAccess. The second
     // one is the reason an array lookup has to be checked before it is used,
     // and it is the single setting that catches the most real defects here.
@@ -21,12 +20,21 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    ".next-verify/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
