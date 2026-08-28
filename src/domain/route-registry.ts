@@ -642,6 +642,16 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Always the caller's own avatar - the route takes no target id, so
+    // there is no other member's file this entry could leak (ADR 0021).
+    method: "GET",
+    path: "/api/avatar",
+    action: "read",
+    subject: "own_profile",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/api/admin/export/member/:memberId",
     action: "export_data",

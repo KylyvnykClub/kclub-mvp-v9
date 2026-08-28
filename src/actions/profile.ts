@@ -9,7 +9,11 @@ import {
   type DeletionSubscriptionChoice,
 } from "@/data/account-deletion";
 import { listActiveSubscriptionsForDeletion } from "@/data/billing";
-import { upsertProfile, type SocialLinks } from "@/data/profiles";
+import {
+  upsertProfile,
+  type ProfileUpdate,
+  type SocialLinks,
+} from "@/data/profiles";
 import { updateMemberPersonalInfo, updateMemberPhone } from "@/data/members";
 import { findMemberByPhone } from "@/data/identity";
 import { appendAuditEntry } from "@/data/audit-log";
@@ -17,6 +21,9 @@ import { localeCookieOptions } from "@/lib/locale-cookie";
 import { getCurrentMember } from "@/actions/session";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
+import { InvalidImageError, processAvatarImage } from "@/lib/image-processing";
+import { AVATAR_SERVE_PATH } from "@/lib/avatar-path";
+import { deleteAvatar, putAvatar } from "@/modules/platform/avatar-storage";
 import {
   sendVerificationCode,
   checkVerificationCode,
@@ -27,7 +34,6 @@ const updateProfileSchema = z.object({
   bio: z.string().max(1000).optional(),
   industry: z.string().max(255).optional(),
   location: z.string().max(255).optional(),
-  avatarUrl: z.string().url().max(2048).optional().or(z.literal("")),
   linkedin: z.string().url().max(255).optional().or(z.literal("")),
   twitter: z.string().url().max(255).optional().or(z.literal("")),
 });
@@ -51,7 +57,6 @@ export async function updateProfileAction(
       bio: formData.get("bio") || undefined,
       industry: formData.get("industry") || undefined,
       location: formData.get("location") || undefined,
-      avatarUrl: formData.get("avatarUrl") || undefined,
       linkedin: formData.get("linkedin") || undefined,
       twitter: formData.get("twitter") || undefined,
     });
@@ -61,13 +66,39 @@ export async function updateProfileAction(
       ...(data.twitter ? { twitter: data.twitter } : {}),
     };
 
-    await upsertProfile(db, auth.member.id, {
+    const update: ProfileUpdate = {
       bio: data.bio,
       industry: data.industry,
       location: data.location,
-      avatarUrl: data.avatarUrl || null,
       socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : null,
-    });
+    };
+
+    // A file input never resubmits its previous value, unlike the text
+    // fields above - so avatarUrl is only touched when the member actually
+    // picked a new photo or asked to remove the current one. Anything else
+    // here would wipe the avatar on every unrelated profile save.
+    const avatarFile = formData.get("avatar");
+    if (avatarFile instanceof File && avatarFile.size > 0) {
+      const bytes = Buffer.from(await avatarFile.arrayBuffer());
+      let webp: Buffer;
+      try {
+        webp = await processAvatarImage(bytes);
+      } catch (err) {
+        // A code, not prose: EditProfileForm looks it up against the
+        // "dashboard.avatarError*" keys to render it in the member's own
+        // language.
+        const code =
+          err instanceof InvalidImageError ? err.code : "processing_failed";
+        return { success: false, error: code };
+      }
+      await putAvatar(auth.member.id, webp);
+      update.avatarUrl = AVATAR_SERVE_PATH;
+    } else if (formData.get("removeAvatar") === "on") {
+      await deleteAvatar(auth.member.id);
+      update.avatarUrl = null;
+    }
+
+    await upsertProfile(db, auth.member.id, update);
 
     revalidatePath("/dashboard/profile");
     return { success: true };
@@ -296,6 +327,11 @@ export async function requestAccountDeletionAction(formData: FormData) {
   );
 
   await requestAccountDeletionTx(db, auth.member.id, choices);
+
+  // The avatar is not deleted here. This only starts the 30-day clock
+  // (data-storage.md §4); the actual erasure - including the R2 object -
+  // runs in eraseMemberTx's caller (src/app/api/cron/retention/route.ts) at
+  // day 30, same as every other piece of this member's data.
 
   const cookieStore = await cookies();
   cookieStore.delete("session");

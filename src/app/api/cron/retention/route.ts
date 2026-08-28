@@ -15,6 +15,7 @@ import { deleteProcessedOutboxRows } from "@/data/outbox";
 import { env } from "@/env";
 import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
 import { authorizeCronRequest } from "@/modules/platform";
+import { deleteAvatar } from "@/modules/platform/avatar-storage";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -79,6 +80,18 @@ export async function GET(req: Request) {
 
       await eraseMemberTx(db, memberId, now);
       accountsErased += 1;
+
+      // Best-effort and outside the block above on purpose: an R2 object
+      // nobody references anymore, orphaned by a delete that failed or by R2
+      // not being configured in this environment, is not worth blocking or
+      // retrying the rest of this member's erasure over (ADR 0021).
+      try {
+        await deleteAvatar(memberId);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(`[retention] avatar deletion failed: ${message}`);
+      }
 
       // data-storage.md §4 step 8: the audit log records that an erasure
       // occurred, by internal id only - never by anything it just destroyed.

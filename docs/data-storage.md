@@ -124,7 +124,7 @@ adding a value to a native enum in a zero-downtime migration is awkward.
 |-|-|-|-|
 |Primary database (PostgreSQL 17, Neon)|Everything above|Yes, for everything except subscriptions|The domain is relational and the money is transactional. It also absorbs three jobs — search, queue outbox, and JSON diffs in the audit log — that would otherwise each be a separate service to operate|
 |Cache (Upstash Redis)|Rate-limit and quota counters, SMS send counters, catalogue facet counts, verification-page lookup counters|No|Needs atomic counters with expiry at the edge of the request, which PostgreSQL can do but not cheaply at every request|
-|Object storage (Cloudflare R2)|Nightly PostgreSQL logical dump only ([§5](#5-backup-and-recovery)); not used for partner images|N/A for images|Partner logos are a member-supplied external URL, not a KCLUB-hosted upload ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|
+|Object storage (Cloudflare R2)|`backups/` — nightly PostgreSQL logical dump ([§5](#5-backup-and-recovery)). `media/avatars/` — member avatars, one object per member ([ADR 0021](decisions/0021-member-avatar-upload.md)). Not used for partner images|No — `media/` is a KCLUB-managed upload, but nothing else derives from it|Partner logos stay a member-supplied external URL, not a KCLUB-hosted upload ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)); avatars are a different risk profile - private, unmoderated, member-owned - so they went the other way|
 |Search index|—|—|Not applicable — search is a `tsvector` column inside the primary database, see [decisions/0006-postgres-full-text-search.md](decisions/0006-postgres-full-text-search.md)|
 |Stripe|Subscriptions, invoices, customers, cards|**Yes** — ours is a projection|We are legally and practically better off not being the record of what someone was charged|
 |Twilio Verify|In-flight verification codes|Yes, while in flight|We deliberately never store a code, so a database compromise cannot approve a verification|
@@ -182,6 +182,7 @@ security control first and a cost control second.
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
 |Member inbox (`notifications`)|180 days from creation, read or unread alike|Hard delete by the retention sweep. On member erasure, deleted **explicitly** — the anonymise-not-delete rule above means the `ON DELETE CASCADE` on `member_id` never fires|An inbox is a record of recent events ([decisions/0020](decisions/0020-member-inbox.md))|
+|Member avatar (R2 `media/avatars/{memberId}.webp`)|While the account exists, same 30-day clock as the rest of the member's data|Hard delete of the R2 object, best-effort, in the day-30 erasure job|New personal data needs a retention period and a deletion path before it ships ([ADR 0021](decisions/0021-member-avatar-upload.md)); one object per member means there is nothing to sweep|
 |Application logs|30 days|Automatic expiry in Axiom|Cost and minimisation|
 |Database backups|30 days point-in-time, 12 monthly snapshots|Automatic expiry|Recovery window|
 
@@ -207,9 +208,14 @@ to end — a deletion that stops at the primary database is not a deletion:
    step 3 anonymises the member row rather than deleting it, so the
    `ON DELETE CASCADE` on `notifications.member_id` never fires. There is still
    no notification _delivery_ log to clear
-   ([ADR 0014](decisions/0014-no-notification-log-table.md)) and no KCLUB-hosted
-   company image to delete — logos are external URLs the member supplied, not
-   files we stored ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
+   ([ADR 0014](decisions/0014-no-notification-log-table.md)). There is still no
+   KCLUB-hosted company image to delete — logos are external URLs the member
+   supplied, not files we stored ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
+   There is, since [ADR 0021](decisions/0021-member-avatar-upload.md), exactly
+   one KCLUB-hosted file per member: the avatar, deleted from R2 best-effort
+   as part of this same job, alongside the Stripe Customer deletion in step 4 —
+   one slot per member means there is nothing for a separate sweep to
+   reconcile.
 4. Stripe: the Customer object is deleted through the API, which removes the
    payment method and the billing address. Invoices remain in Stripe, as
    required by tax law and stated in the Privacy Policy.

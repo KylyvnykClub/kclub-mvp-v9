@@ -153,11 +153,17 @@ one-time code — email is not a verification channel in this product.
 
 ### 2.4 Cloudflare R2
 
-Not an application-facing integration. R2 holds the nightly PostgreSQL logical
-dump only ([data-storage.md §5](data-storage.md#5-backup-and-recovery)),
-written by a scheduled job rather than called from request-serving code.
-Partner logos are a member-supplied external URL, not an upload to R2 or
-anywhere else KCLUB controls ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
+One bucket (`R2_BUCKET_NAME`), two prefixes with different treatment.
+`backups/` holds the nightly PostgreSQL logical dump only
+([data-storage.md §5](data-storage.md#5-backup-and-recovery)), written by a
+scheduled job, never served to a request. `media/` is application-facing:
+member avatars are uploaded through `updateProfileAction`
+(`src/actions/profile.ts`), decoded and re-encoded server-side by
+`src/lib/image-processing.ts`, and stored via the S3-compatible client in
+`src/modules/platform/object-storage.ts` ([ADR 0021](decisions/0021-member-avatar-upload.md)).
+Partner logos remain a member-supplied external URL, not an upload
+([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)) - that
+decision is unchanged.
 
 ### 2.5 Upstash Redis and Inngest
 
@@ -175,7 +181,7 @@ the same way a webhook's is (§4).
 |-|-|
 |Consumers|**Our own frontend only.** No partner API, no public API, no mobile client. This is why there is no versioned REST surface: publishing one would mean maintaining a contract nobody has asked for|
 |Style|Next.js Server Actions for everything initiated by our own UI; REST Route Handlers only where an external caller exists|
-|Public REST endpoints, in full|`POST /api/webhooks/stripe`, `POST /api/webhooks/twilio/status`, `POST /api/inngest`, `GET /v/{token}` (card verification, on `card.kclub.com`), `GET /health/{live,ready,deep}`. That is the complete list, and adding to it is a reviewed decision|
+|Public REST endpoints, in full|`POST /api/webhooks/stripe`, `POST /api/webhooks/twilio/status`, `POST /api/inngest`, `GET /v/{token}` (card verification, on `card.kclub.com`), `GET /health/{live,ready,deep}`, `GET /api/avatar` (session-authenticated, always the caller's own avatar — a Route Handler rather than a Server Action because only one can stream raw bytes with a `Content-Type`, [ADR 0021](decisions/0021-member-avatar-upload.md)). That is the complete list, and adding to it is a reviewed decision|
 |Base URL|`https://kclub.com/api`, `https://card.kclub.com`|
 |Specification|OpenAPI generated from the Zod schemas of the REST endpoints above, published at `/api/openapi.json` in non-production environments. Server Actions are not in it — their contract is the TypeScript types, checked at compile time|
 |Authentication|Session cookie for Server Actions; signature verification for webhooks; none for card verification (the token in the path is the credential) and health checks|
