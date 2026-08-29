@@ -393,6 +393,12 @@ shaped it without leaving the page.
 |[0018](decisions/0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|
 |[0019](decisions/0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Accepted|
 |[0020](decisions/0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|
+|[0021](decisions/0021-member-avatar-upload.md)|Member avatars are uploaded through a server-side re-encode pipeline into R2|Accepted|
+|[0022](decisions/0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Accepted|
+|[0023](decisions/0023-company-logo-upload.md)|Company logos move onto the upload pipeline, superseding ADR 0013|Accepted|
+|[0024](decisions/0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|
+|[0025](decisions/0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|
+|[0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Proposed|
 
 ---
 

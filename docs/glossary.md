@@ -72,6 +72,7 @@ variation.
 |Audit entry|An immutable record of something a staff user or the system did|`AuditEntry`|`audit_log`|An application log line, which is diagnostic, short-lived and not evidence|
 |Actor|Whoever is performing the current operation: a member, a staff user, or `system`|`Actor`|—|The member. Half of all operations have a non-member actor|
 |Outbox row|Committed intent to do something outside the transaction|`OutboxMessage`|`outbox`|A job. The job is what the worker does with the row|
+|Environment marker|The one row a database carries saying which environment it _is_: `production`, `dev`, `preview` or `test`. Read by every process at start; a local process refuses `production`|`DatabaseMarker`|`database_environment`|`VERCEL_ENV`, which says where the application runs. The two differ exactly when a laptop is pointed at production, which is the case the marker exists to refuse|
 
 ### The three languages
 

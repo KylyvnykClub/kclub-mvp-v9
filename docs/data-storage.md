@@ -160,6 +160,16 @@ price change is made in the console and pushed to Stripe by the same code path.
 Legal documents are seeded from MDX in the repository with an explicit version
 string.
 
+**Environment marker.** `database_environment` is a one-row table saying which
+environment the database _is_ — `production`, `dev`, `preview` or `test` —
+as opposed to `VERCEL_ENV`, which says where the application runs
+([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
+The migration creates the table and inserts nothing, so a fresh database is
+unmarked; only `pnpm db:mark-environment` and `pnpm db:reset:dev` write the
+row. It holds no personal data (`marked_by` is a `user@host` string) and has no
+retention period: it lives as long as the database. Every process reads it at
+start, and a local process refuses a `production` marker outright.
+
 ---
 
 ## 4. Retention and deletion
@@ -374,4 +384,8 @@ from a factory that produces realistic shapes and no real people — a database
 branch is created from the _schema_, not from the data. The one operational cost
 of this rule is that a bug reproducible only with production data must be
 diagnosed with a query against production under the incident-access process
-above, and that friction is deliberate.
+above, and that friction is deliberate. The rule is enforced, not remembered:
+the database's own environment marker (§3) makes `next dev` and every seed tool
+refuse a production-marked database, and the incident shell is the one process
+that sets `KCLUB_ALLOW_PRODUCTION_DB=1` to get past it
+([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).

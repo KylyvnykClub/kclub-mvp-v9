@@ -76,6 +76,12 @@ that the folder cannot be trusted.
 |[0018](0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|2026-08-23|
 |[0019](0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Accepted|2026-08-26|
 |[0020](0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|2026-08-27|
+|[0021](0021-member-avatar-upload.md)|Member avatars are uploaded through a server-side re-encode pipeline into R2|Accepted|2026-08-28|
+|[0022](0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Accepted|2026-08-29|
+|[0023](0023-company-logo-upload.md)|Company logos move onto the upload pipeline, superseding ADR 0013|Accepted|2026-08-29|
+|[0024](0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|2026-08-29|
+|[0025](0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|2026-08-29|
+|[0026](0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Proposed|2026-08-29|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
