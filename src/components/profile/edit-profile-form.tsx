@@ -32,7 +32,10 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
     : (state?.error ?? null);
 
   const currentAvatarSrc =
-    preview ?? (profile?.avatarUrl ? AVATAR_SERVE_PATH : null);
+    preview ??
+    (profile?.avatarUrl
+      ? `${AVATAR_SERVE_PATH}?v=${profile.updatedAt.getTime()}`
+      : null);
 
   return (
     <form action={action} className="space-y-4">

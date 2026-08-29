@@ -241,6 +241,27 @@ export default async function PartnerLandingPage({ params }: Props) {
                 </div>
               </section>
 
+              {partner.images.length > 0 && (
+                <section className="border-t border-border pt-8">
+                  <p className="kclub-eyebrow">{tc("gallerySection")}</p>
+                  <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
+                    {tc("gallerySection")}
+                  </h2>
+                  <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {partner.images.map((image) => (
+                      // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes (ADR 0022)
+                      <img
+                        key={image.id}
+                        src={`/api/company-image/${image.id}`}
+                        alt=""
+                        loading="lazy"
+                        className="aspect-[4/3] w-full border border-border object-cover"
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {(partner.specializationDescription ||
                 partner.businessFormat ||
                 partner.registrationCountryCode ||

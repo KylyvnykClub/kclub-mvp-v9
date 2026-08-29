@@ -13,6 +13,7 @@ export * from "./relations";
 export * from "./business-categories";
 export * from "./business-category-translations";
 export * from "./company-categories";
+export * from "./company-images";
 export * from "./notifications";
 export * from "./company-service-countries";
 export * from "./countries";

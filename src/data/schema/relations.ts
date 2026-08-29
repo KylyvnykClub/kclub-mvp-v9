@@ -9,6 +9,7 @@ import { companies } from "./companies";
 import { businessCategories } from "./business-categories";
 import { businessCategoryTranslations } from "./business-category-translations";
 import { companyCategories } from "./company-categories";
+import { companyImages } from "./company-images";
 import { companyServiceCountries } from "./company-service-countries";
 import { cities } from "./cities";
 import { subscriptions } from "./subscriptions";
@@ -96,6 +97,14 @@ export const companiesRelations = relations(companies, ({ one, many }) => ({
   receivedReferrals: many(referrals),
   categories: many(companyCategories),
   serviceCountries: many(companyServiceCountries),
+  images: many(companyImages),
+}));
+
+export const companyImagesRelations = relations(companyImages, ({ one }) => ({
+  company: one(companies, {
+    fields: [companyImages.companyId],
+    references: [companies.id],
+  }),
 }));
 
 export const stripeCustomersRelations = relations(

@@ -6,7 +6,7 @@ import {
   companyDraftDataSchema,
   companyDetailsStepSchema,
   companyLocationStepSchema,
-  companyOfferStepSchema,
+  companyMediaStepSchema,
   isCompanyStep,
   registerCompanySchema,
 } from "./company-form";
@@ -92,15 +92,47 @@ describe("FR-040: four-step company submission form", () => {
     ).toBe(true);
   });
 
-  it("treats every field on step 3 as optional - an applicant may offer nothing yet", () => {
-    expect(companyOfferStepSchema.safeParse({}).success).toBe(true);
+  it("treats every field on step 3 as optional - a company without photos is still a company", () => {
+    expect(companyMediaStepSchema.safeParse({}).success).toBe(true);
+    expect(
+      companyMediaStepSchema.safeParse({
+        logoStaged: "true",
+        galleryImageIds:
+          "a64d7c85-26bf-4d9b-a460-356d86080dd1,0f0e4a3e-3d8e-4c8e-9a1c-9b2f7d6e5c4b",
+      }).success,
+    ).toBe(true);
   });
 
-  it("rejects a malformed contact email on step 3", () => {
+  it("rejects a staged image list that is not a list of ids", () => {
     expect(
-      companyOfferStepSchema.safeParse({ contactEmail: "not-an-email" })
+      companyMediaStepSchema.safeParse({ galleryImageIds: "../etc/passwd" })
         .success,
     ).toBe(false);
+  });
+
+  it("rejects a malformed contact email on step 1, where contacts live since ADR 0024", () => {
+    expect(
+      companyDetailsStepSchema.safeParse({
+        ...DETAILS,
+        contactEmail: "not-an-email",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("puts no cap on service countries and asks for no administrative level", () => {
+    const many = Array.from(
+      { length: 60 },
+      (_, i) =>
+        String.fromCharCode(65 + (i % 26)) +
+        String.fromCharCode(65 + ((i * 7) % 26)),
+    ).join(",");
+    expect(
+      companyLocationStepSchema.safeParse({
+        ...LOCATION,
+        administrativeLevel1: undefined,
+        serviceCountryCodes: many,
+      }).success,
+    ).toBe(true);
   });
 
   it("has a schema for the three steps that collect fields, and none for review", () => {

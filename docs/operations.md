@@ -85,11 +85,11 @@ referral contact details — and writes an audit entry.
 `eraseStripeCustomerForMember` deletes the Stripe Customer and cancels any
 active subscription first, which is also what unpublishes a live company
 listing (catalogue visibility projects from subscription status, not a flag
-on the company). The R2 avatar object is deleted best-effort in the same
-step, since ADR 0021; there is still no notification log entry to clear by
-design ([ADR 0014](decisions/0014-no-notification-log-table.md)), and no
-company image to delete either — partner logos remain external URLs, not R2
-uploads ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)).
+on the company). The R2 avatar object, the owner's company gallery
+objects and their company logos are deleted best-effort in the same step
+(ADR 0021–0023; the gallery refs and owned company ids are collected before
+`eraseMemberTx` removes the rows). There is still no notification log entry
+to clear by design ([ADR 0014](decisions/0014-no-notification-log-table.md)).
 
 ## 4. Health
 
@@ -110,7 +110,8 @@ What the application does not own.
 |Vercel|Deployments, environment variables, cron invocations, logs|
 |Neon|Database, branches, point-in-time recovery|
 |Stripe|Products, prices, webhook endpoint, customers, test clocks|
-|Cloudflare|DNS, R2 bucket, Turnstile site and its allowed hostnames|
+|Cloudflare|DNS, R2 bucket (backups and `media/`), Turnstile site and its allowed hostnames|
+|CountryStateCity|API key for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); optional — the form degrades to free text without it|
 |Upstash|Redis, rate-limit keys, plan limits|
 |Resend|Sender domain authentication, delivery logs|
 |Sentry|Errors and releases|

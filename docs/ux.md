@@ -179,9 +179,15 @@ member to nominate a business, which is also how the catalogue grows.
 
 ### 3.3 Partner applies, is approved, pays and is published
 
-1. **Submit a company**, four steps: business details → location and category →
-   the discount offered → review and confirm. Progress is shown as "Step 2 of
-   4", and each step is saved on completion.
+1. **Submit a company**, four steps: business details, contacts and the
+   discount offered → location and category → logo and photos → review and
+   confirm. Progress is shown as "Step 2 of 4", and each step is saved on
+   completion. Location is country → city picked from a list for that country
+   ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); service
+   countries are added one at a time from a type-ahead, with "worldwide" and
+   "same as the country of registration" as shortcuts. Photos uploaded on
+   step 3 are staged with the draft and become the company's on submission
+   ([ADR 0024](decisions/0024-onboarding-media-staging.md)).
 2. Submits. The screen states plainly: reviewed within 1–3 business days, and
    nothing is charged yet.
 3. Notification of the outcome, in their language. If rejected, the reason is

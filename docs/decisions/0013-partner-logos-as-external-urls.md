@@ -1,8 +1,16 @@
 # 0013. Partner logos are member-supplied external URLs, not uploaded files
 
-> **Status:** Accepted
+> **Status:** Superseded by [ADR 0023](0023-company-logo-upload.md) on 2026-08-29
 > **Date:** 2026-08-19
 > **Deciders:** Delivery lead
+>
+> **Superseded.** The reason given below for not building an upload pipeline
+> — that it was real, unbuilt infrastructure — stopped being true once ADR 0021
+> built it for avatars and ADR 0022 reused it for galleries. ADR 0023 moves the
+> logo onto the same pipeline. The `companies.logoUrl` column survives, now
+> holding the serve path of a KCLUB-hosted object rather than an external URL;
+> rows from before the change still hold whatever URL the partner typed, and
+> keep rendering until the owner uploads a file.
 
 ## Context
 

@@ -165,6 +165,7 @@ Required external checks:
 |`R2_ACCESS_KEY_ID`|Not needed — see `R2_ACCOUNT_ID`|Cloudflare R2 token|—|
 |`R2_SECRET_ACCESS_KEY`|Not needed — see `R2_ACCOUNT_ID`|Cloudflare R2 token|—|
 |`R2_BUCKET_NAME`|Required for the nightly backup dump only ([data-storage.md §5](../data-storage.md#5-backup-and-recovery)), not for media|Terraform or Cloudflare R2|Terraform currently wires this from `cloudflare_r2_bucket.media.name`.|
+|`COUNTRY_STATE_CITY_API_KEY`|No|CountryStateCity dashboard (api key)|Optional. Without it the onboarding city field is free text; with it, set the same key in Vercel so production gets the picker (ADR 0025).|
 |`TURNSTILE_SECRET_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Required before enabling Turnstile verification server-side.|
 |`NEXT_PUBLIC_TURNSTILE_SITE_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Must match `TURNSTILE_SECRET_KEY`.|
 |`SENTRY_DSN`|Optional for private beta|Sentry project|If omitted, Sentry initialization is deferred and guarded.|

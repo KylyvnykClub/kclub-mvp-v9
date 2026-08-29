@@ -9,13 +9,21 @@ import {
 import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
+  listExpiredCompanyDraftOwnerIds,
 } from "@/data/company-drafts";
 import { deleteExpiredNotifications } from "@/data/notifications";
 import { deleteProcessedOutboxRows } from "@/data/outbox";
+import { listOwnedCompanyIds } from "@/data/companies";
+import { listCompanyImageRefsByOwner } from "@/data/company-images";
 import { env } from "@/env";
 import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
 import { authorizeCronRequest } from "@/modules/platform";
 import { deleteAvatar } from "@/modules/platform/avatar-storage";
+import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
+import {
+  deleteCompanyImage,
+  deleteCompanyLogo,
+} from "@/modules/platform/company-image-storage";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -45,11 +53,24 @@ export async function GET(req: Request) {
 
   const now = new Date();
 
+  // ADR 0024: staged onboarding media is keyed by the applicant, so the
+  // owners must be known before their rows go.
+  const expiredDraftOwners = await listExpiredCompanyDraftOwnerIds(db, now);
+
   const companyDraftsDeleted = await deleteExpiredCompanyDrafts(
     db,
     now,
     COMPANY_DRAFT_RETENTION_DAYS,
   );
+
+  for (const ownerId of expiredDraftOwners) {
+    try {
+      await deleteDraftMedia(ownerId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[retention] draft media deletion failed: ${message}`);
+    }
+  }
 
   // Processed outbox rows are evidence of a delivery that already happened;
   // once past the dedupe window they are pure history and the table should not
@@ -78,19 +99,30 @@ export async function GET(req: Request) {
         memberId,
       );
 
+      // Collected before eraseMemberTx deletes the rows - afterwards the R2
+      // keys would no longer be derivable (ADR 0022).
+      const galleryRefs = await listCompanyImageRefsByOwner(db, memberId);
+      const ownedCompanyIds = await listOwnedCompanyIds(db, memberId);
+
       await eraseMemberTx(db, memberId, now);
       accountsErased += 1;
 
       // Best-effort and outside the block above on purpose: an R2 object
       // nobody references anymore, orphaned by a delete that failed or by R2
       // not being configured in this environment, is not worth blocking or
-      // retrying the rest of this member's erasure over (ADR 0021).
+      // retrying the rest of this member's erasure over (ADR 0021-0023).
       try {
         await deleteAvatar(memberId);
+        for (const ref of galleryRefs) {
+          await deleteCompanyImage(ref.companyId, ref.imageId);
+        }
+        for (const companyId of ownedCompanyIds) {
+          await deleteCompanyLogo(companyId);
+        }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Unknown error";
-        console.error(`[retention] avatar deletion failed: ${message}`);
+        console.error(`[retention] media object deletion failed: ${message}`);
       }
 
       // data-storage.md §4 step 8: the audit log records that an erasure

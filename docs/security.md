@@ -45,7 +45,7 @@ alongside [architecture.md](architecture.md) and
 |Referral feature used for spam or harvesting|Member|Regulatory and reputational|M|VIP + published company required to send; quotas per sender and per recipient; moderation before delivery; contact details hidden until acceptance; staff can bar a sender|
 |Denial of service / scraping of the catalogue|External|Availability, and partner data harvested|M|Catalogue is authenticated only; Vercel edge rate limits; per-account request budget; Cloudflare in front of DNS|
 |Partner logo points at inappropriate or malicious content after moderation approves it|Member|Reputational; browser-side exposure to whatever the linked host serves|L|Partner logos are member-supplied external URLs, not files uploaded to KCLUB storage — the browser fetches them directly, never our server, so there is no server-side upload surface. Moderation reviews the URL's content at approval time only; a partner can swap the linked image afterwards, closed by a staff report rather than a technical control ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|
-|Malicious file uploaded disguised as a member avatar|Member|Limited — the file is decoded and fully re-encoded server-side before storage, so nothing but pixel data ever persists or is served back|L|`sharp` decodes the upload; anything that fails to decode as an image is rejected regardless of its claimed content type. The re-encode to a fixed-size WebP strips all EXIF/metadata as a side effect. Served from `/api/avatar`, not the R2 bucket directly, and only ever the caller's own avatar — the route accepts no target id, so there is no other member's file to request ([ADR 0021](decisions/0021-member-avatar-upload.md))|
+|Malicious file uploaded disguised as a member avatar, company gallery photo or company logo|Member|Limited — the file is decoded and fully re-encoded server-side before storage, so nothing but pixel data ever persists or is served back|L|`sharp` decodes the upload; anything that fails to decode as an image is rejected regardless of its claimed content type. The re-encode to WebP strips all EXIF/metadata as a side effect. Served from `/api/avatar`, `/api/company-image/{id}` and `/api/company-logo/{id}`, not the R2 bucket directly; the avatar route accepts no target id, and the company routes answer 404 identically for missing and not-visible images. The logo route alone needs no session — it is public brand imagery once the company is publishable ([ADR 0021](decisions/0021-member-avatar-upload.md), [ADR 0022](decisions/0022-company-photo-gallery.md), [ADR 0023](decisions/0023-company-logo-upload.md))|
 |Supply-chain compromise of an npm dependency|External|Total, and quiet|L|Lockfile committed and verified; automated advisory scanning; a 3-day cool-off before adopting a brand-new major; CI has no access to production secrets|
 |Backup exfiltration|External|Total|L|Backups in a separate vendor, region and credential set; additionally age-encrypted with a key held outside the cloud|
 
@@ -166,8 +166,11 @@ hashing pepper) live in Vercel environment variables, sourced from 1Password,
 readable in production by the owner and the tech lead only. Keys are versioned —
 ciphertext carries a key id — so rotation is a re-encrypt job, not a big-bang
 migration. Rotation schedule: annually, and immediately on any suspicion.
-Stripe, Twilio, Resend, Upstash and R2 credentials rotate every 90 days on a
-calendar reminder, and immediately when anyone with access leaves.
+Stripe, Twilio, Resend, Upstash, R2 and CountryStateCity credentials rotate
+every 90 days on a calendar reminder, and immediately when anyone with access
+leaves. The CountryStateCity key is only ever sent from a Server Action
+([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); it never
+reaches a browser.
 
 ---
 

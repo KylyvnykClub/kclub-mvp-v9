@@ -1,6 +1,8 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 
@@ -19,9 +21,9 @@ export interface S3Like {
 }
 
 /**
- * A generic S3-compatible object store, narrowed to the three operations this
+ * A generic S3-compatible object store, narrowed to the operations this
  * product needs. Cloudflare R2 speaks the S3 API, so the same interface backs
- * every object-storage consumer (avatars today, a company gallery next)
+ * every object-storage consumer (avatars, galleries, logos, draft staging)
  * without any of them depending on the AWS SDK directly.
  */
 export interface ObjectStorage {
@@ -29,6 +31,10 @@ export interface ObjectStorage {
   deleteObject(key: string): Promise<void>;
   /** Returns null when the key does not exist, rather than throwing. */
   getObject(key: string): Promise<Buffer | null>;
+  /** Server-side copy within the bucket; the source is left in place. */
+  copyObject(fromKey: string, toKey: string): Promise<void>;
+  /** Every key under a prefix (one page - prefixes here hold at most tens). */
+  listKeys(prefix: string): Promise<string[]>;
 }
 
 function isNoSuchKey(error: unknown): boolean {
@@ -78,6 +84,25 @@ export function objectStorageFrom(
         if (isNoSuchKey(error)) return null;
         throw error;
       }
+    },
+
+    async copyObject(fromKey, toKey) {
+      await client.send(
+        new CopyObjectCommand({
+          Bucket: bucket,
+          CopySource: `${bucket}/${fromKey}`,
+          Key: toKey,
+        }),
+      );
+    },
+
+    async listKeys(prefix) {
+      const result = (await client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix }),
+      )) as { Contents?: { Key?: string }[] };
+      return (result.Contents ?? [])
+        .map((o) => o.Key)
+        .filter((k): k is string => typeof k === "string");
     },
   };
 }

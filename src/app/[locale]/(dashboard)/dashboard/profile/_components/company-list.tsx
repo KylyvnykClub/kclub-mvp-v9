@@ -1,11 +1,18 @@
 "use client";
 
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { X } from "lucide-react";
 import {
   createCheckoutSessionAction,
   createPortalSessionAction,
 } from "@/actions/stripe";
+import {
+  deleteCompanyImageAction,
+  removeCompanyLogoAction,
+  uploadCompanyImageAction,
+  uploadCompanyLogoAction,
+} from "@/actions/company-images";
 import type { CompanyRow } from "@/data/companies";
 import type { SubscriptionRow } from "@/data/billing";
 import { Button } from "@/components/ui/button";
@@ -18,6 +25,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/lib/countries";
+import {
+  COMPANY_GALLERY_MAX_IMAGES,
+  companyImageServePath,
+} from "@/lib/company-image-path";
 import type { Locale } from "@/i18n/routing";
 
 export function CompanyList({
@@ -275,10 +286,236 @@ export function CompanyList({
                   )}
                 </dl>
               )}
+
+              {company.moderationStatus !== "rejected" && (
+                <>
+                  <LogoSection
+                    companyId={company.id}
+                    // Versioned so a replaced logo is refetched rather than
+                    // served from the browser's copy of the old one.
+                    logoUrl={
+                      company.logoUrl
+                        ? `${company.logoUrl}?v=${company.updatedAt.getTime()}`
+                        : null
+                    }
+                    name={company.name}
+                  />
+                  <GallerySection
+                    companyId={company.id}
+                    images={company.images}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
         );
       })}
+    </div>
+  );
+}
+
+function LogoSection({
+  companyId,
+  logoUrl,
+  name,
+}: {
+  companyId: string;
+  logoUrl: string | null;
+  name: string;
+}) {
+  const t = useTranslations("dashboard");
+  const [busy, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const errorKeys: Record<string, string> = {
+    too_large: "avatarErrorTooLarge",
+    unreadable: "avatarErrorUnreadable",
+    unsupported_format: "avatarErrorUnsupportedFormat",
+    processing_failed: "avatarErrorProcessingFailed",
+  };
+
+  const report = (code: string | undefined) =>
+    setError(code ? t(errorKeys[code] ?? "avatarErrorProcessingFailed") : null);
+
+  const upload = (file: File) => {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("logo", file);
+      const result = await uploadCompanyLogoAction(companyId, formData);
+      report(result.success ? undefined : result.error);
+      if (fileRef.current) fileRef.current.value = "";
+    });
+  };
+
+  const remove = () => {
+    startTransition(async () => {
+      const result = await removeCompanyLogoAction(companyId);
+      report(result.success ? undefined : result.error);
+    });
+  };
+
+  return (
+    <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
+      <p className="text-sm font-medium">{t("logoSectionLabel")}</p>
+
+      {error && (
+        <p role="alert" className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
+
+      <div className="flex items-center gap-4">
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes (ADR 0023)
+          <img
+            src={logoUrl}
+            alt=""
+            className="size-16 border border-border object-cover"
+          />
+        ) : (
+          <div
+            className="flex size-16 items-center justify-center border border-border bg-muted font-serif text-2xl font-bold text-muted-foreground"
+            aria-hidden="true"
+          >
+            {name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="space-y-1">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            disabled={busy}
+            aria-label={t("logoAdd")}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) upload(file);
+            }}
+            className="block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]"
+          />
+          <p className="text-xs text-muted-foreground">
+            {busy ? t("galleryUploading") : t("logoHint")}
+          </p>
+          {logoUrl && (
+            <button
+              type="button"
+              onClick={remove}
+              disabled={busy}
+              className="text-xs text-muted-foreground underline hover:text-foreground"
+            >
+              {t("logoRemove")}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GallerySection({
+  companyId,
+  images,
+}: {
+  companyId: string;
+  images: { id: string }[];
+}) {
+  const t = useTranslations("dashboard");
+  const [busy, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const errorKeys: Record<string, string> = {
+    gallery_full: "galleryErrorFull",
+    too_large: "avatarErrorTooLarge",
+    unreadable: "avatarErrorUnreadable",
+    unsupported_format: "avatarErrorUnsupportedFormat",
+    processing_failed: "avatarErrorProcessingFailed",
+  };
+
+  const report = (code: string | undefined) =>
+    setError(code ? t(errorKeys[code] ?? "avatarErrorProcessingFailed") : null);
+
+  const upload = (file: File) => {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("image", file);
+      const result = await uploadCompanyImageAction(companyId, formData);
+      report(result.success ? undefined : result.error);
+      if (fileRef.current) fileRef.current.value = "";
+    });
+  };
+
+  const remove = (imageId: string) => {
+    startTransition(async () => {
+      const result = await deleteCompanyImageAction(imageId);
+      report(result.success ? undefined : result.error);
+    });
+  };
+
+  return (
+    <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-medium">{t("galleryLabel")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("galleryCount", {
+            count: images.length,
+            max: COMPANY_GALLERY_MAX_IMAGES,
+          })}
+        </p>
+      </div>
+
+      {error && (
+        <p role="alert" className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
+
+      {images.length > 0 && (
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {images.map((image) => (
+            <li key={image.id} className="group relative aspect-square">
+              {/* eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes */}
+              <img
+                src={companyImageServePath(image.id)}
+                alt=""
+                className="size-full rounded-sm object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => remove(image.id)}
+                disabled={busy}
+                aria-label={t("galleryDelete")}
+                className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {images.length < COMPANY_GALLERY_MAX_IMAGES && (
+        <div className="space-y-1">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            disabled={busy}
+            aria-label={t("galleryAdd")}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) upload(file);
+            }}
+            className="block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]"
+          />
+          <p className="text-xs text-muted-foreground">
+            {busy
+              ? t("galleryUploading")
+              : t("galleryHint", { max: COMPANY_GALLERY_MAX_IMAGES })}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

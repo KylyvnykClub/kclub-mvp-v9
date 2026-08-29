@@ -657,6 +657,7 @@ export async function findApprovedCompanyBySlug(
     with: {
       categories: { with: { businessCategory: true } },
       serviceCountries: true,
+      images: true,
       owner: {
         columns: {
           id: true,
@@ -992,6 +993,7 @@ export async function listCompaniesByOwner(db: DbClient, ownerId: string) {
     with: {
       categories: { with: { businessCategory: true } },
       serviceCountries: true,
+      images: true,
     },
   });
 }
@@ -1032,4 +1034,28 @@ export async function listApprovedCompaniesWithSubscriptionsByOwner(
       subscriptions: true,
     },
   });
+}
+
+/** The logo slot's serve path, or null to clear it (ADR 0023). */
+export async function setCompanyLogoUrl(
+  db: DbClient,
+  companyId: string,
+  logoUrl: string | null,
+): Promise<void> {
+  await db
+    .update(companies)
+    .set({ logoUrl, updatedAt: new Date() })
+    .where(eq(companies.id, companyId));
+}
+
+/** Ids only — for the erasure job to enumerate logo objects it owes a DELETE. */
+export async function listOwnedCompanyIds(
+  db: DbClient,
+  ownerId: string,
+): Promise<string[]> {
+  const rows = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(eq(companies.ownerId, ownerId));
+  return rows.map((r) => r.id);
 }
