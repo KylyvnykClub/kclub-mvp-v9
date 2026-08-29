@@ -652,6 +652,59 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Company gallery photo (ADR 0022): catalogue content, member-gated like
+    // the catalogue, publishable-gated per image inside the handler.
+    method: "GET",
+    path: "/api/company-image/:imageId",
+    action: "read",
+    subject: "catalogue",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:uploadCompanyImageAction",
+    action: "update",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:deleteCompanyImageAction",
+    action: "update",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    // Company logo (ADR 0023): public brand imagery once the company is
+    // publishable - the marketing landing shows it to guests - so no session
+    // is required; the handler applies the approved+paid test per company.
+    method: "GET",
+    path: "/api/company-logo/:companyId",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:uploadCompanyLogoAction",
+    action: "update",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:removeCompanyLogoAction",
+    action: "update",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/api/admin/export/member/:memberId",
     action: "export_data",

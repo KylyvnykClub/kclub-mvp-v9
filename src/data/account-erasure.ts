@@ -4,6 +4,8 @@ import type { DbClient } from "./db";
 import {
   accountDeletionRequests,
   cards,
+  companies,
+  companyImages,
   members,
   notifications,
   referrals,
@@ -151,5 +153,17 @@ export async function eraseMemberTx(
     // The inbox describes things that happened to this person and names their
     // companies; none of it survives them (ADR 0020).
     await tx.delete(notifications).where(eq(notifications.memberId, memberId));
+
+    // Gallery rows for owned companies (ADR 0022). Companies are anonymised
+    // above rather than deleted, so the ON DELETE CASCADE on
+    // company_images.company_id never fires - same trap as notifications.
+    // The caller collects the R2 keys before this transaction and deletes
+    // the objects best-effort afterwards.
+    await tx.delete(companyImages).where(
+      sql`${companyImages.companyId} in (
+        select ${companies.id} from ${companies}
+        where ${companies.ownerId} = ${memberId}
+      )`,
+    );
   });
 }

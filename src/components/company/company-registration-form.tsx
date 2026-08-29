@@ -357,14 +357,10 @@ export function CompanyRegistrationForm() {
             </Field>
           </div>
 
-          <Field id="logoUrl" label={t("logoLabel")}>
-            <Input
-              id="logoUrl"
-              value={values.logoUrl ?? ""}
-              placeholder="https://acme.com/logo.png"
-              onChange={(e) => set("logoUrl", e.target.value)}
-            />
-          </Field>
+          {/* The logo is uploaded from Profile > My Companies once the company
+              exists (ADR 0023) - there is no company id to key the object on
+              before that, so the field left this form. The optional `logoUrl`
+              schema field stays for saved drafts. */}
 
           <Field id="description" label={t("descriptionLabel")}>
             <Textarea

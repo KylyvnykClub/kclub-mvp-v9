@@ -1,6 +1,10 @@
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { InvalidImageError, processAvatarImage } from "./image-processing";
+import {
+  InvalidImageError,
+  processAvatarImage,
+  processGalleryImage,
+} from "./image-processing";
 
 async function pngFixture(width: number, height: number): Promise<Buffer> {
   return sharp({
@@ -59,5 +63,34 @@ describe("processAvatarImage", () => {
 
     expect(error).toBeInstanceOf(InvalidImageError);
     expect((error as InvalidImageError).code).toBe("too_large");
+  });
+});
+
+describe("processGalleryImage", () => {
+  it("bounds the longest side to 1600px and keeps the aspect ratio", async () => {
+    const input = await pngFixture(3200, 1600);
+
+    const output = await processGalleryImage(input);
+    const outputMeta = await sharp(output).metadata();
+
+    expect(outputMeta.format).toBe("webp");
+    expect(outputMeta.width).toBe(1600);
+    expect(outputMeta.height).toBe(800);
+  });
+
+  it("never enlarges a small image", async () => {
+    const input = await pngFixture(400, 300);
+
+    const output = await processGalleryImage(input);
+    const outputMeta = await sharp(output).metadata();
+
+    expect(outputMeta.width).toBe(400);
+    expect(outputMeta.height).toBe(300);
+  });
+
+  it("rejects a non-image with the same validation as avatars", async () => {
+    await expect(
+      processGalleryImage(Buffer.from("not an image")),
+    ).rejects.toThrow(InvalidImageError);
   });
 });
