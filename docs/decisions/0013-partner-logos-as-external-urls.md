@@ -3,7 +3,7 @@
 > **Status:** Superseded by [ADR 0023](0023-company-logo-upload.md) on 2026-08-29
 > **Date:** 2026-08-19
 > **Deciders:** Delivery lead
-
+>
 > **Superseded.** The reason given below for not building an upload pipeline
 > — that it was real, unbuilt infrastructure — stopped being true once ADR 0021
 > built it for avatars and ADR 0022 reused it for galleries. ADR 0023 moves the
