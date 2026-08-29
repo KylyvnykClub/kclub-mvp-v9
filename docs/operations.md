@@ -133,6 +133,8 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm db:seed:categories`, `pnpm db:seed:beta`|Reference data, then 50 members and 30 companies|
 |`pnpm env:check:production`|Check a production-shaped environment before promoting|
 |`pnpm smoke:deployment <url>`|Smoke a preview or production deployment|
+|`pnpm stripe:listen`|Forward Stripe test webhooks to the local dev server, pinned to the account in `.env.local`; run it in a second terminal beside `pnpm dev`, every session — without it a local checkout stays UNPAID because no `customer.subscription.*` event ever arrives|
+|`pnpm stripe:check`|Diagnose Stripe webhook delivery|
 |`python tools/check-plan.py --strict`|Every FR claimed by one task, and named by a test title|
 |`python tools/check-docs.py --strict`|Broken links, missing owners, stale dates|
 
