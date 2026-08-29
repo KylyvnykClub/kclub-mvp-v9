@@ -66,8 +66,9 @@ export async function GET(
     headers: {
       "Content-Type": COMPANY_IMAGE_CONTENT_TYPE,
       // Public content once publishable, but the owner path depends on the
-      // caller — so no shared cache, only the requesting browser.
-      "Cache-Control": "private, max-age=300",
+      // caller — so no shared cache. no-cache because the slot is overwritten
+      // in place; readers version the URL with the company's updatedAt.
+      "Cache-Control": "private, no-cache",
     },
   });
 }

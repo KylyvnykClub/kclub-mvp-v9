@@ -71,8 +71,9 @@ export async function GET(
     headers: {
       "Content-Type": COMPANY_IMAGE_CONTENT_TYPE,
       // Private: visibility depends on who is asking (owner vs member vs
-      // publishable), so no shared cache may hold the answer.
-      "Cache-Control": "private, max-age=300",
+      // publishable), so no shared cache may hold the answer. Gallery
+      // objects are immutable per id, so a browser may keep them a while.
+      "Cache-Control": "private, max-age=3600",
     },
   });
 }

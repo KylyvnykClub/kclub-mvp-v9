@@ -291,7 +291,13 @@ export function CompanyList({
                 <>
                   <LogoSection
                     companyId={company.id}
-                    logoUrl={company.logoUrl}
+                    // Versioned so a replaced logo is refetched rather than
+                    // served from the browser's copy of the old one.
+                    logoUrl={
+                      company.logoUrl
+                        ? `${company.logoUrl}?v=${company.updatedAt.getTime()}`
+                        : null
+                    }
                     name={company.name}
                   />
                   <GallerySection

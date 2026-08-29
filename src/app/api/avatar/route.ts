@@ -33,8 +33,11 @@ export async function GET(): Promise<NextResponse> {
     headers: {
       "Content-Type": AVATAR_CONTENT_TYPE,
       // Private: this URL is identical for every member, so a shared cache
-      // must never serve one member's photo to another's request.
-      "Cache-Control": "private, max-age=60",
+      // must never serve one member's photo to another's request. no-cache
+      // rather than a max-age: the slot is overwritten in place, and a
+      // browser holding last minute's bytes would show the photo the member
+      // just replaced. The form also versions the URL with updatedAt.
+      "Cache-Control": "private, no-cache",
     },
   });
 }
