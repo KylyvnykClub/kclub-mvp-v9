@@ -94,6 +94,15 @@ export function NotificationList({
                     {moderatorNote}
                   </blockquote>
                 )}
+                {row.kind === "company_rejected" && (
+                  // Worded conditionally on purpose: the inbox row is written
+                  // before the refund runs and the refund may still be
+                  // retrying via the outbox (ADR 0019), so this promises the
+                  // policy rather than reporting a completed transfer.
+                  <p className="text-sm text-muted-foreground">
+                    {t("company_rejected_refund")}
+                  </p>
+                )}
                 <time
                   dateTime={new Date(row.createdAt).toISOString()}
                   className="block text-[11px] uppercase tracking-[0.12em] text-muted-foreground"

@@ -1221,6 +1221,7 @@
     "welcome": "Welcome to KCLUB. Your membership card is ready.",
     "company_approved": "{companyName} was approved and is now published in the catalogue.",
     "company_rejected": "{companyName} was not approved. The reviewer left this note:",
+    "company_rejected_refund": "If you had already paid for the listing, the subscription has been cancelled and the payment is being refunded to your card. Banks usually take 5–10 business days to show it.",
     "referral_received": "{companyName} received a new client introduction. Open Referrals to accept or decline it.",
     "payment_failed": "A payment failed. You keep access while we retry — update your payment method to avoid losing it.",
     "grace_expiry_warning": "Your payment is still failing. Access ends soon unless the payment method is updated."
