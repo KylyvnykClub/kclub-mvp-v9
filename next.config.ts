@@ -52,6 +52,28 @@ const config: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: false },
 
+  /**
+   * No persistent webpack cache in `next dev`.
+   *
+   * On this Windows machine the filesystem cache under `.next/cache/webpack`
+   * and the on-demand route compiler race each other: two tabs hitting two
+   * not-yet-compiled routes within the same second leave `.next/server/
+   * vendor-chunks/*.js` half-written, and every page then dies with
+   * `Cannot find module './vendor-chunks/...'` until `.next` is wiped and the
+   * server cold-started. It happened four times in one day. Memory caching
+   * keeps HMR fast within a running server; what is lost is only the warm
+   * start across restarts, which is cheaper than the recovery this replaces.
+   *
+   * Production builds are untouched: `dev` is false there and the default
+   * filesystem cache stays on.
+   */
+  webpack(webpackConfig, { dev }) {
+    if (dev) {
+      webpackConfig.cache = { type: "memory" };
+    }
+    return webpackConfig;
+  },
+
   // docs/security.md §6: the member area and the staff console are never
   // cached, never framed, and never sent as a referrer to a third party.
   // Per-route headers arrive with the routes; these are the floor.
