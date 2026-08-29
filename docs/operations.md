@@ -110,7 +110,8 @@ What the application does not own.
 |Vercel|Deployments, environment variables, cron invocations, logs|
 |Neon|Database, branches, point-in-time recovery|
 |Stripe|Products, prices, webhook endpoint, customers, test clocks|
-|Cloudflare|DNS, R2 bucket, Turnstile site and its allowed hostnames|
+|Cloudflare|DNS, R2 bucket (backups and `media/`), Turnstile site and its allowed hostnames|
+|CountryStateCity|API key for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); optional — the form degrades to free text without it|
 |Upstash|Redis, rate-limit keys, plan limits|
 |Resend|Sender domain authentication, delivery logs|
 |Sentry|Errors and releases|

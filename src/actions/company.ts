@@ -77,6 +77,14 @@ import { safeErrorFields } from "@/lib/safe-error";
 import { isProhibitedCategory } from "@/lib/prohibited-categories";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { insertCompanyImageWithId } from "@/data/company-images";
+import { companyLogoServePath } from "@/lib/company-image-path";
+import { parseDraftImageIds } from "@/lib/draft-media-path";
+import {
+  deleteDraftMedia,
+  promoteDraftMedia,
+} from "@/modules/platform/draft-media-storage";
+import { setCompanyLogoUrl } from "@/data/companies";
 
 const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
 
@@ -193,7 +201,7 @@ export async function registerCompanyAction(
         description: parsed.data.description,
         businessCategoryId: parsed.data.businessCategoryIds[0] ?? null,
         discount: parsed.data.discount,
-        logoUrl: parsed.data.logoUrl,
+        logoUrl: null,
         contactEmail: parsed.data.contactEmail,
         contactPhone: parsed.data.contactPhone,
         country: parsed.data.registrationCountryCode,
@@ -211,6 +219,26 @@ export async function registerCompanyAction(
     );
 
     // The application is now a company; the draft has served its purpose.
+    // ADR 0024: media staged during onboarding becomes the company's. Best
+    // effort - the application is the point, a lost photo is not. Rows are
+    // written only for objects the copy confirmed, and the staging prefix is
+    // deleted only after those rows exist.
+    try {
+      const promoted = await promoteDraftMedia(auth.member.id, companyId, {
+        logo: parsed.data.logoStaged === "true",
+        imageIds: parseDraftImageIds(parsed.data.galleryImageIds),
+      });
+      for (const imageId of promoted.imageIds) {
+        await insertCompanyImageWithId(db, companyId, imageId);
+      }
+      if (promoted.logo) {
+        await setCompanyLogoUrl(db, companyId, companyLogoServePath(companyId));
+      }
+      await deleteDraftMedia(auth.member.id);
+    } catch (error) {
+      logger.error("Draft media promotion failed", safeErrorFields(error));
+    }
+
     await deleteCompanyDraft(db, auth.member.id);
 
     return { success: true, companyId };
@@ -321,6 +349,11 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
   assertCan(actor, "create", "own_company");
 
   await deleteCompanyDraft(db, auth.member.id);
+  try {
+    await deleteDraftMedia(auth.member.id);
+  } catch (error) {
+    logger.error("Draft media cleanup failed", safeErrorFields(error));
+  }
 
   return { success: true };
 }

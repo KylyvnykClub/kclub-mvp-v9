@@ -9,6 +9,7 @@ import {
 import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
+  listExpiredCompanyDraftOwnerIds,
 } from "@/data/company-drafts";
 import { deleteExpiredNotifications } from "@/data/notifications";
 import { deleteProcessedOutboxRows } from "@/data/outbox";
@@ -18,6 +19,7 @@ import { env } from "@/env";
 import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
 import { authorizeCronRequest } from "@/modules/platform";
 import { deleteAvatar } from "@/modules/platform/avatar-storage";
+import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
 import {
   deleteCompanyImage,
   deleteCompanyLogo,
@@ -51,11 +53,24 @@ export async function GET(req: Request) {
 
   const now = new Date();
 
+  // ADR 0024: staged onboarding media is keyed by the applicant, so the
+  // owners must be known before their rows go.
+  const expiredDraftOwners = await listExpiredCompanyDraftOwnerIds(db, now);
+
   const companyDraftsDeleted = await deleteExpiredCompanyDrafts(
     db,
     now,
     COMPANY_DRAFT_RETENTION_DAYS,
   );
+
+  for (const ownerId of expiredDraftOwners) {
+    try {
+      await deleteDraftMedia(ownerId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[retention] draft media deletion failed: ${message}`);
+    }
+  }
 
   // Processed outbox rows are evidence of a delivery that already happened;
   // once past the dedupe window they are pure history and the table should not

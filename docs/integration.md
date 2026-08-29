@@ -22,7 +22,8 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |**Vercel**|Hosting, CDN, TLS, build and deploy|Yes|Total outage|Tech lead|
 |**Upstash Redis**|Rate limits, quotas, facet counts|No|Degrades to durable counting; limits become slower, never absent|Tech lead|
 |**Inngest**|Durable background jobs and scheduling|No, for correctness; yes, for timeliness|Entitlements lag and notifications queue. Nothing is lost — the outbox is in PostgreSQL|Tech lead|
-|**Cloudflare R2**|Nightly PostgreSQL logical dump ([data-storage.md §5](data-storage.md#5-backup-and-recovery)) — not used for partner images ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md))|No|A missed nightly dump; point-in-time recovery from Neon is unaffected|Tech lead|
+|**Cloudflare R2**|Nightly PostgreSQL logical dump ([data-storage.md §5](data-storage.md#5-backup-and-recovery)); member avatars, company logos and galleries, and onboarding staging under `media/` ([ADR 0021](decisions/0021-member-avatar-upload.md)–[0024](decisions/0024-onboarding-media-staging.md))|No|A missed nightly dump; uploads fail and stored images 404 until it returns — the rest of the product is unaffected|Tech lead|
+|**CountryStateCity**|City names for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md))|No|The city field is free text|Tech lead|
 |**Cloudflare DNS + Turnstile**|DNS, bot mitigation on registration|Yes (DNS)|DNS failure is a total outage; Turnstile failure fails open with tighter rate limits|Owner|
 |**Resend**|Transactional email|No|Email queues; in-product state is authoritative|Tech lead|
 |**Sentry / Axiom / Better Stack**|Errors, logs and metrics, uptime and status page|No|We are blind but serving. Blindness during an incident is bad enough to alert on separately|Tech lead|
@@ -37,6 +38,7 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |Stripe|99.99% historical, no contractual SLA on standard accounts|Checkout availability|Accepted universally; no alternative provider is realistic|
 |Twilio|99.95% on Verify|Registration|A Twilio outage stops growth, not the club|
 |Upstash / R2 / Resend|99.9%-class|Nothing critical|Designed to degrade|
+|CountryStateCity|None published|Nothing - the onboarding city picker|Degrades to a free-text field when the key is absent or the API is down ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md))|
 
 The honest summary: **our 99.9% target is a stack of vendors' 99.9%s, which
 multiply to less.** That is why the card verification path — the only one a
@@ -166,7 +168,17 @@ Partner logos remain a member-supplied external URL, not an upload
 ([ADR 0013](decisions/0013-partner-logos-as-external-urls.md)) - that
 decision is unchanged.
 
-### 2.5 Upstash Redis and Inngest
+### 2.5 CountryStateCity
+
+City names for the company onboarding form ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)).
+Called only from `listCitiesForCountryAction` with the key in a request header,
+so it never reaches a browser; one country's list is fetched at most once a
+day per server process and cached in memory. A 5-second timeout, and any
+failure returns null - the form falls back to free text, and FR-041's
+server-side city/country check applies either way. No personal data is sent:
+the only request parameter is an ISO country code.
+
+### 2.6 Upstash Redis and Inngest
 
 Both are called through their SDKs with a 1-second (Redis) and 5-second
 (Inngest) timeout. Neither is authoritative for anything: Redis failure degrades
@@ -182,7 +194,7 @@ the same way a webhook's is (§4).
 |-|-|
 |Consumers|**Our own frontend only.** No partner API, no public API, no mobile client. This is why there is no versioned REST surface: publishing one would mean maintaining a contract nobody has asked for|
 |Style|Next.js Server Actions for everything initiated by our own UI; REST Route Handlers only where an external caller exists|
-|Public REST endpoints, in full|`POST /api/webhooks/stripe`, `POST /api/webhooks/twilio/status`, `POST /api/inngest`, `GET /v/{token}` (card verification, on `card.kclub.com`), `GET /health/{live,ready,deep}`, `GET /api/avatar` (session-authenticated, always the caller's own avatar — a Route Handler rather than a Server Action because only one can stream raw bytes with a `Content-Type`, [ADR 0021](decisions/0021-member-avatar-upload.md)), `GET /api/company-image/{imageId}` (session-authenticated; owner always, others only when the company is approved and paid, [ADR 0022](decisions/0022-company-photo-gallery.md)), `GET /api/company-logo/{companyId}` (no session required — the landing showcase and OpenGraph crawlers fetch it; served only when the company is approved and paid, or to its owner, [ADR 0023](decisions/0023-company-logo-upload.md)). That is the complete list, and adding to it is a reviewed decision|
+|Public REST endpoints, in full|`POST /api/webhooks/stripe`, `POST /api/webhooks/twilio/status`, `POST /api/inngest`, `GET /v/{token}` (card verification, on `card.kclub.com`), `GET /health/{live,ready,deep}`, `GET /api/avatar` (session-authenticated, always the caller's own avatar — a Route Handler rather than a Server Action because only one can stream raw bytes with a `Content-Type`, [ADR 0021](decisions/0021-member-avatar-upload.md)), `GET /api/company-image/{imageId}` (session-authenticated; owner always, others only when the company is approved and paid, [ADR 0022](decisions/0022-company-photo-gallery.md)), `GET /api/draft-media/{slot}` (session-authenticated, always the caller's own onboarding staging, [ADR 0024](decisions/0024-onboarding-media-staging.md)), `GET /api/company-logo/{companyId}` (no session required — the landing showcase and OpenGraph crawlers fetch it; served only when the company is approved and paid, or to its owner, [ADR 0023](decisions/0023-company-logo-upload.md)). That is the complete list, and adding to it is a reviewed decision|
 |Base URL|`https://kclub.com/api`, `https://card.kclub.com`|
 |Specification|OpenAPI generated from the Zod schemas of the REST endpoints above, published at `/api/openapi.json` in non-production environments. Server Actions are not in it — their contract is the TypeScript types, checked at compile time|
 |Authentication|Session cookie for Server Actions; signature verification for webhooks; none for card verification (the token in the path is the credential) and health checks|

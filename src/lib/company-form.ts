@@ -46,6 +46,15 @@ export const companyDetailsStepSchema = z.object({
     z.string().min(2, "Specialization description is required").max(500),
   ),
   logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  // Since the onboarding rework (ADR 0024) the offer and contacts sit on
+  // step 1 with the rest of the business details.
+  discount: z.string().max(255).optional(),
+  contactEmail: z
+    .string()
+    .email("Must be a valid email")
+    .optional()
+    .or(z.literal("")),
+  contactPhone: z.string().max(50).optional(),
 });
 
 export const companyLocationStepSchema = z
@@ -64,7 +73,7 @@ export const companyLocationStepSchema = z
     registrationCountryCode: z
       .string()
       .regex(/^[A-Z]{2}$/, "Country is required"),
-    serviceCountryCodes: z.string().max(1000),
+    serviceCountryCodes: z.string().max(2000),
     servesWorldwide: z.enum(["true", "false"]),
     businessFormat: z.enum([
       "offline_only",
@@ -90,13 +99,6 @@ export const companyLocationStepSchema = z
       });
     }
     if (value.businessFormat !== "online_only") {
-      if (!value.administrativeLevel1?.trim()) {
-        context.addIssue({
-          code: "custom",
-          message: "Administrative level is required",
-          path: ["administrativeLevel1"],
-        });
-      }
       if (!value.city?.trim()) {
         context.addIssue({
           code: "custom",
@@ -107,14 +109,18 @@ export const companyLocationStepSchema = z
     }
   });
 
-export const companyOfferStepSchema = z.object({
-  discount: z.string().max(255).optional(),
-  contactEmail: z
+/**
+ * Step 3 (ADR 0024): what the applicant staged under their draft prefix.
+ * Both optional - a company without photos is still a company. The ids are
+ * checked against staging at submission; a stale one is simply skipped.
+ */
+export const companyMediaStepSchema = z.object({
+  logoStaged: z.enum(["true", ""]).optional(),
+  galleryImageIds: z
     .string()
-    .email("Must be a valid email")
-    .optional()
-    .or(z.literal("")),
-  contactPhone: z.string().max(50).optional(),
+    .max(400)
+    .regex(/^([0-9a-f-]{36}(,[0-9a-f-]{36})*)?$/, "Invalid image list")
+    .optional(),
 });
 
 /** Step 4 is review and confirm; it introduces no fields of its own. */
@@ -124,7 +130,7 @@ export const COMPANY_FORM_STEPS = 4;
 export const COMPANY_STEP_SCHEMAS = {
   1: companyDetailsStepSchema,
   2: companyLocationStepSchema,
-  3: companyOfferStepSchema,
+  3: companyMediaStepSchema,
 } as const;
 
 /**
@@ -151,6 +157,8 @@ export const COMPANY_FIELD_LABEL_KEYS: Record<string, string> = {
   discount: "discountLabel",
   contactEmail: "contactEmailLabel",
   contactPhone: "contactPhoneLabel",
+  logoStaged: "logoSectionLabel",
+  galleryImageIds: "galleryLabel",
 };
 
 /**
@@ -228,7 +236,7 @@ export function isCompanyStep(value: number): value is CompanyStepNumber {
 
 export const registerCompanySchema = companyDetailsStepSchema
   .extend(companyLocationStepSchema.shape)
-  .extend(companyOfferStepSchema.shape);
+  .extend(companyMediaStepSchema.shape);
 
 /**
  * A draft read back from the database is input, not state we control: it was

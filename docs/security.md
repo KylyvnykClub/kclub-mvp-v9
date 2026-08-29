@@ -166,8 +166,11 @@ hashing pepper) live in Vercel environment variables, sourced from 1Password,
 readable in production by the owner and the tech lead only. Keys are versioned —
 ciphertext carries a key id — so rotation is a re-encrypt job, not a big-bang
 migration. Rotation schedule: annually, and immediately on any suspicion.
-Stripe, Twilio, Resend, Upstash and R2 credentials rotate every 90 days on a
-calendar reminder, and immediately when anyone with access leaves.
+Stripe, Twilio, Resend, Upstash, R2 and CountryStateCity credentials rotate
+every 90 days on a calendar reminder, and immediately when anyone with access
+leaves. The CountryStateCity key is only ever sent from a Server Action
+([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); it never
+reaches a browser.
 
 ---
 

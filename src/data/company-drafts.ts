@@ -76,3 +76,20 @@ export async function deleteExpiredCompanyDrafts(
 
   return removed.length;
 }
+
+/**
+ * Owners of drafts the next sweep will delete, collected before the delete
+ * so their staged media prefixes are still derivable afterwards (ADR 0024).
+ */
+export async function listExpiredCompanyDraftOwnerIds(
+  db: DbClient,
+  now: Date,
+  retentionDays = COMPANY_DRAFT_RETENTION_DAYS,
+): Promise<string[]> {
+  const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+  const rows = await db
+    .select({ ownerId: companyDrafts.ownerId })
+    .from(companyDrafts)
+    .where(lt(companyDrafts.updatedAt, cutoff));
+  return rows.map((r) => r.ownerId);
+}

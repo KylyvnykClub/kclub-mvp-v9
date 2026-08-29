@@ -82,3 +82,16 @@ export async function listCompanyImageRefsByOwner(
     .innerJoin(companies, eq(companies.id, companyImages.companyId))
     .where(eq(companies.ownerId, ownerId));
 }
+
+/**
+ * Insert with a caller-chosen id: onboarding stages an image under an id
+ * before the company exists and promotes the object to that same id, so the
+ * row must match it (ADR 0024).
+ */
+export async function insertCompanyImageWithId(
+  db: DbClient,
+  companyId: string,
+  id: string,
+): Promise<void> {
+  await db.insert(companyImages).values({ id, companyId });
+}

@@ -91,6 +91,10 @@ export const serverSchema = z
     R2_SECRET_ACCESS_KEY: z.string().optional(),
     R2_BUCKET_NAME: z.string().default("kclub"),
 
+    // ── Reference data — CountryStateCity (ADR 0025) ────────
+    // Optional: without it the onboarding city field is free text.
+    COUNTRY_STATE_CITY_API_KEY: z.string().optional(),
+
     // ── Bot defense — Cloudflare Turnstile ──────────────────
     TURNSTILE_SECRET_KEY: z.string().optional(),
 

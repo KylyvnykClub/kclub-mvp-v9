@@ -78,3 +78,45 @@ describe("objectStorageFrom", () => {
     );
   });
 });
+
+describe("objectStorageFrom - copy and list", () => {
+  it("copyObject sends a CopyObjectCommand with a bucket-qualified source", async () => {
+    const client = fakeClient(() => ({}));
+    const storage = objectStorageFrom(client, "kclub");
+
+    await storage.copyObject(
+      "media/drafts/m1/logo.webp",
+      "media/companies/c1/logo.webp",
+    );
+
+    const command = client.send.mock.calls[0]?.[0] as { input: unknown };
+    expect(command.input).toMatchObject({
+      Bucket: "kclub",
+      CopySource: "kclub/media/drafts/m1/logo.webp",
+      Key: "media/companies/c1/logo.webp",
+    });
+  });
+
+  it("listKeys returns the keys under a prefix", async () => {
+    const client = fakeClient(() => ({
+      Contents: [
+        { Key: "media/drafts/m1/logo.webp" },
+        { Key: "media/drafts/m1/a.webp" },
+        {},
+      ],
+    }));
+    const storage = objectStorageFrom(client, "kclub");
+
+    const keys = await storage.listKeys("media/drafts/m1/");
+
+    expect(keys).toEqual([
+      "media/drafts/m1/logo.webp",
+      "media/drafts/m1/a.webp",
+    ]);
+    const command = client.send.mock.calls[0]?.[0] as { input: unknown };
+    expect(command.input).toMatchObject({
+      Bucket: "kclub",
+      Prefix: "media/drafts/m1/",
+    });
+  });
+});

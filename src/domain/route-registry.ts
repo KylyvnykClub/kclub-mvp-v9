@@ -704,6 +704,58 @@ const staticRoutes: RouteEntry[] = [
     mutating: true,
     staffOnly: false,
   },
+  // Onboarding media staging (ADR 0024). Every entry is scoped to the
+  // caller's own draft - the object key is derived from the session.
+  {
+    method: "GET",
+    path: "/api/draft-media/:slot",
+    action: "create",
+    subject: "own_company",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:uploadDraftLogoAction",
+    action: "create",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:removeDraftLogoAction",
+    action: "create",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:uploadDraftImageAction",
+    action: "create",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:deleteDraftImageAction",
+    action: "create",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    // City names for the onboarding picker (ADR 0025): reference data, read
+    // through a Server Action so the provider key never reaches the browser.
+    method: "POST",
+    path: "action:listCitiesForCountryAction",
+    action: "create",
+    subject: "own_company",
+    mutating: false,
+    staffOnly: false,
+  },
   {
     method: "GET",
     path: "/api/admin/export/member/:memberId",
