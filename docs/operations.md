@@ -2,7 +2,7 @@
 
 > **Status:** Draft
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-19
+> **Last updated:** 2026-08-30
 > **Write when:** as soon as there is something to operate.
 
 Where each thing is managed, and by whom. This is a map, not a runbook — a
@@ -96,7 +96,7 @@ to clear by design ([ADR 0014](decisions/0014-no-notification-log-table.md)).
 |Endpoint|Answers|
 |-|-|
 |`/health/live`|Is the process up|
-|`/health/ready`|Are the database and Redis reachable|
+|`/health/ready`|Are the database and Redis reachable; the database check also reports `environment` — what the database says it is ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)), so `pnpm smoke:deployment <url> --expect-database-environment production` proves a deployment is on the right database|
 
 Both are the first things to check during an incident, before anything in
 [runbooks/](runbooks/site-down.md).
@@ -130,9 +130,11 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm db:migrate`|Apply migrations|
 |`pnpm db:mark-environment --show`|Which environment the database at `DATABASE_URL` says it is ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md))|
 |`pnpm db:mark-environment production`|Mark production once, after its marker migration is applied. Relabelling a production-marked database as anything else is refused|
+|`pnpm db:reset:dev`|Rebuild the `dev` branch from zero: drop the schema, apply every migration, mark it `dev`, seed categories, the staff owner, the Stripe test prices and the beta dataset. `--no-beta` skips the partners; the first run on a branch not yet marked `dev` needs `--confirm-endpoint <ep-id>`. Refuses a `production` marker with no override|
 |`pnpm db:updownup`|Prove a migration reverses cleanly|
 |`pnpm db:studio`|Browse the database|
-|`pnpm db:seed:categories`, `pnpm db:seed:beta`|Reference data, then 50 members and 30 companies|
+|`pnpm db:seed:categories`, `pnpm db:seed`, `pnpm db:seed:beta`|Reference data; Stripe products, flags the migrations lack, the staff owner and `plan_prices`; then 50 members and 30 companies. `db:reset:dev` runs all three|
+|`pnpm smoke:deployment <url> --expect-database-environment production`|Smoke a deployment and assert which database it reports|
 |`pnpm env:check:production`|Check a production-shaped environment before promoting|
 |`pnpm smoke:deployment <url>`|Smoke a preview or production deployment|
 |`pnpm stripe:listen`|Forward Stripe test webhooks to the local dev server, pinned to the account in `.env.local`; run it in a second terminal beside `pnpm dev`, every session — without it a local checkout stays UNPAID because no `customer.subscription.*` event ever arrives|
@@ -145,6 +147,16 @@ only the production pooled and direct URLs in Vercel Production. Staging uses a
 staging branch/database for beta and release rehearsals. Preview and local work
 use disposable preview/local branches. `.env.local` must not point at the
 production database except during a named, time-boxed incident.
+
+**The local ritual.** `.env.local` holds the pooled and direct URLs of the
+Neon branch `dev` — same role, same database name, one endpoint — and no
+`.env` file sits beside it (Next.js reads both, and a stale URL there wins).
+`pnpm db:reset:dev` is the way to a known state, whenever wanted: it is
+idempotent and takes about a minute. Afterwards `pnpm dev` logs
+`database environment: dev` before it serves, `pnpm stripe:listen` runs in the
+second terminal as always, and checkout uses the test-mode price the seed
+recorded in `plan_prices` — that row wins over `STRIPE_*_PRICE_ID` locally,
+exactly as it does in production.
 
 **That rule is enforced by the database, not by memory** ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
 Every database carries a one-row marker saying which environment it _is_.

@@ -8,9 +8,11 @@
  *
  * What it does:
  *   1. Ensures Stripe products and prices exist (VIP membership, listing subscription).
- *   2. Creates a bootstrap staff user (from ADMIN_BOOTSTRAP_OWNER_PHONE / PASSWORD).
- *   3. Inserts feature flags with safe defaults.
- *   4. In non-production: inserts sample data for development.
+ *   2. Inserts the feature flags the application reads and the migrations do
+ *      not seed; never changes an existing row (the staff console owns those).
+ *   3. Creates a bootstrap staff user (from ADMIN_BOOTSTRAP_OWNER_PHONE / PASSWORD).
+ *   4. Records the Stripe prices from step 1 in plan_prices when nothing is
+ *      active there yet, so a fresh branch can check out without STRIPE_*_PRICE_ID.
  *   5. With --beta: seeds the Private Beta dataset (phase 4, requirements.md §6.1).
  *
  * Idempotent: safe to run multiple times. Uses ON CONFLICT DO NOTHING.
@@ -26,8 +28,10 @@ import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 
 import type { DatabaseMarker } from "../src/data/database-environment";
+import { FLAG_NAMES } from "../src/data/feature-flags";
 import { assertDatabaseEnvironment } from "./assert-database-environment";
 import { betaSeedRefusal } from "./beta-seed-guard";
+import { SEED_FLAG_DEFAULTS } from "./seed-defaults";
 
 config({ path: ".env.local" });
 
@@ -48,12 +52,17 @@ let databaseMarker: DatabaseMarker = { kind: "no_table" };
 
 // ── Stripe seed ──────────────────────────────────────────────
 
+type PlanLookupKey = "vip_monthly" | "listing_monthly";
+
 interface StripePlan {
   name: string;
-  lookup_key: string;
+  lookup_key: PlanLookupKey;
   amount_cents: number;
   interval: "month";
 }
+
+/** Stripe price ids found or created by seedStripe(), by lookup key. */
+type SeededPriceIds = Partial<Record<PlanLookupKey, string>>;
 
 const PLANS: StripePlan[] = [
   {
@@ -70,13 +79,14 @@ const PLANS: StripePlan[] = [
   },
 ];
 
-async function seedStripe(): Promise<void> {
+async function seedStripe(): Promise<SeededPriceIds> {
+  const priceIds: SeededPriceIds = {};
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
   if (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.includes("placeholder")) {
     console.warn(
       "⚠️  STRIPE_SECRET_KEY not set or is placeholder — skipping Stripe seed.",
     );
-    return;
+    return priceIds;
   }
 
   // Use Stripe REST API directly to avoid adding stripe as a dependency
@@ -126,6 +136,7 @@ async function seedStripe(): Promise<void> {
     };
 
     if (pricesData.data.length > 0) {
+      priceIds[plan.lookup_key] = pricesData.data[0]!.id;
       console.log(
         `  ✓ Price for "${plan.name}" already exists (${pricesData.data[0]!.id})`,
       );
@@ -143,54 +154,42 @@ async function seedStripe(): Promise<void> {
         body,
       });
       const price = (await createRes.json()) as { id: string };
+      priceIds[plan.lookup_key] = price.id;
       console.log(`  + Created price for "${plan.name}" (${price.id})`);
     }
   }
+
+  return priceIds;
 }
 
 // ── Feature flags ────────────────────────────────────────────
 
-const DEFAULT_FLAGS: Array<{
-  key: string;
-  enabled: boolean;
-  description: string;
-}> = [
-  {
-    key: "signup_enabled",
-    enabled: true,
-    description: "Allow new member registrations",
-  },
-  {
-    key: "referrals_enabled",
-    enabled: false,
-    description: "Enable client referral feature (Phase 6)",
-  },
-  {
-    key: "sms_enabled",
-    enabled: false,
-    description: "Send real SMS via Twilio (false = log to console)",
-  },
-  {
-    key: "stripe_live",
-    enabled: false,
-    description: "Use live Stripe keys (false = test mode)",
-  },
-];
-
+/**
+ * Insert the flags the application reads and this database lacks. Existing
+ * rows are never updated: a flag a staff owner flipped in the console stays
+ * flipped across seeds.
+ */
 async function seedFeatureFlags(): Promise<void> {
-  for (const flag of DEFAULT_FLAGS) {
-    await sql`
+  for (const name of FLAG_NAMES) {
+    const enabled = SEED_FLAG_DEFAULTS[name];
+    const inserted = await sql`
       INSERT INTO feature_flag (name, enabled, updated_at)
-      VALUES (${flag.key}, ${flag.enabled}, now())
+      VALUES (${name}, ${enabled}, now())
       ON CONFLICT (name) DO NOTHING
+      RETURNING name
     `;
-    console.log(`  ✓ Flag "${flag.key}" = ${flag.enabled}`);
+    console.log(
+      inserted.length > 0
+        ? `  + Flag "${name}" = ${enabled}`
+        : `  ✓ Flag "${name}" already present — left as is`,
+    );
   }
 }
 
 // ── Bootstrap staff owner ────────────────────────────────────
 
-async function seedBootstrapStaff(): Promise<void> {
+/** Returns the staff owner's member id, existing or created; null if skipped. */
+async function seedBootstrapStaff(): Promise<string | null> {
   const phone = process.env.ADMIN_BOOTSTRAP_OWNER_PHONE;
   const password = process.env.ADMIN_BOOTSTRAP_OWNER_PASSWORD;
 
@@ -198,7 +197,7 @@ async function seedBootstrapStaff(): Promise<void> {
     console.log(
       "\n⏭️  Skipping staff bootstrap (ADMIN_BOOTSTRAP_OWNER_PHONE / ADMIN_BOOTSTRAP_OWNER_PASSWORD not set).",
     );
-    return;
+    return null;
   }
 
   if (password.length < 12) {
@@ -213,6 +212,7 @@ async function seedBootstrapStaff(): Promise<void> {
   const { db } = await import("../src/data/db");
   const { members } = await import("../src/data/schema");
   const { hashPassword } = await import("../src/modules/identity/crypto");
+  const { eq } = await import("drizzle-orm");
 
   const displayName = process.env.ADMIN_BOOTSTRAP_OWNER_NAME ?? "Owner";
   const country = process.env.ADMIN_BOOTSTRAP_OWNER_COUNTRY ?? "US";
@@ -234,27 +234,66 @@ async function seedBootstrapStaff(): Promise<void> {
 
   if (inserted.length === 0) {
     console.log(`  ✓ Staff owner already exists for ${phone} — skipped.`);
-    return;
+    const existing = await db.query.members.findFirst({
+      where: eq(members.phone, phone),
+      columns: { id: true },
+    });
+    return existing?.id ?? null;
   }
 
   console.log(`  + Created staff owner "${displayName}" (${phone}).`);
   console.log(
     "  ⚠️  Remove ADMIN_BOOTSTRAP_OWNER_PASSWORD from the environment now that bootstrap is done.",
   );
+  return inserted[0]!.id;
 }
 
-// ── Dev sample data ──────────────────────────────────────────
+// ── Plan prices ──────────────────────────────────────────────
 
-async function seedDevData(): Promise<void> {
-  if (isProduction) {
-    console.log("\n⏭️  Skipping dev data in production mode.");
+/**
+ * Checkout reads plan_prices before STRIPE_*_PRICE_ID (src/modules/billing/
+ * prices.ts). A fresh branch has no row, so record the prices seedStripe()
+ * just found or created. An existing active row is the staff console's
+ * (FR-059) and is left alone even when it differs — a warning says so.
+ */
+async function seedPlanPrices(
+  priceIds: SeededPriceIds,
+  ownerId: string | null,
+): Promise<void> {
+  const plans = [
+    { plan: "vip", priceId: priceIds.vip_monthly },
+    { plan: "listing", priceId: priceIds.listing_monthly },
+  ] as const;
+
+  if (plans.every((entry) => !entry.priceId)) {
+    console.log("  ⏭️  No Stripe prices seeded — nothing to record.");
+    return;
+  }
+  if (!ownerId) {
+    console.warn(
+      "  ⚠️  No staff owner to attribute plan prices to — skipping (set ADMIN_BOOTSTRAP_OWNER_*).",
+    );
     return;
   }
 
-  console.log("\n📦 Inserting development sample data...");
-  console.log("  (No domain tables exist yet — will be populated in Phase 1)");
-  // Phase 1 will add: members, cards, companies, etc.
-  // This function will grow as schemas are added.
+  const { db } = await import("../src/data/db");
+  const { findActivePlanPrice, setActivePlanPrice } =
+    await import("../src/data/plan-prices");
+
+  for (const { plan, priceId } of plans) {
+    if (!priceId) continue;
+    const active = await findActivePlanPrice(db, plan);
+    if (active === priceId) {
+      console.log(`  ✓ ${plan}: ${priceId} already active`);
+    } else if (active) {
+      console.warn(
+        `  ⚠️  ${plan}: ${active} is active in plan_prices, Stripe seed has ${priceId} — left as is (change it in the staff console)`,
+      );
+    } else {
+      await setActivePlanPrice(db, plan, priceId, ownerId);
+      console.log(`  + ${plan}: ${priceId} recorded`);
+    }
+  }
 }
 
 // ── Beta seed (phase 4, requirements.md §6.1) ────────────────
@@ -775,14 +814,15 @@ async function main(): Promise<void> {
   });
 
   console.log("\n── Stripe products & prices ──");
-  await seedStripe();
+  const priceIds = await seedStripe();
 
   console.log("\n── Feature flags ──");
   await seedFeatureFlags();
 
-  await seedBootstrapStaff();
+  const ownerId = await seedBootstrapStaff();
 
-  await seedDevData();
+  console.log("\n── Plan prices ──");
+  await seedPlanPrices(priceIds, ownerId);
 
   await seedBetaData();
 

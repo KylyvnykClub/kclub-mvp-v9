@@ -19,6 +19,13 @@ interface CheckResult {
   status: "ok" | "fail";
   latencyMs: number;
   error?: string;
+  /**
+   * Database check only: what the database says it is (ADR 0026) —
+   * `production`, `dev`, `preview`, `test`, or `unmarked` when the marker
+   * table is absent or empty. Lets `pnpm smoke:deployment` prove a
+   * deployment is on the database it should be.
+   */
+  environment?: string;
 }
 
 async function checkDatabase(): Promise<CheckResult> {
@@ -34,11 +41,23 @@ async function checkDatabase(): Promise<CheckResult> {
       };
     }
     const sql = neon(DATABASE_URL);
-    await sql`SELECT 1`;
+    // The reachability probe doubles as the marker-table check, so a
+    // database without the marker migration still answers "ok".
+    const [probe] = (await sql`
+      SELECT to_regclass('public.database_environment') IS NOT NULL AS present
+    `) as [{ present: boolean }];
+    let environment = "unmarked";
+    if (probe.present) {
+      const [row] = (await sql`
+        SELECT name FROM database_environment LIMIT 1
+      `) as [{ name: string } | undefined];
+      environment = row?.name ?? "unmarked";
+    }
     return {
       name: "database",
       status: "ok",
       latencyMs: Math.round(performance.now() - start),
+      environment,
     };
   } catch (err) {
     return {

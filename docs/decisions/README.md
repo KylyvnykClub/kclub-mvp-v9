@@ -81,7 +81,7 @@ that the folder cannot be trusted.
 |[0023](0023-company-logo-upload.md)|Company logos move onto the upload pipeline, superseding ADR 0013|Accepted|2026-08-29|
 |[0024](0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|2026-08-29|
 |[0025](0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|2026-08-29|
-|[0026](0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Proposed|2026-08-29|
+|[0026](0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Accepted|2026-08-29|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
