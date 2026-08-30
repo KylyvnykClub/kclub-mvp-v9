@@ -11,6 +11,8 @@
  * seed script's top-level main().
  */
 
+import type { DatabaseMarker } from "../src/data/database-environment";
+
 export interface BetaSeedTarget {
   /** Whether the seed run was invoked with the --production flag. */
   isProductionFlag: boolean;
@@ -24,13 +26,20 @@ export interface BetaSeedTarget {
    * non-zero count means the database holds real, shared, or production data.
    */
   realMemberCount: number;
+  /** What the database says it is (ADR 0026). */
+  marker: DatabaseMarker;
 }
 
 /**
  * The reason to refuse seeding this target, or null when it is safe. Fails
- * closed: any production signal, or any pre-existing non-beta member, refuses.
+ * closed: a production marker, any production signal, or any pre-existing
+ * non-beta member refuses.
  */
 export function betaSeedRefusal(target: BetaSeedTarget): string | null {
+  if (target.marker.kind === "marked" && target.marker.name === "production") {
+    return "The database is marked production (ADR 0026); beta seed never runs there, whatever it holds.";
+  }
+
   if (
     target.isProductionFlag ||
     target.nodeEnv === "production" ||

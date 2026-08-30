@@ -29,6 +29,7 @@
 
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
+import { assertDatabaseEnvironment } from "./assert-database-environment";
 import { betaPurgeRefusal, describeDatabaseTarget } from "./beta-seed-guard";
 
 config({ path: ".env.local", quiet: true });
@@ -64,6 +65,10 @@ async function main(): Promise<void> {
       : "MODE: dry run — nothing will be deleted (pass --execute to delete)",
   );
   console.log(`TARGET: ${target}`);
+
+  // ADR 0026: report the marker, never refuse on it. This tool exists to clean
+  // production, and --execute --confirm-production-purge is its own gate.
+  await assertDatabaseEnvironment({ tool: "beta:purge", reportOnly: true });
 
   const refusal = betaPurgeRefusal({
     execute,

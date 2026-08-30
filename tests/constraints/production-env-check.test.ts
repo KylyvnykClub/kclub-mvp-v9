@@ -67,6 +67,18 @@ describe("constraint: production environment check", () => {
     );
   });
 
+  it("rejects KCLUB_ALLOW_PRODUCTION_DB in production (ADR 0026)", () => {
+    const result = checkProductionEnv(
+      { ...baseProductionEnv, KCLUB_ALLOW_PRODUCTION_DB: "1" },
+      "production",
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.key)).toContain(
+      "KCLUB_ALLOW_PRODUCTION_DB",
+    );
+  });
+
   it("rejects production Stripe test keys and missing price ids", () => {
     const result = checkProductionEnv(
       {

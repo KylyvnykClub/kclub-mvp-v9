@@ -18,6 +18,7 @@
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:mark-environment": "tsx tools/db-mark-environment.ts",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx tools/seed.ts",
     "db:seed:beta": "tsx tools/seed.ts --beta",

@@ -52,6 +52,10 @@ Required external checks:
   branches/databases. Production credentials must appear only in Vercel
   Production and in a time-boxed incident shell; `.env.local` must point at a
   non-production branch by default.
+- Confirm the production database is marked: `pnpm db:mark-environment --show`
+  against the production URL prints `production`, and `KCLUB_ALLOW_PRODUCTION_DB`
+  is absent from every Vercel environment — `pnpm env:check:production` rejects
+  it ([ADR 0026](../decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
 - Confirm Neon project, region, PITR window, autoscaling bounds, and branch naming.
 - Confirm production migration credentials are scoped to migration work only.
 - Run `pnpm db:updownup` locally or in CI against a disposable database before merging a migration.

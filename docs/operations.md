@@ -128,6 +128,8 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm build`|Production build alone; already included in `pnpm verify`, useful standalone when iterating on build-only errors|
 |`pnpm test:integration`|Integration suite; needs Docker for Testcontainers|
 |`pnpm db:migrate`|Apply migrations|
+|`pnpm db:mark-environment --show`|Which environment the database at `DATABASE_URL` says it is ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md))|
+|`pnpm db:mark-environment production`|Mark production once, after its marker migration is applied. Relabelling a production-marked database as anything else is refused|
 |`pnpm db:updownup`|Prove a migration reverses cleanly|
 |`pnpm db:studio`|Browse the database|
 |`pnpm db:seed:categories`, `pnpm db:seed:beta`|Reference data, then 50 members and 30 companies|
@@ -143,6 +145,21 @@ only the production pooled and direct URLs in Vercel Production. Staging uses a
 staging branch/database for beta and release rehearsals. Preview and local work
 use disposable preview/local branches. `.env.local` must not point at the
 production database except during a named, time-boxed incident.
+
+**That rule is enforced by the database, not by memory** ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
+Every database carries a one-row marker saying which environment it _is_.
+`pnpm dev` reads it before the first request and **refuses to start** on a
+`production` marker; every `tools/` script that opens `DATABASE_URL` refuses
+the same way, and the beta seed refuses it whatever the database holds. An
+unmarked database (a fresh branch, a CI preview branch) runs with a warning.
+Deployed processes never refuse — a wrong marker in production is logged, not
+turned into an outage.
+
+The incident shell is the one exception: set `KCLUB_ALLOW_PRODUCTION_DB=1` for
+that single process and it runs with a warning in the transcript. The variable
+is deliberately not in the env schema, and `pnpm env:check:production` rejects
+a deployment that has it. The staff-owner bootstrap on production is
+`KCLUB_ALLOW_PRODUCTION_DB=1 pnpm db:seed --production`, and needs both signals.
 
 **`pnpm db:seed:beta` writes 50 members and 30 companies.** It is for staging
 and preview only. **`pnpm beta:purge` removes that exact dataset by deterministic

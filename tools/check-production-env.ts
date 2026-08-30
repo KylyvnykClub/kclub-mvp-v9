@@ -49,6 +49,14 @@ function productionOnlyIssues(env: Record<string, unknown>): EnvCheckIssue[] {
     });
   }
 
+  if (hasValue(env["KCLUB_ALLOW_PRODUCTION_DB"])) {
+    issues.push({
+      key: "KCLUB_ALLOW_PRODUCTION_DB",
+      message:
+        "is the incident-shell escape hatch (ADR 0026) and must never be configured in a deployment",
+    });
+  }
+
   if (hasValue(env["ADMIN_BOOTSTRAP_OWNER_PASSWORD"])) {
     issues.push({
       key: "ADMIN_BOOTSTRAP_OWNER_PASSWORD",

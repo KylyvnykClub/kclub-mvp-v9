@@ -14,13 +14,16 @@
  *   4. Did the member actually get it? → cards.tier
  *
  * This script issues SELECTs and nothing else. It reads DATABASE_URL from
- * .env.local, which on this project is the production database — see the
- * handoff. Reading is safe; nothing here writes, and the fix for a wrong tier
- * is always to resend the Stripe event, never to edit the row.
+ * .env.local and prints which environment that database says it is
+ * (ADR 0026) without refusing — reading is safe; nothing here writes, and the
+ * fix for a wrong tier is always to resend the Stripe event, never to edit
+ * the row.
  */
 
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
+
+import { assertDatabaseEnvironment } from "./assert-database-environment";
 
 config({ path: ".env.local", quiet: true });
 
@@ -49,6 +52,8 @@ function heading(text: string): void {
 }
 
 async function main(): Promise<void> {
+  await assertDatabaseEnvironment({ tool: "stripe:check", reportOnly: true });
+
   const key = process.env["STRIPE_SECRET_KEY"] ?? "";
   const mode = key.startsWith("sk_live_")
     ? "LIVE"

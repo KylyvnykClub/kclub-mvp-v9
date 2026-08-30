@@ -21,6 +21,7 @@ function safeTarget(overrides: Partial<BetaSeedTarget> = {}): BetaSeedTarget {
     nodeEnv: "development",
     vercelEnv: undefined,
     realMemberCount: 0,
+    marker: { kind: "unmarked" },
     ...overrides,
   };
 }
@@ -28,6 +29,32 @@ function safeTarget(overrides: Partial<BetaSeedTarget> = {}): BetaSeedTarget {
 describe("constraint: beta seed guard reads the target, not a CLI flag", () => {
   it("allows a clean staging database with no non-beta members", () => {
     expect(betaSeedRefusal(safeTarget())).toBeNull();
+    expect(
+      betaSeedRefusal(
+        safeTarget({
+          marker: {
+            kind: "marked",
+            name: "dev",
+            markedAt: new Date(),
+            markedBy: null,
+          },
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("refuses a database marked production even when it holds no non-beta member (ADR 0026)", () => {
+    const reason = betaSeedRefusal(
+      safeTarget({
+        marker: {
+          kind: "marked",
+          name: "production",
+          markedAt: new Date(),
+          markedBy: "owner@laptop",
+        },
+      }),
+    );
+    expect(reason).toContain("marked production");
   });
 
   it("refuses when the database already holds a real (non-beta) member", () => {
