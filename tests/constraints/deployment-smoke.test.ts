@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   DEPLOYMENT_SMOKE_TARGETS,
+  databaseEnvironmentOf,
   normalizeBaseUrl,
+  parseSmokeArgs,
   smokeUrl,
 } from "../../tools/smoke-deployment";
 
@@ -27,5 +29,44 @@ describe("constraint: deployment smoke targets", () => {
     expect(smokeUrl(baseUrl, "/health/live")).toBe(
       "https://preview.kclub.example/health/live",
     );
+  });
+
+  it("asserts the reported database environment only when asked (ADR 0026)", () => {
+    expect(parseSmokeArgs(["https://x.example"], {})).toEqual({
+      baseUrl: "https://x.example",
+      expectDatabaseEnvironment: undefined,
+    });
+    expect(
+      parseSmokeArgs(
+        ["--expect-database-environment", "production", "https://x.example"],
+        {},
+      ),
+    ).toEqual({
+      baseUrl: "https://x.example",
+      expectDatabaseEnvironment: "production",
+    });
+    expect(
+      parseSmokeArgs([], { SMOKE_BASE_URL: "https://env.example" }),
+    ).toEqual({
+      baseUrl: "https://env.example",
+      expectDatabaseEnvironment: undefined,
+    });
+  });
+
+  it("reads the environment from the database check of /health/ready", () => {
+    expect(
+      databaseEnvironmentOf({
+        status: "ok",
+        checks: [
+          { name: "redis", status: "ok" },
+          { name: "database", status: "ok", environment: "production" },
+        ],
+      }),
+    ).toBe("production");
+    expect(
+      databaseEnvironmentOf({ checks: [{ name: "database", status: "ok" }] }),
+    ).toBeUndefined();
+    expect(databaseEnvironmentOf("not json")).toBeUndefined();
+    expect(databaseEnvironmentOf(null)).toBeUndefined();
   });
 });

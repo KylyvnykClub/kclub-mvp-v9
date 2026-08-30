@@ -147,6 +147,7 @@ describe("database environment guard (ADR 0026)", () => {
         vercelEnv: string;
         pooledUrl: string;
         directUrl: string;
+        confirmedEndpoint: string;
       }> = {},
     ) =>
       resetVerdict({
@@ -169,8 +170,24 @@ describe("database environment guard (ADR 0026)", () => {
 
     it("accepts the pooled and direct URLs of one branch, one role, one database", () => {
       expect(reset(dev).outcome).toBe("allow");
-      expect(reset(unmarked).outcome).toBe("allow");
-      expect(reset(noTable).outcome).toBe("allow");
+      expect(
+        reset(unmarked, { confirmedEndpoint: "ep-frosty-1234" }).outcome,
+      ).toBe("allow");
+      expect(
+        reset(noTable, { confirmedEndpoint: "ep-frosty-1234" }).outcome,
+      ).toBe("allow");
+    });
+
+    it("makes the operator type the endpoint id until the branch is marked dev", () => {
+      const verdict = reset(unmarked);
+      expect(verdict.outcome).toBe("refuse");
+      expect(reasonOf(verdict)).toContain("--confirm-endpoint ep-frosty-1234");
+      expect(
+        reset(noTable, { confirmedEndpoint: "ep-other-9999" }).outcome,
+      ).toBe("refuse");
+      expect(reset(dev, { confirmedEndpoint: undefined }).outcome).toBe(
+        "allow",
+      );
     });
 
     it("refuses pooled and direct URLs that name different branches or roles", () => {

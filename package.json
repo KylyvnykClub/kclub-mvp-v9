@@ -20,6 +20,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:mark-environment": "tsx tools/db-mark-environment.ts",
     "db:push": "drizzle-kit push",
+    "db:reset:dev": "tsx tools/db-reset-dev.ts",
     "db:seed": "tsx tools/seed.ts",
     "db:seed:beta": "tsx tools/seed.ts --beta",
     "db:seed:categories": "tsx --env-file=.env.local tools/seed-categories.ts",
