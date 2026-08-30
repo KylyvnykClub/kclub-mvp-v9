@@ -1,7 +1,7 @@
 # 0026. The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is
 
-> **Status:** Proposed
-> **Date:** 2026-08-29
+> **Status:** Accepted
+> **Date:** 2026-08-29 (accepted 2026-08-30, when `pnpm db:reset:dev` rebuilt the `dev` branch end to end)
 > **Deciders:** Launch owner (via session)
 
 ## Context
@@ -72,6 +72,14 @@ marker: a branch copied from production inherits the `production` row, so the
 copied data is refused by every dev tool until the reset has wiped it, and the
 only way from `production` to `dev` is through `DROP SCHEMA`.
 
+Until a branch is marked `dev`, the reset also makes the operator type the
+Neon endpoint id — `--confirm-endpoint ep-…` — before it drops anything. An
+unmarked database is allowed everywhere else, and production itself was
+unmarked until its marker migration was applied; the first reset of a branch
+is the one moment a wrong `.env.local` would be irreversible, and typing the
+host is the proof somebody looked at it. Once the branch says `dev`, the
+flag is not needed again.
+
 `KCLUB_ALLOW_PRODUCTION_DB` is read raw from `process.env`, like
 `KCLUB_SKIP_DB_PRERENDER`, and is deliberately absent from the env schema: it
 is not a setting, it is the documented incident shell of
@@ -118,6 +126,13 @@ Answering "is this production?" — `pnpm db:mark-environment --show`, or the
 is the intent. The staff-owner bootstrap needs two explicit signals; the reset
 cannot be pointed at production at all; an incident shell must set the escape
 hatch and leaves a warning in the transcript.
+
+**What creating the branch taught:** Neon refuses schema-only branches for a
+project whose web access role is the legacy `app_rw` kind, so `dev` had to be
+created _with_ production's data and rebuilt from the migrations in the same
+hour. The reset is designed for exactly that — the copied rows are gone after
+its first run — but the branch's point-in-time history keeps them for the
+retention window, which is why that window is set to the minimum on `dev`.
 
 **Not solved here:** preview deployments still run on the production database
 (`infra/vercel.tf` gives Vercel `preview` the `main` URL while `preview.yml`

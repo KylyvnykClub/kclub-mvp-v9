@@ -157,8 +157,13 @@ maintained by staff afterwards through the console (FR-085). Plans and their
 initial prices are seeded by a script that also creates the corresponding Stripe
 Product and Price objects, so the two never drift at creation; afterwards a
 price change is made in the console and pushed to Stripe by the same code path.
-Legal documents are seeded from MDX in the repository with an explicit version
-string.
+The same script (`pnpm db:seed`) records those prices in `plan_prices` when
+nothing is active there yet, and inserts whichever feature flags the
+migrations did not — never touching a row that exists, because the staff
+console owns it. Legal documents are seeded from MDX in the repository with an
+explicit version string. On the `dev` branch all of this is one command,
+`pnpm db:reset:dev`, which rebuilds the branch from the migrations first
+([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
 
 **Environment marker.** `database_environment` is a one-row table saying which
 environment the database _is_ — `production`, `dev`, `preview` or `test` —
@@ -381,7 +386,9 @@ volume in [requirements.md §5.3](requirements.md#53-scalability).
 **Production data in non-production environments: forbidden.** No exception, no
 "masked copy for debugging". Preview and staging are seeded with generated data
 from a factory that produces realistic shapes and no real people — a database
-branch is created from the _schema_, not from the data. The one operational cost
+branch is rebuilt from the _migrations_, never kept as a copy of the data (and
+when Neon will only branch with data, the reset wipes it before anything else
+runs). The one operational cost
 of this rule is that a bug reproducible only with production data must be
 diagnosed with a query against production under the incident-access process
 above, and that friction is deliberate. The rule is enforced, not remembered:

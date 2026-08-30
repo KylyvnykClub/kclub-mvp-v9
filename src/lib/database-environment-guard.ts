@@ -175,6 +175,13 @@ export interface ResetInput {
   vercelEnv: string | undefined;
   pooledUrl: string;
   directUrl: string;
+  /**
+   * The Neon endpoint id (first host label, e.g. `ep-frosty-1234`) the
+   * operator typed on the command line. Required unless the branch is already
+   * marked `dev`: a first reset is the one that could be pointed at the wrong
+   * branch, and typing the host is the proof they looked at it.
+   */
+  confirmedEndpoint?: string | undefined;
 }
 
 /**
@@ -188,7 +195,14 @@ export interface ResetInput {
  * another, or leave `public` owned by a role the app cannot use.
  */
 export function resetVerdict(input: ResetInput): Verdict {
-  const { marker, nodeEnv, vercelEnv, pooledUrl, directUrl } = input;
+  const {
+    marker,
+    nodeEnv,
+    vercelEnv,
+    pooledUrl,
+    directUrl,
+    confirmedEndpoint,
+  } = input;
 
   if (nodeEnv === "production" || vercelEnv === "production") {
     return {
@@ -224,6 +238,15 @@ export function resetVerdict(input: ResetInput): Verdict {
       outcome: "refuse",
       reason:
         "DATABASE_URL and DATABASE_URL_DIRECT must use the same role and database: the reset recreates the public schema as the direct role, and the app connects as the pooled one.",
+    };
+  }
+
+  const alreadyDev = marker.kind === "marked" && marker.name === "dev";
+  const endpointId = pooled.endpoint.split(".")[0] ?? pooled.endpoint;
+  if (!alreadyDev && confirmedEndpoint !== endpointId) {
+    return {
+      outcome: "refuse",
+      reason: `This branch is ${describeMarker(marker)}, not yet marked dev. Confirm you mean to wipe it by re-running with --confirm-endpoint ${endpointId}.`,
     };
   }
 

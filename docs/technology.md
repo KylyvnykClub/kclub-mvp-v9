@@ -215,7 +215,7 @@ revenue rather than a platform cost. Break-even against platform cost is around
 
 |Environment|Purpose|Deployed by|Differs from production how|
 |-|-|-|-|
-|Local|Development|Anyone|PostgreSQL and Redis in Docker; Stripe and Twilio in test mode; SMS codes written to the console instead of sent; Inngest dev server|
+|Local|Development|Anyone|Neon branch `dev` in the production project, rebuilt from the migrations by `pnpm db:reset:dev` and holding synthetic data only ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)); Redis and R2 still shared with production (backlog); Stripe and Twilio in test mode; SMS codes written to the console instead of sent|
 |Preview (per pull request)|Review and automated end-to-end tests|CI, automatically|Neon database branch seeded with synthetic data; Stripe test mode; SMS mocked; `noindex`; separate Sentry environment|
 |Staging|Release rehearsal, load tests, migration rehearsal|CI on merge to `main`|Same topology and same providers as production, smaller compute; Stripe test mode; **real SMS to an allowlist of team numbers only**; synthetic data only|
 |Production|Live|Promotion of a staging build by the tech lead|—|
