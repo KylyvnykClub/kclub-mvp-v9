@@ -7,8 +7,12 @@ import {
   businessCategories,
   businessCategoryTranslations,
 } from "../src/data/schema";
+import { assertDatabaseEnvironment } from "./assert-database-environment";
 
 async function seed() {
+  // ADR 0026: refuse a production-marked database before the first write.
+  await assertDatabaseEnvironment({ tool: "db:seed:categories" });
+
   const filePath = path.join(process.cwd(), "data", "business_categories.csv");
   const content = await fs.readFile(filePath, "utf-8");
   const translationsPath = path.join(

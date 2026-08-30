@@ -25,6 +25,8 @@
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 
+import type { DatabaseMarker } from "../src/data/database-environment";
+import { assertDatabaseEnvironment } from "./assert-database-environment";
 import { betaSeedRefusal } from "./beta-seed-guard";
 
 config({ path: ".env.local" });
@@ -40,6 +42,9 @@ if (!DATABASE_URL) {
 }
 
 const sql = neon(DATABASE_URL);
+
+/** Set by main() from the marker check, before any seed function runs. */
+let databaseMarker: DatabaseMarker = { kind: "no_table" };
 
 // ── Stripe seed ──────────────────────────────────────────────
 
@@ -560,6 +565,7 @@ async function seedBetaData(): Promise<void> {
     nodeEnv: process.env.NODE_ENV,
     vercelEnv: process.env.VERCEL_ENV,
     realMemberCount: contents.real_members,
+    marker: databaseMarker,
   });
   if (refusal) {
     console.error(`\n❌ Refusing to seed beta data. ${refusal}`);
@@ -760,7 +766,15 @@ async function main(): Promise<void> {
     `\n🌱 Seeding database (${isProduction ? "production" : "development"})...\n`,
   );
 
-  console.log("── Stripe products & prices ──");
+  // ADR 0026: the database says which environment it is. A production marker
+  // refuses unless this is the deliberate --production bootstrap run with the
+  // incident-shell escape hatch set.
+  databaseMarker = await assertDatabaseEnvironment({
+    tool: isBeta ? "db:seed:beta" : "db:seed",
+    productionFlag: isProduction,
+  });
+
+  console.log("\n── Stripe products & prices ──");
   await seedStripe();
 
   console.log("\n── Feature flags ──");
