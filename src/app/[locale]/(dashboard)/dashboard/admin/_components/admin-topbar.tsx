@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ADMIN_NAV_ITEMS } from "./nav-items";
 
@@ -16,16 +18,18 @@ export function AdminTopbar() {
   );
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
-      <div className="min-w-0 pl-14 lg:pl-0">
-        <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          {t("consoleLabel")}
-        </p>
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur-xl sm:px-6">
+      <SidebarTrigger className="-ml-1" label={t("toggleSidebar")} />
+      <Separator
+        orientation="vertical"
+        className="mx-1 data-[orientation=vertical]:h-4"
+      />
+      <div className="min-w-0 flex-1">
         <h2 className="truncate text-sm font-bold text-foreground">
           {activeItem ? t(activeItem.key) : t("overview")}
         </h2>
       </div>
-      <div className="flex shrink-0 items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2">
         <ThemeToggle />
       </div>
     </header>

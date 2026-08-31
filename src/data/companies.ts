@@ -19,6 +19,7 @@ import {
   businessCategories,
   businessCategoryTranslations,
   companyCategories,
+  companyImages,
   companyServiceCountries,
   cities,
   companies,
@@ -657,7 +658,9 @@ export async function findApprovedCompanyBySlug(
     with: {
       categories: { with: { businessCategory: true } },
       serviceCountries: true,
-      images: true,
+      // Display order is upload order (ADR 0022); without this the gallery and
+      // the cover picked from it would reshuffle between requests.
+      images: { orderBy: [asc(companyImages.createdAt)] },
       owner: {
         columns: {
           id: true,
@@ -671,6 +674,49 @@ export async function findApprovedCompanyBySlug(
 export type PartnerDetailView = Awaited<
   ReturnType<typeof findApprovedCompanyBySlug>
 >;
+
+/**
+ * Other publishable partners that share a subcategory with this one.
+ *
+ * Same visibility rule as the catalogue - approved, and among the ids with a
+ * publishable subscription - so a partner cannot be surfaced here that the
+ * catalogue itself would hide. The shape matches `PartnerCompanyView` because
+ * the caller renders these through the catalogue's own PartnerCard.
+ */
+export async function listSimilarApprovedCompanies(
+  db: DbClient,
+  ids: string[],
+  companyId: string,
+  businessCategoryIds: number[],
+  limit = 3,
+) {
+  if (ids.length === 0 || businessCategoryIds.length === 0) return [];
+
+  const peers = ids.filter((id) => id !== companyId);
+  if (peers.length === 0) return [];
+
+  return db.query.companies.findMany({
+    where: and(
+      eq(companies.moderationStatus, "approved"),
+      inArray(companies.id, peers),
+      inArray(
+        companies.id,
+        db
+          .select({ id: companyCategories.companyId })
+          .from(companyCategories)
+          .where(
+            inArray(companyCategories.businessCategoryId, businessCategoryIds),
+          ),
+      ),
+    ),
+    with: {
+      categories: { with: { businessCategory: true } },
+      serviceCountries: true,
+    },
+    orderBy: [asc(companies.name)],
+    limit,
+  });
+}
 
 /**
  * Slugs of the publicly listable partners - approved and among the set with an

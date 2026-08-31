@@ -16,6 +16,9 @@ import { can } from "@/domain/authorization";
 
 export type AdminNavBadgeKey = "pendingCompanies" | "pendingReferrals";
 
+/** Sidebar section. `null` renders without a group label. */
+export type AdminNavGroupKey = "management" | "platform" | null;
+
 export interface AdminNavItem {
   key: string;
   /** Path relative to /dashboard/admin, "" for the root overview page. */
@@ -24,6 +27,7 @@ export interface AdminNavItem {
   show: (actor: Actor) => boolean;
   badge?: AdminNavBadgeKey;
   disabled?: boolean;
+  group: AdminNavGroupKey;
 }
 
 /**
@@ -36,12 +40,14 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: "",
     icon: LayoutDashboard,
     show: (a) => can(a, "read", "finance_dashboard"),
+    group: null,
   },
   {
     key: "users",
     href: "/members",
     icon: Users,
     show: (a) => can(a, "read", "member"),
+    group: "management",
   },
   {
     key: "companies",
@@ -49,6 +55,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: Building2,
     show: (a) => can(a, "read", "company"),
     badge: "pendingCompanies",
+    group: "management",
   },
   {
     key: "introductions",
@@ -56,36 +63,42 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: Handshake,
     show: (a) => can(a, "approve", "referral") || can(a, "reject", "referral"),
     badge: "pendingReferrals",
+    group: "management",
   },
   {
     key: "support",
     href: "/support",
     icon: LifeBuoy,
     show: (a) => can(a, "read", "moderation"),
+    group: "management",
   },
   {
     key: "categories",
     href: "/categories",
     icon: FolderKanban,
     show: (a) => can(a, "read", "company"),
+    group: "management",
   },
   {
     key: "staff",
     href: "/staff",
     icon: ShieldCheck,
     show: (a) => can(a, "manage_staff", "staff_user"),
+    group: "platform",
   },
   {
     key: "flags",
     href: "/flags",
     icon: KeyRound,
     show: (a) => can(a, "manage_flags", "feature_flag"),
+    group: "platform",
   },
   {
     key: "audit",
     href: "/audit",
     icon: ScrollText,
     show: (a) => can(a, "read", "audit_log"),
+    group: "platform",
   },
   {
     key: "contentAccess",
@@ -93,6 +106,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: FileText,
     show: (a) => can(a, "manage_staff", "staff_user"),
     disabled: true,
+    group: "platform",
   },
   {
     key: "rolesPermissions",
@@ -100,5 +114,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: ShieldCheck,
     show: (a) => can(a, "manage_staff", "staff_user"),
     disabled: true,
+    group: "platform",
   },
+];
+
+/** Render order of the sidebar sections. */
+export const ADMIN_NAV_GROUPS: AdminNavGroupKey[] = [
+  null,
+  "management",
+  "platform",
 ];

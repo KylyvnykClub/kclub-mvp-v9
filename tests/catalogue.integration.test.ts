@@ -7,6 +7,7 @@ import {
   insertCompany,
   listApprovedCompaniesByIds,
   listShowcaseCompanies,
+  listSimilarApprovedCompanies,
 } from "@/data/companies.js";
 import { companies, members } from "@/data/schema/index.js";
 import { getTestDb } from "./setup/integration-setup.js";
@@ -400,6 +401,101 @@ describe("FR-033: a partner detail page carries what a member needs to use the d
     expect(await findApprovedCompanyBySlug(db, "unpaid-partner", [])).toBe(
       undefined,
     );
+  });
+});
+
+describe("FR-033: similar partners on the detail page obey the catalogue's own visibility", () => {
+  it("returns other partners that share a subcategory", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+    const peer = await seedPartner(db, { categoryId: category.id });
+
+    const similar = await listSimilarApprovedCompanies(
+      db,
+      [subject, peer],
+      subject,
+      [category.id],
+    );
+
+    expect(similar.map((row) => row.id)).toEqual([peer]);
+  });
+
+  it("never returns the partner whose page is being viewed", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+
+    const similar = await listSimilarApprovedCompanies(db, [subject], subject, [
+      category.id,
+    ]);
+
+    expect(similar).toHaveLength(0);
+  });
+
+  it("excludes a partner in the same subcategory that is not approved", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+    const pending = await seedPartner(db, {
+      categoryId: category.id,
+      moderationStatus: "pending",
+    });
+
+    const similar = await listSimilarApprovedCompanies(
+      db,
+      [subject, pending],
+      subject,
+      [category.id],
+    );
+
+    expect(similar).toHaveLength(0);
+  });
+
+  it("excludes a partner outside the paid id set, so it cannot surface what the catalogue hides", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+    await seedPartner(db, { categoryId: category.id });
+
+    const similar = await listSimilarApprovedCompanies(db, [subject], subject, [
+      category.id,
+    ]);
+
+    expect(similar).toHaveLength(0);
+  });
+
+  it("returns nothing when the partner has no subcategory to match on", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+    const peer = await seedPartner(db, { categoryId: category.id });
+
+    expect(
+      await listSimilarApprovedCompanies(db, [subject, peer], subject, []),
+    ).toHaveLength(0);
+  });
+
+  it("caps the rail at the requested limit", async () => {
+    const db = testDbClient();
+    const category = await seedCategory(db);
+    const subject = await seedPartner(db, { categoryId: category.id });
+    const peers = [
+      await seedPartner(db, { categoryId: category.id }),
+      await seedPartner(db, { categoryId: category.id }),
+      await seedPartner(db, { categoryId: category.id }),
+      await seedPartner(db, { categoryId: category.id }),
+    ];
+
+    const similar = await listSimilarApprovedCompanies(
+      db,
+      [subject, ...peers],
+      subject,
+      [category.id],
+      3,
+    );
+
+    expect(similar).toHaveLength(3);
   });
 });
 

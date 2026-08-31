@@ -741,7 +741,28 @@
     "onlineMode": "Онлайн",
     "offlineMode": "Офлайн",
     "administrativeLevel1Label": "Регион / область",
-    "administrativeLevel2Label": "Район / муниципалитет"
+    "administrativeLevel2Label": "Район / муниципалитет",
+    "coverAlt": "Фотография {name}",
+    "partnerSince": "с клубом с {year}",
+    "conditionsTitle": "Условия для членов",
+    "conditionsNote": "для верифицированных членов KCLUB",
+    "conditionsLockedValue": "••••",
+    "conditionsLockedNote": "Доступно после верификации",
+    "businessDataSection": "Данные бизнеса",
+    "subcategoriesLabel": "Подкатегории",
+    "writeAction": "Написать",
+    "verifiedBoxTitle": "Партнёр проверен клубом",
+    "verifiedBoxNote": "Регистрация, категория и контакты проверены до публикации. Условия действуют только для верифицированных членов.",
+    "howToSection": "Как получить условия",
+    "howToStep1Title": "Подтвердите статус",
+    "howToStep1Note": "Условия действуют для членов с активным членством KCLUB.",
+    "howToStep2Title": "Свяжитесь с партнёром",
+    "howToStep2Note": "Резидентам контакты партнёра открыты на этой странице.",
+    "howToStep3Title": "Предъявите карту",
+    "howToStep3Note": "Партнёр подтверждает членство, сканируя вашу карту KCLUB.",
+    "similarEyebrow": "Та же подкатегория",
+    "similarTitle": "Похожие партнёры",
+    "openCatalogue": "Открыть каталог"
   },
   "company": {
     "registerTitle": "Зарегистрировать компанию",
@@ -772,7 +793,7 @@
     "countryLabel": "Страна",
     "countryPlaceholder": "напр. Украина",
     "cityLabel": "Город",
-    "cityPlaceholder": "напр. Киев",
+    "cityPlaceholder": "Начните вводить город",
     "descriptionLabel": "Описание",
     "descriptionPlaceholder": "Кратко опишите основную деятельность вашей компании...",
     "specializationLabel": "Описание специализации",
@@ -785,7 +806,6 @@
     "serviceSameAsRegistration": "Совпадает со страной регистрации",
     "removeCountry": "Убрать {name}",
     "serviceCountriesEmpty": "Страны ещё не добавлены",
-    "cityPlaceholder": "Начните вводить город",
     "cityLoading": "Загружаем города…",
     "cityFreeText": "Подбор городов недоступен — введите название вручную",
     "noCityMatches": "Совпадений нет — продолжайте вводить или оставьте как есть",
@@ -850,7 +870,14 @@
       "flags": "Флаги",
       "audit": "Журнал аудита",
       "contentAccess": "Контент и доступы",
-      "rolesPermissions": "Роли и доступы"
+      "rolesPermissions": "Роли и доступы",
+      "groups": {
+        "management": "Управление",
+        "platform": "Платформа"
+      },
+      "toggleSidebar": "Показать или скрыть меню",
+      "navigationDescription": "Навигация по консоли",
+      "memberDashboard": "Кабинет участника"
     },
     "shell": {
       "previous": "Назад",

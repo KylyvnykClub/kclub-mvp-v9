@@ -1,12 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getPartnerBySlugAction } from "@/actions/company";
+import {
+  getPartnerBySlugAction,
+  getSimilarPartnersAction,
+} from "@/actions/company";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentMember } from "@/actions/session";
 import { isFeatureEnabled } from "@/actions/feature-flags";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Metadata, ResolvingMetadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,13 +16,21 @@ import {
   Globe,
   Mail,
   Phone,
+  ShieldCheck,
 } from "lucide-react";
 import { SendReferralDialog } from "./_components/send-referral-dialog";
+import { PartnerHero } from "./_components/partner-hero";
+import {
+  PartnerBusinessData,
+  type BusinessDataRow,
+} from "./_components/partner-business-data";
+import { HowToSteps, SectionHeader } from "./_components/partner-sections";
+import { PartnerCard } from "../_components/partner-card";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
-import { countryName } from "@/lib/countries";
+import { countryFlag, countryName } from "@/lib/countries";
 import { localeAlternates } from "@/lib/seo";
 import { JsonLd, partnerLd } from "@/components/seo/json-ld";
 import type { Locale } from "@/i18n/routing";
@@ -115,15 +124,115 @@ export default async function PartnerLandingPage({ params }: Props) {
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
   const tCompany = await getTranslations("company");
+
   const localizedCountry = partner.registrationCountryCode
     ? countryName(partner.registrationCountryCode, locale as Locale)
     : partner.country;
+
   const formatLabels = {
     offline_only: tCompany("businessFormatOffline"),
     online_only: tCompany("businessFormatOnline"),
     online_offline: tCompany("businessFormatHybrid"),
     on_site_service: tCompany("businessFormatOnSite"),
   } as const;
+
+  const taxonomy = partner.categories?.[0]?.businessCategory;
+  const taxonomyLabel =
+    [taxonomy?.category, taxonomy?.subcategory].filter(Boolean).join(" · ") ||
+    null;
+
+  const subcategories = (partner.categories ?? [])
+    .map((c) => c.businessCategory?.subcategory)
+    .filter((s): s is string => Boolean(s));
+
+  // The cover is the first uploaded photo and the gallery is the rest, so a
+  // partner's opening image is never shown twice on the same page.
+  const coverImage = partner.images[0] ?? null;
+  const galleryImages = partner.images.slice(1);
+
+  const serviceCountryLabels = partner.serviceCountries.map((item) => ({
+    code: item.countryCode,
+    flag: countryFlag(item.countryCode),
+    name: countryName(item.countryCode, locale as Locale),
+  }));
+  const worldwide = partner.servesWorldwide === 1;
+
+  const heroBadges = [
+    tc("verifiedPartner"),
+    localizedCountry
+      ? `${partner.registrationCountryCode ? `${countryFlag(partner.registrationCountryCode)} ` : ""}${localizedCountry}`
+      : null,
+    partner.businessFormat ? formatLabels[partner.businessFormat] : null,
+  ].filter((b): b is string => Boolean(b));
+
+  const businessDataRows: BusinessDataRow[] = [
+    localizedCountry
+      ? {
+          label: tCompany("registrationCountryLabel"),
+          value: `${partner.registrationCountryCode ? `${countryFlag(partner.registrationCountryCode)} ` : ""}${localizedCountry}`,
+        }
+      : null,
+    worldwide || serviceCountryLabels.length > 0
+      ? {
+          label: tCompany("serviceCountriesLabel"),
+          value: worldwide
+            ? tCompany("worldwideLabel")
+            : serviceCountryLabels.map((c) => c.name).join(", "),
+        }
+      : null,
+    partner.businessFormat
+      ? {
+          label: tCompany("businessFormatLabel"),
+          value: formatLabels[partner.businessFormat],
+        }
+      : null,
+    partner.administrativeLevel1
+      ? {
+          label: tCompany("administrativeLevel1Label"),
+          value: partner.administrativeLevel1,
+        }
+      : null,
+    partner.administrativeLevel2
+      ? {
+          label: tCompany("administrativeLevel2Label"),
+          value: partner.administrativeLevel2,
+        }
+      : null,
+    partner.city ? { label: tCompany("cityLabel"), value: partner.city } : null,
+    taxonomy?.block
+      ? { label: tCompany("blockLabel"), value: taxonomy.block }
+      : null,
+    taxonomy?.category
+      ? { label: tCompany("categoryLabel"), value: taxonomy.category }
+      : null,
+    subcategories.length > 0
+      ? { label: tc("subcategoriesLabel"), tags: subcategories }
+      : null,
+  ].filter((row): row is BusinessDataRow => row !== null);
+
+  const howToSteps = [
+    {
+      num: "01",
+      title: tc("howToStep1Title"),
+      note: tc("howToStep1Note"),
+    },
+    {
+      num: "02",
+      title: tc("howToStep2Title"),
+      note: tc("howToStep2Note"),
+    },
+    {
+      num: "03",
+      title: tc("howToStep3Title"),
+      note: tc("howToStep3Note"),
+    },
+  ];
+
+  const similar = await getSimilarPartnersAction(
+    partner.id,
+    (partner.categories ?? []).map((c) => c.businessCategoryId),
+  );
+
   const referralTranslations = {
     title: tr("title"),
     description: tr("description"),
@@ -154,181 +263,140 @@ export default async function PartnerLandingPage({ params }: Props) {
         })}
       />
       <main className="min-h-screen bg-background pb-24">
-        <section className="dark border-b border-border bg-zinc-950 py-12 text-white sm:py-16">
-          <div className="kclub-shell">
+        <div className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+          <div className="kclub-shell flex h-15 items-center gap-5">
             <Link
               href={`/${locale}/directory`}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+              className="inline-flex shrink-0 items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
             >
               <ArrowLeft className="size-4" aria-hidden="true" />
               {tc("title")}
             </Link>
-
-            <div className="mt-10 grid gap-10 lg:grid-cols-[auto_1fr_auto] lg:items-end">
-              {partner.logoUrl ? (
-                <div className="relative flex size-28 shrink-0 items-center justify-center border border-white/15 bg-white/5 p-3 sm:size-32">
-                  <Image
-                    src={partner.logoUrl}
-                    alt={tc("logoAlt", { name: partner.name })}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 640px) 112px, 128px"
-                    className="object-contain p-3"
-                  />
-                </div>
-              ) : (
-                <div className="flex size-28 shrink-0 items-center justify-center border border-accent/40 bg-accent/10 text-5xl font-black text-accent-ink sm:size-32">
-                  {partner.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="rounded-none bg-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-accent-foreground hover:bg-accent">
-                    {partner.categories?.[0]?.businessCategory?.block} /{" "}
-                    {partner.categories?.[0]?.businessCategory?.category}
-                  </Badge>
-                </div>
-                <h1 className="mt-5 text-5xl font-black uppercase leading-[0.92] tracking-[-0.045em] sm:text-7xl">
-                  {partner.name}
-                </h1>
-                {partner.legalName && (
-                  <p className="mt-4 text-sm font-light leading-6 text-white/55">
-                    {partner.legalName}
-                  </p>
-                )}
-              </div>
-
-              {partner.discount && (
-                <div className="border border-accent bg-accent px-5 py-4 text-sm font-black uppercase tracking-[0.12em] text-accent-foreground lg:max-w-64">
-                  <p className="mb-2 text-[10px] tracking-[0.18em] opacity-70">
-                    KCLUB
-                  </p>
-                  <p>{partner.discount}</p>
-                </div>
-              )}
-            </div>
+            {taxonomyLabel && (
+              <>
+                <span className="h-5 w-px shrink-0 bg-border" aria-hidden />
+                <span className="truncate text-[13px] text-muted-foreground/70">
+                  {taxonomyLabel}
+                </span>
+              </>
+            )}
           </div>
-        </section>
+        </div>
 
-        <section className="kclub-shell mt-10">
-          <div className="grid gap-px border border-border bg-border lg:grid-cols-[1fr_0.45fr]">
-            <div className="space-y-10 bg-background p-6 sm:p-10">
+        <div className="kclub-shell">
+          <PartnerHero
+            name={partner.name}
+            coverSrc={coverImage ? `/api/company-image/${coverImage.id}` : null}
+            coverAlt={tc("coverAlt", { name: partner.name })}
+            logoUrl={partner.logoUrl}
+            logoAlt={tc("logoAlt", { name: partner.name })}
+            badges={heroBadges}
+            location={
+              [partner.city, partner.country].filter(Boolean).join(" · ") ||
+              null
+            }
+            taxonomy={taxonomyLabel}
+            since={tc("partnerSince", {
+              year: partner.createdAt.getFullYear(),
+            })}
+            conditions={
+              partner.discount
+                ? {
+                    title: tc("conditionsTitle"),
+                    value: isResident
+                      ? partner.discount
+                      : tc("conditionsLockedValue"),
+                    note: isResident
+                      ? tc("conditionsNote")
+                      : tc("conditionsLockedNote"),
+                  }
+                : null
+            }
+          />
+
+          <div className="grid items-start gap-10 py-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="flex flex-col gap-10">
               <section>
-                <p className="kclub-eyebrow">{tc("aboutSection")}</p>
-                <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
-                  {tc("aboutSection")}
-                </h2>
-                <p className="mt-5 max-w-3xl whitespace-pre-wrap text-base font-light leading-8 text-muted-foreground">
+                <SectionHeader label={tc("aboutSection")} />
+                <p className="mt-4 whitespace-pre-wrap text-base leading-7 text-foreground">
                   {partner.description || tc("noDescription")}
                 </p>
               </section>
 
-              <section className="border-t border-border pt-8">
-                <p className="kclub-eyebrow">{tc("activitiesSection")}</p>
-                <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
-                  {tc("activitiesSection")}
-                </h2>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {partner.categories?.map((c) => (
-                    <span
-                      key={c.businessCategoryId}
-                      className="inline-flex border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
-                    >
-                      {c.businessCategory?.subcategory}
-                    </span>
-                  ))}
-                </div>
-              </section>
+              {partner.specializationDescription && (
+                <section>
+                  <SectionHeader label={tCompany("specializationLabel")} />
+                  <p className="mt-4 whitespace-pre-wrap text-base leading-7 text-muted-foreground">
+                    {partner.specializationDescription}
+                  </p>
+                </section>
+              )}
 
-              {partner.images.length > 0 && (
-                <section className="border-t border-border pt-8">
-                  <p className="kclub-eyebrow">{tc("gallerySection")}</p>
-                  <h2 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[-0.02em]">
-                    {tc("gallerySection")}
-                  </h2>
-                  <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {partner.images.map((image) => (
+              {(worldwide || serviceCountryLabels.length > 0) && (
+                <section>
+                  <SectionHeader
+                    label={tCompany("serviceCountriesLabel")}
+                    count={worldwide ? undefined : serviceCountryLabels.length}
+                  />
+                  <div className="flex flex-wrap gap-2 pt-4">
+                    {worldwide ? (
+                      <span className="inline-flex h-8 items-center gap-2 rounded border border-border px-3 text-[12.5px] text-foreground">
+                        <span aria-hidden>🌍</span>
+                        {tCompany("worldwideLabel")}
+                      </span>
+                    ) : (
+                      serviceCountryLabels.map((c) => (
+                        <span
+                          key={c.code}
+                          className="inline-flex h-8 items-center gap-2 rounded border border-border px-3 text-[12.5px] text-foreground"
+                        >
+                          {c.flag && <span aria-hidden>{c.flag}</span>}
+                          {c.name}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {galleryImages.length > 0 && (
+                <section>
+                  <SectionHeader label={tc("gallerySection")} />
+                  <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-3">
+                    {galleryImages.map((image) => (
                       // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes (ADR 0022)
                       <img
                         key={image.id}
                         src={`/api/company-image/${image.id}`}
                         alt=""
                         loading="lazy"
-                        className="aspect-[4/3] w-full border border-border object-cover"
+                        className="aspect-[4/3] w-full rounded-md border border-border object-cover"
                       />
                     ))}
                   </div>
                 </section>
               )}
 
-              {(partner.specializationDescription ||
-                partner.businessFormat ||
-                partner.registrationCountryCode ||
-                partner.serviceCountries.length > 0 ||
-                partner.servesWorldwide === 1) && (
-                <section className="border-t border-border pt-8">
-                  <p className="kclub-eyebrow">{tCompany("partnerSection")}</p>
-                  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
-                    {localizedCountry && (
-                      <div>
-                        <dt className="text-muted-foreground">
-                          {tCompany("registrationCountryLabel")}
-                        </dt>
-                        <dd className="mt-1 font-medium">{localizedCountry}</dd>
-                      </div>
-                    )}
-                    {partner.businessFormat && (
-                      <div>
-                        <dt className="text-muted-foreground">
-                          {tCompany("businessFormatLabel")}
-                        </dt>
-                        <dd className="mt-1 font-medium">
-                          {formatLabels[partner.businessFormat]}
-                        </dd>
-                      </div>
-                    )}
-                    <div className="sm:col-span-2">
-                      <dt className="text-muted-foreground">
-                        {tCompany("serviceCountriesLabel")}
-                      </dt>
-                      <dd className="mt-1 font-medium">
-                        {partner.servesWorldwide === 1
-                          ? tCompany("worldwideLabel")
-                          : partner.serviceCountries
-                              .map((item) =>
-                                countryName(item.countryCode, locale as Locale),
-                              )
-                              .join(", ")}
-                      </dd>
-                    </div>
-                    {partner.specializationDescription && (
-                      <div className="sm:col-span-2">
-                        <dt className="text-muted-foreground">
-                          {tCompany("specializationLabel")}
-                        </dt>
-                        <dd className="mt-1 whitespace-pre-wrap leading-6">
-                          {partner.specializationDescription}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                </section>
-              )}
+              <section>
+                <SectionHeader label={tc("howToSection")} />
+                <HowToSteps steps={howToSteps} />
+              </section>
             </div>
 
-            <aside className="bg-muted/30 p-6 sm:p-8">
-              <div className="sticky top-24 space-y-7">
-                <div>
-                  <p className="kclub-eyebrow">{tc("contactSection")}</p>
-                  <h2 className="mt-5 text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
-                    {tc("contactSection")}
-                  </h2>
-                </div>
+            <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
+              <PartnerBusinessData
+                title={tc("businessDataSection")}
+                rows={businessDataRows}
+              />
 
-                <ul className="space-y-3">
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  {tc("contactSection")}
+                </p>
+
+                <ul className="mt-4 space-y-2">
                   {partner.website && (
-                    <li className="border border-border bg-background px-4 py-3 text-sm">
+                    <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                       <a
                         href={partner.website}
                         target="_blank"
@@ -352,7 +420,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                   {isResident ? (
                     <>
                       {partner.contactEmail && (
-                        <li className="border border-border bg-background px-4 py-3 text-sm">
+                        <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`mailto:${partner.contactEmail}`}
                             className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent-ink"
@@ -361,12 +429,14 @@ export default async function PartnerLandingPage({ params }: Props) {
                               className="size-4 shrink-0 text-muted-foreground"
                               aria-hidden="true"
                             />
-                            {partner.contactEmail}
+                            <span className="truncate">
+                              {partner.contactEmail}
+                            </span>
                           </a>
                         </li>
                       )}
                       {partner.contactPhone && (
-                        <li className="border border-border bg-background px-4 py-3 text-sm">
+                        <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                           <a
                             href={`tel:${partner.contactPhone}`}
                             className="flex items-center gap-3 transition-colors hover:text-accent-ink"
@@ -381,56 +451,120 @@ export default async function PartnerLandingPage({ params }: Props) {
                       )}
                     </>
                   ) : (
-                    <li className="border border-border bg-background p-4 text-sm font-light leading-6 text-muted-foreground">
+                    <li className="rounded-md border border-border bg-background p-4 text-sm leading-6 text-muted-foreground">
                       {tc("contactsMembersOnly")}
                     </li>
                   )}
                 </ul>
 
-                {!isResident ? (
-                  <div className="space-y-4 border-t border-border pt-6">
-                    <p className="text-sm font-light leading-6 text-muted-foreground">
+                {isResident && partner.contactEmail && (
+                  <Button
+                    asChild
+                    className="mt-4 h-10 w-full rounded-md bg-accent text-xs font-bold uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b17944]"
+                  >
+                    <a href={`mailto:${partner.contactEmail}`}>
+                      {tc("writeAction")}
+                    </a>
+                  </Button>
+                )}
+
+                {!isResident && (
+                  <div className="mt-4 space-y-3 border-t border-border pt-4">
+                    <p className="text-sm leading-6 text-muted-foreground">
                       {tc("joinPrompt")}
                     </p>
                     <Button
                       asChild
-                      className="h-12 w-full rounded-none bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+                      className="h-10 w-full rounded-md bg-accent text-xs font-bold uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b17944]"
                     >
                       <Link href={`/${locale}/login`}>{tc("joinCta")}</Link>
                     </Button>
                   </div>
-                ) : (
-                  <div className="space-y-5 border-t border-border pt-6">
-                    <div className="border border-border bg-background p-4">
-                      <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                        <BadgeCheck
-                          className="size-4 text-accent-ink"
-                          aria-hidden="true"
-                        />
-                        {tc("representedBy")}
-                      </p>
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-sm text-muted-foreground">
-                          {tc("managerRole")}
-                        </span>
-                        <span className="text-right text-sm font-bold text-foreground">
-                          {partner.owner?.displayName || tc("memberFallback")}
-                        </span>
-                      </div>
-                    </div>
+                )}
+              </div>
 
-                    {canSendReferral && (
+              <div className="flex gap-3 rounded-xl border border-border bg-card p-5">
+                <ShieldCheck
+                  className="mt-0.5 size-4 shrink-0 text-[var(--success)]"
+                  aria-hidden="true"
+                />
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[13px] text-foreground">
+                    {tc("verifiedBoxTitle")}
+                  </span>
+                  <span className="text-xs leading-relaxed text-muted-foreground">
+                    {tc("verifiedBoxNote")}
+                  </span>
+                </div>
+              </div>
+
+              {isResident && (
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    <BadgeCheck
+                      className="size-4 text-accent-ink"
+                      aria-hidden="true"
+                    />
+                    {tc("representedBy")}
+                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-muted-foreground">
+                      {tc("managerRole")}
+                    </span>
+                    <span className="text-right text-sm font-bold text-foreground">
+                      {partner.owner?.displayName || tc("memberFallback")}
+                    </span>
+                  </div>
+
+                  {canSendReferral && (
+                    <div className="mt-4 border-t border-border pt-4">
                       <SendReferralDialog
                         recipientCompanyId={partner.id}
                         translations={referralTranslations}
                       />
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </aside>
           </div>
-        </section>
+
+          {similar.length > 0 && (
+            <section className="pb-8">
+              <div className="flex items-baseline justify-between gap-4 border-b border-border pb-6">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    {tc("similarEyebrow")}
+                  </span>
+                  <h2 className="mt-2 font-serif text-2xl font-bold tracking-tight">
+                    {tc("similarTitle")}
+                  </h2>
+                </div>
+                <Link
+                  href={`/${locale}/directory`}
+                  className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                >
+                  {tc("openCatalogue")}
+                  <ArrowUpRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
+
+              <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3">
+                {similar.map((peer) => (
+                  <PartnerCard
+                    key={peer.id}
+                    partner={peer}
+                    href={`/${locale}/directory/${peer.slug}`}
+                    view="grid"
+                    noDescription={tc("noDescription")}
+                    detailsLabel={tc("details")}
+                    verifiedLabel={tc("verifiedPartner")}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </main>
     </>
   );

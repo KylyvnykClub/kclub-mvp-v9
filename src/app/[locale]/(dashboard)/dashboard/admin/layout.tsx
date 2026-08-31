@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getCurrentMember } from "@/actions/session";
 import { getSupportMetricsAction } from "@/actions/admin-support";
 import { buildActor, staffAtLeast } from "@/domain/actor";
@@ -28,8 +30,13 @@ export default async function AdminLayout({ children, params }: Props) {
 
   const metrics = await getSupportMetricsAction();
 
+  // The collapsed/expanded choice survives reloads the way the sidebar
+  // primitive persists it: a plain (non-sensitive) cookie.
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
   return (
-    <div className="min-h-screen bg-background">
+    <SidebarProvider defaultOpen={defaultOpen}>
       <AdminSidebar
         actor={actor}
         displayName={session.member.displayName}
@@ -39,10 +46,10 @@ export default async function AdminLayout({ children, params }: Props) {
           pendingReferrals: metrics.pendingReferrals,
         }}
       />
-      <div className="lg:pl-60">
+      <SidebarInset className="min-w-0 overflow-x-clip">
         <AdminTopbar />
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

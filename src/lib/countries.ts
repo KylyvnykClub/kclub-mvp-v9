@@ -15,3 +15,16 @@ export function countryOptions(locale: Locale) {
     .map((code) => ({ code, name: countryName(code, locale) }))
     .sort((a, b) => a.name.localeCompare(b.name, locale));
 }
+
+/**
+ * The regional-indicator pair for an ISO 3166-1 alpha-2 code, which renders as
+ * that country's flag. Returns an empty string for anything that is not two
+ * ASCII letters, so a malformed code degrades to no flag rather than to
+ * mojibake next to the country name.
+ */
+export function countryFlag(code: string): string {
+  if (!/^[A-Za-z]{2}$/.test(code)) return "";
+  return code
+    .toUpperCase()
+    .replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
+}
