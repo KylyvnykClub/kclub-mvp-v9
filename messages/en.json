@@ -870,7 +870,14 @@
       "flags": "Flags",
       "audit": "Audit Log",
       "contentAccess": "Content & Access",
-      "rolesPermissions": "Roles & Permissions"
+      "rolesPermissions": "Roles & Permissions",
+      "groups": {
+        "management": "Management",
+        "platform": "Platform"
+      },
+      "toggleSidebar": "Toggle sidebar",
+      "navigationDescription": "Console navigation",
+      "memberDashboard": "Member dashboard"
     },
     "shell": {
       "previous": "Previous",

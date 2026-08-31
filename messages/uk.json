@@ -870,7 +870,14 @@
       "flags": "Прапорці",
       "audit": "Журнал аудиту",
       "contentAccess": "Контент і доступи",
-      "rolesPermissions": "Ролі та доступи"
+      "rolesPermissions": "Ролі та доступи",
+      "groups": {
+        "management": "Керування",
+        "platform": "Платформа"
+      },
+      "toggleSidebar": "Показати або приховати меню",
+      "navigationDescription": "Навігація консоллю",
+      "memberDashboard": "Кабінет учасника"
     },
     "shell": {
       "previous": "Назад",

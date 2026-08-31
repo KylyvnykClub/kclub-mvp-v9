@@ -870,7 +870,14 @@
       "flags": "Флаги",
       "audit": "Журнал аудита",
       "contentAccess": "Контент и доступы",
-      "rolesPermissions": "Роли и доступы"
+      "rolesPermissions": "Роли и доступы",
+      "groups": {
+        "management": "Управление",
+        "platform": "Платформа"
+      },
+      "toggleSidebar": "Показать или скрыть меню",
+      "navigationDescription": "Навигация по консоли",
+      "memberDashboard": "Кабинет участника"
     },
     "shell": {
       "previous": "Назад",
