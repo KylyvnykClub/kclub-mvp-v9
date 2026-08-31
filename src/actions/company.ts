@@ -26,6 +26,7 @@ import {
   listCompanyIdsWithActiveSubscription,
   listPendingCompanies,
   listShowcaseCompanies,
+  listSimilarApprovedCompanies,
   applyCompanyPendingChanges,
   clearCompanyPendingChanges,
   findCompanyById,
@@ -436,6 +437,36 @@ export async function getPartnerBySlugAction(slug: string) {
   if (activeCompanyIds.length === 0) return null;
 
   return findApprovedCompanyBySlug(db, slug, activeCompanyIds);
+}
+
+/**
+ * Other publishable partners sharing a subcategory with this one, for the
+ * "similar partners" rail. Same gate as `getPartnerBySlugAction`: an anonymous
+ * caller only gets a result while the public catalogue flag is on.
+ */
+export async function getSimilarPartnersAction(
+  companyId: string,
+  businessCategoryIds: number[],
+) {
+  if (SKIP_DB_PRERENDER) {
+    return [];
+  }
+
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    const isPublic = await isFeatureEnabled("public_catalogue");
+    if (!isPublic) throw new Error("Unauthorized");
+  }
+
+  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  if (activeCompanyIds.length === 0) return [];
+
+  return listSimilarApprovedCompanies(
+    db,
+    activeCompanyIds,
+    companyId,
+    businessCategoryIds,
+  );
 }
 
 export async function getPendingCompaniesAction() {
