@@ -275,3 +275,21 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Landing motion (components/landing): scroll reveal and floating orbs.
+   The hidden initial state exists only for users who accept motion, so
+   reduced-motion and no-JS render the finished layout. */
+@media (prefers-reduced-motion: no-preference) {
+  .kc-reveal {
+    opacity: 0;
+    translate: 0 26px;
+    transition:
+      opacity 0.7s var(--animate-ease-out),
+      translate 0.7s var(--animate-ease-out);
+  }
+
+  .kc-reveal[data-revealed="true"] {
+    opacity: 1;
+    translate: 0 0;
+  }
+}

@@ -20,8 +20,8 @@ export function CardShowcase() {
           </p>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[620px]">
-          <div className="relative aspect-[1.586/1] overflow-hidden rounded-[20px] shadow-[0_24px_80px_-30px_rgba(212,175,55,0.5)]">
+        <div className="relative mx-auto w-full max-w-[420px]">
+          <div className="relative aspect-[664/472] overflow-hidden rounded-[20px] shadow-[0_24px_80px_-30px_rgba(212,175,55,0.5)]">
             <Image
               src="/brand/backgrounds/card-bg.png"
               alt=""

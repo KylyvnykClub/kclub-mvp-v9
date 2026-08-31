@@ -274,17 +274,18 @@
       "dashboard": "Dashboard",
       "signOut": "Sign Out",
       "signingOut": "Signing out...",
-      "signOutError": "Could not sign out. Please try again."
+      "signOutError": "Could not sign out. Please try again.",
+      "myAccount": "My Account"
     },
     "hero": {
-      "eyebrow": "Kylyvnyk Club Private Membership Club",
-      "titleLine1": "Private access for",
-      "titleLine2": "global professionals",
-      "subline": "A curated membership network for verified people, trusted partners, and warm business introductions.",
+      "eyebrow": "International Business Club",
+      "titleLine1": "Kylyvnyk",
+      "titleLine2": "Club",
+      "subline": "We bring together the best.",
       "cardEyebrow": "Private member card",
       "cardCaption": "Verified access",
-      "primaryCta": "Join Now",
-      "secondaryCta": "Explore Catalog",
+      "primaryCta": "Become a Member",
+      "secondaryCta": "Our Partners",
       "stats": {
         "verified": {
           "title": "Verified members",
@@ -299,41 +300,40 @@
           "copy": "Members, partners, and warm introductions."
         }
       },
-      "flagsMarquee": "Members from every region, including —"
+      "flagsMarquee": "Members from every region, including —",
+      "metaTitle": "International Business Club"
     },
     "stats": {
       "members": "Members",
-      "countries": "Countries",
-      "partners": "Partner Businesses",
-      "years": "Years Active"
+      "countries": "Countries"
     },
     "features": {
       "eyebrow": "Member Platform",
-      "title": "Why KCLUB",
+      "title": "Why KYLYVNYK CLUB",
       "items": [
         {
-          "title": "Digital Club Card",
-          "description": "QR-verified, always in your pocket."
+          "title": "International community",
+          "description": "Members and companies from around the world."
         },
         {
-          "title": "VIP Membership",
-          "description": "Exclusive network and business introductions."
+          "title": "Digital club card",
+          "description": "A personal QR-coded card confirms club membership status."
         },
         {
-          "title": "Partner Directory",
-          "description": "Verified businesses across 12+ countries."
+          "title": "Special offers",
+          "description": "Partners themselves provide members with discounts, bonuses, or other published terms."
         },
         {
-          "title": "Business Introductions",
-          "description": "Warm B2B connections inside the club."
+          "title": "Partner catalogue",
+          "description": "Find companies, services, and available offers in one place."
         },
         {
-          "title": "Multilingual Platform",
-          "description": "English, Russian, and Ukrainian."
+          "title": "Business introductions",
+          "description": "Build professional connections within an international community."
         },
         {
-          "title": "Privacy First",
-          "description": "No public member lookup, phone-only auth."
+          "title": "Privacy",
+          "description": "We pay particular attention to protecting members’ personal data."
         }
       ]
     },
@@ -342,22 +342,24 @@
       "title": "How It Works",
       "steps": [
         {
-          "title": "Apply",
-          "description": "Submit your membership application in a few minutes — no paperwork, just your details."
+          "title": "Create an account",
+          "description": "Sign up, verify your phone number, and complete your profile."
         },
         {
-          "title": "Get Verified",
-          "description": "Our team reviews your application and issues your QR-verified digital club card."
+          "title": "Get your club card",
+          "description": "After registration, your personal digital QR-coded card becomes available."
         },
         {
-          "title": "Unlock Access",
-          "description": "Sign in to the member cabinet to reach the partner directory and VIP features."
-        },
-        {
-          "title": "Grow Your Network",
-          "description": "Get warm business introductions and connect with verified members across the club."
+          "title": "Enjoy the benefits",
+          "description": "Find partners, use special offers, and grow business connections worldwide."
         }
       ]
+    },
+    "introductions": {
+      "eyebrow": "Business Introductions",
+      "lead": "KYLYVNYK CLUB helps members build professional connections with entrepreneurs, professionals, and companies interested in cooperation.",
+      "disclaimer": "The club facilitates introductions but is not a party to any subsequent arrangements and does not guarantee that a deal will be concluded or that cooperation will bring results.",
+      "cta": "Learn more"
     },
     "services": {
       "eyebrow": "Membership",
@@ -377,12 +379,13 @@
     "about": {
       "eyebrow": "About",
       "title": "An international community built on trust",
-      "introduction": "KYLYVNYK CLUB is a private membership platform that brings together verified members, independent partners, and business owners across borders.",
-      "community": "Every member is verified before joining, so introductions, offers, and connections happen inside a trusted, curated circle rather than the open internet.",
+      "introduction": "KYLYVNYK CLUB is an international business club bringing together members, entrepreneurs, professionals, and companies from different countries.",
+      "community": "Members receive a digital club card and access to partners’ special offers, while companies can present their business, attract new clients, and grow international business relationships.",
+      "trust": "We are building a community founded on trust, mutual benefit, and long-term cooperation.",
       "mission": {
         "eyebrow": "Our Mission",
-        "title": "Building real connections, not just contacts",
-        "description": "We designed KYLYVNYK CLUB to make it easier for members to find trusted partners, exchange warm introductions, and access exclusive offers, without the noise of open marketplaces."
+        "title": "Bringing people and business together worldwide",
+        "description": "Our mission is to build an international community where members enjoy valuable benefits, companies find new clients, and entrepreneurs and professionals grow their business connections."
       },
       "audiences": {
         "eyebrow": "Who It's For",
@@ -405,33 +408,33 @@
         "title": "What membership gives you",
         "international": {
           "label": "Global",
-          "title": "International reach",
-          "description": "Connect with members and partners across countries, not just your local market."
+          "title": "International community",
+          "description": "Members and companies from around the world."
         },
         "card": {
           "label": "Identity",
           "title": "Digital club card",
-          "description": "A verified, QR-backed card that confirms your membership wherever you go."
+          "description": "A personal QR-coded card confirms club membership status."
         },
         "offers": {
           "label": "Offers",
-          "title": "Exclusive partner offers",
-          "description": "Access special terms and discounts published directly by verified partners."
+          "title": "Special offers",
+          "description": "Partners themselves provide members with discounts, bonuses, or other published terms."
         },
         "directory": {
           "label": "Directory",
-          "title": "Curated partner directory",
-          "description": "Browse a moderated catalog of verified businesses across categories and cities."
+          "title": "Partner catalogue",
+          "description": "Find companies, services, and available offers in one place."
         },
         "connections": {
           "label": "Introductions",
-          "title": "Warm business introductions",
-          "description": "Get connected to the right people through Business Introductions instead of cold contacts."
+          "title": "Business introductions",
+          "description": "Build professional connections within an international community."
         },
         "privacy": {
           "label": "Privacy",
-          "title": "Privacy by design",
-          "description": "Your data and profile stay visible only within the club, under your control."
+          "title": "Privacy",
+          "description": "We pay particular attention to protecting members’ personal data."
         }
       }
     },
@@ -454,10 +457,6 @@
         "privacy": {
           "title": "Confidentiality",
           "description": "We protect personal data and do not create an open, publicly accessible list of all members."
-        },
-        "international": {
-          "title": "International growth",
-          "description": "The club welcomes members and companies from different countries, subject to applicable rules and restrictions."
         }
       }
     },
@@ -570,7 +569,7 @@
     },
     "footer": {
       "about": "About",
-      "aboutText": "KCLUB is a private membership platform for verified members, VIP access, and partner discovery.",
+      "aboutText": "KYLYVNYK CLUB is an international business club bringing together members, entrepreneurs, professionals, and companies from different countries. Members receive a digital club card and access to partners’ special offers, while companies can present their business, attract new clients, and grow international business relationships.",
       "links": "Links",
       "legal": "Legal",
       "rules": "Rules",
@@ -588,7 +587,8 @@
       "refundPolicy": "Refund Policy",
       "disclaimer": "Disclaimer",
       "contactUs": "Contact Us",
-      "copyright": "© All rights reserved."
+      "copyright": "© All rights reserved.",
+      "backToTop": "Back to top"
     },
     "partners": {
       "eyebrow": "Trusted Elite Brands",

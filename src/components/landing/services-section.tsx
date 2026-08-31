@@ -1,6 +1,8 @@
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Reveal } from "./reveal";
+
 import { Link } from "@/i18n/navigation";
 
 export function ServicesSection() {
@@ -12,10 +14,12 @@ export function ServicesSection() {
       className="kclub-section bg-zinc-100 dark:bg-background"
     >
       <div className="kclub-shell">
-        <p className="kclub-eyebrow">{t("services.eyebrow")}</p>
-        <h2 className="kclub-section-title mt-5 max-w-4xl">
-          {t("services.title")}
-        </h2>
+        <Reveal>
+          <p className="kclub-eyebrow">{t("services.eyebrow")}</p>
+          <h2 className="kclub-section-title mt-5 max-w-4xl">
+            {t("services.title")}
+          </h2>
+        </Reveal>
 
         <div className="mt-12 grid gap-px border border-border bg-border lg:grid-cols-2">
           <article className="flex min-h-[420px] flex-col justify-between bg-white p-8 text-zinc-950 sm:p-12">

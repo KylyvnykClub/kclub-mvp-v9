@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DbClient } from "@/data/db.js";
 import {
+  countMemberPresence,
   countMembers,
   countMembersByStatus,
   findMemberAdminById,
@@ -22,6 +23,8 @@ async function seedMember(
     displayName?: string;
     role?: "member" | "member_vip" | "partner_owner" | "staff_support";
     status?: "active" | "blocked";
+    country?: string;
+    deletedAt?: Date;
   },
 ) {
   const [member] = await db
@@ -30,10 +33,11 @@ async function seedMember(
       phone: `+15559${input.phoneSuffix}`,
       passwordHash: "hash",
       displayName: input.displayName ?? `Directory ${input.phoneSuffix}`,
-      country: "US",
+      country: input.country ?? "US",
       language: "en",
       role: input.role ?? "member",
       status: input.status ?? "active",
+      deletedAt: input.deletedAt ?? null,
     })
     .returning();
 
@@ -160,5 +164,49 @@ describe("admin member directory (FR-083, FR-084)", () => {
     const [withHistory] = await withMemberActivityHistory(db, [found!]);
     expect(withHistory!.activityHistory).toHaveLength(1);
     expect(withHistory!.activityHistory[0]?.action).toBe("revoke_card");
+  });
+});
+
+describe("landing member presence", () => {
+  it("counts active club members and their distinct countries, excluding staff, blocked, and erased accounts", async () => {
+    const db = testDbClient();
+
+    await seedMember(db, { phoneSuffix: "300001", country: "UA" });
+    await seedMember(db, { phoneSuffix: "300002", country: "UA" });
+    await seedMember(db, {
+      phoneSuffix: "300003",
+      country: "PL",
+      role: "member_vip",
+    });
+    // None of these belong in the public numbers.
+    await seedMember(db, {
+      phoneSuffix: "300004",
+      country: "DE",
+      role: "staff_support",
+    });
+    await seedMember(db, {
+      phoneSuffix: "300005",
+      country: "FR",
+      status: "blocked",
+    });
+    await seedMember(db, {
+      phoneSuffix: "300006",
+      country: "ES",
+      deletedAt: new Date(),
+    });
+
+    await expect(countMemberPresence(db)).resolves.toEqual({
+      members: 3,
+      countries: 2,
+    });
+  });
+
+  it("reports zeroes for an empty club rather than failing", async () => {
+    const db = testDbClient();
+
+    await expect(countMemberPresence(db)).resolves.toEqual({
+      members: 0,
+      countries: 0,
+    });
   });
 });

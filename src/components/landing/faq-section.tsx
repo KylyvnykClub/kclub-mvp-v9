@@ -4,6 +4,8 @@ import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Reveal } from "./reveal";
+
 type FaqItem = {
   question: string;
   answer: string;
@@ -18,8 +20,10 @@ export function FaqSection() {
     <section id="faq" className="kclub-section bg-muted">
       <div className="kclub-shell grid gap-10 lg:grid-cols-[0.75fr_1.25fr]">
         <div>
-          <p className="kclub-eyebrow">{t("faq.eyebrow")}</p>
-          <h2 className="kclub-section-title mt-5">{t("faq.title")}</h2>
+          <Reveal>
+            <p className="kclub-eyebrow">{t("faq.eyebrow")}</p>
+            <h2 className="kclub-section-title mt-5">{t("faq.title")}</h2>
+          </Reveal>
         </div>
 
         <div className="border-t border-border bg-background">

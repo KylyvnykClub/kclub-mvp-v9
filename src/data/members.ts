@@ -2,10 +2,12 @@ import { randomUUID } from "node:crypto";
 import {
   and,
   count,
+  countDistinct,
   desc,
   eq,
   ilike,
   inArray,
+  isNull,
   or,
   sql,
   type SQL,
@@ -37,6 +39,31 @@ const CLUB_MEMBER_ROLES = [
   "partner_owner",
   "user",
 ] as const;
+
+/**
+ * Aggregate presence numbers for the public landing page: how many club
+ * members are active, and how many countries they live in. Counts only -
+ * no member row leaves this function (ADR 0005). Staff and admin accounts
+ * are operators, not membership, so they follow the same role fence as the
+ * admin directory.
+ */
+export async function countMemberPresence(db: DbClient) {
+  const [row] = await db
+    .select({
+      members: count(),
+      countries: countDistinct(members.country),
+    })
+    .from(members)
+    .where(
+      and(
+        eq(members.status, "active"),
+        isNull(members.deletedAt),
+        inArray(members.role, CLUB_MEMBER_ROLES),
+      ),
+    );
+
+  return { members: row?.members ?? 0, countries: row?.countries ?? 0 };
+}
 
 function cardTokenLookup(token: string) {
   const tokenHash = hashCardToken(token);
