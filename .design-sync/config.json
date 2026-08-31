@@ -1,0 +1,51 @@
+{
+  "pkg": "kclub",
+  "globalName": "KCLUB",
+  "shape": "package",
+  "projectId": "f21df078-8a97-40d2-9f19-0e6ca46242d0",
+  "tsconfig": "./tsconfig.json",
+  "srcDir": "src/components/ui",
+  "runtimeFontPrefixes": ["Manrope", "Oxanium"],
+  "cssEntry": ".design-sync/.cache/ds-styles.css",
+  "buildCmd": "npx --prefix .ds-sync tailwindcss -i src/app/globals.css -o .design-sync/.cache/tw-compiled.css && node -e \"const f=require(&quot;fs&quot;);f.writeFileSync(&quot;.design-sync/.cache/ds-styles.css&quot;,f.readFileSync(&quot;.design-sync/fonts.css&quot;)+f.readFileSync(&quot;.design-sync/.cache/tw-compiled.css&quot;))\"",
+  "guidelinesGlob": [],
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "720x520"
+    },
+    "DropdownMenu": {
+      "cardMode": "single",
+      "viewport": "420x420"
+    },
+    "Popover": {
+      "cardMode": "single",
+      "viewport": "420x360"
+    },
+    "Select": {
+      "cardMode": "single",
+      "viewport": "420x420"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "viewport": "820x540"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "viewport": "420x260"
+    },
+    "Toaster": {
+      "cardMode": "single",
+      "viewport": "480x380"
+    },
+    "Sidebar": {
+      "cardMode": "single",
+      "viewport": "960x680"
+    }
+  },
+  "extraEntries": ["sonner", "./.design-sync/preview-provider.tsx"],
+  "provider": {
+    "component": "DsPreviewProvider"
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
