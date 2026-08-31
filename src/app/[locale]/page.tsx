@@ -10,6 +10,7 @@ import { CtaSection } from "@/components/landing/cta-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { IntroductionsSection } from "@/components/landing/introductions-section";
 import { PrinciplesSection } from "@/components/landing/principles-section";
 import { ServicesSection } from "@/components/landing/services-section";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -28,8 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "home.hero" });
 
   return {
-    title: `KCLUB — ${t("titleLine2")}`,
-    description: t("subline"),
+    title: `Kylyvnyk Club — ${t("metaTitle")}`,
+    description: `${t("eyebrow")} — ${t("subline")}`,
     alternates: localeAlternates(locale, ""),
   };
 }
@@ -53,6 +54,7 @@ export default async function Page({ params }: Props) {
         <BenefitsSection />
         <PrinciplesSection />
         <HowItWorksSection />
+        <IntroductionsSection />
         <ServicesSection />
         <CardShowcase />
         <ShowcaseSection />

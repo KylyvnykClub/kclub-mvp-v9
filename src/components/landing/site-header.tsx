@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -9,6 +9,13 @@ import { useState } from "react";
 import { logoutAction } from "@/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -18,6 +25,16 @@ const navigation = [
   ["partners", "/directory"],
   ["faq", "/#faq"],
 ] as const;
+
+/**
+ * Language autonyms are deliberately not translated - every language names
+ * itself, so the row a reader is looking for reads the same from any locale.
+ */
+const LOCALES = [
+  { code: "en", flag: "/flags/gb.png", label: "English" },
+  { code: "ru", flag: "/flags/ru.png", label: "Русский" },
+  { code: "uk", flag: "/flags/ua.png", label: "Українська" },
+] as const satisfies readonly { code: Locale; flag: string; label: string }[];
 
 export function SiteHeader({
   member = false,
@@ -41,6 +58,9 @@ export function SiteHeader({
   const params = useParams();
   const locale = params.locale as Locale;
   const [open, setOpen] = useState(false);
+
+  const currentLocale =
+    LOCALES.find((item) => item.code === locale) ?? LOCALES[0];
 
   function changeLocale(newLocale: Locale) {
     router.replace(pathname, { locale: newLocale });
@@ -84,58 +104,93 @@ export function SiteHeader({
         </nav>
 
         <div className="flex items-center gap-2">
-          <div
-            className="hidden items-center gap-1 lg:flex"
-            aria-label={t("common.languageSwitcher")}
-          >
-            {(["en", "ru", "uk"] as const).map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => changeLocale(item)}
-                aria-pressed={locale === item}
-                className={`min-h-10 px-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
-                  locale === item
-                    ? "text-accent-ink"
-                    : "text-muted-foreground hover:text-zinc-950 dark:hover:text-white"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          <ThemeToggle />
-          {member ? (
-            <>
-              {admin && (
-                <Link
-                  href="/dashboard/admin"
-                  className="hidden px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
-                >
-                  {tDashboard("admin")}
-                </Link>
-              )}
-              <Link
-                href="/dashboard/profile"
-                className="hidden items-center gap-2 px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
-              >
-                {tDashboard("profile")}
-                <UnreadBadge
-                  count={unreadCount}
-                  label={tDashboard("unreadLabel", { count: unreadCount })}
-                />
-              </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => void handleLogout()}
-                className="hidden h-10 rounded-none px-3 text-muted-foreground lg:inline-flex"
+                className="hidden h-10 gap-2 rounded-none px-2 text-xs font-semibold uppercase tracking-[0.12em] lg:inline-flex"
+                aria-label={t("common.languageSwitcher")}
               >
-                <LogOut className="size-4" aria-hidden="true" />
-                {tAuth("signOut")}
+                <Image
+                  src={currentLocale.flag}
+                  width={20}
+                  height={14}
+                  alt=""
+                  className="h-3.5 w-5 rounded-[2px] object-cover"
+                />
+                {currentLocale.code}
+                <ChevronDown className="size-3" aria-hidden="true" />
               </Button>
-            </>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-44">
+              {LOCALES.map((item) => (
+                <DropdownMenuItem
+                  key={item.code}
+                  onClick={() => changeLocale(item.code)}
+                  className={
+                    locale === item.code ? "font-semibold text-accent-ink" : ""
+                  }
+                >
+                  <Image
+                    src={item.flag}
+                    width={20}
+                    height={14}
+                    alt=""
+                    className="mr-2 h-3.5 w-5 rounded-[2px] object-cover"
+                  />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <ThemeToggle />
+          {member ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="hidden h-10 gap-2 rounded-none px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
+                >
+                  {t("nav.myAccount")}
+                  <UnreadBadge
+                    count={unreadCount}
+                    label={tDashboard("unreadLabel", { count: unreadCount })}
+                  />
+                  <ChevronDown className="size-3" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-48">
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/dashboard/profile"
+                    className="flex items-center gap-2"
+                  >
+                    {tDashboard("profile")}
+                    <UnreadBadge
+                      count={unreadCount}
+                      label={tDashboard("unreadLabel", { count: unreadCount })}
+                    />
+                  </Link>
+                </DropdownMenuItem>
+                {admin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/admin">{tDashboard("admin")}</Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => void handleLogout()}>
+                  <LogOut
+                    className="mr-2 size-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  {tAuth("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Link
@@ -148,7 +203,7 @@ export function SiteHeader({
                 href="/register"
                 className="kclub-brand-button hidden lg:inline-flex"
               >
-                {t("nav.join")} <span aria-hidden="true">↗</span>
+                {t("nav.join")}
               </Link>
             </>
           )}
@@ -183,15 +238,26 @@ export function SiteHeader({
               </Link>
             ))}
             <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 lg:hidden">
-              {(["en", "ru", "uk"] as const).map((item) => (
+              {LOCALES.map((item) => (
                 <button
-                  key={item}
+                  key={item.code}
                   type="button"
-                  onClick={() => changeLocale(item)}
-                  aria-pressed={locale === item}
-                  className="min-h-11 border border-border px-4 text-xs font-bold uppercase"
+                  onClick={() => changeLocale(item.code)}
+                  aria-pressed={locale === item.code}
+                  className={`inline-flex min-h-11 items-center gap-2 border px-4 text-xs font-bold uppercase ${
+                    locale === item.code
+                      ? "border-accent text-accent-ink"
+                      : "border-border"
+                  }`}
                 >
-                  {item}
+                  <Image
+                    src={item.flag}
+                    width={20}
+                    height={14}
+                    alt=""
+                    className="h-3.5 w-5 rounded-[2px] object-cover"
+                  />
+                  {item.code}
                 </button>
               ))}
             </div>
@@ -245,7 +311,7 @@ export function SiteHeader({
                     onClick={() => setOpen(false)}
                     className="kclub-brand-button justify-center"
                   >
-                    {t("nav.join")} <span aria-hidden="true">↗</span>
+                    {t("nav.join")}
                   </Link>
                 </>
               )}
@@ -258,9 +324,10 @@ export function SiteHeader({
 }
 
 /**
- * The unread inbox count (FR-099), rendered beside the Profile link in both the
- * desktop bar and the mobile drawer - the two member-link blocks in this file
- * are hand-duplicated, so a shared component is what keeps them from drifting.
+ * The unread inbox count (FR-099), rendered on the account menu trigger and
+ * beside the Profile entry in both the desktop dropdown and the mobile drawer -
+ * the member-link blocks in this file are hand-duplicated, so a shared
+ * component is what keeps them from drifting.
  *
  * Renders nothing at zero: an empty badge is noise, and its absence is already
  * the message.
