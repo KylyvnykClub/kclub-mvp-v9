@@ -22,6 +22,11 @@ export default tseslint.config(
   {
     ignores: [
       "node_modules/**",
+      // claude.ai/design sync inputs and build output - compiled by the
+      // design-sync converter, not part of the app tsconfig project
+      ".design-sync/**",
+      ".ds-sync/**",
+      "ds-bundle/**",
       ".next/**",
       ".next-stale-*/**",
       // pnpm verify builds here, see tools/verify-build.ts
