@@ -13,7 +13,13 @@ export const DEPLOYMENT_SMOKE_TARGETS = [
   { name: "login", path: "/en/login", expectedStatuses: [200] },
   { name: "register", path: "/en/register", expectedStatuses: [200] },
   { name: "legal index", path: "/en/legal", expectedStatuses: [200] },
-  { name: "directory", path: "/en/directory", expectedStatuses: [200] },
+  {
+    // 307 is the `public_catalogue` flag turned off: the deployment is
+    // healthy, the catalogue is deliberately members-only right now.
+    name: "directory",
+    path: "/en/directory",
+    expectedStatuses: [200, 307],
+  },
   {
     name: "member dashboard gate",
     path: "/en/dashboard/profile",

@@ -22,6 +22,14 @@ describe("constraint: deployment smoke targets", () => {
     ]);
   });
 
+  it("accepts the catalogue redirect while public_catalogue is off", () => {
+    const directory = DEPLOYMENT_SMOKE_TARGETS.find(
+      (target) => target.path === "/en/directory",
+    );
+
+    expect(directory?.expectedStatuses).toEqual([200, 307]);
+  });
+
   it("normalizes base URLs before appending smoke paths", () => {
     const baseUrl = normalizeBaseUrl("https://preview.kclub.example///?x=1");
 
