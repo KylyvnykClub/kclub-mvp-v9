@@ -14,7 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { KpiCard } from "../_components/kpi-card";
+import { StatTile } from "../_components/stat-tile";
 
 /**
  * The mockup behind this redesign shows a support ticket queue. No ticket
@@ -71,17 +71,17 @@ export default async function AdminSupportPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <KpiCard
+        <StatTile
           label={t("totalMembers")}
           value={String(metrics.totalMembers)}
           icon={Users}
         />
-        <KpiCard
+        <StatTile
           label={t("activeMembers")}
           value={String(metrics.activeMembers)}
           icon={UserCheck}
         />
-        <KpiCard
+        <StatTile
           label={t("newMembers")}
           value={String(metrics.newMembers)}
           icon={UserPlus}

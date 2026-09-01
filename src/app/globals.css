@@ -126,6 +126,15 @@
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #b18a44;
 
+  /* Chart series (components/ui/chart.tsx). Categorical, fixed order, never
+     cycled. Validated against the card surface for lightness, chroma, CVD
+     separation and contrast; the dark set is re-stepped, not flipped. */
+  --chart-1: #a37f2e;
+  --chart-2: #2a78d6;
+  --chart-3: #199e70;
+  --chart-4: #4a3aa7;
+  --chart-5: #d55181;
+
   color-scheme: light;
 }
 
@@ -171,6 +180,12 @@
   --sidebar-accent-foreground: #ededed;
   --sidebar-border: #262626;
   --sidebar-ring: #b18a44;
+
+  --chart-1: #b08a1e;
+  --chart-2: #3987e5;
+  --chart-3: #199e70;
+  --chart-4: #9085e9;
+  --chart-5: #d55181;
   --bg-dot-matrix:
     radial-gradient(circle at 25% 25%, #222222 0.5px, transparent 1px),
     radial-gradient(circle at 75% 75%, #111111 0.5px, transparent 1px);

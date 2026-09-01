@@ -1155,8 +1155,8 @@
       "queueClear": "Ничего не ждёт"
     },
     "dashboard": {
-      "title": "Дашборд администратора",
-      "description": "Обзор финансовых показателей и подписок.",
+      "title": "Обзор",
+      "description": "Деньги, участники и очереди на проверку — одним взглядом.",
       "revenue": "Выручка",
       "lastNDays": "За последние {days} дн.",
       "period7": "7Д",
@@ -1167,7 +1167,7 @@
       "renewalsDue": "Ожидаемые продления",
       "next7Days": "В ближайшие 7 дней",
       "recentPayments": "Последние платежи",
-      "recentPaymentsDesc": "Последние 50 успешных платежей",
+      "recentPaymentsDesc": "Последние успешные платежи за выбранный период",
       "noPayments": "Нет недавних платежей",
       "unknownCustomer": "Неизвестный клиент",
       "viewReceipt": "Чек",
@@ -1183,7 +1183,21 @@
       "companiesSeriesLabel": "Компании",
       "queueTitle": "Компании, ожидающие проверки",
       "queueEmpty": "Нет заявок на проверку",
-      "viewAll": "Смотреть все"
+      "viewAll": "Смотреть все",
+      "sectionFinance": "Финансы",
+      "sectionCommunity": "Сообщество",
+      "totalMembers": "Всего участников",
+      "activeMembers": "Активные участники",
+      "newMembers": "Новые участники",
+      "last7Days": "За последние 7 дней",
+      "awaitingReview": "Ожидают проверки",
+      "awaitingReviewDetail": "{companies, plural, =0 {нет компаний} one {# компания} few {# компании} many {# компаний} other {# компании}} · {referrals, plural, =0 {нет представлений} one {# представление} few {# представления} many {# представлений} other {# представления}}",
+      "revenueOverTime": "Выручка по дням",
+      "revenueOverTimeDesc": "Успешные платежи по дням за выбранный период",
+      "paymentCustomer": "Клиент",
+      "paymentDate": "Дата",
+      "paymentAmount": "Сумма",
+      "paymentReceipt": "Чек"
     },
     "audit": {
       "title": "Аудит",
