@@ -1155,8 +1155,8 @@
       "queueClear": "Nothing waiting"
     },
     "dashboard": {
-      "title": "Admin Dashboard",
-      "description": "Overview of financial metrics and subscriptions.",
+      "title": "Overview",
+      "description": "Money, membership and the review queues at a glance.",
       "revenue": "Revenue",
       "lastNDays": "Last {days} days",
       "period7": "7D",
@@ -1167,7 +1167,7 @@
       "renewalsDue": "Renewals Due",
       "next7Days": "Next 7 days",
       "recentPayments": "Recent Payments",
-      "recentPaymentsDesc": "Last 50 successful payments",
+      "recentPaymentsDesc": "Latest successful payments in the selected period",
       "noPayments": "No recent payments found",
       "unknownCustomer": "Unknown Customer",
       "viewReceipt": "View Receipt",
@@ -1183,7 +1183,21 @@
       "companiesSeriesLabel": "Companies",
       "queueTitle": "Companies Awaiting Review",
       "queueEmpty": "Nothing pending review",
-      "viewAll": "View all"
+      "viewAll": "View all",
+      "sectionFinance": "Finance",
+      "sectionCommunity": "Community",
+      "totalMembers": "Total members",
+      "activeMembers": "Active members",
+      "newMembers": "New members",
+      "last7Days": "Last 7 days",
+      "awaitingReview": "Awaiting review",
+      "awaitingReviewDetail": "{companies, plural, =0 {no companies} one {# company} other {# companies}} · {referrals, plural, =0 {no introductions} one {# introduction} other {# introductions}}",
+      "revenueOverTime": "Revenue over time",
+      "revenueOverTimeDesc": "Successful payments per day for the selected period",
+      "paymentCustomer": "Customer",
+      "paymentDate": "Date",
+      "paymentAmount": "Amount",
+      "paymentReceipt": "Receipt"
     },
     "audit": {
       "title": "Audit Logs",
