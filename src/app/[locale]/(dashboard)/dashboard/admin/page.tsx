@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "./_components/page-header";
+import { SectionLabel } from "./_components/section-label";
 import { StatTile } from "./_components/stat-tile";
 import { ConsoleSection } from "./_components/console-section";
 import { RevenueChart } from "./_components/revenue-chart";
@@ -67,14 +68,6 @@ function PeriodSwitcher({
         </Link>
       ))}
     </div>
-  );
-}
-
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-      {children}
-    </h2>
   );
 }
 

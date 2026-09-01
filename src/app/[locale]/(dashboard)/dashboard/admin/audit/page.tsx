@@ -1,38 +1,50 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
+import { AlertTriangle, Search } from "lucide-react";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { getAuditLogsAction } from "@/actions/admin-audit";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "../_components/page-header";
+import {
+  DataTable,
+  DataTableEmpty,
+  DataTableHeader,
+  DataTableShell,
+} from "../_components/data-table";
+
+const COLUMN_COUNT = 5;
+
+type AuditFilters = {
+  q?: string;
+  actor?: string;
+  target?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
 
 export default async function AdminAuditPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{
-    q?: string;
-    actor?: string;
-    target?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }>;
+  searchParams: Promise<AuditFilters>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations("admin.audit");
+  const tCommon = await getTranslations("common");
   const session = await getCurrentMember();
   if (!session?.member) {
     redirect(`/${locale}/login`);
@@ -44,118 +56,167 @@ export default async function AdminAuditPage({
   }
 
   const filters = await searchParams;
-  const logs = await getAuditLogsAction(filters);
+  const basePath = `/${locale}/dashboard/admin/audit`;
+  const activeQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value) activeQuery.set(key, value);
+  }
+  const hasFilters = activeQuery.size > 0;
+  const currentHref = hasFilters
+    ? `${basePath}?${activeQuery.toString()}`
+    : basePath;
+
+  // The audit log is the one screen that must still render when the database
+  // misbehaves - an owner investigating an incident needs the error, not a
+  // blank page. Authorisation failed above, so what is left here is I/O.
+  let logs: Awaited<ReturnType<typeof getAuditLogsAction>> | null = null;
+  try {
+    logs = await getAuditLogsAction(filters);
+  } catch {
+    logs = null;
+  }
+
+  const dateTimeFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const filterForm = (
+    <form className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_9.5rem_9.5rem_auto]">
+      <Input
+        name="q"
+        type="search"
+        defaultValue={filters.q}
+        placeholder={t("searchPlaceholder")}
+        aria-label={t("searchPlaceholder")}
+      />
+      <Input
+        name="actor"
+        defaultValue={filters.actor}
+        placeholder={t("actorPlaceholder")}
+        aria-label={t("actorPlaceholder")}
+        className="font-mono text-xs"
+      />
+      <Input
+        name="target"
+        defaultValue={filters.target}
+        placeholder={t("targetPlaceholder")}
+        aria-label={t("targetPlaceholder")}
+        className="font-mono text-xs"
+      />
+      <Input
+        name="dateFrom"
+        type="date"
+        defaultValue={filters.dateFrom}
+        aria-label={t("dateFrom")}
+      />
+      <Input
+        name="dateTo"
+        type="date"
+        defaultValue={filters.dateTo}
+        aria-label={t("dateTo")}
+      />
+      <div className="flex gap-2">
+        <Button
+          type="submit"
+          variant="outline"
+          size="icon"
+          aria-label={t("search")}
+        >
+          <Search className="size-4" aria-hidden="true" />
+        </Button>
+        {hasFilters && (
+          <Button variant="ghost" asChild>
+            <Link href={basePath}>{t("resetFilters")}</Link>
+          </Button>
+        )}
+      </div>
+    </form>
+  );
 
   return (
     <div className="w-full space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground mt-2">{t("description")}</p>
-      </div>
+      <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-border/50">
-          <form className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_10rem_10rem_auto]">
-            <Input
-              name="q"
-              defaultValue={filters.q}
-              placeholder={t("searchPlaceholder")}
-            />
-            <Input
-              name="actor"
-              defaultValue={filters.actor}
-              placeholder={t("actorPlaceholder")}
-            />
-            <Input
-              name="target"
-              defaultValue={filters.target}
-              placeholder={t("targetPlaceholder")}
-            />
-            <Input
-              name="dateFrom"
-              type="date"
-              defaultValue={filters.dateFrom}
-              aria-label={t("dateFrom")}
-            />
-            <Input
-              name="dateTo"
-              type="date"
-              defaultValue={filters.dateTo}
-              aria-label={t("dateTo")}
-            />
-            <Button type="submit" className="h-10 rounded-none">
-              {t("search")}
-            </Button>
-          </form>
-        </div>
-
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
+      <DataTableShell
+        toolbar={filterForm}
+        summary={logs ? t("totalCount", { count: logs.length }) : undefined}
+      >
+        {logs === null ? (
+          <div className="p-5">
+            <Alert variant="destructive">
+              <AlertTriangle className="size-4" aria-hidden="true" />
+              <AlertTitle>{tCommon("error")}</AlertTitle>
+              <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+                <span>{t("loadError")}</span>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={currentHref}>{tCommon("tryAgain")}</Link>
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : (
+          <DataTable>
+            <DataTableHeader>
               <TableRow>
                 <TableHead>{t("colDate")}</TableHead>
                 <TableHead>{t("colActor")}</TableHead>
                 <TableHead>{t("colAction")}</TableHead>
                 <TableHead>{t("colSubject")}</TableHead>
-                <TableHead>{t("colDetails")}</TableHead>
+                <TableHead className="hidden lg:table-cell">
+                  {t("colDetails")}
+                </TableHead>
               </TableRow>
-            </TableHeader>
+            </DataTableHeader>
             <TableBody>
               {logs.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center text-muted-foreground py-8"
-                  >
-                    {t("noResults")}
-                  </TableCell>
-                </TableRow>
+                <DataTableEmpty
+                  colSpan={COLUMN_COUNT}
+                  message={t("noResults")}
+                />
               ) : (
                 logs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {log.createdAt.toLocaleString()}
+                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">
+                      {dateTimeFormatter.format(log.createdAt)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">
-                          {log.actorType}
-                        </span>
-                        <span className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
-                          {log.actorId || "System"}
-                        </span>
-                      </div>
+                      <span className="block text-sm font-medium">
+                        {log.actorType}
+                      </span>
+                      <span className="block max-w-[10rem] truncate font-mono text-xs text-muted-foreground">
+                        {log.actorId || t("systemActor")}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className="text-xs uppercase bg-muted/50"
-                      >
+                      <code className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
                         {log.action}
-                      </Badge>
+                      </code>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm">{log.subjectType}</span>
-                        <span className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
-                          {log.subjectId}
+                      <span className="block text-sm">{log.subjectType}</span>
+                      <span className="block max-w-[10rem] truncate font-mono text-xs text-muted-foreground">
+                        {log.subjectId}
+                      </span>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {log.meta ? (
+                        <pre className="max-h-24 max-w-[22rem] overflow-auto rounded border border-border bg-muted/40 p-2 font-mono text-[11px] leading-snug text-muted-foreground">
+                          {JSON.stringify(log.meta, null, 2)}
+                        </pre>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          {t("noDetails")}
                         </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <pre className="text-[10px] bg-muted/30 p-2 rounded max-w-[200px] overflow-x-auto">
-                        {log.meta ? JSON.stringify(log.meta, null, 2) : "-"}
-                      </pre>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
-          </Table>
-        </div>
-      </div>
+          </DataTable>
+        )}
+      </DataTableShell>
     </div>
   );
 }

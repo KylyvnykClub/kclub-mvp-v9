@@ -4,6 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { ClipboardCheck, Eye } from "lucide-react";
 import { SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +79,7 @@ export function ReferralDetailSheet({
   const status = referral.status;
   const isRedacted = REDACTED_STATUSES.includes(status);
   const isPendingReview = status === "pending_review";
+  const canDecide = isPendingReview && (canApprove || canReject);
 
   /**
    * The client's details arrive only when a moderator opens this row. They are
@@ -341,8 +343,18 @@ export function ReferralDetailSheet({
       onOpenChange={handleOpenChange}
       trigger={
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            {t("details")}
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            aria-label={canDecide ? t("review") : t("details")}
+            title={canDecide ? t("review") : t("details")}
+          >
+            {canDecide ? (
+              <ClipboardCheck className="size-4" aria-hidden="true" />
+            ) : (
+              <Eye className="size-4" aria-hidden="true" />
+            )}
           </Button>
         </SheetTrigger>
       }

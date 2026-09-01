@@ -1101,7 +1101,9 @@
       "moderationReasonLabel": "Причина модерації",
       "noNote": "Нотатки немає.",
       "noModerationReason": "Причину модерації не записано.",
-      "consentSection": "Згода"
+      "consentSection": "Згода",
+      "review": "Перевірити",
+      "pendingBadge": "{count, plural, one {# на перевірці} few {# на перевірці} many {# на перевірці} other {# на перевірці}}"
     },
     "categories": {
       "title": "Довідники",
@@ -1154,7 +1156,8 @@
       "pendingReferrals": "Реферали на модерації",
       "clickToReview": "Натисніть, щоб переглянути",
       "queuesTitle": "Черги модерації",
-      "queueClear": "Нічого не чекає"
+      "queueClear": "Нічого не чекає",
+      "membersTitle": "Учасники"
     },
     "dashboard": {
       "title": "Огляд",
@@ -1215,7 +1218,13 @@
       "actorPlaceholder": "Тип або ID автора",
       "targetPlaceholder": "Тип або ID об'єкта",
       "dateFrom": "Дата з",
-      "dateTo": "Дата до"
+      "dateTo": "Дата до",
+      "totalCount": "{count, plural, =0 {немає записів} one {# запис} few {# записи} many {# записів} other {# записи}}",
+      "loadError": "Не вдалося завантажити журнал аудиту.",
+      "filtersTitle": "Фільтри",
+      "resetFilters": "Скинути",
+      "systemActor": "Система",
+      "noDetails": "Подробиці не записані"
     },
     "staff": {
       "title": "Керування персоналом",
