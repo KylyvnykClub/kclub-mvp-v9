@@ -94,23 +94,27 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
 
-**Staff console (`admin.kclub.com`)**
+**Staff console (`/dashboard/admin`, shared shell: sidebar + breadcrumb topbar)**
+
+Nine routes; detail work happens in sheets over the lists, not on separate
+screens. Access column names the `can()` gate the page enforces.
 
 |Screen|User goal|Access|Notes|
 |-|-|-|-|
 |Sign in + TOTP|Get in securely|staff|Two steps, always|
-|Dashboard|See what needs attention today|staff_support+|Counts and queue ages, not vanity metrics|
-|Finance|See the money|staff_admin+|MRR, active subs by type, renewals due, recent payments, revenue by country + world map|
-|Members|Find and act on a member|staff_support+|Search by phone, serial or name. Every open is audited|
-|Member detail|Handle a support case|staff_support+|Card, subscriptions, history, blocked state|
-|Cards|Revoke or reissue|staff_admin+|Reason mandatory|
-|Moderation — companies|Clear the queue|staff_moderator+|Oldest first, age badge, approve/reject with reason|
-|Moderation — referrals|Clear the queue|staff_moderator+|Client contact visible only during review, and audited|
-|Companies|Manage the catalogue|staff_admin+|Publish, hide, edit, discount, showcase rank|
-|Reference data|Keep categories and places tidy|staff_moderator+|Blocks deletion of anything referenced|
-|Pricing|Change what we charge|staff_owner|Two-step confirmation; never reprices existing subscriptions|
-|Staff|Manage the team|staff_owner|Create, disable, change role|
-|Audit log|Investigate|staff_owner|Filter by actor, target, date|
+|Overview|See the money and the club at a glance|staff_admin+|Finance + community stat tiles, revenue-over-time, registrations, revenue by country, review queue, recent payments|
+|Support|Start the day; reach the queues|staff_support+|Member stats and links into the two pre-filtered moderation queues|
+|Members|Find and act on a member|staff_support+|Search by name, phone or serial; status/plan filter chips with counts. Detail, block (reason mandatory), password reset, card revoke/reissue live in the row sheet; card actions gate at staff_admin+|
+|Companies|Moderate and manage the catalogue|staff_support+ read; decisions staff_moderator+|One screen for queue and catalogue: pending badge, Review opens the sheet where approve/reject sit beside the profile; hide, staff edit, showcase rank in the same sheet|
+|Client introductions|Clear the review queue|staff_moderator+|In-review badge; client contact visible only inside the sheet during review (FR-071), redacted after closure (FR-077)|
+|Reference data|Keep categories and places tidy|staff_moderator+|Create forms with labels; Activate/Deactivate one-click; Delete behind a confirm dialog and blocked while referenced|
+|Feature flags|Turn a capability on or off|staff_owner|Each switch names its flag and says what it gates; effect is immediate|
+|Staff|Manage the team|staff_owner|Create, change role, disable behind a confirm dialog (signs out everywhere); 2FA status per account|
+|Audit log|Investigate|staff_owner|Filter by text, actor, target and date range; renders the failure as an inline error, not a blank page|
+
+Not yet built, listed in the shell as disabled: content & access, roles &
+permissions. Pricing management is not a console screen yet (prices change
+via Stripe + env, ADR 0004).
 
 **System states, which are screens too**
 
