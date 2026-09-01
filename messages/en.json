@@ -1101,7 +1101,9 @@
       "moderationReasonLabel": "Moderation reason",
       "noNote": "No note was left.",
       "noModerationReason": "No moderation reason was recorded.",
-      "consentSection": "Consent"
+      "consentSection": "Consent",
+      "review": "Review",
+      "pendingBadge": "{count, plural, one {# in review} other {# in review}}"
     },
     "categories": {
       "title": "Reference Data",
@@ -1154,7 +1156,8 @@
       "pendingReferrals": "Pending Referrals",
       "clickToReview": "Click to review",
       "queuesTitle": "Moderation queues",
-      "queueClear": "Nothing waiting"
+      "queueClear": "Nothing waiting",
+      "membersTitle": "Members"
     },
     "dashboard": {
       "title": "Overview",
@@ -1215,7 +1218,13 @@
       "actorPlaceholder": "Actor type or ID",
       "targetPlaceholder": "Target type or ID",
       "dateFrom": "Date from",
-      "dateTo": "Date to"
+      "dateTo": "Date to",
+      "totalCount": "{count, plural, =0 {no entries} one {# entry} other {# entries}}",
+      "loadError": "The audit log could not be loaded.",
+      "filtersTitle": "Filters",
+      "resetFilters": "Reset",
+      "systemActor": "System",
+      "noDetails": "No details recorded"
     },
     "staff": {
       "title": "Staff Management",

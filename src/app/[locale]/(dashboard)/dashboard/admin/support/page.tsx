@@ -4,16 +4,10 @@ import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { getSupportMetricsAction } from "@/actions/admin-support";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Users,
-  UserCheck,
-  UserPlus,
-  Building,
-  Handshake,
-  ArrowRight,
-} from "lucide-react";
+import { Users, UserCheck, UserPlus, Building, Handshake } from "lucide-react";
 import Link from "next/link";
+import { PageHeader } from "../_components/page-header";
+import { SectionLabel } from "../_components/section-label";
 import { StatTile } from "../_components/stat-tile";
 
 /**
@@ -43,6 +37,7 @@ export default async function AdminSupportPage({
   }
 
   const metrics = await getSupportMetricsAction();
+  const numberFormatter = new Intl.NumberFormat(locale);
 
   const queues = [
     {
@@ -63,60 +58,50 @@ export default async function AdminSupportPage({
 
   return (
     <div className="w-full space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
-      </div>
+      <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <StatTile
-          label={t("totalMembers")}
-          value={String(metrics.totalMembers)}
-          icon={Users}
-        />
-        <StatTile
-          label={t("activeMembers")}
-          value={String(metrics.activeMembers)}
-          icon={UserCheck}
-        />
-        <StatTile
-          label={t("newMembers")}
-          value={String(metrics.newMembers)}
-          icon={UserPlus}
-          footnote={t("last7Days")}
-        />
-      </div>
+      <section className="space-y-3">
+        <SectionLabel>{t("membersTitle")}</SectionLabel>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <StatTile
+            label={t("totalMembers")}
+            value={numberFormatter.format(metrics.totalMembers)}
+            icon={Users}
+          />
+          <StatTile
+            label={t("activeMembers")}
+            value={numberFormatter.format(metrics.activeMembers)}
+            icon={UserCheck}
+          />
+          <StatTile
+            label={t("newMembers")}
+            value={numberFormatter.format(metrics.newMembers)}
+            icon={UserPlus}
+            footnote={t("last7Days")}
+          />
+        </div>
+      </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          {t("queuesTitle")}
-        </h2>
+      <section className="space-y-3">
+        <SectionLabel>{t("queuesTitle")}</SectionLabel>
         <div className="grid gap-4 md:grid-cols-2">
           {queues.map((queue) => (
             // Each link lands on the queue already filtered, so the count on
-            // the card and the rows on the next screen are the same set.
-            <Link key={queue.key} href={queue.href} className="group">
-              <Card className="border-border/50 bg-card/50 transition-colors group-hover:border-accent/60">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {queue.label}
-                  </CardTitle>
-                  <queue.icon className="size-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <div className="text-2xl font-bold">{queue.count}</div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {queue.count > 0 ? t("clickToReview") : t("queueClear")}
-                      </p>
-                    </div>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-accent-ink" />
-                  </div>
-                </CardContent>
-              </Card>
+            // the tile and the rows on the next screen are the same set.
+            <Link
+              key={queue.key}
+              href={queue.href}
+              className="group rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              <StatTile
+                label={queue.label}
+                value={numberFormatter.format(queue.count)}
+                icon={queue.icon}
+                footnote={
+                  queue.count > 0 ? t("clickToReview") : t("queueClear")
+                }
+                className="h-full transition-colors group-hover:border-accent/60"
+              />
             </Link>
           ))}
         </div>

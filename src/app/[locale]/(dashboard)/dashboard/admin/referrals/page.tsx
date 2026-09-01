@@ -1,18 +1,25 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getReferralsForAdminAction } from "@/actions/referral";
 import { getCurrentMember } from "@/actions/session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { REFERRAL_ADMIN_STATUSES } from "@/data/referrals";
+import { PageHeader } from "../_components/page-header";
+import {
+  DataTable,
+  DataTableEmpty,
+  DataTableHeader,
+  DataTableShell,
+} from "../_components/data-table";
 import { AdminSearchInput } from "../_components/admin-search-input";
 import { AdminFilterChips } from "../_components/admin-filter-chips";
 import { AdminPagination } from "../_components/admin-pagination";
@@ -21,6 +28,8 @@ import {
   ReferralDetailSheet,
   REFERRAL_STATUS_TONES,
 } from "./_components/referral-detail-sheet";
+
+const COLUMN_COUNT = 6;
 
 export default async function AdminReferralsPage({
   params,
@@ -51,51 +60,78 @@ export default async function AdminReferralsPage({
   const { q, status, page } = await searchParams;
   const list = await getReferralsForAdminAction({ query: q, status, page });
   const totalPages = Math.max(1, Math.ceil(list.total / list.pageSize));
+  const pendingCount = list.statusCounts.pending_review;
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  });
 
+  const basePath = `/${locale}/dashboard/admin/referrals`;
   const buildHref = (target: number) => {
     const query = new URLSearchParams();
     if (q) query.set("q", q);
     if (status) query.set("status", status);
     if (target > 1) query.set("page", String(target));
     const search = query.toString();
-    return search
-      ? `/${locale}/dashboard/admin/referrals?${search}`
-      : `/${locale}/dashboard/admin/referrals`;
+    return search ? `${basePath}?${search}` : basePath;
   };
 
   return (
     <div className="w-full space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
-      </div>
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          // The same count the sidebar badge shows, landing on the queue
+          // already filtered so the badge and the rows are one set.
+          pendingCount > 0 && (
+            <Link href={`${basePath}?status=pending_review`}>
+              <Badge variant="warning">
+                {t("pendingBadge", { count: pendingCount })}
+              </Badge>
+            </Link>
+          )
+        }
+      />
 
-      <div className="space-y-4 rounded-lg border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <DataTableShell
+        toolbar={
           <AdminSearchInput
             defaultValue={q}
             placeholder={t("searchPlaceholder")}
             submitLabel={t("search")}
           />
-          <p className="text-xs font-medium text-muted-foreground">
-            {t("totalCount", { count: list.total })}
-          </p>
-        </div>
-
-        <AdminFilterChips
-          paramName="status"
-          allLabel={tShell("filterAll")}
-          options={REFERRAL_ADMIN_STATUSES.map((value) => ({
-            value,
-            label: tr(`status.${value}`),
-            count: list.statusCounts[value],
-          }))}
-        />
-
-        <Table>
-          <TableHeader>
+        }
+        summary={t("totalCount", { count: list.total })}
+        filters={
+          <AdminFilterChips
+            paramName="status"
+            allLabel={tShell("filterAll")}
+            options={REFERRAL_ADMIN_STATUSES.map((value) => ({
+              value,
+              label: tr(`status.${value}`),
+              count: list.statusCounts[value],
+            }))}
+          />
+        }
+        footer={
+          <AdminPagination
+            page={list.page}
+            totalPages={totalPages}
+            buildHref={buildHref}
+            labels={{
+              previous: tShell("previous"),
+              next: tShell("next"),
+              summary: tShell("pageSummary", {
+                page: list.page,
+                totalPages,
+                total: list.total,
+              }),
+            }}
+          />
+        }
+      >
+        <DataTable>
+          <DataTableHeader>
             <TableRow>
               <TableHead className="hidden md:table-cell">
                 {t("colDate")}
@@ -106,27 +142,20 @@ export default async function AdminReferralsPage({
                 {t("colService")}
               </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
-              <TableHead>{t("colActions")}</TableHead>
+              <TableHead className="text-right">{t("colActions")}</TableHead>
             </TableRow>
-          </TableHeader>
+          </DataTableHeader>
           <TableBody>
             {list.rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  {t("empty")}
-                </TableCell>
-              </TableRow>
+              <DataTableEmpty colSpan={COLUMN_COUNT} message={t("empty")} />
             ) : (
               // The client's name and contact channel are not columns here.
               // Moderation needs them, so they live one click away in the
-              // drawer rather than across every row of a shared screen.
+              // sheet rather than across every row of a shared screen.
               list.rows.map((referral) => (
                 <TableRow key={referral.id}>
                   <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
-                    {new Date(referral.createdAt).toLocaleDateString(locale)}
+                    {dateFormatter.format(new Date(referral.createdAt))}
                   </TableCell>
                   <TableCell className="text-sm">
                     {referral.sender?.displayName ?? tr("unknown")}
@@ -143,7 +172,7 @@ export default async function AdminReferralsPage({
                       label={tr(`status.${referral.status}`)}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <ReferralDetailSheet
                       referral={referral}
                       canApprove={canApprove}
@@ -154,23 +183,8 @@ export default async function AdminReferralsPage({
               ))
             )}
           </TableBody>
-        </Table>
-
-        <AdminPagination
-          page={list.page}
-          totalPages={totalPages}
-          buildHref={buildHref}
-          labels={{
-            previous: tShell("previous"),
-            next: tShell("next"),
-            summary: tShell("pageSummary", {
-              page: list.page,
-              totalPages,
-              total: list.total,
-            }),
-          }}
-        />
-      </div>
+        </DataTable>
+      </DataTableShell>
     </div>
   );
 }

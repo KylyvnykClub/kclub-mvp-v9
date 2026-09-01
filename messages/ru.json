@@ -1101,7 +1101,9 @@
       "moderationReasonLabel": "Причина модерации",
       "noNote": "Заметки нет.",
       "noModerationReason": "Причина модерации не записана.",
-      "consentSection": "Согласие"
+      "consentSection": "Согласие",
+      "review": "Проверить",
+      "pendingBadge": "{count, plural, one {# на проверке} few {# на проверке} many {# на проверке} other {# на проверке}}"
     },
     "categories": {
       "title": "Справочники",
@@ -1154,7 +1156,8 @@
       "pendingReferrals": "Рефералы на модерации",
       "clickToReview": "Нажмите для проверки",
       "queuesTitle": "Очереди модерации",
-      "queueClear": "Ничего не ждёт"
+      "queueClear": "Ничего не ждёт",
+      "membersTitle": "Участники"
     },
     "dashboard": {
       "title": "Обзор",
@@ -1215,7 +1218,13 @@
       "actorPlaceholder": "Тип или ID автора",
       "targetPlaceholder": "Тип или ID объекта",
       "dateFrom": "Дата с",
-      "dateTo": "Дата по"
+      "dateTo": "Дата по",
+      "totalCount": "{count, plural, =0 {нет записей} one {# запись} few {# записи} many {# записей} other {# записи}}",
+      "loadError": "Не удалось загрузить журнал аудита.",
+      "filtersTitle": "Фильтры",
+      "resetFilters": "Сбросить",
+      "systemActor": "Система",
+      "noDetails": "Подробности не записаны"
     },
     "staff": {
       "title": "Управление персоналом",
