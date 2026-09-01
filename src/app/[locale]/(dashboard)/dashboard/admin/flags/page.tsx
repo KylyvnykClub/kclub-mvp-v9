@@ -7,6 +7,14 @@ import { can } from "@/domain/authorization";
 import { FlagRow } from "./_components/flag-row";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
+import { PageHeader } from "../_components/page-header";
+
+/**
+ * Every known flag renders even before its row exists in the database, and
+ * each carries a description of what it gates - a switch labelled only by
+ * its internal name is a switch someone flips to find out.
+ */
+const KNOWN_FLAGS = ["public_catalogue"] as const;
 
 export default async function AdminFlagsPage({
   params,
@@ -28,33 +36,25 @@ export default async function AdminFlagsPage({
   }
 
   const flags = await getFeatureFlagsAction();
-
-  // We explicitly list known flags even if they don't exist in DB yet
-  const knownFlags = ["public_catalogue"];
-
   const flagMap = new Map(flags.map((f) => [f.name, f.enabled]));
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground mt-2">{t("description")}</p>
-      </div>
+    <div className="mx-auto w-full max-w-4xl space-y-8">
+      <PageHeader title={t("title")} description={t("description")} />
 
-      <Alert className="rounded-none border-primary/50 bg-primary/5">
-        <InfoIcon className="h-4 w-4 text-primary" />
+      <Alert className="border-primary/50 bg-primary/5">
+        <InfoIcon className="size-4 text-primary" aria-hidden="true" />
         <AlertTitle>{t("warning")}</AlertTitle>
         <AlertDescription>{t("warningText")}</AlertDescription>
       </Alert>
 
       <div className="space-y-4">
-        {knownFlags.map((flagName) => (
+        {KNOWN_FLAGS.map((flagName) => (
           <FlagRow
             key={flagName}
             name={flagName}
             enabled={flagMap.get(flagName) ?? false}
+            description={t(`flagDescriptions.${flagName}`)}
           />
         ))}
       </div>
