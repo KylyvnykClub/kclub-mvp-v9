@@ -26,7 +26,14 @@ const REJECT_REASON_KEYS = [
 
 type Mode = "idle" | "confirmApprove" | "reject";
 
-export function ModerateActions({ companyId }: { companyId: string }) {
+export function ModerateActions({
+  companyId,
+  onModerated,
+}: {
+  companyId: string;
+  /** Called after a decision lands - the sheet uses it to close itself. */
+  onModerated?: () => void;
+}) {
   const t = useTranslations("admin.companies");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -52,6 +59,7 @@ export function ModerateActions({ companyId }: { companyId: string }) {
         toast.success(successMessage);
         reset();
         router.refresh();
+        onModerated?.();
         return;
       }
 

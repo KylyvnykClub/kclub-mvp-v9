@@ -1055,7 +1055,9 @@
       "showcaseTop": "Top",
       "showcaseFeatured": "Featured",
       "showcaseSaved": "Showcase updated",
-      "noHistory": "Nothing recorded for this company yet."
+      "noHistory": "Nothing recorded for this company yet.",
+      "review": "Review",
+      "pendingBadge": "{count, plural, one {# pending review} other {# pending review}}"
     },
     "referrals": {
       "title": "Client Introductions",

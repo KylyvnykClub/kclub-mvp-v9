@@ -27,6 +27,7 @@ import {
   unhideCompanyAction,
 } from "@/actions/company";
 import { AdminDetailSheet } from "../../_components/admin-detail-sheet";
+import { ModerateActions } from "./moderate-actions";
 import { StatusBadge, type StatusTone } from "../../_components/status-badge";
 
 type CompanyDetail = NonNullable<
@@ -101,10 +102,13 @@ export function CompanyDetailSheet({
   companyId,
   companyName,
   canModerate,
+  triggerLabel,
 }: {
   companyId: string;
   companyName: string;
   canModerate: boolean;
+  /** Row button text; the list says "Review" for a pending company. */
+  triggerLabel?: string;
 }) {
   const t = useTranslations("admin.companies");
   const tCommon = useTranslations("common");
@@ -320,6 +324,14 @@ export function CompanyDetailSheet({
             instead - offering "restore to catalogue" there would describe an
             action that has never happened.
           */}
+          {/* The approve/reject decision lives here rather than in the row,
+              so the moderator reads the profile before deciding. */}
+          {canModerate && company.moderationStatus === "pending" && (
+            <ModerateActions
+              companyId={companyId}
+              onModerated={() => handleOpenChange(false)}
+            />
+          )}
           {canModerate && company.moderationStatus === "approved" && (
             <Button
               variant="destructive"
@@ -570,7 +582,7 @@ export function CompanyDetailSheet({
       trigger={
         <SheetTrigger asChild>
           <Button variant="outline" size="sm">
-            {t("details")}
+            {triggerLabel ?? t("details")}
           </Button>
         </SheetTrigger>
       }

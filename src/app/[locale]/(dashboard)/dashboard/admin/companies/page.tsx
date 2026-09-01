@@ -1,23 +1,29 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { getCompaniesForAdminAction } from "@/actions/company";
 import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { COMPANY_ADMIN_STATUSES } from "@/data/companies";
+import { PageHeader } from "../_components/page-header";
+import {
+  DataTable,
+  DataTableEmpty,
+  DataTableHeader,
+  DataTableShell,
+} from "../_components/data-table";
 import { AdminSearchInput } from "../_components/admin-search-input";
 import { AdminFilterChips } from "../_components/admin-filter-chips";
 import { AdminPagination } from "../_components/admin-pagination";
 import { StatusBadge, type StatusTone } from "../_components/status-badge";
-import { ModerateActions } from "./_components/moderate-actions";
 import { CompanyDetailSheet } from "./_components/company-detail-sheet";
 
 const STATUS_LABEL_KEYS = {
@@ -31,6 +37,8 @@ const STATUS_TONES: Record<keyof typeof STATUS_LABEL_KEYS, StatusTone> = {
   approved: "positive",
   rejected: "negative",
 };
+
+const COLUMN_COUNT = 7;
 
 export default async function AdminCompaniesPage({
   params,
@@ -63,51 +71,77 @@ export default async function AdminCompaniesPage({
     page,
   });
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  });
 
+  const basePath = `/${locale}/dashboard/admin/companies`;
   const buildHref = (target: number) => {
     const query = new URLSearchParams();
     if (q) query.set("q", q);
     if (status) query.set("status", status);
     if (target > 1) query.set("page", String(target));
     const search = query.toString();
-    return search
-      ? `/${locale}/dashboard/admin/companies?${search}`
-      : `/${locale}/dashboard/admin/companies`;
+    return search ? `${basePath}?${search}` : basePath;
   };
 
   return (
     <div className="w-full space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
-      </div>
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          // Same number the sidebar badge shows; the link lands on the queue
+          // already filtered, so the badge and the rows are the same set.
+          data.statusCounts.pending > 0 && (
+            <Link href={`${basePath}?status=pending`}>
+              <Badge variant="warning">
+                {t("pendingBadge", { count: data.statusCounts.pending })}
+              </Badge>
+            </Link>
+          )
+        }
+      />
 
-      <div className="space-y-4 rounded-lg border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <DataTableShell
+        toolbar={
           <AdminSearchInput
             defaultValue={q}
             placeholder={t("searchPlaceholder")}
             submitLabel={t("search")}
           />
-          <p className="text-xs font-medium text-muted-foreground">
-            {t("totalCount", { count: data.total })}
-          </p>
-        </div>
-
-        <AdminFilterChips
-          paramName="status"
-          allLabel={tShell("filterAll")}
-          options={COMPANY_ADMIN_STATUSES.map((value) => ({
-            value,
-            label: t(STATUS_LABEL_KEYS[value]),
-            count: data.statusCounts[value],
-          }))}
-        />
-
-        <Table>
-          <TableHeader>
+        }
+        summary={t("totalCount", { count: data.total })}
+        filters={
+          <AdminFilterChips
+            paramName="status"
+            allLabel={tShell("filterAll")}
+            options={COMPANY_ADMIN_STATUSES.map((value) => ({
+              value,
+              label: t(STATUS_LABEL_KEYS[value]),
+              count: data.statusCounts[value],
+            }))}
+          />
+        }
+        footer={
+          <AdminPagination
+            page={data.page}
+            totalPages={totalPages}
+            buildHref={buildHref}
+            labels={{
+              previous: tShell("previous"),
+              next: tShell("next"),
+              summary: tShell("pageSummary", {
+                page: data.page,
+                totalPages,
+                total: data.total,
+              }),
+            }}
+          />
+        }
+      >
+        <DataTable>
+          <DataTableHeader>
             <TableRow>
               <TableHead>{t("colCompany")}</TableHead>
               <TableHead className="hidden sm:table-cell">
@@ -129,104 +163,84 @@ export default async function AdminCompaniesPage({
               <TableHead className="hidden sm:table-cell">
                 {t("colListing")}
               </TableHead>
-              <TableHead>{t("colActions")}</TableHead>
+              <TableHead className="text-right">{t("colActions")}</TableHead>
             </TableRow>
-          </TableHeader>
+          </DataTableHeader>
           <TableBody>
             {data.rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  {t("empty")}
-                </TableCell>
-              </TableRow>
+              <DataTableEmpty colSpan={COLUMN_COUNT} message={t("empty")} />
             ) : (
-              data.rows.map((company) => (
-                <TableRow key={company.id}>
-                  <TableCell>
-                    <span className="font-medium">{company.name}</span>
-                    <span className="block font-mono text-xs text-muted-foreground">
-                      {company.slug}
-                    </span>
-                    {company.discount && (
-                      <span className="hidden text-xs text-accent-ink sm:block">
-                        {company.discount}
+              data.rows.map((company) => {
+                const isPending = company.moderationStatus === "pending";
+                return (
+                  <TableRow key={company.id}>
+                    <TableCell>
+                      <span className="block font-medium">{company.name}</span>
+                      <span className="block font-mono text-xs text-muted-foreground">
+                        {company.slug}
                       </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden text-sm sm:table-cell">
-                    {company.owner?.displayName}
-                  </TableCell>
-                  <TableCell className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:table-cell">
-                    {company.categories
-                      ?.map((c) =>
-                        [
-                          c.businessCategory?.block,
-                          c.businessCategory?.category,
-                        ]
-                          .filter(Boolean)
-                          .join(" / "),
-                      )
-                      .join(" · ") || "—"}
-                  </TableCell>
-                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
-                    {new Date(company.createdAt).toLocaleDateString(locale)}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge
-                      tone={STATUS_TONES[company.moderationStatus]}
-                      label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
-                    />
-                  </TableCell>
-                  {/*
-                    Payment now precedes moderation (ADR 0019), so an unpaid row
-                    is an abandoned checkout rather than an error. Paid rows sort
-                    first; this tells the moderator which is which.
-                  */}
-                  <TableCell className="hidden sm:table-cell">
-                    <StatusBadge
-                      tone={company.paid ? "positive" : "warning"}
-                      label={
-                        company.paid ? t("listingPaid") : t("listingUnpaid")
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-2">
+                      {company.discount && (
+                        <span className="hidden text-xs text-accent-ink sm:block">
+                          {company.discount}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden text-sm sm:table-cell">
+                      {company.owner?.displayName}
+                    </TableCell>
+                    <TableCell className="hidden max-w-[14rem] truncate text-xs text-muted-foreground lg:table-cell">
+                      {company.categories
+                        ?.map((c) =>
+                          [
+                            c.businessCategory?.block,
+                            c.businessCategory?.category,
+                          ]
+                            .filter(Boolean)
+                            .join(" / "),
+                        )
+                        .join(" · ") || "—"}
+                    </TableCell>
+                    <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
+                      {dateFormatter.format(new Date(company.createdAt))}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        tone={STATUS_TONES[company.moderationStatus]}
+                        label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
+                      />
+                    </TableCell>
+                    {/*
+                      Payment now precedes moderation (ADR 0019), so an unpaid
+                      row is an abandoned checkout rather than an error. Paid
+                      rows sort first; this tells the moderator which is which.
+                    */}
+                    <TableCell className="hidden sm:table-cell">
+                      <StatusBadge
+                        tone={company.paid ? "positive" : "warning"}
+                        label={
+                          company.paid ? t("listingPaid") : t("listingUnpaid")
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {/* Approve/reject live inside the sheet's moderation
+                          tab, so the decision is made with the profile open. */}
                       <CompanyDetailSheet
                         companyId={company.id}
                         companyName={company.name}
                         canModerate={canModerate}
+                        triggerLabel={
+                          canModerate && isPending ? t("review") : undefined
+                        }
                       />
-                      {canModerate &&
-                        company.moderationStatus === "pending" && (
-                          <ModerateActions companyId={company.id} />
-                        )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
-        </Table>
-
-        <AdminPagination
-          page={data.page}
-          totalPages={totalPages}
-          buildHref={buildHref}
-          labels={{
-            previous: tShell("previous"),
-            next: tShell("next"),
-            summary: tShell("pageSummary", {
-              page: data.page,
-              totalPages,
-              total: data.total,
-            }),
-          }}
-        />
-      </div>
+        </DataTable>
+      </DataTableShell>
     </div>
   );
 }

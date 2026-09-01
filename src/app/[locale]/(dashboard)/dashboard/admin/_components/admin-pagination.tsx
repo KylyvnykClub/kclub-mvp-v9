@@ -11,7 +11,10 @@ export function AdminPagination({
   page: number;
   totalPages: number;
   buildHref: (page: number) => string;
-  /** `summary` arrives already formatted - the caller owns the interpolation. */
+  /**
+   * `summary` arrives already formatted - the caller owns the interpolation.
+   * `previous`/`next` are accessible names: the buttons show arrows only.
+   */
   labels: { previous: string; next: string; summary: string };
 }) {
   if (totalPages <= 1) return null;
@@ -27,37 +30,37 @@ export function AdminPagination({
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
-          size="sm"
+          size="icon"
+          className="size-8"
+          aria-label={labels.previous}
           disabled={!canPrevious}
           asChild={canPrevious}
         >
           {canPrevious ? (
             <Link href={buildHref(page - 1)}>
-              <ChevronLeft className="size-4" />
-              {labels.previous}
+              <ChevronLeft className="size-4" aria-hidden="true" />
             </Link>
           ) : (
             <span>
-              <ChevronLeft className="size-4" />
-              {labels.previous}
+              <ChevronLeft className="size-4" aria-hidden="true" />
             </span>
           )}
         </Button>
         <Button
           variant="outline"
-          size="sm"
+          size="icon"
+          className="size-8"
+          aria-label={labels.next}
           disabled={!canNext}
           asChild={canNext}
         >
           {canNext ? (
             <Link href={buildHref(page + 1)}>
-              {labels.next}
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-4" aria-hidden="true" />
             </Link>
           ) : (
             <span>
-              {labels.next}
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-4" aria-hidden="true" />
             </span>
           )}
         </Button>

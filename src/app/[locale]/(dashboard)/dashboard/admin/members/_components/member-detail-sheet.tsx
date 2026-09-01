@@ -4,6 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Eye, Pencil } from "lucide-react";
 import { SheetTrigger } from "@/components/ui/sheet";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
@@ -438,8 +439,18 @@ export function MemberDetailSheet({
       onOpenChange={setOpen}
       trigger={
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            {canManage ? t("manage") : t("view")}
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8"
+            aria-label={canManage ? t("manage") : t("view")}
+            title={canManage ? t("manage") : t("view")}
+          >
+            {canManage ? (
+              <Pencil className="size-4" aria-hidden="true" />
+            ) : (
+              <Eye className="size-4" aria-hidden="true" />
+            )}
           </Button>
         </SheetTrigger>
       }

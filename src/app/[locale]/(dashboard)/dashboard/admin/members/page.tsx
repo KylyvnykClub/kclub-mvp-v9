@@ -5,15 +5,20 @@ import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { MEMBER_ADMIN_PLANS, MEMBER_ADMIN_STATUSES } from "@/data/members";
 import { memberPlansOf } from "@/data/billing-access";
+import { PageHeader } from "../_components/page-header";
+import {
+  DataTable,
+  DataTableEmpty,
+  DataTableHeader,
+  DataTableShell,
+} from "../_components/data-table";
 import { AdminSearchInput } from "../_components/admin-search-input";
 import { AdminFilterChips } from "../_components/admin-filter-chips";
 import { AdminPagination } from "../_components/admin-pagination";
@@ -35,6 +40,8 @@ const PLAN_LABEL_KEYS = {
   business: "planBusiness",
   free: "planFree",
 } as const;
+
+const COLUMN_COUNT = 7;
 
 export default async function AdminMembersPage({
   params,
@@ -70,6 +77,9 @@ export default async function AdminMembersPage({
   const { q, status, plan, page } = await searchParams;
   const list = await getMembersListAction({ query: q, status, plan, page });
   const totalPages = Math.max(1, Math.ceil(list.total / list.pageSize));
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  });
 
   const buildHref = (target: number) => {
     const query = new URLSearchParams();
@@ -85,47 +95,58 @@ export default async function AdminMembersPage({
 
   return (
     <div className="w-full space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("description")}</p>
-      </div>
+      <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="space-y-4 rounded-lg border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <DataTableShell
+        toolbar={
           <AdminSearchInput
             defaultValue={q}
             placeholder={t("searchPlaceholder")}
             submitLabel={t("search")}
           />
-          <p className="text-xs font-medium text-muted-foreground">
-            {t("totalCount", { count: list.total })}
-          </p>
-        </div>
-
-        <AdminFilterChips
-          paramName="status"
-          allLabel={tShell("filterAll")}
-          options={MEMBER_ADMIN_STATUSES.map((value) => ({
-            value,
-            label: t(STATUS_LABEL_KEYS[value]),
-            count: list.statusCounts[value],
-          }))}
-        />
-
-        <AdminFilterChips
-          paramName="plan"
-          allLabel={tShell("filterAll")}
-          options={MEMBER_ADMIN_PLANS.map((value) => ({
-            value,
-            label: t(PLAN_LABEL_KEYS[value]),
-            count: list.planCounts[value],
-          }))}
-        />
-
-        <Table>
-          <TableHeader>
+        }
+        summary={t("totalCount", { count: list.total })}
+        filters={
+          <>
+            <AdminFilterChips
+              paramName="status"
+              allLabel={tShell("filterAll")}
+              options={MEMBER_ADMIN_STATUSES.map((value) => ({
+                value,
+                label: t(STATUS_LABEL_KEYS[value]),
+                count: list.statusCounts[value],
+              }))}
+            />
+            <AdminFilterChips
+              paramName="plan"
+              allLabel={tShell("filterAll")}
+              options={MEMBER_ADMIN_PLANS.map((value) => ({
+                value,
+                label: t(PLAN_LABEL_KEYS[value]),
+                count: list.planCounts[value],
+              }))}
+            />
+          </>
+        }
+        footer={
+          <AdminPagination
+            page={list.page}
+            totalPages={totalPages}
+            buildHref={buildHref}
+            labels={{
+              previous: tShell("previous"),
+              next: tShell("next"),
+              summary: tShell("pageSummary", {
+                page: list.page,
+                totalPages,
+                total: list.total,
+              }),
+            }}
+          />
+        }
+      >
+        <DataTable>
+          <DataTableHeader>
             <TableRow>
               <TableHead>{t("colDisplayName")}</TableHead>
               <TableHead className="hidden sm:table-cell">
@@ -139,24 +160,25 @@ export default async function AdminMembersPage({
                 {t("colJoined")}
               </TableHead>
               <TableHead>{t("colStatus")}</TableHead>
-              <TableHead>{t("colActions")}</TableHead>
+              <TableHead className="text-right">{t("colActions")}</TableHead>
             </TableRow>
-          </TableHeader>
+          </DataTableHeader>
           <TableBody>
             {list.rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  {t("noResults")}
-                </TableCell>
-              </TableRow>
+              <DataTableEmpty colSpan={COLUMN_COUNT} message={t("noResults")} />
             ) : (
               list.rows.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-medium">
-                    {m.displayName || t("notAvailable")}
+                  <TableCell>
+                    <span className="block font-medium">
+                      {m.displayName || t("notAvailable")}
+                    </span>
+                    {/* The phone column hides on phones, so the number rides
+                        under the name there and disappears once it has its own
+                        column. */}
+                    <span className="block font-mono text-xs text-muted-foreground sm:hidden">
+                      {m.phone}
+                    </span>
                   </TableCell>
                   <TableCell className="hidden font-mono text-xs sm:table-cell">
                     {m.phone}
@@ -203,7 +225,7 @@ export default async function AdminMembersPage({
                     </div>
                   </TableCell>
                   <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
-                    {new Date(m.createdAt).toLocaleDateString(locale)}
+                    {dateFormatter.format(new Date(m.createdAt))}
                   </TableCell>
                   <TableCell>
                     <StatusBadge
@@ -211,7 +233,7 @@ export default async function AdminMembersPage({
                       label={t(STATUS_LABEL_KEYS[m.status])}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <MemberDetailSheet
                       member={m}
                       canManage={canManageMembers}
@@ -222,23 +244,8 @@ export default async function AdminMembersPage({
               ))
             )}
           </TableBody>
-        </Table>
-
-        <AdminPagination
-          page={list.page}
-          totalPages={totalPages}
-          buildHref={buildHref}
-          labels={{
-            previous: tShell("previous"),
-            next: tShell("next"),
-            summary: tShell("pageSummary", {
-              page: list.page,
-              totalPages,
-              total: list.total,
-            }),
-          }}
-        />
-      </div>
+        </DataTable>
+      </DataTableShell>
     </div>
   );
 }
