@@ -200,7 +200,7 @@ export function FinanceCountryChart({
                     ? formatter.format(value / 100)
                     : String(value ?? "")
                 }
-                cursor={{ fill: "hsl(var(--muted))" }}
+                cursor={{ fill: "var(--muted)" }}
               />
               <Bar dataKey="amount" radius={2}>
                 {chartData.map((item) => (
@@ -208,8 +208,8 @@ export function FinanceCountryChart({
                     key={item.country}
                     fill={
                       item.country === selectedCountry
-                        ? "hsl(var(--accent))"
-                        : "hsl(var(--foreground))"
+                        ? "var(--accent)"
+                        : "var(--foreground)"
                     }
                   />
                 ))}
