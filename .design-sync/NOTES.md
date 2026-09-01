@@ -40,9 +40,20 @@
   SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem,
   SidebarProvider, TableCaption, TableCell, TableHead (see .render-check.json
   `bad` list — exactly the unauthored container subcomponents).
+  2026-09-01: +2 of the same class from the breadcrumb port: BreadcrumbItem,
+  BreadcrumbSeparator (bare <li> containers). Chart* subcomponents render fine
+  (ChartStyle is a <style> tag and never flagged).
 - `[RENDER_THIN] Toaster: rendered height 0px` — benign: sonner toasts are
   `position: fixed`, so measured layout height is 0 while the screenshot shows
   two complete toasts. Confirmed visually 2026-09-01.
+
+- LESSON (2026-09-01): recharts cannot render inside the capture harness -
+  ChartContainer's ResponsiveContainer measures 0x0 there (initialDimension
+  never applies; the recharts-wrapper stays empty; no console errors). The live
+  app is unaffected. The ChartContainer preview therefore draws its plot as a
+  hand-authored SVG inside a div child - the div absorbs the width/height={0}
+  props ResponsiveContainer clones onto its child, while ChartContainer, its
+  classes and the config-derived --color-* variables render for real.
 
 ## Re-sync risks
 

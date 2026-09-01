@@ -41,6 +41,10 @@
     "Sidebar": {
       "cardMode": "single",
       "viewport": "960x680"
+    },
+    "ChartContainer": {
+      "cardMode": "single",
+      "viewport": "760x480"
     }
   },
   "extraEntries": ["sonner", "./.design-sync/preview-provider.tsx"],
