@@ -1136,14 +1136,31 @@
       "noCountries": "No countries yet.",
       "noCities": "No cities yet.",
       "statusActive": "ACTIVE",
-      "statusInactive": "INACTIVE"
+      "statusInactive": "INACTIVE",
+      "deleteCategoryTitle": "Delete this category?",
+      "deleteCategoryDescription": "{name} is removed from the taxonomy. Deletion is blocked while any company uses it.",
+      "deleteCountryTitle": "Delete this country?",
+      "deleteCountryDescription": "{name} is removed. Deletion is blocked while cities or companies reference it.",
+      "deleteCityTitle": "Delete this city?",
+      "deleteCityDescription": "{name} is removed. Deletion is blocked while any company references it.",
+      "deletedToast": "Deleted",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "noCategories": "No categories yet."
     },
     "flags": {
       "title": "Feature Flags",
       "description": "Manage system-wide feature flags to safely enable or disable functionality.",
       "warning": "Warning",
       "warningText": "Changing feature flags takes effect immediately across the entire system. Please proceed with caution.",
-      "rowHint": "Toggle whether this feature is active."
+      "rowHint": "Toggle whether this feature is active.",
+      "statusEnabled": "Enabled",
+      "statusDisabled": "Disabled",
+      "enabledToast": "Flag enabled",
+      "disabledToast": "Flag disabled",
+      "flagDescriptions": {
+        "public_catalogue": "The public Partner Catalogue on the marketing site. Off means visitors see the teaser page instead of company listings."
+      }
     },
     "support": {
       "title": "Support Dashboard",
@@ -1252,7 +1269,19 @@
         "staff_moderator": "Moderator",
         "staff_admin": "Admin",
         "staff_owner": "Owner"
-      }
+      },
+      "createTitle": "Create staff account",
+      "createDescription": "A temporary password the person changes on first sign-in.",
+      "disableTitle": "Disable this staff account?",
+      "disableDescription": "{name} is signed out everywhere immediately and cannot sign in until re-enabled.",
+      "enableTitle": "Re-enable this staff account?",
+      "enableDescription": "{name} will be able to sign in again with their existing credentials.",
+      "disabledToast": "Staff account disabled",
+      "enabledToast": "Staff account re-enabled",
+      "roleLabel": "Role",
+      "totpOn": "2FA on",
+      "totpOff": "No 2FA",
+      "colTotp": "2FA"
     }
   },
   "sessions": {
