@@ -82,6 +82,7 @@ that the folder cannot be trusted.
 |[0024](0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|2026-08-29|
 |[0025](0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|2026-08-29|
 |[0026](0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Accepted|2026-08-29|
+|[0027](0027-e164-phone-normalisation.md)|One phone number format, normalised on the server, validated as reachable by SMS|Accepted|2026-09-02|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
