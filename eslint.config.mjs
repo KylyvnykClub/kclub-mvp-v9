@@ -22,6 +22,12 @@ export default tseslint.config(
   {
     ignores: [
       "node_modules/**",
+      // Claude Code configuration and agent tooling - the run driver is .mjs
+      // and deliberately outside the tsconfig project, so the type-aware
+      // rules cannot parse it. Prettier ignores .claude/ for the same reason.
+      ".claude/**",
+      // Playwright scratch and harness output.
+      ".playwright/**",
       // claude.ai/design sync inputs and build output - compiled by the
       // design-sync converter, not part of the app tsconfig project
       ".design-sync/**",
