@@ -41,8 +41,8 @@
   SidebarProvider, TableCaption, TableCell, TableHead (see .render-check.json
   `bad` list — exactly the unauthored container subcomponents).
   2026-09-01: +2 of the same class from the breadcrumb port: BreadcrumbItem,
-  BreadcrumbSeparator (bare <li> containers). Chart* subcomponents render fine
-  (ChartStyle is a <style> tag and never flagged).
+  BreadcrumbSeparator (bare `<li>` containers). Chart* subcomponents render fine
+  (ChartStyle is a `<style>` tag and never flagged).
 - `[RENDER_THIN] Toaster: rendered height 0px` — benign: sonner toasts are
   `position: fixed`, so measured layout height is 0 while the screenshot shows
   two complete toasts. Confirmed visually 2026-09-01.
