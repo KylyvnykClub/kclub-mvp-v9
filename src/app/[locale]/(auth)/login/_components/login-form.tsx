@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/auth/password-input";
-import { PhoneInput } from "@/components/auth/phone-input";
+import { PhoneField } from "@/components/auth/phone-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QRCodeSVG } from "qrcode.react";
@@ -169,16 +169,13 @@ export function LoginForm() {
         </CardHeader>
         <form action={loginFormAction}>
           <CardContent className="space-y-5 p-6 sm:p-8">
-            <div className="space-y-2 text-left">
-              <Label htmlFor="phone">{t("phoneLabel")}</Label>
-              <PhoneInput
-                id="phone"
-                name="phone"
-                countryLabel={t("phoneCountryLabel")}
-                required
-                className="h-12 bg-background"
-              />
-            </div>
+            <PhoneField
+              id="phone"
+              name="phone"
+              label={t("phoneLabel")}
+              required
+              className="h-12 bg-background"
+            />
             <div className="space-y-2 text-left">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("passwordLabel")}</Label>

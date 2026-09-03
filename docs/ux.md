@@ -73,12 +73,18 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 
 Every screen that takes a phone number — the two above, the staff creation form
 and Settings — security — uses the same field ([ADR 0027](decisions/0027-e164-phone-normalisation.md)):
-a country picker showing flag, dialling code and the country's name in the
-member's own language, and a box that formats the number as it is typed. The
+a searchable country picker and a box that formats the number as it is typed.
+The picker is filtered by typing, and matches a country's name, its two-letter
+code or its dialling code, so both "Україна" and "380" find Ukraine; each row
+carries the flag, the name in the member's own language and the code. The
 placeholder is a real example number for the selected country, so it is right
 outside Ukraine too; the country defaults to the United States and follows the
 number when one is pasted in international form. The member sees their own
 national spelling, and E.164 is what reaches the server.
+
+Flags are the `public/flags` images the language switcher already uses, not
+emoji: Windows ships no flag font, so a regional-indicator pair renders there as
+two bare letters.
 
 **Member area (`kclub.com/app`)**
 

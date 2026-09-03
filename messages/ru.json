@@ -25,6 +25,8 @@
     "signOut": "Выйти",
     "phoneLabel": "Номер телефона",
     "phoneCountryLabel": "Страна",
+    "phoneCountrySearch": "Поиск страны...",
+    "phoneCountryEmpty": "Страна не найдена",
     "passwordLabel": "Пароль",
     "passwordPlaceholder": "Введите ваш пароль",
     "codeLabel": "Код подтверждения",

@@ -8,7 +8,7 @@ import {
   verifyNewPhoneAction,
   type PhoneChangeState,
 } from "@/actions/profile";
-import { PhoneInput } from "@/components/auth/phone-input";
+import { PhoneField } from "@/components/auth/phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,6 @@ const initialState: PhoneChangeState = { step: "idle" };
 
 export function PhoneChangeForm({ maskedPhone }: Props) {
   const t = useTranslations("dashboard");
-  const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
 
   const [initState, initAction, initPending] = useActionState(
@@ -64,15 +63,12 @@ export function PhoneChangeForm({ maskedPhone }: Props) {
         {t("currentPhone")}: <span className="font-mono">{maskedPhone}</span>
       </p>
 
-      <div className="space-y-2">
-        <Label htmlFor="newPhone">{t("newPhone")}</Label>
-        <PhoneInput
-          id="newPhone"
-          name="newPhone"
-          countryLabel={tAuth("phoneCountryLabel")}
-          required
-        />
-      </div>
+      <PhoneField
+        id="newPhone"
+        name="newPhone"
+        label={t("newPhone")}
+        required
+      />
 
       <Button
         type="submit"

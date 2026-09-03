@@ -25,6 +25,8 @@
     "signOut": "Sign out",
     "phoneLabel": "Phone number",
     "phoneCountryLabel": "Country",
+    "phoneCountrySearch": "Search country...",
+    "phoneCountryEmpty": "No country found",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
     "codeLabel": "Verification code",

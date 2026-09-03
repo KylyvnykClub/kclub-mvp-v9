@@ -399,6 +399,8 @@
     "signOut": "Вийти",
     "phoneLabel": "Номер телефону",
     "phoneCountryLabel": "Країна",
+    "phoneCountrySearch": "Пошук країни...",
+    "phoneCountryEmpty": "Країну не знайдено",
     "passwordLabel": "Пароль",
     "passwordPlaceholder": "Введіть ваш пароль",
     "codeLabel": "Код підтвердження",
