@@ -67,6 +67,9 @@ export function PhoneChangeForm({ maskedPhone }: Props) {
         id="newPhone"
         name="newPhone"
         label={t("newPhone")}
+        // The member is replacing their number, so offering the one they
+        // already have is the opposite of helpful.
+        autoComplete="off"
         required
       />
 

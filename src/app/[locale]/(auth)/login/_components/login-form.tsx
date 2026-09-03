@@ -173,6 +173,7 @@ export function LoginForm() {
               id="phone"
               name="phone"
               label={t("phoneLabel")}
+              autoComplete="username"
               required
               className="h-12 bg-background"
             />

@@ -235,6 +235,7 @@ export function RegisterFlow({
                 id="phone"
                 name="phone"
                 label={tAuth("phoneLabel")}
+                autoComplete="username"
                 required
                 defaultValue={phone}
                 className="h-12 bg-background"

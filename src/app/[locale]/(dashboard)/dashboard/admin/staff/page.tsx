@@ -81,6 +81,7 @@ export default async function AdminStaffPage({ params }: Props) {
             id="staff-phone"
             name="phone"
             label={t("phone")}
+            autoComplete="off"
             required
           />
           <div className="space-y-2">

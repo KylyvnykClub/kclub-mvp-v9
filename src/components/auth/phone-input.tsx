@@ -280,6 +280,10 @@ export function PhoneInput({
         id={id}
         type="tel"
         inputMode="tel"
+        // A caller that knows better overrides this through props. On a sign-in
+        // or registration form the phone is the username, and saying `tel`
+        // there invites the browser to fill it from the address book - a number
+        // the member never signed in with.
         autoComplete="tel"
         value={state.text}
         onChange={(event) => handleText(event.target.value)}
