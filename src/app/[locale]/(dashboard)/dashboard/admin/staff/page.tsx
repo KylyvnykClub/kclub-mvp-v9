@@ -8,7 +8,7 @@ import {
 } from "@/actions/staff";
 import { getCurrentMember } from "@/actions/session";
 import { PasswordInput } from "@/components/auth/password-input";
-import { PhoneField } from "@/components/auth/phone-input";
+import { PhoneInput } from "@/components/auth/phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,13 +77,15 @@ export default async function AdminStaffPage({ params }: Props) {
             <Label htmlFor="staff-display-name">{t("displayName")}</Label>
             <Input id="staff-display-name" name="displayName" required />
           </div>
-          <PhoneField
-            id="staff-phone"
-            name="phone"
-            label={t("phone")}
-            autoComplete="off"
-            required
-          />
+          <div className="space-y-2">
+            <Label htmlFor="staff-phone">{t("phone")}</Label>
+            <PhoneInput
+              id="staff-phone"
+              name="phone"
+              countryLabel={tAuth("phoneCountryLabel")}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="staff-role">{t("roleLabel")}</Label>
             <select

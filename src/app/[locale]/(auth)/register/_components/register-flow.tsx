@@ -8,7 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordInput } from "@/components/auth/password-input";
-import { PhoneField } from "@/components/auth/phone-input";
+import { PhoneInput } from "@/components/auth/phone-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
@@ -225,15 +225,17 @@ export function RegisterFlow({
               action={submitPhone}
               className="animate-in space-y-5 fade-in duration-300"
             >
-              <PhoneField
-                id="phone"
-                name="phone"
-                label={tAuth("phoneLabel")}
-                autoComplete="username"
-                required
-                defaultValue={phone}
-                className="h-12 bg-background"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="phone">{tAuth("phoneLabel")}</Label>
+                <PhoneInput
+                  id="phone"
+                  name="phone"
+                  countryLabel={tAuth("phoneCountryLabel")}
+                  required
+                  defaultValue={phone}
+                  className="h-12 bg-background"
+                />
+              </div>
               {phoneState?.error && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
                   {phoneState.error}

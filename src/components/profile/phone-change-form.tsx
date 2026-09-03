@@ -8,7 +8,7 @@ import {
   verifyNewPhoneAction,
   type PhoneChangeState,
 } from "@/actions/profile";
-import { PhoneField } from "@/components/auth/phone-input";
+import { PhoneInput } from "@/components/auth/phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ const initialState: PhoneChangeState = { step: "idle" };
 
 export function PhoneChangeForm({ maskedPhone }: Props) {
   const t = useTranslations("dashboard");
+  const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
 
   const [initState, initAction, initPending] = useActionState(
@@ -63,15 +64,15 @@ export function PhoneChangeForm({ maskedPhone }: Props) {
         {t("currentPhone")}: <span className="font-mono">{maskedPhone}</span>
       </p>
 
-      <PhoneField
-        id="newPhone"
-        name="newPhone"
-        label={t("newPhone")}
-        // The member is replacing their number, so offering the one they
-        // already have is the opposite of helpful.
-        autoComplete="off"
-        required
-      />
+      <div className="space-y-2">
+        <Label htmlFor="newPhone">{t("newPhone")}</Label>
+        <PhoneInput
+          id="newPhone"
+          name="newPhone"
+          countryLabel={tAuth("phoneCountryLabel")}
+          required
+        />
+      </div>
 
       <Button
         type="submit"
