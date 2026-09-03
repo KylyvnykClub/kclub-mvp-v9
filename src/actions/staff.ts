@@ -15,11 +15,12 @@ import {
 import { buildActor, normalizeRole, STAFF_ROLES } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { hashPassword } from "@/modules/identity/crypto";
+import { phoneSchema } from "@/lib/phone";
 
 const staffRoleSchema = z.enum(STAFF_ROLES);
 
 const createStaffSchema = z.object({
-  phone: z.string().trim().min(8).max(20),
+  phone: phoneSchema,
   displayName: z.string().trim().min(2).max(255),
   password: z.string().min(12).max(100),
   role: staffRoleSchema,

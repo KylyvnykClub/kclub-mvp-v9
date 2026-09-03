@@ -71,6 +71,15 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Forgot password|Recover|public|Not implemented — FR-006's SMS proof has no second channel while `AUTH_PHONE_VERIFICATION_ENABLED` is off (ADR 0012). The control on the sign-in screen is rendered disabled, not linked, until requirements.md §9's open question is answered|
 |Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
+Every screen that takes a phone number — the two above, the staff creation form
+and Settings — security — uses the same field ([ADR 0027](decisions/0027-e164-phone-normalisation.md)):
+a country picker showing flag, dialling code and the country's name in the
+member's own language, and a box that formats the number as it is typed. The
+placeholder is a real example number for the selected country, so it is right
+outside Ukraine too; the country defaults to the United States and follows the
+number when one is pasted in international form. The member sees their own
+national spelling, and E.164 is what reaches the server.
+
 **Member area (`kclub.com/app`)**
 
 |Screen|User goal|Access|Notes|

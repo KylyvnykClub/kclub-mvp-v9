@@ -11,9 +11,10 @@ import {
   consentSourceDocument,
   type ConsentAcceptance,
 } from "@/lib/legal-consents";
+import { phoneLookupSchema, phoneSchema } from "@/lib/phone";
 
 const requestPhoneSchema = z.object({
-  phone: z.string().min(8).max(20),
+  phone: phoneSchema,
 });
 
 export async function requestPhoneVerificationAction(formData: FormData) {
@@ -34,7 +35,7 @@ const consentAcceptanceSchema = z.object({
 });
 
 const registerSchema = z.object({
-  phone: z.string().min(8).max(20),
+  phone: phoneSchema,
   // Optional at the boundary because the code is only demanded when phone
   // verification is enabled (ADR 0012); the service decides, not the form.
   code: z.string().min(6).max(6).optional(),
@@ -170,8 +171,10 @@ export async function registerAction(formData: FormData) {
   }
 }
 
+// Sign-in looks a number up rather than claiming one, so it normalises without
+// validating - see the note on phoneLookupSchema.
 const loginSchema = z.object({
-  phone: z.string().min(8).max(20),
+  phone: phoneLookupSchema,
   password: z.string().min(1),
 });
 

@@ -137,6 +137,33 @@ describe("database environment guard (ADR 0026)", () => {
       expect(tool({ marker: unmarked }).outcome).toBe("warn");
       expect(tool({ marker: noTable }).outcome).toBe("warn");
     });
+
+    /**
+     * --production says "I believe this is production". It does not select a
+     * database; DATABASE_URL does. Asking for production while pointed at the
+     * dev branch used to run as an ordinary dev invocation and report success,
+     * so `pnpm db:normalize-phones --production` twice in a row looked like two
+     * production backfills and was neither.
+     */
+    it("refuses --production against a database that is not marked production", () => {
+      expect(tool({ marker: dev }, true).outcome).toBe("refuse");
+      expect(tool({ marker: unmarked }, true).outcome).toBe("refuse");
+      expect(tool({ marker: noTable }, true).outcome).toBe("refuse");
+    });
+
+    it("names the database it actually found, so the mistake is visible", () => {
+      const verdict = tool({ marker: dev }, true);
+      expect(verdict.outcome).toBe("refuse");
+      if (verdict.outcome === "refuse") {
+        expect(verdict.reason).toContain("--production");
+        expect(verdict.reason).toContain("DATABASE_URL");
+        expect(verdict.reason).toContain(describeMarker(dev));
+      }
+    });
+
+    it("still allows the same tools without the flag", () => {
+      expect(tool({ marker: dev }).outcome).toBe("allow");
+    });
   });
 
   describe("reset", () => {

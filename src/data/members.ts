@@ -442,6 +442,27 @@ export async function updateMemberPersonalInfo(
   return updated ?? null;
 }
 
+/**
+ * Every member's identifying phone number together with the country they
+ * registered from, for the one-off E.164 backfill (ADR 0027).
+ *
+ * Deliberately unfiltered. A number written before normalisation is unreadable
+ * on its own — `0671234567` names a different person in every country — and
+ * `members.country` is the only hint the row carries. Deleted members are
+ * included: their phone survives until erasure runs, and it shares the unique
+ * index with the live rows, so normalising around them would hide a collision
+ * rather than report it.
+ */
+export async function listMemberPhones(db: DbClient) {
+  return db
+    .select({
+      id: members.id,
+      phone: members.phone,
+      country: members.country,
+    })
+    .from(members);
+}
+
 export async function updateMemberPhone(
   db: DbClient,
   memberId: string,

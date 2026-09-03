@@ -399,6 +399,7 @@ shaped it without leaving the page.
 |[0024](decisions/0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|
 |[0025](decisions/0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|
 |[0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Accepted|
+|[0027](decisions/0027-e164-phone-normalisation.md)|One phone number format, normalised on the server, validated as reachable by SMS|Accepted|
 
 ---
 

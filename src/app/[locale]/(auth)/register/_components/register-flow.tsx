@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordInput } from "@/components/auth/password-input";
+import { PhoneInput } from "@/components/auth/phone-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 
@@ -232,14 +233,13 @@ export function RegisterFlow({
             >
               <div className="space-y-2">
                 <Label htmlFor="phone">{tAuth("phoneLabel")}</Label>
-                <Input
+                <PhoneInput
                   id="phone"
                   name="phone"
-                  type="tel"
+                  countryLabel={tAuth("phoneCountryLabel")}
                   required
-                  placeholder={tAuth("phonePlaceholder")}
                   defaultValue={phone}
-                  className="h-12 rounded-none bg-background"
+                  className="h-12 bg-background"
                 />
               </div>
               {phoneState?.error && (

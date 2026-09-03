@@ -8,6 +8,7 @@ import {
   verifyNewPhoneAction,
   type PhoneChangeState,
 } from "@/actions/profile";
+import { PhoneInput } from "@/components/auth/phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ const initialState: PhoneChangeState = { step: "idle" };
 
 export function PhoneChangeForm({ maskedPhone }: Props) {
   const t = useTranslations("dashboard");
+  const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
 
   const [initState, initAction, initPending] = useActionState(
@@ -64,14 +66,12 @@ export function PhoneChangeForm({ maskedPhone }: Props) {
 
       <div className="space-y-2">
         <Label htmlFor="newPhone">{t("newPhone")}</Label>
-        <Input
+        <PhoneInput
           id="newPhone"
           name="newPhone"
-          type="tel"
-          placeholder="+380..."
+          countryLabel={tAuth("phoneCountryLabel")}
           required
         />
-        <p className="text-xs text-muted-foreground">{t("phoneE164Hint")}</p>
       </div>
 
       <Button

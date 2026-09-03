@@ -23,6 +23,7 @@ import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import { InvalidImageError, processAvatarImage } from "@/lib/image-processing";
 import { AVATAR_SERVE_PATH } from "@/lib/avatar-path";
+import { phoneSchema } from "@/lib/phone";
 import { deleteAvatar, putAvatar } from "@/modules/platform/avatar-storage";
 import {
   sendVerificationCode,
@@ -168,10 +169,6 @@ export type PhoneChangeState = {
   error?: string;
   newPhone?: string;
 };
-
-const phoneSchema = z
-  .string()
-  .regex(/^\+[1-9]\d{6,14}$/, "Must be E.164 format");
 
 export async function initiatePhoneChangeAction(
   _prevState: PhoneChangeState,

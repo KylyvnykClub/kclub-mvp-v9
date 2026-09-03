@@ -172,6 +172,10 @@ that single process and it runs with a warning in the transcript. The variable
 is deliberately not in the env schema, and `pnpm env:check:production` rejects
 a deployment that has it. The staff-owner bootstrap on production is
 `KCLUB_ALLOW_PRODUCTION_DB=1 pnpm db:seed --production`, and needs both signals.
+Neither signal picks the database: that is `DATABASE_URL`, and a tool given
+`--production` while pointed anywhere else refuses rather than running as an
+ordinary dev invocation. Read the `TARGET` and `MARKER` lines every tool prints
+before it does anything — `MARKER: production` is the only proof you are there.
 
 **`pnpm db:seed:beta` writes 50 members and 30 companies.** It is for staging
 and preview only. **`pnpm beta:purge` removes that exact dataset by deterministic

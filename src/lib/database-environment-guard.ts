@@ -152,6 +152,19 @@ export function devToolVerdict(input: DevToolInput): Verdict {
     };
   }
 
+  // Reaching here means the database is not marked production, so --production
+  // is a belief about which database this is, and the belief is wrong. Refuse
+  // rather than proceed: the flag does not choose a database - DATABASE_URL
+  // does - so the run would otherwise print an ordinary success and leave the
+  // operator believing production had been seeded, or its phone numbers
+  // rewritten, when nothing of the sort happened.
+  if (productionFlag) {
+    return {
+      outcome: "refuse",
+      reason: `${tool} was asked for production with --production, but this database is ${describeMarker(marker)}. --production only unlocks the guard; the database comes from DATABASE_URL. Point DATABASE_URL at production, or drop --production.`,
+    };
+  }
+
   if (nodeEnv === "production" || vercelEnv === "production") {
     return {
       outcome: "refuse",
