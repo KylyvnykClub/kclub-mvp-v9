@@ -90,6 +90,11 @@ Flags are the `public/flags` images the language switcher already uses, not
 emoji: Windows ships no flag font, so a regional-indicator pair renders there as
 two bare letters.
 
+The same picker chooses a plain country — on registration and on the company
+application — so a country is named identically wherever it is offered, in the
+member's own language. Registration used to offer ten hardcoded countries from
+a translation table of its own; it now offers all of them, searchable.
+
 **Member area (`kclub.com/app`)**
 
 |Screen|User goal|Access|Notes|

@@ -9,6 +9,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
+import { Flag } from "@/components/ui/country-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -33,30 +34,6 @@ import {
   type PhoneCountry,
 } from "@/lib/phone";
 import { cn } from "@/lib/utils";
-
-/**
- * The country's flag, from the same `public/flags` set the language switcher in
- * the site header already uses. Not an emoji: Windows ships no flag font, so a
- * regional-indicator pair renders there as the two letters ("us"), which in a
- * picker reads as a typo. Not a third-party flag CDN either — every member
- * opening the sign-in page would announce themselves to it.
- */
-function Flag({ code, lazy = true }: { code: CountryCode; lazy?: boolean }) {
-  return (
-    // A 300-byte flag needs no optimiser, and next/image would put a loader in
-    // front of 240 of them for no gain.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/flags/${code.toLowerCase()}.png`}
-      alt=""
-      aria-hidden="true"
-      loading={lazy ? "lazy" : "eager"}
-      width={20}
-      height={14}
-      className="h-[14px] w-[20px] shrink-0 object-cover"
-    />
-  );
-}
 
 interface PhoneState {
   country: CountryCode;
@@ -258,6 +235,7 @@ export function PhoneInput({
   defaultCountry?: CountryCode;
 }) {
   const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
   const [row, setRow] = useState<HTMLDivElement | null>(null);
   const [state, setState] = useState<PhoneState>(() =>
@@ -311,8 +289,8 @@ export function PhoneInput({
         countries={countries}
         onSelect={handleCountry}
         label={t("phoneCountryLabel")}
-        searchPlaceholder={t("phoneCountrySearch")}
-        emptyLabel={t("phoneCountryEmpty")}
+        searchPlaceholder={tCommon("countrySearch")}
+        emptyLabel={tCommon("countryNotFound")}
       />
       <Input
         id={id}

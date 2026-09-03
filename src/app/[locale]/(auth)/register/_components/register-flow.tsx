@@ -10,6 +10,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
+import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 
 import {
@@ -23,13 +24,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 function SubmitButton({
   label,
@@ -346,29 +340,12 @@ export function RegisterFlow({
 
               <div className="space-y-2">
                 <Label htmlFor="country">{t("countryLabel")}</Label>
-                <Select name="country" required>
-                  <SelectTrigger id="country" className="h-12 rounded-none">
-                    <SelectValue placeholder={t("countryLabel")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      "UA",
-                      "PL",
-                      "DE",
-                      "US",
-                      "GB",
-                      "CZ",
-                      "FR",
-                      "IT",
-                      "ES",
-                      "PT",
-                    ].map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {t(`countries.${c}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CountrySelect
+                  id="country"
+                  name="country"
+                  placeholder={t("countryLabel")}
+                  className="h-12"
+                />
               </div>
 
               {/* The language is no longer asked for: the locale the applicant

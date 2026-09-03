@@ -35,6 +35,7 @@ import {
 } from "@/lib/company-form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CountrySelect } from "@/components/ui/country-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -575,27 +576,19 @@ export function CompanyRegistrationForm() {
             id="registrationCountryCode"
             label={t("registrationCountryLabel")}
           >
-            <select
+            <CountrySelect
               id="registrationCountryCode"
-              className={SELECT_CLASS}
               value={values.registrationCountryCode ?? ""}
-              onChange={(e) =>
+              onChange={(code) =>
                 setValues((current) => ({
                   ...current,
-                  registrationCountryCode: e.target.value,
+                  registrationCountryCode: code,
                   // A city belongs to a country; changing one empties the other.
                   city: "",
                 }))
               }
-              required
-            >
-              <option value="">{t("registrationCountryPlaceholder")}</option>
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+              placeholder={t("registrationCountryPlaceholder")}
+            />
           </Field>
 
           {values.businessFormat !== "online_only" && (
