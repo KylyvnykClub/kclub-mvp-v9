@@ -413,6 +413,19 @@ export function RegisterFlow({
                 label={t("createAccount")}
                 disabled={!legalReady || !passwordsUsable}
               />
+              {/* Back to whichever step actually precedes this one: the code
+                  screen when SMS is on, the phone screen when it is not (ADR
+                  0012). Without it a mistyped number could only be corrected by
+                  reloading, which loses the whole form. */}
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setStep(phoneVerificationEnabled ? 2 : 1)}
+                  className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+                >
+                  {tCommon("back")}
+                </button>
+              </div>
             </form>
           )}
         </CardContent>

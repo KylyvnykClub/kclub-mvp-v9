@@ -1,7 +1,10 @@
 "use client";
 
 import type { CountryCode } from "libphonenumber-js";
-import { AsYouType } from "libphonenumber-js/mobile";
+import {
+  AsYouType,
+  parsePhoneNumberFromString,
+} from "libphonenumber-js/mobile";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -61,12 +64,38 @@ interface PhoneState {
   text: string;
 }
 
+/**
+ * The box holds the *national* number, because the trigger beside it already
+ * shows the dialling code. Letting both hold it made the field read
+ * "+380 | +380 50 123 4567" and left it genuinely ambiguous whether the prefix
+ * was being applied or merely displayed.
+ *
+ * A number typed or pasted in international form is therefore not kept as
+ * typed: it names its own country, so the picker moves to it and the box is
+ * left with the national part alone. Until enough digits have arrived to
+ * identify a country, a leading `+` stays as typed — the member is mid-number,
+ * and truncating it would fight them.
+ */
 function readInto(country: CountryCode, text: string): PhoneState {
-  const formatter = new AsYouType(country);
-  const formatted = formatter.input(text);
-  // A number typed or pasted in international form names its own country, and
-  // the picker follows it rather than contradicting what is in the box.
-  return { country: formatter.getCountry() ?? country, text: formatted };
+  const trimmed = text.trim();
+
+  if (trimmed.startsWith("+")) {
+    const parsed = parsePhoneNumberFromString(trimmed);
+    // Only once the number could actually be one. A country is recognisable
+    // from far fewer digits than that - "+38050" already says Ukraine - but
+    // `formatNational()` on a part-typed number drops the trunk prefix, so
+    // converting that early leaves "501234567" where the member expects
+    // "050 123 4567".
+    if (parsed?.country && parsed.isPossible()) {
+      return { country: parsed.country, text: parsed.formatNational() };
+    }
+    // Still incomplete: keep the text as typed, and leave the picker where it
+    // is. Moving it now would put the dialling code in both the trigger and
+    // the box, which is the confusion this field is shedding.
+    return { country, text: new AsYouType().input(trimmed) };
+  }
+
+  return { country, text: new AsYouType(country).input(trimmed) };
 }
 
 function CountryPicker({
@@ -162,8 +191,9 @@ function CountryPicker({
  * server has the same shape from all of them. Before it, each form asked for a
  * bare string and the phone-change screen had to explain the format in prose.
  *
- * The visible box is not the submitted field. The member sees their own
- * national spelling; a hidden input carries the E.164 the server stores. The
+ * The visible box holds the national number only — the picker beside it
+ * carries the dialling code — and is not the submitted field: a hidden input
+ * carries the E.164 the server stores. The
  * box takes what can be dialled and nothing else — letters are dropped as they
  * are typed — and a half-finished number is submitted as the partial E.164 it
  * forms, so the server answers with what is wrong with the number rather than

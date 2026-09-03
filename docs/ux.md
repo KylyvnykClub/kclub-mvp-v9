@@ -74,6 +74,10 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 Every screen that takes a phone number — the two above, the staff creation form
 and Settings — security — uses the same field ([ADR 0027](decisions/0027-e164-phone-normalisation.md)):
 a searchable country picker and a box that formats the number as it is typed.
+The box holds the national number only, because the picker beside it already
+shows the dialling code; a number typed in international form moves the picker
+to its country and is left in the box as the national part, so the code is
+never shown twice.
 The picker is filtered by typing, and matches a country's name, its two-letter
 code or its dialling code, so both "Україна" and "380" find Ukraine; each row
 carries the flag, the name in the member's own language and the code. The

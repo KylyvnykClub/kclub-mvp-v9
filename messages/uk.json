@@ -411,7 +411,7 @@
     "codeExpired": "Код протермінований. Запросіть новий.",
     "tooManyAttempts": "Забагато спроб. Спробуйте знову через {minutes, plural, one {# хвилину} few {# хвилини} many {# хвилин} other {# хвилин}}.",
     "loginTitle": "З поверненням",
-    "loginSubtitle": "Увійдіть у свій обліковий запис KCLUB",
+    "loginSubtitle": "Увійдіть у свій обліковий запис Kylyvnyk Club",
     "loginButton": "Увійти",
     "noAccount": "Немає облікового запису?",
     "registerLink": "Створити обліковий запис",

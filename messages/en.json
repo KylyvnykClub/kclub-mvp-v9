@@ -37,7 +37,7 @@
     "codeExpired": "Code expired. Please request a new one.",
     "tooManyAttempts": "Too many attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
     "loginTitle": "Welcome back",
-    "loginSubtitle": "Sign in to your KCLUB account",
+    "loginSubtitle": "Sign in to your Kylyvnyk Club account",
     "loginButton": "Sign in",
     "noAccount": "Don't have an account?",
     "registerLink": "Create account",

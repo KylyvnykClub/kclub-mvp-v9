@@ -37,7 +37,7 @@
     "codeExpired": "Код просрочен. Запросите новый.",
     "tooManyAttempts": "Слишком много попыток. Попробуйте снова через {minutes, plural, one {# минуту} few {# минуты} many {# минут} other {# минут}}.",
     "loginTitle": "С возвращением",
-    "loginSubtitle": "Войдите в свой аккаунт KCLUB",
+    "loginSubtitle": "Войдите в свой аккаунт Kylyvnyk Club",
     "loginButton": "Войти",
     "noAccount": "Нет аккаунта?",
     "registerLink": "Создать аккаунт",
