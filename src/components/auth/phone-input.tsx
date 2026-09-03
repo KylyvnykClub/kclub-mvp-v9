@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
  * picker reads as a typo. Not a third-party flag CDN either — every member
  * opening the sign-in page would announce themselves to it.
  */
-function Flag({ code }: { code: CountryCode }) {
+function Flag({ code, lazy = true }: { code: CountryCode; lazy?: boolean }) {
   return (
     // A 300-byte flag needs no optimiser, and next/image would put a loader in
     // front of 240 of them for no gain.
@@ -50,7 +50,7 @@ function Flag({ code }: { code: CountryCode }) {
       src={`/flags/${code.toLowerCase()}.png`}
       alt=""
       aria-hidden="true"
-      loading="lazy"
+      loading={lazy ? "lazy" : "eager"}
       width={20}
       height={14}
       className="h-[14px] w-[20px] shrink-0 object-cover"
@@ -98,6 +98,43 @@ function readInto(country: CountryCode, text: string): PhoneState {
   return { country, text: new AsYouType(country).input(trimmed) };
 }
 
+/**
+ * Whether the number has more digits than its country's plan allows, per the
+ * metadata rather than a guess. Typing past this is refused outright: the field
+ * used to accept "050777193535353535353535353535" and hand the server
+ * "+38050777193535353535353535353535", which is not a phone number in any
+ * country and was only caught after the member pressed the button.
+ */
+function isTooLong({ country, text }: PhoneState): boolean {
+  const formatter = new AsYouType(country);
+  formatter.input(text);
+  return formatter.validateLength() === "TOO_LONG";
+}
+
+/** Whether the number as it stands could receive an SMS (FR-002). */
+function isComplete({ country, text }: PhoneState): boolean {
+  const formatter = new AsYouType(country);
+  formatter.input(text);
+  return formatter.isValid();
+}
+
+/**
+ * Whether this keystroke should simply not land.
+ *
+ * Two rules, both from the metadata rather than a per-country guess. The first
+ * is the plan's own maximum. The second is tighter and covers what the maximum
+ * misses: Ukraine's mobile numbers are nine digits, but the metadata lists ten
+ * as possible, so the length rule alone still let "+380 50 777 19 35 3" be
+ * typed. A number that is already complete cannot be made incomplete by typing
+ * more - and this can never block a legitimate longer number, because a
+ * legitimate longer number is itself complete. Deleting is always allowed, so
+ * a member who wants a different number is never stuck.
+ */
+function refuses(current: PhoneState, candidate: PhoneState): boolean {
+  if (isTooLong(candidate)) return true;
+  return isComplete(current) && !isComplete(candidate);
+}
+
 function CountryPicker({
   value,
   countries,
@@ -128,7 +165,7 @@ function CountryPicker({
         aria-label={label}
         className="flex shrink-0 items-center gap-1.5 rounded-none border border-r-0 border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Flag code={value} />
+        <Flag code={value} lazy={false} />
         <span className="tabular-nums">+{selected?.callingCode ?? ""}</span>
         <ChevronsUpDown
           className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
@@ -254,7 +291,8 @@ export function PhoneInput({
       if (next.length < current.text.length) {
         return { ...current, text: next };
       }
-      return readInto(current.country, next);
+      const candidate = readInto(current.country, next);
+      return refuses(current, candidate) ? current : candidate;
     });
   }
 
