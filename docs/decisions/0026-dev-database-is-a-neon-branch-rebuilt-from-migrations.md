@@ -59,6 +59,11 @@ single pure decision ([`src/lib/database-environment-guard.ts`](../../src/lib/da
   marker unless it was invoked with `--production` _and_
   `KCLUB_ALLOW_PRODUCTION_DB=1` is set, which is the shape of the one
   legitimate case: the staff-owner bootstrap.
+- The converse is refused too: `--production` against a database that is _not_
+  marked production stops the run. The flag unlocks the guard, it does not
+  choose a database — `DATABASE_URL` does — so without this the tool proceeds
+  as an ordinary dev invocation and reports success, and the operator is left
+  believing production was touched when it was not.
 - An unmarked database is allowed with a warning. Fresh branches, CI preview
   branches, Testcontainers and the e2e harness are all unmarked, and refusing
   them would break every one.
