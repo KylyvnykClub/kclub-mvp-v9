@@ -26,6 +26,7 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |**CountryStateCity**|City names for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md))|No|The city field is free text|Tech lead|
 |**Cloudflare DNS + Turnstile**|DNS, bot mitigation on registration|Yes (DNS)|DNS failure is a total outage; Turnstile failure fails open with tighter rate limits|Owner|
 |**Resend**|Transactional email|No|Email queues; in-product state is authoritative|Tech lead|
+|**Google Identity**|OAuth 2.0 sign-in as an optional entry point ([ADR 0029](decisions/0029-google-sign-in.md))|No|The button is not offered; phone and email sign-in are unaffected|Tech lead|
 |**Sentry / Axiom / Better Stack**|Errors, logs and metrics, uptime and status page|No|We are blind but serving. Blindness during an incident is bad enough to alert on separately|Tech lead|
 |**1Password**|Secret storage of record|No, at runtime|Deployment and rotation are blocked; running systems are unaffected|Owner|
 

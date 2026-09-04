@@ -45,6 +45,7 @@ variation.
 |-|-|-|-|-|
 |Member|A person whose phone number is verified and who holds a membership card. Free unless they subscribe to VIP|`Member`|`member`|"User" — never used in the interface or in domain code. "Customer", which in this codebase means only a Stripe Customer object|
 |VIP member|A member with an active VIP subscription. A tier, not a separate entity|`MemberTier.Vip`|`member.tier`|"Premium", "Gold" — both rejected; "Gold" is the card's colour, not a tier|
+|Verification link|A single-use, expiring URL emailed to a member to prove an address is theirs, or to let them set a new password. Only its hash is stored ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))|`VerificationToken`|`verification_tokens`|"Magic link" — this never signs anyone in on its own; the one-time SMS "code", which Twilio owns and we never store|
 |Membership card|The digital proof of membership: a serial, a tier and a QR code|`MembershipCard`|`membership_card`|"Pass", "Badge", "Ticket"|
 |Card serial|The human-readable identifier printed on the card, shown at verification|`cardSerial`|`membership_card.serial`|The card's `id` (a UUID, never shown) and the verification token (secret)|
 |Verification token|The opaque secret inside the QR code. Stored only as a hash|`verificationToken`|`membership_card.verify_token_hash`|The card serial, which is public and non-secret|

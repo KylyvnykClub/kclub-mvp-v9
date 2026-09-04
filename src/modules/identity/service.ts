@@ -1,11 +1,21 @@
+import { appendAuditEntry } from "@/data/audit-log";
 import { db } from "@/data/db";
 import {
+  consumeVerificationToken,
   createSessionTx,
+  createVerificationToken,
   deleteSessionByToken,
   findActiveSessionByToken,
+  findLatestVerificationTokenIssuedAt,
+  findMemberByEmail,
   findMemberByPhone,
+  markEmailVerified,
   registerMemberTx,
+  setMemberEmail,
 } from "@/data/identity";
+import { sendEmailVerificationEmail } from "@/modules/notifications/email";
+import { absoluteUrl } from "@/lib/seo";
+import { hashVerificationToken } from "@/lib/verification-token";
 import { generateToken, hashPassword, verifyPassword } from "./crypto";
 import { generateTotpSecret, verifyTotpCode } from "./totp";
 import {
@@ -19,10 +29,37 @@ import { logger } from "@/lib/logger";
 import { isUniqueViolation, safeErrorFields } from "@/lib/safe-error";
 import { env } from "@/env";
 import { isStaffRole, normalizeRole } from "@/domain/actor";
+import { refuseSignIn } from "@/domain/sign-in";
+import type { LoginIdentifier } from "@/lib/login-identifier";
 
 function isPhoneUniquenessError(error: unknown) {
   return isUniqueViolation(error, "members_phone_unique");
 }
+
+/**
+ * How long the member has to open the link (ADR 0028). Long enough to survive
+ * a mail client that batches, short enough that a link left in an inbox is not
+ * a standing key to the account.
+ */
+export const EMAIL_VERIFICATION_TTL_HOURS = 24;
+
+/** Shortest gap between two links sent to the same address. */
+export const EMAIL_RESEND_INTERVAL_MS = 60_000;
+
+/** The member's stored language, narrowed to the three the emails exist in. */
+function narrowLocale(language: string): "en" | "ru" | "uk" {
+  return language === "ru" || language === "uk" ? language : "en";
+}
+
+export type ClaimEmailResult =
+  | { ok: true }
+  /**
+   * `unavailable` — the address belongs to someone else, or to nobody we can
+   * act for. Deliberately one reason, not two.
+   * `throttled` — a link went out less than a minute ago.
+   * `undeliverable` — claimed, but the mail did not leave.
+   */
+  | { ok: false; reason: "unavailable" | "throttled" | "undeliverable" };
 
 export class IdentityService {
   /**
@@ -51,6 +88,15 @@ export class IdentityService {
    */
   static async registerMember(params: {
     phone: string;
+    /** FR-001: collected at registration, because it is the recovery channel. */
+    email: string;
+    /**
+     * A provider that has already proved this exact address in this request
+     * (ADR 0029). Its presence is what lets registration mark the address
+     * verified without sending a link; the caller checks that the address it
+     * vouched for is the address being registered.
+     */
+    provenBy?: { provider: "google"; providerAccountId: string };
     code?: string;
     passwordPlain: string;
     displayName: string;
@@ -84,8 +130,18 @@ export class IdentityService {
       // FR-020: membership card is issued automatically with registration.
       const serial = `KCLUB-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      await registerMemberTx(db, {
+      const now = new Date();
+
+      const memberId = await registerMemberTx(db, {
         phone: params.phone,
+        email: params.email,
+        emailVerifiedAt: params.provenBy ? now : null,
+        identity: params.provenBy
+          ? {
+              provider: params.provenBy.provider,
+              providerAccountId: params.provenBy.providerAccountId,
+            }
+          : undefined,
         passwordHash,
         displayName: params.displayName,
         country: params.country,
@@ -96,6 +152,23 @@ export class IdentityService {
         cardSerial: serial,
         sessionToken,
       });
+
+      // Nothing to prove where a provider already did it. Otherwise the
+      // address is stored but unproved, and the link goes out - outside the
+      // transaction, because a mail server that is slow, or down, must not
+      // cost somebody their registration.
+      if (!params.provenBy) {
+        await IdentityService.issueEmailVerification({
+          memberId,
+          email: params.email,
+          displayName: params.displayName,
+          locale: narrowLocale(params.language),
+        }).catch((error: unknown) => {
+          logger.error("welcome verification email failed", {
+            ...safeErrorFields(error),
+          });
+        });
+      }
 
       return { success: true, sessionToken };
     } catch (error) {
@@ -111,6 +184,17 @@ export class IdentityService {
         };
       }
 
+      // Deliberately vaguer than the phone answer above: confirming that an
+      // address is registered tells an anonymous caller who is in the club
+      // (ADR 0005). The phone message predates that reasoning and is left
+      // alone here rather than changed in passing.
+      if (isUniqueViolation(error, "members_email_unique")) {
+        return {
+          success: false,
+          error: "That email address cannot be used.",
+        };
+      }
+
       return {
         success: false,
         error: "Failed to create account. Please try again.",
@@ -122,7 +206,7 @@ export class IdentityService {
    * Log in an existing member.
    */
   static async login(params: {
-    phone: string;
+    identifier: LoginIdentifier;
     passwordPlain: string;
     userAgent: string;
     ipAddress: string;
@@ -140,14 +224,28 @@ export class IdentityService {
     language?: string;
     error?: string;
   }> {
-    const member = await findMemberByPhone(db, params.phone);
+    const member =
+      params.identifier.kind === "phone"
+        ? await findMemberByPhone(db, params.identifier.value)
+        : await findMemberByEmail(db, params.identifier.value);
 
     if (!member) {
       return { success: false, error: "Invalid credentials" };
     }
 
-    if (member.status === "blocked" || member.status === "pending_deletion") {
-      return { success: false, error: "Account is not active" };
+    // Blocked accounts, and addresses nobody has proved (ADR 0028). The rule
+    // itself is in `src/domain/sign-in.ts`, where it can be tested without a
+    // database.
+    const refusal = refuseSignIn(params.identifier.kind, member);
+
+    if (refusal) {
+      return {
+        success: false,
+        error:
+          refusal === "not_active"
+            ? "Account is not active"
+            : "Invalid credentials",
+      };
     }
 
     const isValid = await verifyPassword(
@@ -301,5 +399,163 @@ export class IdentityService {
    */
   static async logout(token: string) {
     await deleteSessionByToken(db, token);
+  }
+
+  /**
+   * Claim an email address and send the link that proves it (ADR 0028).
+   *
+   * The address is written before the mail goes out, so the token has
+   * something to point at and a member who never opens the link is left
+   * holding an unverified claim — which signs nobody in and resets nothing.
+   *
+   * Every outcome that is not "sent" is deliberately coarse. "Unavailable"
+   * covers an address another member already holds, and it says nothing about
+   * who: an authenticated member asking whether an address is in the club is
+   * still asking who is in the club (ADR 0005).
+   */
+  static async claimEmail(params: {
+    memberId: string;
+    /** What the account holds now, so a resend can be told from a change. */
+    currentEmail: string | null;
+    email: string;
+    displayName: string;
+    locale: "en" | "ru" | "uk";
+    now?: Date;
+  }): Promise<ClaimEmailResult> {
+    const now = params.now ?? new Date();
+
+    // Asking again for the address already on the account is a resend, and
+    // resends are what an attacker with a stolen session would use to bury a
+    // mailbox. Changing the address is not throttled: a member correcting a
+    // typo should not be made to wait for the mistake.
+    if (params.currentEmail === params.email) {
+      const lastIssuedAt = await findLatestVerificationTokenIssuedAt(
+        db,
+        params.memberId,
+        "email_verify",
+      );
+
+      if (
+        lastIssuedAt &&
+        now.getTime() - lastIssuedAt.getTime() < EMAIL_RESEND_INTERVAL_MS
+      ) {
+        return { ok: false, reason: "throttled" };
+      }
+    }
+
+    try {
+      await setMemberEmail(db, params.memberId, params.email);
+    } catch (error) {
+      if (isUniqueViolation(error, "members_email_unique")) {
+        return { ok: false, reason: "unavailable" };
+      }
+      throw error;
+    }
+
+    const sent = await IdentityService.issueEmailVerification({
+      memberId: params.memberId,
+      email: params.email,
+      displayName: params.displayName,
+      locale: params.locale,
+      now,
+    });
+
+    return sent ? { ok: true } : { ok: false, reason: "undeliverable" };
+  }
+
+  /**
+   * Mint a link for an address the member already holds, and send it.
+   *
+   * Shared by the settings panel and by registration, so both produce the same
+   * token with the same lifetime — a second implementation of this is how one
+   * of the two ends up with a link that never expires.
+   *
+   * Returns whether the message left. The address is stored either way; only
+   * the proof failed, and the member can ask for another.
+   */
+  static async issueEmailVerification(params: {
+    memberId: string;
+    email: string;
+    displayName: string;
+    locale: "en" | "ru" | "uk";
+    now?: Date;
+  }): Promise<boolean> {
+    const now = params.now ?? new Date();
+    const token = generateToken();
+
+    await createVerificationToken(db, {
+      memberId: params.memberId,
+      purpose: "email_verify",
+      email: params.email,
+      tokenHash: hashVerificationToken(token),
+      expiresAt: new Date(
+        now.getTime() + EMAIL_VERIFICATION_TTL_HOURS * 60 * 60 * 1000,
+      ),
+    });
+
+    try {
+      return await sendEmailVerificationEmail({
+        to: params.email,
+        displayName: params.displayName,
+        locale: params.locale,
+        url: absoluteUrl(
+          `/${params.locale}/verify-email?token=${encodeURIComponent(token)}`,
+        ),
+        expiresInHours: EMAIL_VERIFICATION_TTL_HOURS,
+      });
+    } catch (error) {
+      // Told plainly rather than swallowed: on the settings screen a member is
+      // waiting for a message that is never going to arrive.
+      logger.error("email verification could not be sent", {
+        memberId: params.memberId,
+        ...safeErrorFields(error),
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Redeem the link (ADR 0028).
+   *
+   * Both halves are guarded on the address the token was issued for, not on
+   * the member alone: a member who claims one address, changes their mind and
+   * claims another must not be able to verify the second with the first one's
+   * link.
+   */
+  static async confirmEmail(
+    token: string,
+    now: Date = new Date(),
+  ): Promise<boolean> {
+    const consumed = await consumeVerificationToken(
+      db,
+      hashVerificationToken(token),
+      "email_verify",
+      now,
+    );
+
+    if (!consumed) {
+      return false;
+    }
+
+    const verified = await markEmailVerified(
+      db,
+      consumed.memberId,
+      consumed.email,
+      now,
+    );
+
+    if (!verified) {
+      return false;
+    }
+
+    await appendAuditEntry(db, {
+      actorType: "member",
+      actorId: consumed.memberId,
+      action: "member.email_verified",
+      subjectType: "member",
+      subjectId: consumed.memberId,
+    });
+
+    return true;
   }
 }

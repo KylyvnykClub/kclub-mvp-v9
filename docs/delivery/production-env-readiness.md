@@ -172,6 +172,9 @@ Required external checks:
 |`COUNTRY_STATE_CITY_API_KEY`|No|CountryStateCity dashboard (api key)|Optional. Without it the onboarding city field is free text; with it, set the same key in Vercel so production gets the picker (ADR 0025).|
 |`TURNSTILE_SECRET_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Required before enabling Turnstile verification server-side.|
 |`NEXT_PUBLIC_TURNSTILE_SITE_KEY`|Optional until bot defense is enabled|Cloudflare Turnstile|Must match `TURNSTILE_SECRET_KEY`.|
+|`GOOGLE_CLIENT_ID`|Optional — without it, "sign in with Google" is not offered|Google Cloud console, OAuth 2.0 client (Web application)|Set together with the secret or not at all; the boot check refuses one without the other. The client's **Authorised redirect URI** must match `https://<origin>/api/auth/google/callback` exactly ([ADR 0029](../decisions/0029-google-sign-in.md)).|
+|`GOOGLE_CLIENT_SECRET`|Optional — see `GOOGLE_CLIENT_ID`|Google Cloud console|Rotate here and in Vercel together; a stale secret shows up as a failed callback after the member has already consented.|
+|`GOOGLE_REDIRECT_URI`|No|Deployment decision|Only where the public origin differs from the one registered with Google. Unset, the callback URL is derived from `NEXT_PUBLIC_APP_URL`.|
 |`SENTRY_DSN`|Optional for private beta|Sentry project|If omitted, Sentry initialization is deferred and guarded.|
 |`NEXT_PUBLIC_SENTRY_DSN`|Optional for private beta|Sentry project|Must match the intended frontend Sentry project and environment.|
 |`ALLOW_PUBLIC_INDEXING`|Off until public launch|Deployment decision|Unset or `false` keeps the whole site `noindex`, which is correct for the pre-launch beta. Set to `true` in production at launch to let search engines index the marketing, catalogue and legal pages; the `(auth)`, `(dashboard)` and card routes stay `noindex` regardless. Tracked as `seo-public-pages-are-noindex`.|

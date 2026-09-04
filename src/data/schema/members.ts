@@ -31,6 +31,24 @@ export const members = pgTable("members", {
   // FR-001: E.164 phone number, uniquely identifies the member
   phone: varchar("phone", { length: 20 }).notNull().unique(),
 
+  /**
+   * FR-001: the member's second identifier, and the only channel that can
+   * prove who they are when the phone number is gone (FR-006, ADR 0028).
+   *
+   * Nullable because the members who registered before this column existed
+   * have none, and are asked rather than forced. Stored lowercased — the
+   * address arrives through `emailSchema`, which is the only thing that writes
+   * here, so a plain unique index is enough and no `citext` extension is
+   * needed.
+   */
+  email: varchar("email", { length: 255 }).unique(),
+
+  /**
+   * Set when a link sent to that address was clicked. An unverified address
+   * signs nobody in and resets no password: it is a claim, not a proof.
+   */
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+
   // Password hash using Argon2id (FR-001, FR-005)
   passwordHash: text("password_hash").notNull(),
 

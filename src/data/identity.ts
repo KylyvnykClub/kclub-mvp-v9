@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, ne, or } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, ne, or } from "drizzle-orm";
 
 import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
@@ -8,8 +8,11 @@ import {
   legalAcceptances,
   members,
   notifications,
+  memberIdentities,
   sessions,
+  verificationTokens,
 } from "./schema";
+import type { IdentityProvider, VerificationPurpose } from "./schema";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 import { hashSessionToken } from "@/lib/session-token";
 
@@ -25,8 +28,30 @@ export async function findMemberByPhone(db: DbClient, phone: string) {
   });
 }
 
+/**
+ * The member holding an address (FR-001, ADR 0028).
+ *
+ * Matches on the address as stored, which `emailSchema` has already lowercased
+ * — the callers of this function pass its output, so there is no second
+ * opinion about case here.
+ */
+export async function findMemberByEmail(db: DbClient, email: string) {
+  return db.query.members.findFirst({
+    where: eq(members.email, email),
+  });
+}
+
 export interface RegisterMemberInput {
   phone: string;
+  /** Claimed at registration, unverified until the emailed link is opened. */
+  email: string | null;
+  /**
+   * Set only where the address arrived already proved — today that means
+   * Google vouched for it in the same request (ADR 0029).
+   */
+  emailVerifiedAt?: Date | null;
+  /** Linked in the same transaction, so a half-registered member cannot exist. */
+  identity?: { provider: IdentityProvider; providerAccountId: string };
   passwordHash: string;
   displayName: string;
   country: string;
@@ -38,15 +63,18 @@ export interface RegisterMemberInput {
   sessionToken: string;
 }
 
+/** Returns the new member's id, which the caller needs to send them anything. */
 export async function registerMemberTx(
   db: DbClient,
   input: RegisterMemberInput,
-): Promise<void> {
-  await db.transaction(async (tx) => {
+): Promise<string> {
+  return db.transaction(async (tx) => {
     const [member] = await tx
       .insert(members)
       .values({
         phone: input.phone,
+        email: input.email,
+        emailVerifiedAt: input.emailVerifiedAt ?? null,
         passwordHash: input.passwordHash,
         displayName: input.displayName,
         country: input.country,
@@ -62,6 +90,14 @@ export async function registerMemberTx(
           version: c.version,
         })),
       );
+    }
+
+    if (input.identity) {
+      await tx.insert(memberIdentities).values({
+        memberId: member!.id,
+        provider: input.identity.provider,
+        providerAccountId: input.identity.providerAccountId,
+      });
     }
 
     const cardId = randomUUID();
@@ -105,6 +141,8 @@ export async function registerMemberTx(
       ip: input.ipAddress,
       userAgent: input.userAgent,
     });
+
+    return member!.id;
   });
 }
 
@@ -200,6 +238,193 @@ export async function setMemberPasswordHash(
     .returning({ id: members.id });
 
   return updated.length > 0;
+}
+
+/**
+ * Claim an address, unverified (ADR 0028).
+ *
+ * Claiming always clears `emailVerifiedAt`, including when the member retypes
+ * the address they already proved: the proof belongs to a click on a link, and
+ * an update that kept it would let a member move a verified flag onto an
+ * address they have never opened.
+ *
+ * The unique index is what refuses an address another member already holds.
+ * The caller catches that violation rather than checking first — a check would
+ * be a lookup, and a lookup that answers "taken" tells the asker who else is
+ * in the club (ADR 0005).
+ */
+export async function setMemberEmail(
+  db: DbClient,
+  memberId: string,
+  email: string,
+): Promise<boolean> {
+  const updated = await db
+    .update(members)
+    .set({ email, emailVerifiedAt: null, updatedAt: new Date() })
+    .where(eq(members.id, memberId))
+    .returning({ id: members.id });
+
+  return updated.length > 0;
+}
+
+/**
+ * Record that a link sent to `email` was opened.
+ *
+ * Guarded on the address, not just the member: a token issued for an address
+ * the member has since replaced must not stamp the replacement as verified.
+ */
+export async function markEmailVerified(
+  db: DbClient,
+  memberId: string,
+  email: string,
+  now: Date,
+): Promise<boolean> {
+  const updated = await db
+    .update(members)
+    .set({ emailVerifiedAt: now, updatedAt: now })
+    .where(and(eq(members.id, memberId), eq(members.email, email)))
+    .returning({ id: members.id });
+
+  return updated.length > 0;
+}
+
+/**
+ * Issue a single-use link (ADR 0028).
+ *
+ * Takes the hash, never the token: the token exists in the email and in the
+ * caller's local variable, and nowhere else. Any earlier token for the same
+ * member and purpose is deleted first, so requesting a new link invalidates
+ * the old one — otherwise every resend widens the window in which an
+ * intercepted mail still works.
+ */
+export async function createVerificationToken(
+  db: DbClient,
+  input: {
+    memberId: string;
+    purpose: VerificationPurpose;
+    email: string;
+    tokenHash: string;
+    expiresAt: Date;
+  },
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.memberId, input.memberId),
+          eq(verificationTokens.purpose, input.purpose),
+        ),
+      );
+
+    await tx.insert(verificationTokens).values(input);
+  });
+}
+
+/**
+ * When the member's newest token of this purpose was issued, or `null` if they
+ * hold none. The resend throttle reads this; it is not a credential check.
+ */
+export async function findLatestVerificationTokenIssuedAt(
+  db: DbClient,
+  memberId: string,
+  purpose: VerificationPurpose,
+): Promise<Date | null> {
+  const row = await db.query.verificationTokens.findFirst({
+    where: and(
+      eq(verificationTokens.memberId, memberId),
+      eq(verificationTokens.purpose, purpose),
+    ),
+    orderBy: desc(verificationTokens.createdAt),
+    columns: { createdAt: true },
+  });
+
+  return row?.createdAt ?? null;
+}
+
+/**
+ * Redeem a link, once.
+ *
+ * The read and the stamp are one statement on purpose. Selecting the row and
+ * then updating it would let two clicks a millisecond apart both pass the
+ * check and both act; `WHERE consumed_at IS NULL ... RETURNING` lets exactly
+ * one of them come back with a row.
+ *
+ * Expiry is compared here rather than by the caller for the same reason it is
+ * enforced in SQL elsewhere in this codebase: the database's clock is the one
+ * both racing requests share.
+ */
+export async function consumeVerificationToken(
+  db: DbClient,
+  tokenHash: string,
+  purpose: VerificationPurpose,
+  now: Date,
+): Promise<{ memberId: string; email: string } | null> {
+  const consumed = await db
+    .update(verificationTokens)
+    .set({ consumedAt: now })
+    .where(
+      and(
+        eq(verificationTokens.tokenHash, tokenHash),
+        eq(verificationTokens.purpose, purpose),
+        isNull(verificationTokens.consumedAt),
+        gt(verificationTokens.expiresAt, now),
+      ),
+    )
+    .returning({
+      memberId: verificationTokens.memberId,
+      email: verificationTokens.email,
+    });
+
+  return consumed[0] ?? null;
+}
+
+/**
+ * The member behind an external account (ADR 0029).
+ *
+ * Matched on the provider's subject id, never on the address: an address can
+ * change hands at a provider, and the subject id is what Google promises is
+ * stable.
+ */
+export async function findMemberByProviderAccount(
+  db: DbClient,
+  provider: IdentityProvider,
+  providerAccountId: string,
+) {
+  const link = await db.query.memberIdentities.findFirst({
+    where: and(
+      eq(memberIdentities.provider, provider),
+      eq(memberIdentities.providerAccountId, providerAccountId),
+    ),
+    with: { member: true },
+  });
+
+  return link?.member ?? null;
+}
+
+/**
+ * Link an external account to a member.
+ *
+ * Idempotent on the pair, so a member who signs in through Google twice in the
+ * same second ends up with one row rather than a unique violation. A *different*
+ * Google account for the same member, or the same Google account for a
+ * different member, still violates — both of those are the indexes doing their
+ * job, and the caller reports them as a refusal rather than swallowing them.
+ */
+export async function linkProviderAccount(
+  db: DbClient,
+  input: {
+    memberId: string;
+    provider: IdentityProvider;
+    providerAccountId: string;
+  },
+): Promise<void> {
+  await db
+    .insert(memberIdentities)
+    .values(input)
+    .onConflictDoNothing({
+      target: [memberIdentities.provider, memberIdentities.providerAccountId],
+    });
 }
 
 /**

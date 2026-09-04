@@ -7,6 +7,7 @@ import {
   deleteSessionsByMemberId,
   findActiveSessionByToken,
   registerMemberTx,
+  setMemberEmail,
   upgradeSessionTx,
 } from "@/data/identity.js";
 import { setMemberStatus } from "@/data/members.js";
@@ -56,6 +57,7 @@ async function register(
 
   await registerMemberTx(db, {
     phone,
+    email: null,
     passwordHash: "argon2id$hash",
     displayName: "Platform Member",
     country: "UA",
@@ -93,17 +95,36 @@ describe("FR-001: a member is identified by an E.164 phone number and a password
     await expect(register(db, { phone })).rejects.toThrow();
   });
 
-  it("has no email column, so an email cannot become an identifier", async () => {
+  it("carries an optional email address alongside the phone (ADR 0028)", async () => {
+    // This test used to assert the opposite: that no email column existed at
+    // all, because FR-001 forbade an email identifier outright. ADR 0028
+    // reversed that. What survives the reversal is the part that still
+    // matters — the phone is not optional, and an address is.
     const db = testDbClient();
     const columns = await db.execute(
-      `SELECT column_name FROM information_schema.columns WHERE table_name = 'members'`,
+      `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name = 'members'`,
     );
-    const names = (columns.rows as { column_name: string }[]).map(
-      (row) => row.column_name,
-    );
+    const rows = columns.rows as {
+      column_name: string;
+      is_nullable: string;
+    }[];
+    const by = (name: string) => rows.find((row) => row.column_name === name);
 
-    expect(names).toContain("phone");
-    expect(names.filter((name) => /email/.test(name))).toHaveLength(0);
+    expect(by("phone")?.is_nullable).toBe("NO");
+    expect(by("email")?.is_nullable).toBe("YES");
+    expect(by("email_verified_at")?.is_nullable).toBe("YES");
+  });
+
+  it("refuses a second member on the same address (ADR 0028)", async () => {
+    const db = testDbClient();
+    const first = await register(db, { phone: nextPhone() });
+    const second = await register(db, { phone: nextPhone() });
+
+    await setMemberEmail(db, first.id, "identifier@example.com");
+
+    await expect(
+      setMemberEmail(db, second.id, "identifier@example.com"),
+    ).rejects.toThrow();
   });
 });
 

@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { members } from "./members";
 import { sessions } from "./sessions";
+import { memberIdentities } from "./member-identities";
 import { cards } from "./cards";
 import { legalAcceptances } from "./legal-acceptances";
 import { profiles } from "./profiles";
@@ -35,7 +36,18 @@ export const membersRelations = relations(members, ({ one, many }) => ({
   subscriptions: many(subscriptions),
   sentReferrals: many(referrals),
   accountDeletionRequests: many(accountDeletionRequests),
+  identities: many(memberIdentities),
 }));
+
+export const memberIdentitiesRelations = relations(
+  memberIdentities,
+  ({ one }) => ({
+    member: one(members, {
+      fields: [memberIdentities.memberId],
+      references: [members.id],
+    }),
+  }),
+);
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   member: one(members, {

@@ -83,6 +83,8 @@ that the folder cannot be trusted.
 |[0025](0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|2026-08-29|
 |[0026](0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Accepted|2026-08-29|
 |[0027](0027-e164-phone-normalisation.md)|One phone number format, normalised on the server, validated as reachable by SMS|Accepted|2026-09-02|
+|[0028](0028-email-identifier-and-account-recovery.md)|A verified email address is a second identifier, and the channel account recovery runs on|Accepted|2026-09-04|
+|[0029](0029-google-sign-in.md)|Google is an optional way in; identity stays self-hosted|Accepted|2026-09-04|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

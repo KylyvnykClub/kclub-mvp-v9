@@ -38,6 +38,7 @@ async function seedMember(db: DbClient) {
 
   await registerMemberTx(db, {
     phone,
+    email: null,
     passwordHash: "argon2id$hash",
     displayName: "Session Owner",
     country: "UA",

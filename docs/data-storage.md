@@ -38,13 +38,17 @@ account inherit staff scope.
    │    member     ├────▶ legal_acceptance         │ membership_card  │
    │               ├──────────────────────────────▶│  serial, tier    │
    │ phone (uniq)  │                                │  verify_token_h  │
-   │ password_hash │   1:N   ┌───────────────┐      │  status          │
-   │ display_name  ├────────▶│ member_session│      └──────────────────┘
-   │ locale, status│         └───────────────┘
-   └───┬───────┬───┘   1:N   ┌───────────────┐
-       │       └────────────▶│ trusted_device│
-       │ owns (1:N)          └───────────────┘
-       ▼
+   │ email (uniq)  │   1:N   ┌───────────────┐      │  status          │
+   │ password_hash ├────────▶│ member_session│      └──────────────────┘
+   │ display_name  │         └───────────────┘
+   │ locale, status│   1:N   ┌────────────────────┐
+   └──┬────┬────┬──┘────────▶│ verification_token │
+      │    │    │            │  purpose, hash     │
+      │    │    │   1:N      └────────────────────┘
+      │    │    └───────────▶┌───────────────┐
+      │    │                 │ trusted_device│
+      │ owns (1:N)           └───────────────┘
+      ▼
    ┌───────────────┐  N:1   ┌──────────┐        ┌──────────┐  N:1  ┌─────────┐
    │   company     ├───────▶│ category │        │   city   ├──────▶│ country │
    │ status        │        └──────────┘        └────┬─────┘       └─────────┘
@@ -185,9 +189,10 @@ security control first and a cost control second.
 |Data|Retention period|Deletion method|Driven by|
 |-|-|-|-|
 |Member account, active|While the account exists|—|—|
-|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, password hash, display name and sessions destroyed; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
+|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, **email address**, password hash, display name and sessions destroyed; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
 |Pending (never verified) registration|24 hours|Hard delete|Minimisation — an unverified number is not a member|
 |`phone_verification` rows|90 days|Hard delete|Abuse investigation window|
+|`verification_tokens` rows|90 days, and unusable long before that — 24 hours for an address, 30 minutes for a password reset|Hard delete; cascaded immediately on member deletion|Abuse investigation window, and minimisation: a spent link is evidence of a request, not a credential ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))|
 |`member_session`|30 days idle, 90 days absolute|Hard delete|Session policy in [security.md §2](security.md#2-authentication-and-authorization)|
 |Membership card|Life of the member; revoked cards retained 24 months|Retain revoked record, destroy the QR token immediately on revocation|Fraud investigation|
 |Company application draft (`company_drafts`)|90 days from the last edit|Hard delete by the retention sweep; deleted immediately on submission, and cascaded on member deletion|Minimisation — an abandoned application is not a company|

@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfileForm } from "@/components/profile/edit-profile-form";
 import { PersonalInfoForm } from "@/components/profile/personal-info-form";
+import { EmailForm } from "@/components/profile/email-form";
 import { PhoneChangeForm } from "@/components/profile/phone-change-form";
+import { maskEmail } from "@/lib/email";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { NotificationList } from "./_components/notification-list";
@@ -97,7 +99,7 @@ export default async function ProfilePage({ params }: Props) {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 rounded-none border border-border bg-muted/30 p-1 sm:grid-cols-3 lg:grid-cols-6">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 border border-border bg-muted/30 p-1 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="overview">
             {tDashboard("tabOverview")}
           </TabsTrigger>
@@ -113,7 +115,7 @@ export default async function ProfilePage({ params }: Props) {
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-px border border-border bg-border lg:grid-cols-[0.9fr_1.1fr]">
-            <Card className="rounded-none border-0 bg-background shadow-none">
+            <Card className="border-0 bg-background shadow-none">
               <CardHeader className="border-b border-border">
                 <CardTitle className="text-2xl font-black uppercase leading-tight tracking-[-0.02em] text-foreground">
                   {tDashboard("personalInfo")}
@@ -180,7 +182,7 @@ export default async function ProfilePage({ params }: Props) {
                     {card && (
                       <Badge
                         variant="outline"
-                        className="rounded-none border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent-ink"
+                        className="border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent-ink"
                       >
                         {card.tier === "vip"
                           ? tCard("tierVip")
@@ -255,7 +257,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="companies">
           <div className="mb-5 flex justify-start">
-            <Button asChild className="rounded-none">
+            <Button asChild>
               <Link href="/dashboard/company/new">
                 <Plus className="size-4" aria-hidden="true" />
                 {tDashboard("navRegisterCompany")}
@@ -274,7 +276,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="settings">
           <div className="space-y-6">
-            <Card className="rounded-none border-border bg-background shadow-none">
+            <Card className="border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("personalInfo")}
@@ -289,7 +291,21 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-border bg-background shadow-none">
+            <Card className="border-border bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
+                  {tDashboard("emailTitle")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EmailForm
+                  maskedEmail={member.email ? maskEmail(member.email) : null}
+                  verified={member.emailVerifiedAt !== null}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("changePhoneTitle")}
@@ -300,7 +316,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-border bg-background shadow-none">
+            <Card className="border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tSessions("title")}
@@ -315,7 +331,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <TabsContent value="edit">
           <div className="space-y-6">
-            <Card className="rounded-none border-border bg-background shadow-none">
+            <Card className="border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("publicProfile")}
@@ -326,7 +342,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-border bg-background shadow-none">
+            <Card className="border-border bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
                   {tDashboard("dataPrivacy")}
@@ -346,7 +362,7 @@ export default async function ProfilePage({ params }: Props) {
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-destructive/40 bg-background shadow-none">
+            <Card className="border-destructive/40 bg-background shadow-none">
               <CardHeader>
                 <CardTitle className="text-xl font-black uppercase tracking-[-0.01em] text-destructive">
                   {tDashboard("deleteAccount")}

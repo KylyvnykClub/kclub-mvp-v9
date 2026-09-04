@@ -41,6 +41,7 @@ async function registerWithCard(db: DbClient, serial = nextSerial()) {
 
   await registerMemberTx(db, {
     phone,
+    email: null,
     passwordHash: "hash",
     displayName: "Card Holder",
     country: "UA",
