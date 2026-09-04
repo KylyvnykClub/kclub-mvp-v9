@@ -63,7 +63,7 @@ plus partner listings combined, ~$8,000 MRR). Leading indicators are in
 |Native iOS/Android applications|Deferred indefinitely. Responsive web plus PWA install covers the phone case|
 |Apple Wallet / Google Wallet passes|Deferred to phase 2. Nice to have; requires Apple developer enrolment and pass signing|
 |"Business" tier for companies (up to 10 seats, integrations, account manager)|Deferred. Sold manually via "contact us" until there is demand; no self-serve billing for it at launch|
-|Social sign-in beyond Google|Google is offered as an optional entry point ([ADR 0029](decisions/0029-google-sign-in.md)); no other provider|
+|Email and social sign-in|Built, then withdrawn ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md)). Google remains behind a feature flag that is off; no other provider|
 |Automatic machine translation of partner-written content|Rejected. Partners supply English, optionally Russian and Ukrainian; machine translation of legal/commercial terms is a liability|
 |Multi-currency pricing|Deferred. USD only at launch; Stripe presents the card's local conversion|
 |Self-serve refunds|Deferred. Refunds are issued by staff in the Stripe dashboard under the published refund policy|
@@ -102,12 +102,12 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 
 |ID|Requirement|Role|Priority|
 |-|-|-|-|
-|FR-001|The system must register a member from a phone number in E.164 form plus a password, and may hold one email address per member, unique across members and proven by a single-use link before it counts as an identifier ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))|guest|M|
+|FR-001|The system must register a member from a phone number in E.164 form plus a password, and must not ask for an email address ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md)). The columns that held one remain, empty and unread|guest|M|
 |FR-002|The system must verify the phone number with a 6-digit one-time code delivered by SMS, valid for 10 minutes, with at most 5 verification attempts per code|guest|M|
 |FR-003|The system must limit code requests to 1 per 60 seconds, 5 per phone number per hour and 20 per IP address per hour, and must reject numbers from destinations disabled for fraud reasons|guest|M|
 |FR-004|The system must not create a member record that is visible to any other user until the phone number is verified|guest|M|
-|FR-005|The system must authenticate a returning member with either their phone number or a **verified** email address, plus password, or through a linked Google account whose verified address the member has also proved here ([ADR 0029](decisions/0029-google-sign-in.md)); and must require a fresh SMS code when the sign-in comes from an unrecognised device|member|M|
-|FR-006|The system must allow a password reset proven by a single-use link sent to the member's verified email address, valid for 30 minutes, and must revoke all other sessions when the password changes ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md)). A member with no verified address is recovered by staff instead|member|M|
+|FR-005|The system must authenticate a returning member with their phone number plus password, and must require a fresh SMS code when the sign-in comes from an unrecognised device. Google sign-in exists behind the `google_signin_enabled` flag and is off ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|member|M|
+|FR-006|The system must let a member ask for their password to be reset, must show that request to staff, and must revoke all other sessions when the password changes. The reset itself is performed by a staff owner after an identity check made outside the system ([ADR 0018](decisions/0018-staff-assisted-password-reset.md), [ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|member|M|
 |FR-007|The system must let a member list their active sessions and revoke any or all of them|member|S|
 |FR-008|The system must collect only display name, preferred language and country at registration, and must let the member change them|member|M|
 |FR-009|The system must let a member request deletion of their account and must complete it within 30 days, per [data-storage.md §4](data-storage.md#4-retention-and-deletion)|member|M|
@@ -315,7 +315,7 @@ entitlement change caused by a payment event.
 |Constraint|Type|Impact|
 |-|-|-|
 |No native applications; web only|Product|Rules out anything requiring a native runtime; PWA is the ceiling for offline and push on iOS|
-|Phone is the primary identifier; an email address is a second one|Product (owner decision, [ADR 0028](decisions/0028-email-identifier-and-account-recovery.md), reversing an earlier client decision)|Every SMS costs money and can fail, which is why credentials and sessions stay self-hosted per [decisions/0003-self-hosted-phone-authentication.md](decisions/0003-self-hosted-phone-authentication.md). A verified address is what gives account recovery the second channel it previously lacked|
+|Phone-only identity, no email sign-in|Product ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md), restoring the client's original position after the email identifier was tried and withdrawn)|Every SMS costs money and can fail; account recovery has no second channel and is therefore staff-performed, which forces the design in [decisions/0003-self-hosted-phone-authentication.md](decisions/0003-self-hosted-phone-authentication.md)|
 |Members are never listed to each other|Product|No feature may return a set of members. Enforced at the data-access layer, not by convention|
 |Managed platform, minimal operations staff|Organisational|Vercel + Neon + Stripe + Twilio. No Kubernetes, no self-managed database, no bespoke queue infrastructure|
 |Launch prices fixed at $19.99/month for both products|Commercial|Unit economics must absorb Stripe fees (~~$0.88 per charge), SMS (~$0.05 per verification) and platform cost (~~$400/month) — break-even is around 25 paying subscriptions|
@@ -399,6 +399,6 @@ Questions raised by the legal pack are tracked separately in
 
 |Question|Owner|Needed by|
 |-|-|-|
-|~~What identity proof does support accept to restore an account when the phone number is gone?~~|Client|**Answered 2026-09-04 by the owner: a verified email address ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))**|
+|What identity proof does support accept to restore an account when the phone number is gone?|Client|**Reopened 2026-09-04.** The email answer was built and withdrawn the same day ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md)); recovery is a request queue plus a staff-performed reset, which works at nine members and will not at nine hundred|
 |Who is on call after launch, and under what arrangement?|Client|Before public launch|
 |Do offer restrictions (validity, territory, booking required, minimum order) become structured fields? Partner Rules §7 binds the partner to what is published, so free text is a dispute waiting to happen|Client + tech lead|**Overdue** — was needed before phase 2 ended; phase 2 shipped with offer restrictions as free text, unresolved|

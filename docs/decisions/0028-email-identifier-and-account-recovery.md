@@ -1,6 +1,6 @@
 # 0028. Add a verified email address as a second identifier, and recover accounts through it
 
-> **Status:** Accepted
+> **Status:** Superseded by [0031](0031-identity-returns-to-phone-only.md)
 > **Date:** 2026-09-04
 > **Deciders:** Owner
 > **Supersedes:** [0018](0018-staff-assisted-password-reset.md)

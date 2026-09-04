@@ -1,11 +1,11 @@
 import { appendAuditEntry } from "@/data/audit-log";
+import { createPasswordResetRequest } from "@/data/password-reset-requests";
 import { db } from "@/data/db";
 import {
   consumeVerificationToken,
   createSessionTx,
   createVerificationToken,
   deleteSessionByToken,
-  deleteSessionsByMemberId,
   findActiveSessionByToken,
   findLatestVerificationTokenIssuedAt,
   findMemberByEmail,
@@ -13,13 +13,8 @@ import {
   markEmailVerified,
   registerMemberTx,
   setMemberEmail,
-  setMemberPasswordHash,
 } from "@/data/identity";
-import {
-  sendEmailVerificationEmail,
-  sendPasswordChangedEmail,
-  sendPasswordResetEmail,
-} from "@/modules/notifications/email";
+import { sendEmailVerificationEmail } from "@/modules/notifications/email";
 import { absoluteUrl } from "@/lib/seo";
 import { hashVerificationToken } from "@/lib/verification-token";
 import { generateToken, hashPassword, verifyPassword } from "./crypto";
@@ -51,13 +46,6 @@ export const EMAIL_VERIFICATION_TTL_HOURS = 24;
 
 /** Shortest gap between two links sent to the same address. */
 export const EMAIL_RESEND_INTERVAL_MS = 60_000;
-
-/**
- * How long a reset link lives (FR-006). Far shorter than a verification link:
- * this one sets a password, so an unspent link sitting in a mailbox is a
- * standing key to the account rather than a claim about an address.
- */
-export const PASSWORD_RESET_TTL_MINUTES = 30;
 
 /** The member's stored language, narrowed to the three the emails exist in. */
 function narrowLocale(language: string): "en" | "ru" | "uk" {
@@ -97,12 +85,29 @@ export class IdentityService {
   }
 
   /**
+   * Whether a number already belongs to a member (ADR 0030).
+   *
+   * Its own method rather than a flag threaded through
+   * `requestPhoneVerification`, because the two answer different questions and
+   * only this one discloses anything: the caller is telling the member "you
+   * already have an account", and the caller is the one that has to be rate
+   * limited for saying so.
+   */
+  static async isPhoneRegistered(phone: string): Promise<boolean> {
+    return Boolean(await findMemberByPhone(db, phone));
+  }
+
+  /**
    * Step 2 of registration: complete registration after SMS code is verified.
    */
   static async registerMember(params: {
     phone: string;
-    /** FR-001: collected at registration, because it is the recovery channel. */
-    email: string;
+    /**
+     * Null for an ordinary registration (ADR 0031). Non-null only where a
+     * provider proved an address in the same request, which today means a
+     * Google sign-up while that feature is switched on.
+     */
+    email: string | null;
     /**
      * A provider that has already proved this exact address in this request
      * (ADR 0029). Its presence is what lets registration mark the address
@@ -166,11 +171,9 @@ export class IdentityService {
         sessionToken,
       });
 
-      // Nothing to prove where a provider already did it. Otherwise the
-      // address is stored but unproved, and the link goes out - outside the
-      // transaction, because a mail server that is slow, or down, must not
-      // cost somebody their registration.
-      if (!params.provenBy) {
+      // Nothing to prove where a provider already did it, and nothing to send
+      // where no address was given at all (ADR 0031).
+      if (!params.provenBy && params.email) {
         await IdentityService.issueEmailVerification({
           memberId,
           email: params.email,
@@ -528,132 +531,29 @@ export class IdentityService {
   }
 
   /**
-   * Ask for a password reset link (FR-006, ADR 0028).
+   * Ask staff to reset a password (FR-006, ADR 0031).
    *
-   * Returns nothing about who was found. The caller says the same thing to
-   * everyone — "if that account exists, a link is on its way" — because an
-   * answer that varied would turn this form into a membership oracle
-   * (security.md §6), and this is the one form an anonymous caller can submit
-   * an address to freely.
+   * Records the request and returns nothing about who was found. The caller
+   * says the same thing to everyone, because this is a form an anonymous
+   * visitor can submit numbers to freely, and it must not become a membership
+   * oracle (security.md §6). Registration's first step is the single stated
+   * exception (ADR 0030), gated separately.
    *
-   * A member with no address, or one they never proved, gets no link. They are
-   * not stuck: the staff-performed reset (ADR 0018) is still there, which is
-   * exactly what it is now for.
+   * There is no emailed link any more. The reset itself is performed by a
+   * staff owner after an identity check outside the system (ADR 0018); this is
+   * only how a member reaches them.
    */
-  static async requestPasswordReset(params: {
-    identifier: LoginIdentifier;
-    now?: Date;
-  }): Promise<void> {
-    const now = params.now ?? new Date();
+  static async requestPasswordReset(params: { phone: string }): Promise<void> {
+    const member = await findMemberByPhone(db, params.phone);
 
-    const member =
-      params.identifier.kind === "phone"
-        ? await findMemberByPhone(db, params.identifier.value)
-        : await findMemberByEmail(db, params.identifier.value);
+    // Blocked and deleting accounts are not recoverable by their holder, and a
+    // request for one is noise on a staff screen rather than work.
+    if (!member || member.status !== "active") return;
 
-    if (!member?.email || !member.emailVerifiedAt) return;
-
-    // Blocked and deleting accounts are not recoverable by their holder.
-    if (member.status !== "active") return;
-
-    const token = generateToken();
-
-    await createVerificationToken(db, {
+    await createPasswordResetRequest(db, {
       memberId: member.id,
-      purpose: "password_reset",
-      email: member.email,
-      tokenHash: hashVerificationToken(token),
-      expiresAt: new Date(
-        now.getTime() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000,
-      ),
+      phone: params.phone,
     });
-
-    const locale = narrowLocale(member.language);
-
-    try {
-      await sendPasswordResetEmail({
-        to: member.email,
-        displayName: member.displayName,
-        locale,
-        url: absoluteUrl(
-          `/${locale}/reset-password/${encodeURIComponent(token)}`,
-        ),
-        expiresInMinutes: PASSWORD_RESET_TTL_MINUTES,
-      });
-    } catch (error) {
-      // Logged, not surfaced: the screen says the same thing either way, and
-      // the member can ask again.
-      logger.error("password reset email could not be sent", {
-        memberId: member.id,
-        ...safeErrorFields(error),
-      });
-    }
-  }
-
-  /**
-   * Set a new password against a reset link (FR-006).
-   *
-   * The half that is easy to leave out is the second one: **every session
-   * ends**. If somebody else is in the account, changing the password while
-   * their session lives achieves nothing.
-   */
-  static async resetPassword(params: {
-    token: string;
-    passwordPlain: string;
-    now?: Date;
-  }): Promise<boolean> {
-    const now = params.now ?? new Date();
-
-    const consumed = await consumeVerificationToken(
-      db,
-      hashVerificationToken(params.token),
-      "password_reset",
-      now,
-    );
-
-    if (!consumed) return false;
-
-    // Hashed after the token is spent, not before: argon2 takes real time, and
-    // a caller who could hold the token unspent while it ran would have a
-    // window to use it twice.
-    const passwordHash = await hashPassword(params.passwordPlain);
-    const changed = await setMemberPasswordHash(
-      db,
-      consumed.memberId,
-      passwordHash,
-    );
-
-    if (!changed) return false;
-
-    await deleteSessionsByMemberId(db, consumed.memberId);
-
-    await appendAuditEntry(db, {
-      actorType: "member",
-      actorId: consumed.memberId,
-      action: "member.password_reset",
-      subjectType: "member",
-      subjectId: consumed.memberId,
-      meta: { sessionsRevoked: true, provenBy: "email" },
-    });
-
-    const member = await findMemberByEmail(db, consumed.email);
-
-    if (member) {
-      // Told after the fact (security.md §1): if the reset was not theirs,
-      // this is the message that says so.
-      await sendPasswordChangedEmail({
-        to: consumed.email,
-        displayName: member.displayName,
-        locale: narrowLocale(member.language),
-      }).catch((error: unknown) => {
-        logger.error("password change notice could not be sent", {
-          memberId: consumed.memberId,
-          ...safeErrorFields(error),
-        });
-      });
-    }
-
-    return true;
   }
 
   /**

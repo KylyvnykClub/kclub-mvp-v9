@@ -64,6 +64,8 @@ type AuthActionResult = {
   success: boolean;
   error?: string;
   sent?: boolean;
+  /** The number already belongs to a member (ADR 0030). */
+  taken?: boolean;
 } | null;
 
 export function RegisterFlow({
@@ -141,19 +143,19 @@ export function RegisterFlow({
     async (_prevState: AuthActionResult, formData: FormData) => {
       const p = formData.get("phone") as string;
 
-      // With SMS postponed there is no code to request and no code screen to
-      // show; the applicant goes straight to the profile step.
-      if (!phoneVerificationEnabled) {
-        setPhone(p);
-        setStep(3);
-        return { success: true, sent: false };
+      // Always asked, even with SMS postponed and nothing to send. This step
+      // used to skip the server entirely when the code screen was off, which
+      // is why a number that was already taken was only discovered at the end
+      // of the form, after a password and four acknowledgements (ADR 0030).
+      const res = await requestPhoneVerificationAction(formData);
+
+      if (!res?.success || res.taken) {
+        return res;
       }
 
-      const res = await requestPhoneVerificationAction(formData);
-      if (res?.success) {
-        setPhone(p);
-        setStep(2);
-      }
+      setPhone(p);
+      // The code screen exists only while SMS does (ADR 0012).
+      setStep(phoneVerificationEnabled ? 2 : 3);
       return res;
     },
     null,
@@ -262,6 +264,25 @@ export function RegisterFlow({
                   {phoneState.error}
                 </p>
               )}
+              {/* Said here rather than after the form is filled in. It does
+                  disclose that the number is a member's, which is the trade
+                  ADR 0030 makes and rate-limits. */}
+              {phoneState?.taken && (
+                <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm">
+                  <p className="font-medium text-destructive">
+                    {t("phoneTaken")}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("haveAccount")}{" "}
+                    <Link
+                      href={`/${locale}/login`}
+                      className="font-bold text-foreground hover:text-accent-ink"
+                    >
+                      {t("loginLink")}
+                    </Link>
+                  </p>
+                </div>
+              )}
               <SubmitButton label={tAuth("sendCode")} />
               {/* On the first step only: Google settles the address, and the
                   phone number still has to be typed either way (ADR 0029). */}
@@ -331,33 +352,13 @@ export function RegisterFlow({
                 />
               </div>
 
-              {/* Required, and it is the recovery channel rather than a
-                  marketing field: without it a member who forgets their
-                  password has nothing to prove who they are (ADR 0028). */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  {tAuth("emailLabel")}
-                  <RequiredMark />
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  required
-                  maxLength={255}
-                  defaultValue={googleEmail ?? undefined}
-                  placeholder={tAuth("emailPlaceholder")}
-                  className="h-12 bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {/* Editable on purpose even when Google supplied it: a
-                      member may prefer a different address, and typing one
-                      simply falls back to the emailed link. */}
-                  {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
-                </p>
-              </div>
+              {/* No address is asked for (ADR 0031): a member is a phone
+                  number again. The hidden field below carries one only when
+                  Google proved it in this session, so re-enabling that feature
+                  needs no change here. */}
+              {googleEmail && (
+                <input type="hidden" name="email" value={googleEmail} />
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password">

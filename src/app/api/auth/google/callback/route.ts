@@ -18,7 +18,11 @@ import {
 } from "@/lib/pending-identity";
 import { safeErrorFields } from "@/lib/safe-error";
 import { generateToken } from "@/modules/identity/crypto";
-import { googleProvider, readGoogleIdentity } from "@/modules/identity/google";
+import {
+  googleEnabled,
+  googleProvider,
+  readGoogleIdentity,
+} from "@/modules/identity/google";
 import { routing } from "@/i18n/routing";
 
 /**
@@ -47,7 +51,7 @@ const OAUTH_COOKIES = [
 export async function GET(request: NextRequest) {
   const google = googleProvider();
 
-  if (!google) {
+  if (!google || !(await googleEnabled())) {
     return new NextResponse(null, { status: 404 });
   }
 

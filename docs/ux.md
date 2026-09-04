@@ -66,11 +66,9 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Register — phone + password|Start membership|public|Consent wording for SMS shown verbatim, and stored|
 |Register — enter code|Prove the number|public|Resend with visible countdown; attempts remaining|
 |Register — profile|Finish in one screen|authenticated, unverified profile|Name, language, country. Three fields, no more|
-|Sign in|Return|public|Phone or email, chosen by a two-way switch above the field, and — where the deployment has a Google client — a "continue with Google" alternative below the button ([ADR 0029](decisions/0029-google-sign-in.md)). A refusal from the Google callback appears in the same place as a wrong password, in the member's language|
+|Sign in|Return|public|Phone number and password. The Google alternative below the button appears only when the `google_signin_enabled` flag is on, and it is off ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
 |Sign in — device challenge|Prove an unrecognised device|public|Appears only when the device is unknown|
-|Forgot password|Recover|public|Phone or email, whichever the member remembers, behind a Turnstile gate. The reply is the same in every case — "if that account exists and has a confirmed address, a link is on its way" — so the form cannot be used to find out who is in the club. A member with no confirmed address is pointed at support, who can still reset it by hand ([ADR 0018](decisions/0018-staff-assisted-password-reset.md))|
-|Set a new password|Finish recovering|public, with a link|Reached from the emailed link, which works once and expires in 30 minutes. The token is not checked on page load — it is spent by submitting the form — so a mail scanner cannot burn it and a guesser learns nothing for free. Says plainly that saving signs the member out everywhere else|
-|Confirm email|Prove an address|public|Reached from a link in an email, and confirms on a button rather than on page load: mail scanners follow links, and a one-time token spent by a scanner leaves the member with no way to verify. Says only whether the link still works|
+|Forgot password|Recover|public|Phone number, behind a Turnstile gate. The request lands in the staff console; the reply is the same in every case, so the form cannot be used to find out who is in the club. Staff confirm who the caller is outside the system, then reset the password ([ADR 0018](decisions/0018-staff-assisted-password-reset.md), [ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
 |Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
 Every screen that takes a phone number — the two above, the staff creation form
@@ -117,7 +115,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Send a referral|Introduce a client|member_vip|Consent attestation, quota shown before submitting|
 |Inbox|See what the system did to me and when|member|A tab under Profile, not a fifth navigation item. Unread count in the header; each row rendered in the member's current language ([decisions/0020](decisions/0020-member-inbox.md))|
 |Settings — profile|Change name, language, country|member||
-|Settings — security|Sessions, password, phone number, email address|member|Active sessions with device and last-used. The email panel says which of two states the address is in — claimed or proved — because an unproved address is not a way back into the account|
+|Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
 
 **Staff console (`/dashboard/admin`, shared shell: sidebar + breadcrumb topbar)**

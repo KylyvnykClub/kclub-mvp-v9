@@ -29,12 +29,43 @@ const requestPhoneSchema = z.object({
   phone: phoneSchema,
 });
 
+/**
+ * Step 1 of registration.
+ *
+ * This answer tells the caller whether a number is already registered
+ * (`taken`), which is a deliberate reversal of what this action used to do and
+ * of the enumeration rule in security.md §6 — see ADR 0030. The reasoning and
+ * the price are in that record; the mitigations are here.
+ *
+ * Rate limited by address, tightly, because the whole cost of enumeration is
+ * how many numbers can be tried. One person registering makes a handful of
+ * attempts; a script walking a numbering plan makes thousands.
+ */
 export async function requestPhoneVerificationAction(formData: FormData) {
   try {
+    const headerList = await headers();
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+
     const data = requestPhoneSchema.parse(Object.fromEntries(formData));
+
+    await assertRateLimit(
+      authRateLimiter(),
+      `register:phone-check:ip:${ipAddress}`,
+      20,
+      60 * 60 * 1000,
+    );
+
+    if (await IdentityService.isPhoneRegistered(data.phone)) {
+      return { success: true, sent: false, taken: true };
+    }
+
     const sent = await IdentityService.requestPhoneVerification(data.phone);
-    return { success: true, sent }; // Always return true so we don't leak registered phones
+    return { success: true, sent, taken: false };
   } catch (err) {
+    if (err instanceof RateLimited) {
+      return { success: false, error: "Too many attempts. Try again later." };
+    }
     if (err instanceof z.ZodError)
       return { success: false, error: err.issues[0]?.message };
     return { success: false, error: "Failed to send verification code" };
@@ -48,9 +79,9 @@ const consentAcceptanceSchema = z.object({
 
 const registerSchema = z.object({
   phone: phoneSchema,
-  // Required: it is the only channel that can prove who a member is once the
-  // phone number is gone (FR-001, ADR 0028).
-  email: emailSchema,
+  // Optional again (ADR 0031): the form no longer asks, and the only thing
+  // that still submits one is the hidden field a Google sign-up fills in.
+  email: emailSchema.optional(),
   // Optional at the boundary because the code is only demanded when phone
   // verification is enabled (ADR 0012); the service decides, not the form.
   code: z.string().min(6).max(6).optional(),
@@ -171,7 +202,7 @@ export async function registerAction(formData: FormData) {
 
     const result = await IdentityService.registerMember({
       phone: data.phone,
-      email: data.email,
+      email: data.email ?? null,
       provenBy,
       code: data.code,
       passwordPlain: data.password,

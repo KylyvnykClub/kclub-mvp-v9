@@ -29,5 +29,7 @@ export default async function LoginPage({
   // message: the message is chosen by the client in the member's language.
   const { error } = await searchParams;
 
-  return <LoginForm google={googleEnabled()} providerError={error ?? null} />;
+  return (
+    <LoginForm google={await googleEnabled()} providerError={error ?? null} />
+  );
 }

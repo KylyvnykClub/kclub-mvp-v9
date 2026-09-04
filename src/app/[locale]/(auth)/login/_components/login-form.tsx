@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QRCodeSVG } from "qrcode.react";
@@ -57,11 +56,6 @@ export function LoginForm({
     setupTotp?: boolean;
     totpUri?: string;
   };
-
-  // Phone is the default because it is the identifier every member has; an
-  // address is optional and, for the nine who registered before ADR 0028,
-  // absent.
-  const [identifier, setIdentifier] = useState<"phone" | "email">("phone");
 
   const [loginState, loginFormAction] = useActionState(
     async (_prevState: LoginState, formData: FormData) => {
@@ -184,61 +178,17 @@ export function LoginForm({
         </CardHeader>
         <form action={loginFormAction}>
           <CardContent className="space-y-5 p-6 sm:p-8">
-            <div className="space-y-2 text-left">
-              <div
-                role="group"
-                aria-label={t("identifierLabel")}
-                className="grid grid-cols-2 rounded-md gap-1 border border-input p-1"
-              >
-                {(["phone", "email"] as const).map((kind) => (
-                  <button
-                    // type="button" or the segmented control submits the form
-                    // on every switch.
-                    type="button"
-                    key={kind}
-                    onClick={() => setIdentifier(kind)}
-                    aria-pressed={identifier === kind}
-                    className={cn(
-                      "rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors",
-                      identifier === kind
-                        ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {kind === "phone"
-                      ? t("identifierPhone")
-                      : t("identifierEmail")}
-                  </button>
-                ))}
-              </div>
-
-              {/* Only the chosen field is mounted, so exactly one identifier is
-                  ever posted and the server never has to guess which. */}
-              {identifier === "phone" ? (
-                <PhoneField
-                  id="phone"
-                  name="phone"
-                  label={t("phoneLabel")}
-                  autoComplete="username"
-                  required
-                  className="h-12 bg-background"
-                />
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t("emailLabel")}</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="username"
-                    required
-                    maxLength={255}
-                    className="h-12 bg-background"
-                  />
-                </div>
-              )}
-            </div>
+            {/* Phone only (ADR 0031). The server still understands an
+                address, and `refuseSignIn` still refuses an unproved one, but
+                nothing offers it: members are identified by their number. */}
+            <PhoneField
+              id="phone"
+              name="phone"
+              label={t("phoneLabel")}
+              autoComplete="username"
+              required
+              className="h-12 bg-background"
+            />
             <div className="space-y-2 text-left">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("passwordLabel")}</Label>

@@ -2,7 +2,11 @@ import { generateCodeVerifier, generateState } from "arctic";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { routing } from "@/i18n/routing";
-import { GOOGLE_SCOPES, googleProvider } from "@/modules/identity/google";
+import {
+  GOOGLE_SCOPES,
+  googleEnabled,
+  googleProvider,
+} from "@/modules/identity/google";
 
 /**
  * Start "sign in with Google" (ADR 0029).
@@ -20,13 +24,14 @@ import { GOOGLE_SCOPES, googleProvider } from "@/modules/identity/google";
 
 const TEN_MINUTES = 60 * 10;
 
-// Not async: nothing here awaits, and the lint rule is right to say so.
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const google = googleProvider();
 
-  // A deployment with no Google client does not have a broken button; it has
-  // no button, and this route does not exist.
-  if (!google) {
+  // A deployment with no Google client, or with the feature switched off in
+  // the console (ADR 0031), does not have a broken button: it has no button,
+  // and this route does not exist. Checked here too, because a hidden button
+  // is not a closed door - the URL is guessable.
+  if (!google || !(await googleEnabled())) {
     return new NextResponse(null, { status: 404 });
   }
 
