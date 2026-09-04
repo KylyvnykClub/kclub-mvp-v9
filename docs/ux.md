@@ -133,7 +133,7 @@ screens. Access column names the `can()` gate the page enforces.
 |Client introductions|Clear the review queue|staff_moderator+|In-review badge; client contact visible only inside the sheet during review (FR-071), redacted after closure (FR-077)|
 |Reference data|Keep categories and places tidy|staff_moderator+|Create forms with labels; Activate/Deactivate one-click; Delete behind a confirm dialog and blocked while referenced|
 |Feature flags|Turn a capability on or off|staff_owner|Each switch names its flag and says what it gates; effect is immediate|
-|Staff|Manage the team|staff_owner|Create, change role, disable behind a confirm dialog (signs out everywhere); 2FA status per account|
+|Staff|Manage the team|staff_owner|Create, change role, disable behind a confirm dialog (signs out everywhere); 2FA status per account, and a **reset 2FA** control beside it for when an authenticator stops being accepted. Both confirm first, both end every session that account holds, and neither touches the password. The control is offered only where there is an enrolment to discard, and never on the owner's own row — resetting your own would lock you out of the screen holding the button|
 |Audit log|Investigate|staff_owner|Filter by text, actor, target and date range; renders the failure as an inline error, not a blank page|
 
 Not yet built, listed in the shell as disabled: content & access, roles &

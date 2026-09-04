@@ -30,13 +30,24 @@ navigation hiding a link is not a permission.
 |Company moderation queue|`/dashboard/admin/companies`|`staff_moderator`+|
 |Referral moderation, and barring a sender|`/dashboard/admin/referrals`|`staff_moderator`+|
 |Reference data: categories, countries, cities|`/dashboard/admin/categories`|`staff_moderator`+|
-|Staff accounts: create, disable, change role|`/dashboard/admin/staff`|`staff_owner` only|
+|Staff accounts: create, disable, change role, reset 2FA|`/dashboard/admin/staff`|`staff_owner` only|
 |Audit log, searchable by actor, target and date|`/dashboard/admin/audit`|`staff_owner` only|
 |Feature flags and plan prices|`/dashboard/admin/flags`|`staff_owner`|
 
 **Sign-in requires TOTP.** A staff session is created partial and does not
 authenticate anything until the code is verified
 ([security.md](security.md)).
+
+**When an authenticator stops being accepted**, reset it from the Staff screen
+rather than from SQL: the control clears the seed and the enrolment flag
+together, ends every session that account holds, writes an audit entry, and the
+next sign-in shows a fresh QR code. Clearing only the seed would leave an
+account demanding a factor it can no longer produce.
+
+**The owner cannot reset their own**, because the button lives behind the
+sign-in it would be fixing. A single owner locked out of their own authenticator
+is still a database statement — worth a second owner account existing before
+that happens.
 
 **Every mutating staff action writes an audit entry**, and the audit log is
 append-only at the database permission level — the application role holds

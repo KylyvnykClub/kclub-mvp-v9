@@ -554,6 +554,18 @@ const staticRoutes: RouteEntry[] = [
     audited: true,
   },
   {
+    // Owner-only, and gated on `reset_password` rather than `manage_staff`:
+    // clearing a second factor is the same capability as replacing a
+    // password, not staff administration (FR-080, FR-087).
+    method: "POST",
+    path: "action:resetStaffTotpAction",
+    action: "reset_password",
+    subject: "member",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
     method: "POST",
     path: "action:createCategoryAction",
     action: "manage_reference_data",
