@@ -97,6 +97,19 @@ export class IdentityService {
   }
 
   /**
+   * Whether a number already belongs to a member (ADR 0030).
+   *
+   * Its own method rather than a flag threaded through
+   * `requestPhoneVerification`, because the two answer different questions and
+   * only this one discloses anything: the caller is telling the member "you
+   * already have an account", and the caller is the one that has to be rate
+   * limited for saying so.
+   */
+  static async isPhoneRegistered(phone: string): Promise<boolean> {
+    return Boolean(await findMemberByPhone(db, phone));
+  }
+
+  /**
    * Step 2 of registration: complete registration after SMS code is verified.
    */
   static async registerMember(params: {

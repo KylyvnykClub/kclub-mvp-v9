@@ -64,6 +64,8 @@ type AuthActionResult = {
   success: boolean;
   error?: string;
   sent?: boolean;
+  /** The number already belongs to a member (ADR 0030). */
+  taken?: boolean;
 } | null;
 
 export function RegisterFlow({
@@ -141,19 +143,19 @@ export function RegisterFlow({
     async (_prevState: AuthActionResult, formData: FormData) => {
       const p = formData.get("phone") as string;
 
-      // With SMS postponed there is no code to request and no code screen to
-      // show; the applicant goes straight to the profile step.
-      if (!phoneVerificationEnabled) {
-        setPhone(p);
-        setStep(3);
-        return { success: true, sent: false };
+      // Always asked, even with SMS postponed and nothing to send. This step
+      // used to skip the server entirely when the code screen was off, which
+      // is why a number that was already taken was only discovered at the end
+      // of the form, after a password and four acknowledgements (ADR 0030).
+      const res = await requestPhoneVerificationAction(formData);
+
+      if (!res?.success || res.taken) {
+        return res;
       }
 
-      const res = await requestPhoneVerificationAction(formData);
-      if (res?.success) {
-        setPhone(p);
-        setStep(2);
-      }
+      setPhone(p);
+      // The code screen exists only while SMS does (ADR 0012).
+      setStep(phoneVerificationEnabled ? 2 : 3);
       return res;
     },
     null,
@@ -261,6 +263,25 @@ export function RegisterFlow({
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
                   {phoneState.error}
                 </p>
+              )}
+              {/* Said here rather than after the form is filled in. It does
+                  disclose that the number is a member's, which is the trade
+                  ADR 0030 makes and rate-limits. */}
+              {phoneState?.taken && (
+                <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm">
+                  <p className="font-medium text-destructive">
+                    {t("phoneTaken")}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("haveAccount")}{" "}
+                    <Link
+                      href={`/${locale}/login`}
+                      className="font-bold text-foreground hover:text-accent-ink"
+                    >
+                      {t("loginLink")}
+                    </Link>
+                  </p>
+                </div>
               )}
               <SubmitButton label={tAuth("sendCode")} />
               {/* On the first step only: Google settles the address, and the

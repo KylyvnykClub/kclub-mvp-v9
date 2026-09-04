@@ -29,12 +29,43 @@ const requestPhoneSchema = z.object({
   phone: phoneSchema,
 });
 
+/**
+ * Step 1 of registration.
+ *
+ * This answer tells the caller whether a number is already registered
+ * (`taken`), which is a deliberate reversal of what this action used to do and
+ * of the enumeration rule in security.md §6 — see ADR 0030. The reasoning and
+ * the price are in that record; the mitigations are here.
+ *
+ * Rate limited by address, tightly, because the whole cost of enumeration is
+ * how many numbers can be tried. One person registering makes a handful of
+ * attempts; a script walking a numbering plan makes thousands.
+ */
 export async function requestPhoneVerificationAction(formData: FormData) {
   try {
+    const headerList = await headers();
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+
     const data = requestPhoneSchema.parse(Object.fromEntries(formData));
+
+    await assertRateLimit(
+      authRateLimiter(),
+      `register:phone-check:ip:${ipAddress}`,
+      20,
+      60 * 60 * 1000,
+    );
+
+    if (await IdentityService.isPhoneRegistered(data.phone)) {
+      return { success: true, sent: false, taken: true };
+    }
+
     const sent = await IdentityService.requestPhoneVerification(data.phone);
-    return { success: true, sent }; // Always return true so we don't leak registered phones
+    return { success: true, sent, taken: false };
   } catch (err) {
+    if (err instanceof RateLimited) {
+      return { success: false, error: "Too many attempts. Try again later." };
+    }
     if (err instanceof z.ZodError)
       return { success: false, error: err.issues[0]?.message };
     return { success: false, error: "Failed to send verification code" };
