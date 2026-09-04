@@ -28,6 +28,26 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Public: whoever needs it cannot sign in by definition. Reads only; the
+    // link is sent by the action behind the button (FR-006).
+    method: "GET",
+    path: "/:locale/forgot-password",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // Public, and deliberately says nothing about the token until the form is
+    // submitted (FR-006).
+    method: "GET",
+    path: "/:locale/reset-password/:token",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     // Public: the link may be opened in a browser that has never signed in,
     // which is the case it exists for. It reads only; the token is spent by
     // the action behind the button (ADR 0028).
