@@ -127,6 +127,14 @@ pnpm test:e2e            # Playwright + axe; needs Docker (Testcontainers)
 
 ## Gotchas
 
+- **Never build into `.next` while someone is running `pnpm dev`.** They share
+  the directory, and a production build replaces the dev server's chunks: the
+  running dev server then dies with `Cannot find module './2045.js'` and has to
+  be restarted after `rm -rf .next`. Build into a directory of your own instead
+  — `NEXT_BUILD_DIR=.next-driver pnpm build` and
+  `NEXT_BUILD_DIR=.next-driver PORT=3100 pnpm start`, the same mechanism
+  `pnpm verify:build` uses for `.next-verify`.
+
 - **`next dev` is unusably slow for driving.** Measured on this machine:
   `/en/login` 124 s on first hit, `/en/dashboard/admin/members` 284 s. Sessions
   also dropped mid-walk (307 back to `/en/login`). Always drive a production
