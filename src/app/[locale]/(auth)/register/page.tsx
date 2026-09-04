@@ -46,7 +46,7 @@ export default async function RegisterPage({
       privacyVersion={privacy?.version ?? null}
       phoneVerificationEnabled={env.server.AUTH_PHONE_VERIFICATION_ENABLED}
       turnstileSiteKey={env.client.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null}
-      google={googleEnabled()}
+      google={await googleEnabled()}
       googleEmail={pending?.email ?? null}
       googleName={pending?.displayName ?? null}
     />

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useFormStatus } from "react-dom";
 
@@ -14,9 +14,6 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { PhoneField } from "@/components/auth/phone-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 const initialState: ResetRequestState = { status: "idle" };
 
@@ -35,8 +32,6 @@ export function ForgotPasswordForm({
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
-  const [identifier, setIdentifier] = useState<"phone" | "email">("email");
-
   const [state, formAction] = useActionState(
     async (_prev: ResetRequestState | null, formData: FormData) => {
       // Cloudflare injects this input next to the widget inside the form.
@@ -64,55 +59,16 @@ export function ForgotPasswordForm({
           </div>
         ) : (
           <form action={formAction} className="space-y-5">
-            <div
-              role="group"
-              aria-label={t("identifierLabel")}
-              className="grid grid-cols-2 gap-1 rounded-md border border-input p-1"
-            >
-              {(["email", "phone"] as const).map((kind) => (
-                <button
-                  type="button"
-                  key={kind}
-                  onClick={() => setIdentifier(kind)}
-                  aria-pressed={identifier === kind}
-                  className={cn(
-                    "rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors",
-                    identifier === kind
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {kind === "email"
-                    ? t("identifierEmail")
-                    : t("identifierPhone")}
-                </button>
-              ))}
-            </div>
-
-            {identifier === "email" ? (
-              <div className="space-y-2">
-                <Label htmlFor="email">{t("emailLabel")}</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="username"
-                  required
-                  maxLength={255}
-                  className="h-12 bg-background"
-                />
-              </div>
-            ) : (
-              <PhoneField
-                id="phone"
-                name="phone"
-                label={t("phoneLabel")}
-                autoComplete="username"
-                required
-                className="h-12 bg-background"
-              />
-            )}
+            {/* Phone only (ADR 0031): a member is identified by their
+                number, and staff recognise them by it. */}
+            <PhoneField
+              id="phone"
+              name="phone"
+              label={t("phoneLabel")}
+              autoComplete="username"
+              required
+              className="h-12 bg-background"
+            />
 
             <p className="text-xs text-muted-foreground">{t("forgotHelp")}</p>
 

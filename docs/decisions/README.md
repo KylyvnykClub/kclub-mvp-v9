@@ -86,6 +86,7 @@ that the folder cannot be trusted.
 |[0028](0028-email-identifier-and-account-recovery.md)|A verified email address is a second identifier, and the channel account recovery runs on|Accepted|2026-09-04|
 |[0029](0029-google-sign-in.md)|Google is an optional way in; identity stays self-hosted|Accepted|2026-09-04|
 |[0030](0030-registration-says-a-number-is-taken.md)|Registration says a phone number is taken, rate limited, as a stated exception to the enumeration rule|Accepted|2026-09-04|
+|[0031](0031-identity-returns-to-phone-only.md)|Identity returns to phone only; recovery is a request to staff; Google is hidden behind a flag|Accepted|2026-09-04|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

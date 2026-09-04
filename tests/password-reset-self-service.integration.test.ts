@@ -73,17 +73,19 @@ async function issueReset(
 const inHalfAnHour = () => new Date(Date.now() + 30 * 60 * 1000);
 
 /**
- * Self-service password reset, proved by an emailed link (FR-006, ADR 0028).
+ * The single-use token machinery, kept dormant (ADR 0031).
  *
- * FR-006 has two halves and the second is the one that gets forgotten: the
- * password changes, **and** every other session ends. A reset that leaves the
- * old sessions alive is worse than useless when the reason for the reset is
- * that somebody else is in the account.
+ * It was built for the emailed reset link that ADR 0028 introduced and ADR 0031
+ * withdrew. The table and its guarantees remain, unused by any screen, because
+ * bringing the email flow back should not mean rediscovering that a link has to
+ * be single-use, expiring and purpose-bound. These tests are what keep those
+ * three properties true while nothing exercises them.
  *
- * The staff-performed reset (ADR 0018) keeps its own suite; it remains the
- * path for members who hold no address.
+ * Recovery today is a request to staff plus an owner-performed reset:
+ * `password-reset-requests.integration.test.ts` and
+ * `password-reset.integration.test.ts`.
  */
-describe("self-service password reset (FR-006, ADR 0028)", () => {
+describe("verification token guarantees, dormant (ADR 0031)", () => {
   it("FR-006: a reset link replaces the hash and ends every session", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "reset@example.com");

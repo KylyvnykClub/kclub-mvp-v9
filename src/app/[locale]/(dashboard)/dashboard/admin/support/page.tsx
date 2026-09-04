@@ -4,9 +4,11 @@ import { redirect } from "next/navigation";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { getSupportMetricsAction } from "@/actions/admin-support";
+import { listPasswordResetRequestsAction } from "@/actions/admin-password-reset-requests";
 import { Users, UserCheck, UserPlus, Building, Handshake } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "../_components/page-header";
+import { RecoveryQueue } from "./_components/recovery-queue";
 import { SectionLabel } from "../_components/section-label";
 import { StatTile } from "../_components/stat-tile";
 
@@ -37,6 +39,7 @@ export default async function AdminSupportPage({
   }
 
   const metrics = await getSupportMetricsAction();
+  const recoveryRequests = await listPasswordResetRequestsAction();
   const numberFormatter = new Intl.NumberFormat(locale);
 
   const queues = [
@@ -80,6 +83,14 @@ export default async function AdminSupportPage({
             footnote={t("last7Days")}
           />
         </div>
+      </section>
+
+      <section className="space-y-3">
+        {/* Members who asked for their password back (FR-006, ADR 0031).
+            First, because a person locked out of their account is the most
+            time-sensitive thing on this screen. */}
+        <SectionLabel>{t("recoveryTitle")}</SectionLabel>
+        <RecoveryQueue requests={recoveryRequests} locale={locale} />
       </section>
 
       <section className="space-y-3">

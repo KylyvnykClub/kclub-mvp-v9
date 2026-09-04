@@ -6,6 +6,7 @@ export * from "./members";
 export * from "./sessions";
 export * from "./verification-tokens";
 export * from "./member-identities";
+export * from "./password-reset-requests";
 export * from "./legal-acceptances";
 export * from "./cards";
 export * from "./profiles";

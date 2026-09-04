@@ -352,33 +352,13 @@ export function RegisterFlow({
                 />
               </div>
 
-              {/* Required, and it is the recovery channel rather than a
-                  marketing field: without it a member who forgets their
-                  password has nothing to prove who they are (ADR 0028). */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  {tAuth("emailLabel")}
-                  <RequiredMark />
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  required
-                  maxLength={255}
-                  defaultValue={googleEmail ?? undefined}
-                  placeholder={tAuth("emailPlaceholder")}
-                  className="h-12 bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {/* Editable on purpose even when Google supplied it: a
-                      member may prefer a different address, and typing one
-                      simply falls back to the emailed link. */}
-                  {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
-                </p>
-              </div>
+              {/* No address is asked for (ADR 0031): a member is a phone
+                  number again. The hidden field below carries one only when
+                  Google proved it in this session, so re-enabling that feature
+                  needs no change here. */}
+              {googleEmail && (
+                <input type="hidden" name="email" value={googleEmail} />
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="password">

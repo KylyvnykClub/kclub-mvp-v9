@@ -9,7 +9,14 @@ export type FlagName =
   | "referrals_enabled"
   | "checkout_enabled"
   | "maintenance_mode"
-  | "public_catalogue";
+  | "public_catalogue"
+  /**
+   * Sign in with Google (ADR 0029, hidden by ADR 0031). Absent means off,
+   * which is what `isEnabled` returns for a missing row - so the button stays
+   * hidden until somebody turns it on in the console, and the credentials can
+   * stay where they are.
+   */
+  | "google_signin_enabled";
 
 export const FLAG_NAMES: readonly FlagName[] = [
   "signup_enabled",
@@ -18,6 +25,7 @@ export const FLAG_NAMES: readonly FlagName[] = [
   "checkout_enabled",
   "maintenance_mode",
   "public_catalogue",
+  "google_signin_enabled",
 ];
 
 export function isFlagName(name: string): name is FlagName {

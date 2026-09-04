@@ -43,10 +43,31 @@ export function googleProvider(): Google | null {
   return new Google(id, secret, googleCallbackUrl());
 }
 
-export function googleEnabled(): boolean {
+/** Whether this deployment holds a Google client at all. */
+export function googleConfigured(): boolean {
   return Boolean(
     env.server.GOOGLE_CLIENT_ID && env.server.GOOGLE_CLIENT_SECRET,
   );
+}
+
+/**
+ * Whether to offer the button (ADR 0031).
+ *
+ * Two switches, and both must be on: the credentials, and the
+ * `google_signin_enabled` flag in the console. The flag is what hides the
+ * feature without deleting anything — a missing flag row reads as off, so it
+ * is hidden by default and turning it on is a click rather than an
+ * environment change and a redeploy.
+ */
+export async function googleEnabled(): Promise<boolean> {
+  if (!googleConfigured()) return false;
+
+  const [{ db }, { isEnabled }] = await Promise.all([
+    import("@/data/db"),
+    import("@/data/feature-flags"),
+  ]);
+
+  return isEnabled(db, "google_signin_enabled");
 }
 
 export { readGoogleIdentity, type GoogleIdentity } from "./google-claims";

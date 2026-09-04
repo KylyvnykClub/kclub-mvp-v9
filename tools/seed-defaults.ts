@@ -22,4 +22,6 @@ export const SEED_FLAG_DEFAULTS: Readonly<Record<FlagName, boolean>> = {
   checkout_enabled: true,
   maintenance_mode: false,
   public_catalogue: true,
+  // Hidden until somebody turns it on in the console (ADR 0031).
+  google_signin_enabled: false,
 };

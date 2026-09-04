@@ -79,9 +79,9 @@ const consentAcceptanceSchema = z.object({
 
 const registerSchema = z.object({
   phone: phoneSchema,
-  // Required: it is the only channel that can prove who a member is once the
-  // phone number is gone (FR-001, ADR 0028).
-  email: emailSchema,
+  // Optional again (ADR 0031): the form no longer asks, and the only thing
+  // that still submits one is the hidden field a Google sign-up fills in.
+  email: emailSchema.optional(),
   // Optional at the boundary because the code is only demanded when phone
   // verification is enabled (ADR 0012); the service decides, not the form.
   code: z.string().min(6).max(6).optional(),
@@ -202,7 +202,7 @@ export async function registerAction(formData: FormData) {
 
     const result = await IdentityService.registerMember({
       phone: data.phone,
-      email: data.email,
+      email: data.email ?? null,
       provenBy,
       code: data.code,
       passwordPlain: data.password,

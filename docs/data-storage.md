@@ -38,7 +38,7 @@ account inherit staff scope.
    │    member     ├────▶ legal_acceptance         │ membership_card  │
    │               ├──────────────────────────────▶│  serial, tier    │
    │ phone (uniq)  │                                │  verify_token_h  │
-   │ email (uniq)  │   1:N   ┌───────────────┐      │  status          │
+   │ email (unused)│   1:N   ┌───────────────┐      │  status          │
    │ password_hash ├────────▶│ member_session│      └──────────────────┘
    │ display_name  │         └───────────────┘
    │ locale, status│   1:N   ┌────────────────────┐
@@ -189,10 +189,11 @@ security control first and a cost control second.
 |Data|Retention period|Deletion method|Driven by|
 |-|-|-|-|
 |Member account, active|While the account exists|—|—|
-|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, **email address**, password hash, display name and sessions destroyed; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
+|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, email address if one was ever stored, password hash, display name and sessions destroyed; password-reset requests and provider links cascade; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
 |Pending (never verified) registration|24 hours|Hard delete|Minimisation — an unverified number is not a member|
 |`phone_verification` rows|90 days|Hard delete|Abuse investigation window|
-|`verification_tokens` rows|90 days, and unusable long before that — 24 hours for an address, 30 minutes for a password reset|Hard delete; cascaded immediately on member deletion|Abuse investigation window, and minimisation: a spent link is evidence of a request, not a credential ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))|
+|`verification_tokens` rows|90 days, and unusable long before that|Hard delete; cascaded immediately on member deletion|Abuse investigation window. The table is **dormant** since [ADR 0031](decisions/0031-identity-returns-to-phone-only.md): nothing issues a token while the email surfaces are withdrawn|
+|`password_reset_requests` rows|Closed requests 12 months, open ones until they are closed|Hard delete; cascaded on member deletion|A record of who asked staff for their account back, and who dealt with it. Holds no secret and grants nothing ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
 |`member_session`|30 days idle, 90 days absolute|Hard delete|Session policy in [security.md §2](security.md#2-authentication-and-authorization)|
 |Membership card|Life of the member; revoked cards retained 24 months|Retain revoked record, destroy the QR token immediately on revocation|Fraud investigation|
 |Company application draft (`company_drafts`)|90 days from the last edit|Hard delete by the retention sweep; deleted immediately on submission, and cascaded on member deletion|Minimisation — an abandoned application is not a company|
