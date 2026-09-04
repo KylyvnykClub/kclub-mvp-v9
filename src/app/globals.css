@@ -36,11 +36,22 @@
   --font-sans: var(--font-body);
   --font-serif: var(--font-heading);
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 0.75rem;
+  /*
+   * One radius scale, in the tokens, so a corner is a decision made once.
+   *
+   * Named with Tailwind's own keys, not xs/s/m/l — `--radius-s` would generate
+   * a `rounded-s` utility that collides with the logical start-side one
+   * (`rounded-s-*`), and the collision is silent.
+   *
+   * `rounded-full` is not on this list because it cannot be: Tailwind hard-codes
+   * it, so it stays a pill whatever these say.
+   */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
 
   --animate-duration-state: 200ms;
   --animate-duration-enter: 300ms;
@@ -93,7 +104,9 @@
   --border: #e4e4e7;
   --input: #d4d4d8;
   --ring: #b18a44;
-  --radius: 0.375rem;
+  /* shadcn's own token, read by components that compute from it. Matches
+     --radius-md, which is what most of the primitives ask for. */
+  --radius: 8px;
   --surface-raised: #f4f4f5;
   --surface-hover: #f0f0f0;
   --success: #16a34a;

@@ -28,7 +28,7 @@ export default async function NewCompanyPage({ params }: Props) {
         <p className="text-muted-foreground mt-2">{t("registerSubtitle")}</p>
       </div>
 
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm rounded-none">
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-serif text-accent-ink">
             {t("infoSection")}

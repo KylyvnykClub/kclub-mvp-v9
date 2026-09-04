@@ -110,7 +110,7 @@ export function SiteHeader({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="hidden h-10 gap-2 rounded-none px-2 text-xs font-semibold uppercase tracking-[0.12em] lg:inline-flex"
+                className="hidden h-10 gap-2 px-2 text-xs font-semibold uppercase tracking-[0.12em] lg:inline-flex"
                 aria-label={t("common.languageSwitcher")}
               >
                 <Image
@@ -153,7 +153,7 @@ export function SiteHeader({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="hidden h-10 gap-2 rounded-none px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
+                  className="hidden h-10 gap-2 px-3 text-xs font-bold uppercase tracking-[0.12em] lg:inline-flex"
                 >
                   {t("nav.myAccount")}
                   <UnreadBadge
@@ -291,7 +291,7 @@ export function SiteHeader({
                       setOpen(false);
                       void handleLogout();
                     }}
-                    className="h-11 justify-start rounded-none border border-border px-4"
+                    className="h-11 justify-start border border-border px-4"
                   >
                     <LogOut className="size-4" aria-hidden="true" />
                     {tAuth("signOut")}

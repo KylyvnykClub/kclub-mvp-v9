@@ -55,7 +55,7 @@ export default async function ReferralsDashboardPage({
         </TabsList>
 
         <TabsContent value="sent" className="space-y-4">
-          <Card className="rounded-none border-border/50 bg-background/50 backdrop-blur">
+          <Card className="border-border/50 bg-background/50 backdrop-blur">
             <CardHeader>
               <CardTitle>{t("sentReferrals")}</CardTitle>
             </CardHeader>
@@ -69,7 +69,7 @@ export default async function ReferralsDashboardPage({
         </TabsContent>
 
         <TabsContent value="received" className="space-y-4">
-          <Card className="rounded-none border-border/50 bg-background/50 backdrop-blur">
+          <Card className="border-border/50 bg-background/50 backdrop-blur">
             <CardHeader>
               <CardTitle>{t("receivedReferrals")}</CardTitle>
             </CardHeader>

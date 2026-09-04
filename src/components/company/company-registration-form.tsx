@@ -60,7 +60,7 @@ import type { CategoryTreeRow } from "@/data/companies";
  */
 
 const SELECT_CLASS =
-  "flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 const FILE_INPUT_CLASS =
   "block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]";
@@ -337,7 +337,7 @@ export function CompanyRegistrationForm() {
       {issue && (
         <p
           role="alert"
-          className="text-sm text-red-500 bg-red-500/10 p-3 rounded-none border border-red-500/20"
+          className="text-sm text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20"
         >
           {issueMessage(issue)}
         </p>

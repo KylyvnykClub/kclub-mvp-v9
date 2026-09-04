@@ -140,7 +140,7 @@ function CountryPicker({
         role="combobox"
         aria-expanded={open}
         aria-label={label}
-        className="flex shrink-0 items-center gap-1.5 rounded-none border border-r-0 border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex shrink-0 items-center gap-1.5 rounded-l-md border border-r-0 border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Flag code={value} lazy={false} />
         <span className="tabular-nums">+{selected?.callingCode ?? ""}</span>
@@ -152,7 +152,7 @@ function CountryPicker({
       <PopoverContent
         align="start"
         container={container}
-        className="w-[19rem] rounded-none p-0"
+        className="w-[19rem] p-0"
       >
         <Command
           // Match on the country's own name and on its dialling code, so both
@@ -306,7 +306,7 @@ export function PhoneInput({
         placeholder={phoneExample(state.country)}
         maxLength={MAX_PHONE_INPUT_LENGTH}
         required={required}
-        className={cn("rounded-none", className)}
+        className={cn("rounded-l-none", className)}
         {...props}
       />
       <input type="hidden" name={name} value={submitted} />

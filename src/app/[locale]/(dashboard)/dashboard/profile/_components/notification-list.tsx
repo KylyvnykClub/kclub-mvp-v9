@@ -50,7 +50,6 @@ export function NotificationList({
             variant="outline"
             size="sm"
             disabled={pending}
-            className="rounded-none"
             onClick={() =>
               start(async () => {
                 const result = await markAllNotificationsReadAction();
@@ -120,7 +119,7 @@ export function NotificationList({
                   variant="ghost"
                   size="sm"
                   disabled={pending}
-                  className="shrink-0 rounded-none text-xs"
+                  className="shrink-0 text-xs"
                   onClick={() =>
                     start(async () => {
                       const result = await markNotificationReadAction(row.id);
