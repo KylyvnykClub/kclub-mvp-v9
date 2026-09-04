@@ -98,6 +98,20 @@ export const serverSchema = z
     // ── Bot defense — Cloudflare Turnstile ──────────────────
     TURNSTILE_SECRET_KEY: z.string().optional(),
 
+    // ── Sign in with Google (ADR 0029) ──────────────────────
+    // Optional as a pair: with neither, the button is not rendered and the
+    // routes answer 404, which is what a deployment that has not been given a
+    // Google client should do.
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    /**
+     * Overrides the callback URL derived from NEXT_PUBLIC_APP_URL. Google
+     * matches the redirect URI exactly, so a deployment whose public origin
+     * differs from the one registered in the console needs to say so here
+     * rather than have the mismatch appear as `redirect_uri_mismatch`.
+     */
+    GOOGLE_REDIRECT_URI: z.url().optional(),
+
     // ── Observability — Sentry ──────────────────────────────
     SENTRY_DSN: z.string().optional(),
 
@@ -169,6 +183,18 @@ export const serverSchema = z
         path: ["TURNSTILE_SECRET_KEY"],
         message:
           "TURNSTILE_SECRET_KEY is required in production while phone verification is disabled",
+      });
+    }
+
+    // Half a Google client is worse than none: the button renders, the member
+    // clicks it, and the callback fails after they have already handed Google
+    // their consent.
+    if (Boolean(env.GOOGLE_CLIENT_ID) !== Boolean(env.GOOGLE_CLIENT_SECRET)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["GOOGLE_CLIENT_SECRET"],
+        message:
+          "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together, or not at all",
       });
     }
 

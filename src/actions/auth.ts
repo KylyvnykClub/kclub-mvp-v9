@@ -11,7 +11,19 @@ import {
   consentSourceDocument,
   type ConsentAcceptance,
 } from "@/lib/legal-consents";
+import { emailLookupSchema, emailSchema } from "@/lib/email";
+import { readLoginIdentifier } from "@/lib/login-identifier";
+import {
+  PENDING_IDENTITY_COOKIE,
+  openPendingIdentity,
+} from "@/lib/pending-identity";
+import { env } from "@/env";
 import { phoneLookupSchema, phoneSchema } from "@/lib/phone";
+import {
+  assertRateLimit,
+  authRateLimiter,
+} from "@/modules/platform/rate-limit";
+import { RateLimited } from "@/domain/errors";
 
 const requestPhoneSchema = z.object({
   phone: phoneSchema,
@@ -36,6 +48,9 @@ const consentAcceptanceSchema = z.object({
 
 const registerSchema = z.object({
   phone: phoneSchema,
+  // Required: it is the only channel that can prove who a member is once the
+  // phone number is gone (FR-001, ADR 0028).
+  email: emailSchema,
   // Optional at the boundary because the code is only demanded when phone
   // verification is enabled (ADR 0012); the service decides, not the form.
   code: z.string().min(6).max(6).optional(),
@@ -138,8 +153,26 @@ export async function registerAction(formData: FormData) {
       };
     }
 
+    // A Google identity parked by the callback (ADR 0029). It only counts for
+    // the address it actually vouched for: a member who arrived through Google
+    // and then typed a different address gets the ordinary emailed link.
+    const cookieStore = await cookies();
+    const pending = openPendingIdentity(
+      cookieStore.get(PENDING_IDENTITY_COOKIE)?.value,
+      env.server.BETTER_AUTH_SECRET,
+    );
+    const provenBy =
+      pending && pending.email === data.email
+        ? ({
+            provider: "google",
+            providerAccountId: pending.subject,
+          } as const)
+        : undefined;
+
     const result = await IdentityService.registerMember({
       phone: data.phone,
+      email: data.email,
+      provenBy,
       code: data.code,
       passwordPlain: data.password,
       displayName: data.displayName,
@@ -151,7 +184,10 @@ export async function registerAction(formData: FormData) {
     });
 
     if (result.success && result.sessionToken) {
-      const cookieStore = await cookies();
+      // Spent, whether or not it was used: a stale identity cookie left on the
+      // browser would attach to the next registration from this machine.
+      cookieStore.set(PENDING_IDENTITY_COOKIE, "", { path: "/", maxAge: 0 });
+
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -171,10 +207,12 @@ export async function registerAction(formData: FormData) {
   }
 }
 
-// Sign-in looks a number up rather than claiming one, so it normalises without
-// validating - see the note on phoneLookupSchema.
+// Sign-in looks an identifier up rather than claiming one, so both schemas
+// normalise without validating - see the note on phoneLookupSchema. A member
+// may arrive with either (FR-005, ADR 0028); the form says which tab they used.
 const loginSchema = z.object({
-  phone: phoneLookupSchema,
+  phone: phoneLookupSchema.optional(),
+  email: emailLookupSchema.optional(),
   password: z.string().min(1),
 });
 
@@ -186,9 +224,33 @@ export async function loginAction(formData: FormData) {
       headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
     const data = loginSchema.parse(Object.fromEntries(formData));
+    const identifier = readLoginIdentifier(data);
+
+    if (!identifier) {
+      return { success: false, error: "Invalid credentials" };
+    }
+
+    // Neither sign-in nor registration was rate limited at all before this
+    // (the limiter existed, wired only into the card-verification route), so
+    // a password could be guessed as fast as argon2 would answer. Two keys:
+    // the identifier, which stops one account being ground down, and the
+    // address, which stops one host grinding down many accounts. FR-003's
+    // numbers for code requests are the precedent for the shape.
+    await assertRateLimit(
+      authRateLimiter(),
+      `login:id:${identifier.kind}:${identifier.value}`,
+      10,
+      15 * 60 * 1000,
+    );
+    await assertRateLimit(
+      authRateLimiter(),
+      `login:ip:${ipAddress}`,
+      50,
+      15 * 60 * 1000,
+    );
 
     const result = await IdentityService.login({
-      phone: data.phone,
+      identifier,
       passwordPlain: data.password,
       userAgent,
       ipAddress,
@@ -224,7 +286,10 @@ export async function loginAction(formData: FormData) {
     } else {
       return { success: false, error: result.error };
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof RateLimited) {
+      return { success: false, error: "Too many attempts. Try again later." };
+    }
     return { success: false, error: "Login failed" };
   }
 }

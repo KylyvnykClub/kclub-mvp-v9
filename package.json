@@ -66,6 +66,7 @@
     "@radix-ui/react-tooltip": "^1.2.16",
     "@sentry/nextjs": "^10.69.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "arctic": "^3.7.0",
     "argon2": "^0.45.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -1,6 +1,6 @@
 # 0018. Recover accounts through a staff-performed reset, as a stopgap
 
-> **Status:** Accepted
+> **Status:** Superseded by [0028](0028-email-identifier-and-account-recovery.md)
 > **Date:** 2026-08-23
 > **Deciders:** Delivery lead
 > **Supersedes:** [0015](0015-password-reset-deferred-to-client.md)

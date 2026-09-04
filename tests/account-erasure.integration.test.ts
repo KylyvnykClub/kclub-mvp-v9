@@ -54,6 +54,7 @@ async function seedMemberWithRequest(
 
   await registerMemberTx(db, {
     phone,
+    email: null,
     passwordHash: "argon2id$hash",
     displayName: "Leaving Member",
     country: "UA",

@@ -114,7 +114,7 @@ export function ActiveSessions({ locale }: { locale: string }) {
               <p className="text-sm font-semibold">
                 {describeDevice(session.userAgent)}
                 {session.current && (
-                  <Badge className="ml-2 rounded-none" variant="secondary">
+                  <Badge className="ml-2" variant="secondary">
                     {t("currentBadge")}
                   </Badge>
                 )}

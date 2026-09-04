@@ -128,7 +128,7 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
             variant="ghost"
             size="sm"
             onClick={() => void handleLogout()}
-            className="h-11 rounded-none px-3 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="h-11 px-3 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <LogOut className="h-4 w-4 sm:mr-2" />
             <span className="sr-only text-xs font-bold uppercase tracking-[0.12em] sm:not-sr-only sm:inline-block">

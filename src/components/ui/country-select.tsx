@@ -120,7 +120,7 @@ export function CountrySelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "flex h-10 w-full items-center gap-2 rounded-none border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             className,
           )}
         >
@@ -142,7 +142,7 @@ export function CountrySelect({
         <PopoverContent
           align="start"
           container={anchor}
-          className="w-[var(--radix-popover-trigger-width)] min-w-[16rem] rounded-none p-0"
+          className="w-[var(--radix-popover-trigger-width)] min-w-[16rem] p-0"
         >
           <Command
             // Substring, not cmdk's default fuzzy scoring, which matches

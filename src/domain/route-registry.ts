@@ -28,6 +28,17 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Public: the link may be opened in a browser that has never signed in,
+    // which is the case it exists for. It reads only; the token is spent by
+    // the action behind the button (ADR 0028).
+    method: "GET",
+    path: "/:locale/verify-email",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/:locale/register",
     action: "read",
@@ -764,6 +775,27 @@ const staticRoutes: RouteEntry[] = [
     mutating: false,
     staffOnly: true,
     audited: true,
+  },
+  {
+    // Public and unauthenticated by nature: it hands the visitor to Google.
+    // Writes nothing but the state and PKCE cookies (ADR 0029).
+    method: "GET",
+    path: "/api/auth/google/start",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // Mutating: on success it links the provider account and opens a session.
+    // Not staff-only, and staff are refused here outright — this route cannot
+    // ask for the second factor FR-080 requires.
+    method: "GET",
+    path: "/api/auth/google/callback",
+    action: "create",
+    subject: "own_session",
+    mutating: true,
+    staffOnly: false,
   },
   {
     method: "POST",

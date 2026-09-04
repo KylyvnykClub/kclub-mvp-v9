@@ -73,10 +73,54 @@ const COMPANY_REJECTED_BODIES: Record<
     `Доброго дня!\n\nВашу компанію «${companyName}» не було схвалено для Каталогу партнерів KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nЯкщо ви вже оплатили розміщення, підписку скасовано, а платіж повертається на вашу картку. Зазвичай банк зараховує повернення протягом 5–10 робочих днів.\n\nВи можете оновити дані та подати заявку повторно.\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+const EMAIL_VERIFICATION_SUBJECTS: Record<Locale, string> = {
+  en: "Confirm your email address for KYLYVNYK CLUB",
+  ru: "Подтвердите адрес электронной почты для KYLYVNYK CLUB",
+  uk: "Підтвердьте адресу електронної пошти для KYLYVNYK CLUB",
+};
+
+const EMAIL_VERIFICATION_BODIES: Record<
+  Locale,
+  (name: string, url: string, hours: number) => string
+> = {
+  en: (name, url, hours) =>
+    `Hi ${name},\n\nConfirm this address so it can be used to sign in to KYLYVNYK CLUB and to recover your account if you lose access to your phone number.\n\n${url}\n\nThe link works once and expires in ${hours} hours.\n\nIf you did not ask for this, ignore this message — nothing changes until the link is opened.\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (name, url, hours) =>
+    `Привет, ${name}!\n\nПодтвердите этот адрес, чтобы использовать его для входа в KYLYVNYK CLUB и для восстановления доступа, если вы потеряете свой номер телефона.\n\n${url}\n\nСсылка одноразовая и действует ${hours} часов.\n\nЕсли вы этого не запрашивали, просто проигнорируйте письмо — без перехода по ссылке ничего не изменится.\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (name, url, hours) =>
+    `Привіт, ${name}!\n\nПідтвердьте цю адресу, щоб використовувати її для входу в KYLYVNYK CLUB та для відновлення доступу, якщо ви втратите свій номер телефону.\n\n${url}\n\nПосилання одноразове та діє ${hours} годин.\n\nЯкщо ви цього не запитували, просто проігноруйте лист — без переходу за посиланням нічого не зміниться.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 export interface SendEmailParams {
   to: string;
   displayName: string;
   locale: Locale;
+}
+
+/**
+ * The link that proves an address belongs to the member (ADR 0028).
+ *
+ * Sent by the member's own action rather than by the outbox worker, because it
+ * is the one email whose failure the member is watching for: they are on the
+ * screen that just asked for it, and "we could not send it" is a better answer
+ * than a queued row and a blank wait.
+ */
+export async function sendEmailVerificationEmail(params: {
+  to: string;
+  displayName: string;
+  locale: Locale;
+  url: string;
+  expiresInHours: number;
+}): Promise<boolean> {
+  return sendEmail(
+    params.to,
+    EMAIL_VERIFICATION_SUBJECTS[params.locale],
+    EMAIL_VERIFICATION_BODIES[params.locale](
+      params.displayName,
+      params.url,
+      params.expiresInHours,
+    ),
+  );
 }
 
 export async function sendPaymentFailedEmail(

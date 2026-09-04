@@ -130,3 +130,23 @@ export function redisRestRateLimiter(
     },
   };
 }
+
+/**
+ * The limiter the authentication actions use.
+ *
+ * Redis where it is configured, in-memory otherwise. The fallback is not a
+ * silent downgrade to nothing: a single instance still refuses a burst, which
+ * is what a password-guessing loop looks like. It is per-instance, so it does
+ * not hold across a serverless fleet — that is what the Redis path is for, and
+ * production requires those variables.
+ */
+export function authRateLimiter(): RateLimiter {
+  const url = process.env["UPSTASH_REDIS_REST_URL"];
+  const token = process.env["UPSTASH_REDIS_REST_TOKEN"];
+
+  return url && token ? redisRestRateLimiter(url, token) : sharedInMemory;
+}
+
+// One map for the lifetime of the instance. A limiter constructed per call
+// would start every request with an empty window and limit nothing at all.
+const sharedInMemory = inMemoryRateLimiter();

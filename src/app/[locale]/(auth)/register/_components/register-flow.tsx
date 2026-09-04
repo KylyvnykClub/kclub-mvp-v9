@@ -9,6 +9,7 @@ import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
+import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
@@ -38,7 +39,7 @@ function SubmitButton({
   return (
     <Button
       type="submit"
-      className="h-12 w-full rounded-none bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+      className="h-12 w-full bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
       disabled={pending || disabled}
     >
       {pending ? pendingLabel || "..." : label}
@@ -70,12 +71,20 @@ export function RegisterFlow({
   privacyVersion,
   phoneVerificationEnabled,
   turnstileSiteKey,
+  google,
+  googleEmail,
+  googleName,
 }: {
   termsVersion: string | null;
   privacyVersion: string | null;
   /** ADR 0012: false while Twilio is postponed, which removes the code step. */
   phoneVerificationEnabled: boolean;
   turnstileSiteKey: string | null;
+  /** Whether this deployment has a Google client (ADR 0029). */
+  google: boolean;
+  /** Proved by Google in this session, or null for an ordinary registration. */
+  googleEmail: string | null;
+  googleName: string | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -192,7 +201,7 @@ export function RegisterFlow({
       title={t("title")}
       subtitle={t("subtitle")}
     >
-      <Card className="w-full rounded-none border-white/10 bg-background text-foreground shadow-none">
+      <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-4 border-b border-border p-6 sm:p-8">
           <div className="mb-2 flex justify-center gap-2">
             {(phoneVerificationEnabled ? [1, 2, 3] : [1, 3]).map((s) => (
@@ -240,6 +249,14 @@ export function RegisterFlow({
                 </p>
               )}
               <SubmitButton label={tAuth("sendCode")} />
+              {/* On the first step only: Google settles the address, and the
+                  phone number still has to be typed either way (ADR 0029). */}
+              {google && !googleEmail && (
+                <>
+                  <AuthDivider />
+                  <GoogleButton />
+                </>
+              )}
             </form>
           )}
 
@@ -261,12 +278,12 @@ export function RegisterFlow({
                   placeholder={tAuth("codePlaceholder")}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="h-12 rounded-none bg-background text-center text-lg tracking-widest"
+                  className="h-12 bg-background text-center text-lg tracking-widest"
                 />
               </div>
               <Button
                 type="submit"
-                className="h-12 w-full rounded-none bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+                className="h-12 w-full bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
                 disabled={code.length !== 6}
               >
                 {tAuth("verifyCode")}
@@ -294,9 +311,38 @@ export function RegisterFlow({
                   id="displayName"
                   name="displayName"
                   required
+                  defaultValue={googleName ?? undefined}
                   placeholder={t("namePlaceholder")}
-                  className="h-12 rounded-none bg-background"
+                  className="h-12 bg-background"
                 />
+              </div>
+
+              {/* Required, and it is the recovery channel rather than a
+                  marketing field: without it a member who forgets their
+                  password has nothing to prove who they are (ADR 0028). */}
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  {tAuth("emailLabel")}
+                  <RequiredMark />
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  required
+                  maxLength={255}
+                  defaultValue={googleEmail ?? undefined}
+                  placeholder={tAuth("emailPlaceholder")}
+                  className="h-12 bg-background"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {/* Editable on purpose even when Google supplied it: a
+                      member may prefer a different address, and typing one
+                      simply falls back to the emailed link. */}
+                  {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -315,7 +361,7 @@ export function RegisterFlow({
                   showLabel={tAuth("showPassword")}
                   hideLabel={tAuth("hidePassword")}
                   problem={passwordTooShort ? t("passwordMinLength") : null}
-                  className="h-12 rounded-none bg-background"
+                  className="h-12 bg-background"
                 />
               </div>
 
@@ -334,7 +380,7 @@ export function RegisterFlow({
                   showLabel={tAuth("showPassword")}
                   hideLabel={tAuth("hidePassword")}
                   problem={passwordsMismatch ? t("passwordsNoMatch") : null}
-                  className="h-12 rounded-none bg-background"
+                  className="h-12 bg-background"
                 />
               </div>
 

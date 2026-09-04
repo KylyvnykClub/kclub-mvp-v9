@@ -232,6 +232,20 @@
       "when": 1788024787926,
       "tag": "20260829173307_database_environment",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1788511357524,
+      "tag": "20260904084237_email_identifier",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1788520582112,
+      "tag": "20260904111622_google_identities",
+      "breakpoints": true
     }
   ]
 }

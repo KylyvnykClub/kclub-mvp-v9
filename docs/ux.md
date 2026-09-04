@@ -66,9 +66,10 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Register — phone + password|Start membership|public|Consent wording for SMS shown verbatim, and stored|
 |Register — enter code|Prove the number|public|Resend with visible countdown; attempts remaining|
 |Register — profile|Finish in one screen|authenticated, unverified profile|Name, language, country. Three fields, no more|
-|Sign in|Return|public||
+|Sign in|Return|public|Phone or email, chosen by a two-way switch above the field, and — where the deployment has a Google client — a "continue with Google" alternative below the button ([ADR 0029](decisions/0029-google-sign-in.md)). A refusal from the Google callback appears in the same place as a wrong password, in the member's language|
 |Sign in — device challenge|Prove an unrecognised device|public|Appears only when the device is unknown|
-|Forgot password|Recover|public|Not implemented — FR-006's SMS proof has no second channel while `AUTH_PHONE_VERIFICATION_ENABLED` is off (ADR 0012). The control on the sign-in screen is rendered disabled, not linked, until requirements.md §9's open question is answered|
+|Forgot password|Recover|public|Not implemented yet. §9's open question is answered — recovery runs on a verified email address ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md)) — and the flow is built on top of the address, so the control on the sign-in screen stays disabled until it lands|
+|Confirm email|Prove an address|public|Reached from a link in an email, and confirms on a button rather than on page load: mail scanners follow links, and a one-time token spent by a scanner leaves the member with no way to verify. Says only whether the link still works|
 |Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
 Every screen that takes a phone number — the two above, the staff creation form
@@ -115,7 +116,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Send a referral|Introduce a client|member_vip|Consent attestation, quota shown before submitting|
 |Inbox|See what the system did to me and when|member|A tab under Profile, not a fifth navigation item. Unread count in the header; each row rendered in the member's current language ([decisions/0020](decisions/0020-member-inbox.md))|
 |Settings — profile|Change name, language, country|member||
-|Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
+|Settings — security|Sessions, password, phone number, email address|member|Active sessions with device and last-used. The email panel says which of two states the address is in — claimed or proved — because an unproved address is not a way back into the account|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
 
 **Staff console (`/dashboard/admin`, shared shell: sidebar + breadcrumb topbar)**
