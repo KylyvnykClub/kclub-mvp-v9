@@ -234,6 +234,20 @@ export function RegisterFlow({
               action={submitPhone}
               className="animate-in space-y-5 fade-in duration-300"
             >
+              {/* Coming back from Google lands here, on a phone form, with the
+                  address it proved sitting invisibly on step 3. Without this
+                  the member picks their Google account and gets what looks
+                  like a form that ignored them (ADR 0029). */}
+              {googleEmail && (
+                <div className="border border-accent/40 bg-accent/10 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {t("googleConfirmed", { email: googleEmail })}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("googleNeedsPhone")}
+                  </p>
+                </div>
+              )}
               <PhoneField
                 id="phone"
                 name="phone"
