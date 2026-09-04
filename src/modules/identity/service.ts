@@ -5,6 +5,7 @@ import {
   createSessionTx,
   createVerificationToken,
   deleteSessionByToken,
+  deleteSessionsByMemberId,
   findActiveSessionByToken,
   findLatestVerificationTokenIssuedAt,
   findMemberByEmail,
@@ -12,8 +13,13 @@ import {
   markEmailVerified,
   registerMemberTx,
   setMemberEmail,
+  setMemberPasswordHash,
 } from "@/data/identity";
-import { sendEmailVerificationEmail } from "@/modules/notifications/email";
+import {
+  sendEmailVerificationEmail,
+  sendPasswordChangedEmail,
+  sendPasswordResetEmail,
+} from "@/modules/notifications/email";
 import { absoluteUrl } from "@/lib/seo";
 import { hashVerificationToken } from "@/lib/verification-token";
 import { generateToken, hashPassword, verifyPassword } from "./crypto";
@@ -45,6 +51,13 @@ export const EMAIL_VERIFICATION_TTL_HOURS = 24;
 
 /** Shortest gap between two links sent to the same address. */
 export const EMAIL_RESEND_INTERVAL_MS = 60_000;
+
+/**
+ * How long a reset link lives (FR-006). Far shorter than a verification link:
+ * this one sets a password, so an unspent link sitting in a mailbox is a
+ * standing key to the account rather than a claim about an address.
+ */
+export const PASSWORD_RESET_TTL_MINUTES = 30;
 
 /** The member's stored language, narrowed to the three the emails exist in. */
 function narrowLocale(language: string): "en" | "ru" | "uk" {
@@ -512,6 +525,135 @@ export class IdentityService {
       });
       return false;
     }
+  }
+
+  /**
+   * Ask for a password reset link (FR-006, ADR 0028).
+   *
+   * Returns nothing about who was found. The caller says the same thing to
+   * everyone — "if that account exists, a link is on its way" — because an
+   * answer that varied would turn this form into a membership oracle
+   * (security.md §6), and this is the one form an anonymous caller can submit
+   * an address to freely.
+   *
+   * A member with no address, or one they never proved, gets no link. They are
+   * not stuck: the staff-performed reset (ADR 0018) is still there, which is
+   * exactly what it is now for.
+   */
+  static async requestPasswordReset(params: {
+    identifier: LoginIdentifier;
+    now?: Date;
+  }): Promise<void> {
+    const now = params.now ?? new Date();
+
+    const member =
+      params.identifier.kind === "phone"
+        ? await findMemberByPhone(db, params.identifier.value)
+        : await findMemberByEmail(db, params.identifier.value);
+
+    if (!member?.email || !member.emailVerifiedAt) return;
+
+    // Blocked and deleting accounts are not recoverable by their holder.
+    if (member.status !== "active") return;
+
+    const token = generateToken();
+
+    await createVerificationToken(db, {
+      memberId: member.id,
+      purpose: "password_reset",
+      email: member.email,
+      tokenHash: hashVerificationToken(token),
+      expiresAt: new Date(
+        now.getTime() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000,
+      ),
+    });
+
+    const locale = narrowLocale(member.language);
+
+    try {
+      await sendPasswordResetEmail({
+        to: member.email,
+        displayName: member.displayName,
+        locale,
+        url: absoluteUrl(
+          `/${locale}/reset-password/${encodeURIComponent(token)}`,
+        ),
+        expiresInMinutes: PASSWORD_RESET_TTL_MINUTES,
+      });
+    } catch (error) {
+      // Logged, not surfaced: the screen says the same thing either way, and
+      // the member can ask again.
+      logger.error("password reset email could not be sent", {
+        memberId: member.id,
+        ...safeErrorFields(error),
+      });
+    }
+  }
+
+  /**
+   * Set a new password against a reset link (FR-006).
+   *
+   * The half that is easy to leave out is the second one: **every session
+   * ends**. If somebody else is in the account, changing the password while
+   * their session lives achieves nothing.
+   */
+  static async resetPassword(params: {
+    token: string;
+    passwordPlain: string;
+    now?: Date;
+  }): Promise<boolean> {
+    const now = params.now ?? new Date();
+
+    const consumed = await consumeVerificationToken(
+      db,
+      hashVerificationToken(params.token),
+      "password_reset",
+      now,
+    );
+
+    if (!consumed) return false;
+
+    // Hashed after the token is spent, not before: argon2 takes real time, and
+    // a caller who could hold the token unspent while it ran would have a
+    // window to use it twice.
+    const passwordHash = await hashPassword(params.passwordPlain);
+    const changed = await setMemberPasswordHash(
+      db,
+      consumed.memberId,
+      passwordHash,
+    );
+
+    if (!changed) return false;
+
+    await deleteSessionsByMemberId(db, consumed.memberId);
+
+    await appendAuditEntry(db, {
+      actorType: "member",
+      actorId: consumed.memberId,
+      action: "member.password_reset",
+      subjectType: "member",
+      subjectId: consumed.memberId,
+      meta: { sessionsRevoked: true, provenBy: "email" },
+    });
+
+    const member = await findMemberByEmail(db, consumed.email);
+
+    if (member) {
+      // Told after the fact (security.md §1): if the reset was not theirs,
+      // this is the message that says so.
+      await sendPasswordChangedEmail({
+        to: consumed.email,
+        displayName: member.displayName,
+        locale: narrowLocale(member.language),
+      }).catch((error: unknown) => {
+        logger.error("password change notice could not be sent", {
+          memberId: consumed.memberId,
+          ...safeErrorFields(error),
+        });
+      });
+    }
+
+    return true;
   }
 
   /**

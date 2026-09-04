@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useFormStatus } from "react-dom";
 
 import { confirmEmailAction, type EmailConfirmState } from "@/actions/email";
+import { AuthCard } from "@/components/auth/auth-card";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 
@@ -50,7 +51,12 @@ export function VerifyEmailForm({ token }: { token: string }) {
       title={t("verifyEmailTitle")}
       subtitle={t("verifyEmailSubtitle")}
     >
-      {body}
+      <AuthCard
+        title={t("verifyEmailTitle")}
+        description={t("verifyEmailSubtitle")}
+      >
+        {body}
+      </AuthCard>
     </AuthShell>
   );
 }

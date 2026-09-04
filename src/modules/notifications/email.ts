@@ -91,6 +91,39 @@ const EMAIL_VERIFICATION_BODIES: Record<
     `Привіт, ${name}!\n\nПідтвердьте цю адресу, щоб використовувати її для входу в KYLYVNYK CLUB та для відновлення доступу, якщо ви втратите свій номер телефону.\n\n${url}\n\nПосилання одноразове та діє ${hours} годин.\n\nЯкщо ви цього не запитували, просто проігноруйте лист — без переходу за посиланням нічого не зміниться.\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+const PASSWORD_RESET_SUBJECTS: Record<Locale, string> = {
+  en: "Reset your KYLYVNYK CLUB password",
+  ru: "Сброс пароля KYLYVNYK CLUB",
+  uk: "Скидання пароля KYLYVNYK CLUB",
+};
+
+const PASSWORD_RESET_BODIES: Record<
+  Locale,
+  (name: string, url: string, minutes: number) => string
+> = {
+  en: (name, url, minutes) =>
+    `Hi ${name},\n\nSomeone asked to reset the password on your KYLYVNYK CLUB account. If it was you, set a new one here:\n\n${url}\n\nThe link works once and expires in ${minutes} minutes. Setting a new password signs you out everywhere else.\n\nIf it was not you, ignore this message. Nothing changes until the link is opened, and your current password still works.\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (name, url, minutes) =>
+    `Привет, ${name}!\n\nКто-то запросил сброс пароля для вашего аккаунта KYLYVNYK CLUB. Если это были вы, задайте новый пароль здесь:\n\n${url}\n\nСсылка одноразовая и действует ${minutes} минут. После смены пароля все остальные сессии будут завершены.\n\nЕсли это были не вы, просто проигнорируйте письмо: без перехода по ссылке ничего не изменится, а текущий пароль продолжит работать.\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (name, url, minutes) =>
+    `Привіт, ${name}!\n\nХтось запросив скидання пароля для вашого акаунта KYLYVNYK CLUB. Якщо це були ви, задайте новий пароль тут:\n\n${url}\n\nПосилання одноразове та діє ${minutes} хвилин. Після зміни пароля всі інші сесії буде завершено.\n\nЯкщо це були не ви, просто проігноруйте лист: без переходу за посиланням нічого не зміниться, а поточний пароль працюватиме далі.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
+const PASSWORD_CHANGED_SUBJECTS: Record<Locale, string> = {
+  en: "Your KYLYVNYK CLUB password was changed",
+  ru: "Пароль KYLYVNYK CLUB изменён",
+  uk: "Пароль KYLYVNYK CLUB змінено",
+};
+
+const PASSWORD_CHANGED_BODIES: Record<Locale, (name: string) => string> = {
+  en: (name) =>
+    `Hi ${name},\n\nThe password on your KYLYVNYK CLUB account has just been changed, and every other session has been signed out.\n\nIf this was not you, contact support immediately — whoever did it can sign in as you.\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (name) =>
+    `Привет, ${name}!\n\nПароль вашего аккаунта KYLYVNYK CLUB только что изменён, все остальные сессии завершены.\n\nЕсли это были не вы, немедленно свяжитесь с поддержкой: тот, кто это сделал, может входить от вашего имени.\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (name) =>
+    `Привіт, ${name}!\n\nПароль вашого акаунта KYLYVNYK CLUB щойно змінено, усі інші сесії завершено.\n\nЯкщо це були не ви, негайно зв'яжіться з підтримкою: той, хто це зробив, може входити від вашого імені.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 export interface SendEmailParams {
   to: string;
   displayName: string;
@@ -165,6 +198,48 @@ export async function sendGraceExpiryWarningEmail(
     params.to,
     GRACE_EXPIRY_SUBJECTS[params.locale],
     GRACE_EXPIRY_BODIES[params.locale](params.displayName),
+  );
+}
+
+/**
+ * The link that lets somebody who has forgotten their password set a new one
+ * (FR-006, ADR 0028).
+ *
+ * Sent by the request itself rather than queued, for the same reason the
+ * address-verification link is: the member is on the screen that just asked
+ * for it.
+ */
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  displayName: string;
+  locale: Locale;
+  url: string;
+  expiresInMinutes: number;
+}): Promise<boolean> {
+  return sendEmail(
+    params.to,
+    PASSWORD_RESET_SUBJECTS[params.locale],
+    PASSWORD_RESET_BODIES[params.locale](
+      params.displayName,
+      params.url,
+      params.expiresInMinutes,
+    ),
+  );
+}
+
+/**
+ * Told after the fact, not asked before it (security.md §1, the SIM-swap row:
+ * sensitive changes notify the member). If the reset was not theirs, this is
+ * the message that tells them, and it is worth sending even though it arrives
+ * at the address the reset was proved against.
+ */
+export async function sendPasswordChangedEmail(
+  params: SendEmailParams,
+): Promise<boolean> {
+  return sendEmail(
+    params.to,
+    PASSWORD_CHANGED_SUBJECTS[params.locale],
+    PASSWORD_CHANGED_BODIES[params.locale](params.displayName),
   );
 }
 

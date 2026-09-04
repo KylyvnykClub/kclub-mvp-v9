@@ -107,7 +107,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-003|The system must limit code requests to 1 per 60 seconds, 5 per phone number per hour and 20 per IP address per hour, and must reject numbers from destinations disabled for fraud reasons|guest|M|
 |FR-004|The system must not create a member record that is visible to any other user until the phone number is verified|guest|M|
 |FR-005|The system must authenticate a returning member with either their phone number or a **verified** email address, plus password, or through a linked Google account whose verified address the member has also proved here ([ADR 0029](decisions/0029-google-sign-in.md)); and must require a fresh SMS code when the sign-in comes from an unrecognised device|member|M|
-|FR-006|The system must allow a password reset proven by an SMS code, and must revoke all other sessions when the password changes|member|M|
+|FR-006|The system must allow a password reset proven by a single-use link sent to the member's verified email address, valid for 30 minutes, and must revoke all other sessions when the password changes ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md)). A member with no verified address is recovered by staff instead|member|M|
 |FR-007|The system must let a member list their active sessions and revoke any or all of them|member|S|
 |FR-008|The system must collect only display name, preferred language and country at registration, and must let the member change them|member|M|
 |FR-009|The system must let a member request deletion of their account and must complete it within 30 days, per [data-storage.md §4](data-storage.md#4-retention-and-deletion)|member|M|

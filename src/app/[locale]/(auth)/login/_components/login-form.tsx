@@ -242,9 +242,12 @@ export function LoginForm({
             <div className="space-y-2 text-left">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("passwordLabel")}</Label>
-                <span className="text-xs text-muted-foreground opacity-50 cursor-not-allowed">
+                <Link
+                  href={`/${locale}/forgot-password`}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
                   {t("forgotPassword")}
-                </span>
+                </Link>
               </div>
               <PasswordInput
                 id="password"
