@@ -1,6 +1,6 @@
 # 0031. Identity returns to phone only, and recovery goes through staff again
 
-> **Status:** Accepted
+> **Status:** Superseded by [0032](0032-phone-and-email-both-required.md)
 > **Date:** 2026-09-04
 > **Deciders:** Owner
 > **Supersedes:** [0028](0028-email-identifier-and-account-recovery.md)

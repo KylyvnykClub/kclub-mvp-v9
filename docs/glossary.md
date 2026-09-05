@@ -43,9 +43,10 @@ variation.
 
 |Term|Definition|In code|In the database|Not to be confused with|
 |-|-|-|-|-|
-|Member|A person whose phone number is verified and who holds a membership card. Free unless they subscribe to VIP|`Member`|`member`|"User" — never used in the interface or in domain code. "Customer", which in this codebase means only a Stripe Customer object|
+|Member|A person whose phone number is verified and who holds a membership card. Free unless they subscribe to VIP. Registering also requires an email address ([ADR 0032](decisions/0032-phone-and-email-both-required.md)), but an unproved address makes nobody less of a member — it only leaves them without the recovery channel|`Member`|`member`|"User" — never used in the interface or in domain code. "Customer", which in this codebase means only a Stripe Customer object|
+|Verified address|An email address a member has proved by opening the link sent to it, stamped in `email_verified_at`. Only a verified address signs anyone in or receives a reset link|`emailVerifiedAt`|`member.email_verified_at`|The address itself, which is merely claimed until the link is opened|
 |VIP member|A member with an active VIP subscription. A tier, not a separate entity|`MemberTier.Vip`|`member.tier`|"Premium", "Gold" — both rejected; "Gold" is the card's colour, not a tier|
-|Verification link|A single-use, expiring URL emailed to a member to prove an address is theirs, or to let them set a new password. Only its hash is stored ([ADR 0028](decisions/0028-email-identifier-and-account-recovery.md))|`VerificationToken`|`verification_tokens`|"Magic link" — this never signs anyone in on its own; the one-time SMS "code", which Twilio owns and we never store|
+|Verification link|A single-use, expiring URL emailed to a member to prove an address is theirs (24 hours) or to let them set a new password (30 minutes). Only its hash is stored ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|`VerificationToken`|`verification_tokens`|"Magic link" — this never signs anyone in on its own; the one-time SMS "code", which Twilio owns and we never store|
 |Membership card|The digital proof of membership: a serial, a tier and a QR code|`MembershipCard`|`membership_card`|"Pass", "Badge", "Ticket"|
 |Card serial|The human-readable identifier printed on the card, shown at verification|`cardSerial`|`membership_card.serial`|The card's `id` (a UUID, never shown) and the verification token (secret)|
 |Verification token|The opaque secret inside the QR code. Stored only as a hash|`verificationToken`|`membership_card.verify_token_hash`|The card serial, which is public and non-secret|
@@ -82,6 +83,8 @@ variation.
 |Member|Участник|Учасник|Never "пользователь"|
 |VIP member|VIP-участник|VIP-учасник|"VIP" stays Latin in all three|
 |Membership card|Клубная карта|Клубна картка|Never "пропуск"|
+|Email address|Электронная почта|Електронна пошта|Never "имейл" or "мыло" in member-facing text|
+|Verified address|Подтверждённый адрес|Підтверджена адреса|Never "активированный" — nothing is activated, an address is proved|
 |Partner|Партнёр|Партнер||
 |Company|Компания|Компанія||
 |Catalogue|Каталог партнёров|Каталог партнерів|Always with "партнёров" — "каталог" alone is ambiguous|
