@@ -16,7 +16,7 @@ export const verificationPurposeEnum = pgEnum("verification_purpose", [
 ]);
 
 /**
- * Single-use links sent to a member's email address (ADR 0028): proving an
+ * Single-use links sent to a member's email address (ADR 0032): proving an
  * address belongs to them, and — once FR-006's self-service reset lands —
  * proving it again before a password changes.
  *

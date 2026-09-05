@@ -5,7 +5,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * cookie the browser cannot forge (ADR 0029).
  *
  * Google can prove who someone is, but it cannot supply a phone number, and a
- * phone number is still mandatory (ADR 0028). So a first-time visitor arrives
+ * phone number is still mandatory (ADR 0032). So a first-time visitor arrives
  * at registration with their address already proved and the rest still to
  * fill in, and something has to carry "Google vouched for this address"
  * across that redirect.

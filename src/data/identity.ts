@@ -29,7 +29,7 @@ export async function findMemberByPhone(db: DbClient, phone: string) {
 }
 
 /**
- * The member holding an address (FR-001, ADR 0028).
+ * The member holding an address (FR-001, ADR 0032).
  *
  * Matches on the address as stored, which `emailSchema` has already lowercased
  * — the callers of this function pass its output, so there is no second
@@ -241,7 +241,7 @@ export async function setMemberPasswordHash(
 }
 
 /**
- * Claim an address, unverified (ADR 0028).
+ * Claim an address, unverified (ADR 0032).
  *
  * Claiming always clears `emailVerifiedAt`, including when the member retypes
  * the address they already proved: the proof belongs to a click on a link, and
@@ -289,7 +289,7 @@ export async function markEmailVerified(
 }
 
 /**
- * Issue a single-use link (ADR 0028).
+ * Issue a single-use link (ADR 0032).
  *
  * Takes the hash, never the token: the token exists in the email and in the
  * caller's local variable, and nowhere else. Any earlier token for the same

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 /**
- * Derives the lookup hash for a single-use verification link (ADR 0028).
+ * Derives the lookup hash for a single-use verification link (ADR 0032).
  *
  * Same shape as `hashSessionToken`, with its own domain prefix so a token
  * issued for one purpose can never be presented as the other: the two hash

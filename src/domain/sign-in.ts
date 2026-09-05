@@ -1,6 +1,6 @@
 /**
  * Whether a member may sign in at all, before the password is even checked
- * (FR-005, ADR 0028).
+ * (FR-005, ADR 0032).
  *
  * Pure, and here rather than inside `IdentityService`, because it is the rule
  * with the most ways to be quietly wrong and the service cannot be tested
@@ -41,3 +41,20 @@ export function refuseSignIn(
 
   return null;
 }
+
+/**
+ * Every way a sign-in attempt can fail, as a code rather than a sentence.
+ *
+ * The screen is in three languages (FR-090) and the service is in none: a
+ * sentence returned from here would reach the member in English whatever they
+ * had chosen. `not_active` is `SignInRefusal`'s own name, so a refusal is its
+ * own code and needs no translation table on the way out.
+ */
+export type SignInErrorCode =
+  | SignInRefusal
+  | "throttled"
+  | "totp_unavailable"
+  | "session_expired"
+  | "totp_not_configured"
+  | "invalid_code"
+  | "failed";

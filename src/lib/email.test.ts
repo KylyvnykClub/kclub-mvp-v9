@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import { emailLookupSchema, emailSchema, maskEmail } from "./email";
 
 /**
- * `members.email` is unique and compared with `=` (ADR 0028), so the shape of
+ * `members.email` is unique and compared with `=` (ADR 0032), so the shape of
  * an address has to be decided in one place. These are the cases that would
  * otherwise hand one mailbox two accounts, or leave a member unable to sign in
  * with the address they typed at registration.
  */
-describe("email normalisation (FR-001, ADR 0028)", () => {
+describe("email normalisation (FR-001, ADR 0032)", () => {
   it("FR-001: lowercases, so one mailbox cannot hold two accounts", () => {
     expect(emailSchema.parse("Jane.Doe@Example.COM")).toBe(
       "jane.doe@example.com",
