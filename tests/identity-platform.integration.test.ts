@@ -95,9 +95,9 @@ describe("FR-001: a member is identified by an E.164 phone number and a password
     await expect(register(db, { phone })).rejects.toThrow();
   });
 
-  it("carries an optional email address alongside the phone (ADR 0028)", async () => {
+  it("carries an optional email address alongside the phone (ADR 0032)", async () => {
     // This test used to assert the opposite: that no email column existed at
-    // all, because FR-001 forbade an email identifier outright. ADR 0028
+    // all, because FR-001 forbade an email identifier outright. ADR 0032
     // reversed that. What survives the reversal is the part that still
     // matters — the phone is not optional, and an address is.
     const db = testDbClient();
@@ -115,7 +115,7 @@ describe("FR-001: a member is identified by an E.164 phone number and a password
     expect(by("email_verified_at")?.is_nullable).toBe("YES");
   });
 
-  it("refuses a second member on the same address (ADR 0028)", async () => {
+  it("refuses a second member on the same address (ADR 0032)", async () => {
     const db = testDbClient();
     const first = await register(db, { phone: nextPhone() });
     const second = await register(db, { phone: nextPhone() });

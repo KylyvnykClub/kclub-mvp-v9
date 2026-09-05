@@ -6,16 +6,24 @@ import {
   createSessionTx,
   createVerificationToken,
   deleteSessionByToken,
+  deleteSessionsByMemberId,
   findActiveSessionByToken,
   findLatestVerificationTokenIssuedAt,
   findMemberByEmail,
+  findMemberById,
   findMemberByPhone,
   markEmailVerified,
   registerMemberTx,
   setMemberEmail,
+  setMemberPasswordHash,
 } from "@/data/identity";
-import { sendEmailVerificationEmail } from "@/modules/notifications/email";
+import {
+  sendEmailVerificationEmail,
+  sendPasswordChangedEmail,
+  sendPasswordResetEmail,
+} from "@/modules/notifications/email";
 import { absoluteUrl } from "@/lib/seo";
+import { narrowLocale } from "@/lib/locale";
 import { hashVerificationToken } from "@/lib/verification-token";
 import { generateToken, hashPassword, verifyPassword } from "./crypto";
 import { generateTotpSecret, verifyTotpCode } from "./totp";
@@ -30,7 +38,9 @@ import { logger } from "@/lib/logger";
 import { isUniqueViolation, safeErrorFields } from "@/lib/safe-error";
 import { env } from "@/env";
 import { isStaffRole, normalizeRole } from "@/domain/actor";
-import { refuseSignIn } from "@/domain/sign-in";
+import { refuseSignIn, type SignInErrorCode } from "@/domain/sign-in";
+import { routeRecovery } from "@/domain/recovery";
+import type { RegisterErrorCode } from "@/domain/registration";
 import type { LoginIdentifier } from "@/lib/login-identifier";
 
 function isPhoneUniquenessError(error: unknown) {
@@ -38,7 +48,7 @@ function isPhoneUniquenessError(error: unknown) {
 }
 
 /**
- * How long the member has to open the link (ADR 0028). Long enough to survive
+ * How long the member has to open the link (ADR 0032). Long enough to survive
  * a mail client that batches, short enough that a link left in an inbox is not
  * a standing key to the account.
  */
@@ -47,10 +57,13 @@ export const EMAIL_VERIFICATION_TTL_HOURS = 24;
 /** Shortest gap between two links sent to the same address. */
 export const EMAIL_RESEND_INTERVAL_MS = 60_000;
 
-/** The member's stored language, narrowed to the three the emails exist in. */
-function narrowLocale(language: string): "en" | "ru" | "uk" {
-  return language === "ru" || language === "uk" ? language : "en";
-}
+/**
+ * Much shorter than the verification link, because this one changes a
+ * credential rather than confirming a claim: 30 minutes is long enough for a
+ * member reading their mail and short enough that a message left in an open
+ * inbox stops being a way in.
+ */
+export const PASSWORD_RESET_TTL_MINUTES = 30;
 
 export type ClaimEmailResult =
   | { ok: true }
@@ -103,11 +116,10 @@ export class IdentityService {
   static async registerMember(params: {
     phone: string;
     /**
-     * Null for an ordinary registration (ADR 0031). Non-null only where a
-     * provider proved an address in the same request, which today means a
-     * Google sign-up while that feature is switched on.
+     * Required (ADR 0032). Both identifiers are collected here; only the
+     * number works until the link below is opened.
      */
-    email: string | null;
+    email: string;
     /**
      * A provider that has already proved this exact address in this request
      * (ADR 0029). Its presence is what lets registration mark the address
@@ -123,7 +135,11 @@ export class IdentityService {
     userAgent: string;
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
-  }): Promise<{ success: boolean; sessionToken?: string; error?: string }> {
+  }): Promise<{
+    success: boolean;
+    sessionToken?: string;
+    error?: RegisterErrorCode;
+  }> {
     // ADR 0012: while phone verification is postponed the SMS code is not
     // requested, not sent and not checked. The flag is the single place that
     // decides, so turning Twilio back on is one environment variable.
@@ -133,10 +149,7 @@ export class IdentityService {
         params.code ?? "",
       );
       if (!isCodeValid) {
-        return {
-          success: false,
-          error: "Invalid or expired verification code",
-        };
+        return { success: false, error: "code_invalid" };
       }
     }
 
@@ -171,9 +184,11 @@ export class IdentityService {
         sessionToken,
       });
 
-      // Nothing to prove where a provider already did it, and nothing to send
-      // where no address was given at all (ADR 0031).
-      if (!params.provenBy && params.email) {
+      // Nothing to prove where a provider already did it (ADR 0029). For
+      // everyone else the link goes out here and is not waited on: the account
+      // exists, the member is signed in, and a message that fails to leave is
+      // a logged failure rather than a lost registration (ADR 0032).
+      if (!params.provenBy) {
         await IdentityService.issueEmailVerification({
           memberId,
           email: params.email,
@@ -194,27 +209,19 @@ export class IdentityService {
       logger.error("Failed to create member account", safeErrorFields(error));
 
       if (isPhoneUniquenessError(error)) {
-        return {
-          success: false,
-          error: "Phone is already registered.",
-        };
+        return { success: false, error: "phone_taken" };
       }
 
       // Deliberately vaguer than the phone answer above: confirming that an
       // address is registered tells an anonymous caller who is in the club
-      // (ADR 0005). The phone message predates that reasoning and is left
-      // alone here rather than changed in passing.
+      // (ADR 0005), and ADR 0030's disclosure covers the number only. The
+      // screen renders this one against the address field, so the applicant
+      // knows which of the two to change without being told who holds it.
       if (isUniqueViolation(error, "members_email_unique")) {
-        return {
-          success: false,
-          error: "That email address cannot be used.",
-        };
+        return { success: false, error: "email_taken" };
       }
 
-      return {
-        success: false,
-        error: "Failed to create account. Please try again.",
-      };
+      return { success: false, error: "failed" };
     }
   }
 
@@ -238,7 +245,7 @@ export class IdentityService {
     totpUri?: string;
     /** FR-091: the saved preference, so the caller can make it the locale. */
     language?: string;
-    error?: string;
+    error?: SignInErrorCode;
   }> {
     const member =
       params.identifier.kind === "phone"
@@ -246,22 +253,16 @@ export class IdentityService {
         : await findMemberByEmail(db, params.identifier.value);
 
     if (!member) {
-      return { success: false, error: "Invalid credentials" };
+      return { success: false, error: "invalid_credentials" };
     }
 
-    // Blocked accounts, and addresses nobody has proved (ADR 0028). The rule
+    // Blocked accounts, and addresses nobody has proved (ADR 0032). The rule
     // itself is in `src/domain/sign-in.ts`, where it can be tested without a
     // database.
     const refusal = refuseSignIn(params.identifier.kind, member);
 
     if (refusal) {
-      return {
-        success: false,
-        error:
-          refusal === "not_active"
-            ? "Account is not active"
-            : "Invalid credentials",
-      };
+      return { success: false, error: refusal };
     }
 
     const isValid = await verifyPassword(
@@ -269,7 +270,7 @@ export class IdentityService {
       params.passwordPlain,
     );
     if (!isValid) {
-      return { success: false, error: "Invalid credentials" };
+      return { success: false, error: "invalid_credentials" };
     }
 
     const isStaff = isStaffRole(normalizeRole(member.role));
@@ -295,10 +296,7 @@ export class IdentityService {
         logger.error(
           "TOTP_ENCRYPTION_KEY is not configured; refusing to enrol a staff authenticator",
         );
-        return {
-          success: false,
-          error: "Two-factor authentication is unavailable",
-        };
+        return { success: false, error: "totp_unavailable" };
       }
     }
 
@@ -343,10 +341,10 @@ export class IdentityService {
     code: string;
     ipAddress: string;
     userAgent: string;
-  }): Promise<{ success: boolean; error?: string }> {
+  }): Promise<{ success: boolean; error?: SignInErrorCode }> {
     const session = await findActiveSessionByToken(db, params.sessionToken);
     if (!session || !session.member || !session.isPartialSession) {
-      return { success: false, error: "Invalid session" };
+      return { success: false, error: "session_expired" };
     }
 
     let key: string;
@@ -356,10 +354,7 @@ export class IdentityService {
       logger.error(
         "TOTP_ENCRYPTION_KEY is not configured; refusing to verify a staff authenticator",
       );
-      return {
-        success: false,
-        error: "Two-factor authentication is unavailable",
-      };
+      return { success: false, error: "totp_unavailable" };
     }
 
     // Which seed to judge against is decided here, from server state alone.
@@ -377,12 +372,12 @@ export class IdentityService {
     // All of them mean "no usable second factor", and all of them must refuse
     // the sign-in rather than skip the check.
     if (!secret) {
-      return { success: false, error: "TOTP not configured" };
+      return { success: false, error: "totp_not_configured" };
     }
 
     const isValid = verifyTotpCode(secret, params.code);
     if (!isValid) {
-      return { success: false, error: "Invalid code" };
+      return { success: false, error: "invalid_code" };
     }
 
     await upgradeSessionTx(
@@ -418,7 +413,7 @@ export class IdentityService {
   }
 
   /**
-   * Claim an email address and send the link that proves it (ADR 0028).
+   * Claim an email address and send the link that proves it (ADR 0032).
    *
    * The address is written before the mail goes out, so the token has
    * something to point at and a member who never opens the link is left
@@ -459,13 +454,21 @@ export class IdentityService {
       }
     }
 
-    try {
-      await setMemberEmail(db, params.memberId, params.email);
-    } catch (error) {
-      if (isUniqueViolation(error, "members_email_unique")) {
-        return { ok: false, reason: "unavailable" };
+    // Only a *change* of address is written. `setMemberEmail` clears
+    // `email_verified_at` by design — a new address is unproved — but running
+    // it for a resend would un-verify an address the member had already
+    // proved, and a message that then failed to arrive would leave them
+    // unable to sign in by address or to reset their own password. A resend
+    // issues a fresh token against the address that is already there.
+    if (params.currentEmail !== params.email) {
+      try {
+        await setMemberEmail(db, params.memberId, params.email);
+      } catch (error) {
+        if (isUniqueViolation(error, "members_email_unique")) {
+          return { ok: false, reason: "unavailable" };
+        }
+        throw error;
       }
-      throw error;
     }
 
     const sent = await IdentityService.issueEmailVerification({
@@ -531,33 +534,164 @@ export class IdentityService {
   }
 
   /**
-   * Ask staff to reset a password (FR-006, ADR 0031).
+   * Start a password reset (FR-006, ADR 0032).
    *
-   * Records the request and returns nothing about who was found. The caller
-   * says the same thing to everyone, because this is a form an anonymous
-   * visitor can submit numbers to freely, and it must not become a membership
-   * oracle (security.md §6). Registration's first step is the single stated
-   * exception (ADR 0030), gated separately.
+   * Two outcomes, one entry point. Where the account holds an address it has
+   * proved, a single-use link goes to that address and nothing reaches staff.
+   * Where it does not — the nine accounts that predate ADR 0032, or anyone who
+   * never opened their link — a row lands on the staff console instead and an
+   * owner performs the reset the way ADR 0018 describes.
    *
-   * There is no emailed link any more. The reset itself is performed by a
-   * staff owner after an identity check outside the system (ADR 0018); this is
-   * only how a member reaches them.
+   * Which of the two ran is never returned. The caller says one sentence to
+   * everyone, because this is a form an anonymous visitor can submit
+   * identifiers to freely and it must not become a membership oracle
+   * (security.md §6). Registration's first step is the single stated exception
+   * (ADR 0030), gated separately.
+   *
+   * The mail is addressed from the member row, never from what the caller
+   * typed: a request naming a phone number sends to the address on that
+   * account, so this form cannot be aimed at a mailbox of the caller's
+   * choosing.
    */
-  static async requestPasswordReset(params: { phone: string }): Promise<void> {
-    const member = await findMemberByPhone(db, params.phone);
+  static async requestPasswordReset(params: {
+    identifier: LoginIdentifier;
+    now?: Date;
+  }): Promise<void> {
+    const now = params.now ?? new Date();
 
-    // Blocked and deleting accounts are not recoverable by their holder, and a
-    // request for one is noise on a staff screen rather than work.
-    if (!member || member.status !== "active") return;
+    const member =
+      params.identifier.kind === "phone"
+        ? await findMemberByPhone(db, params.identifier.value)
+        : await findMemberByEmail(db, params.identifier.value);
 
-    await createPasswordResetRequest(db, {
+    const route = routeRecovery(member ?? null);
+
+    if (route === "none" || !member) return;
+
+    if (route === "staff") {
+      await createPasswordResetRequest(db, {
+        memberId: member.id,
+        phone: member.phone,
+      });
+      return;
+    }
+
+    const address = member.email;
+
+    // Unreachable: "email" is returned only for an address that is present and
+    // proved. Written as a guard rather than an assertion so the compiler
+    // establishes it instead of being told.
+    if (!address) return;
+
+    const token = generateToken();
+
+    await createVerificationToken(db, {
       memberId: member.id,
-      phone: params.phone,
+      purpose: "password_reset",
+      email: address,
+      tokenHash: hashVerificationToken(token),
+      expiresAt: new Date(
+        now.getTime() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000,
+      ),
     });
+
+    const locale = narrowLocale(member.language);
+
+    try {
+      await sendPasswordResetEmail({
+        to: address,
+        displayName: member.displayName,
+        locale,
+        url: absoluteUrl(
+          `/${locale}/reset-password/${encodeURIComponent(token)}`,
+        ),
+        expiresInMinutes: PASSWORD_RESET_TTL_MINUTES,
+      });
+    } catch (error) {
+      // Logged, not surfaced: the screen says the same thing either way, and
+      // the member can ask again.
+      logger.error("password reset email could not be sent", {
+        memberId: member.id,
+        ...safeErrorFields(error),
+      });
+    }
   }
 
   /**
-   * Redeem the link (ADR 0028).
+   * Set a new password against a reset link (FR-006).
+   *
+   * The half that is easy to leave out is the second one: **every session
+   * ends**. If somebody else is in the account, changing the password while
+   * their session lives achieves nothing.
+   */
+  static async resetPassword(params: {
+    token: string;
+    passwordPlain: string;
+    now?: Date;
+  }): Promise<boolean> {
+    const now = params.now ?? new Date();
+
+    const consumed = await consumeVerificationToken(
+      db,
+      hashVerificationToken(params.token),
+      "password_reset",
+      now,
+    );
+
+    if (!consumed) return false;
+
+    // Hashed after the token is spent, not before: argon2 takes real time, and
+    // a caller who could hold the token unspent while it ran would have a
+    // window to use it twice.
+    const passwordHash = await hashPassword(params.passwordPlain);
+    const changed = await setMemberPasswordHash(
+      db,
+      consumed.memberId,
+      passwordHash,
+    );
+
+    if (!changed) return false;
+
+    await deleteSessionsByMemberId(db, consumed.memberId);
+
+    await appendAuditEntry(db, {
+      actorType: "member",
+      actorId: consumed.memberId,
+      action: "member.password_reset",
+      subjectType: "member",
+      subjectId: consumed.memberId,
+      meta: { sessionsRevoked: true, provenBy: "email" },
+    });
+
+    // By id, not by `consumed.email`. The token carries the address it was
+    // minted for, and the account can have moved to another one inside the
+    // 30 minutes since — in which case looking the address up finds nobody
+    // and this notice is silently dropped, or finds whoever has claimed the
+    // freed address since and tells *them* that their password changed.
+    // security.md §1 requires this message; it must not depend on the address
+    // having stayed put.
+    const member = await findMemberById(db, consumed.memberId);
+
+    if (member?.email) {
+      // Told after the fact (security.md §1): if the reset was not theirs,
+      // this is the message that says so.
+      await sendPasswordChangedEmail({
+        to: member.email,
+        displayName: member.displayName,
+        locale: narrowLocale(member.language),
+      }).catch((error: unknown) => {
+        logger.error("password change notice could not be sent", {
+          memberId: consumed.memberId,
+          ...safeErrorFields(error),
+        });
+      });
+    }
+
+    return true;
+  }
+
+  /**
+   * Redeem the link (ADR 0032).
    *
    * Both halves are guarded on the address the token was issued for, not on
    * the member alone: a member who claims one address, changes their mind and

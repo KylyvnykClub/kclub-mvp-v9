@@ -37,6 +37,9 @@ export default tseslint.config(
       ".next-stale-*/**",
       // pnpm verify builds here, see tools/verify-build.ts
       ".next-verify/**",
+      // and the run-kclub skill builds here, so a driven build does not make
+      // lint fail on its own output
+      ".next-driver/**",
       "next-env.d.ts",
       "coverage/**",
       "docs/**",

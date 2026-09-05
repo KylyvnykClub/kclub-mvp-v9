@@ -16,7 +16,7 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |Service|Used for|Critical?|Without it|Owner|
 |-|-|-|-|-|
 |**Stripe**|Subscriptions, checkout, invoices, customer portal, card storage|Yes|No new subscriptions and no renewals. Existing entitlements survive, because they are local. Revenue stops|Owner|
-|**Twilio Verify**|SMS one-time codes for registration and device challenges — postponed, currently unused while `AUTH_PHONE_VERIFICATION_ENABLED` is `false` ([ADR 0012](decisions/0012-postpone-phone-verification-turnstile-gate.md))|No, while postponed|Nothing — registration uses Cloudflare Turnstile instead. Password reset is unbuilt regardless of this dependency ([ADR 0015](decisions/0015-password-reset-deferred-to-client.md))|Tech lead|
+|**Twilio Verify**|SMS one-time codes for registration and device challenges — postponed, currently unused while `AUTH_PHONE_VERIFICATION_ENABLED` is `false` ([ADR 0012](decisions/0012-postpone-phone-verification-turnstile-gate.md))|No, while postponed|Nothing — registration uses Cloudflare Turnstile instead, and account recovery runs on email rather than SMS ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|Tech lead|
 |**Twilio Messaging**|Transactional SMS to members without an email address|No|Notifications fall back to in-product state|Tech lead|
 |**Neon**|The primary database|Yes|Total outage of everything dynamic|Tech lead|
 |**Vercel**|Hosting, CDN, TLS, build and deploy|Yes|Total outage|Tech lead|
@@ -25,7 +25,7 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |**Cloudflare R2**|Nightly PostgreSQL logical dump ([data-storage.md §5](data-storage.md#5-backup-and-recovery)); member avatars, company logos and galleries, and onboarding staging under `media/` ([ADR 0021](decisions/0021-member-avatar-upload.md)–[0024](decisions/0024-onboarding-media-staging.md))|No|A missed nightly dump; uploads fail and stored images 404 until it returns — the rest of the product is unaffected|Tech lead|
 |**CountryStateCity**|City names for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md))|No|The city field is free text|Tech lead|
 |**Cloudflare DNS + Turnstile**|DNS, bot mitigation on registration|Yes (DNS)|DNS failure is a total outage; Turnstile failure fails open with tighter rate limits|Owner|
-|**Resend**|Transactional email|No|Email queues; in-product state is authoritative|Tech lead|
+|**Resend**|Transactional email, including the verification and password-reset links account recovery runs on ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|Not for signing in; **yes for recovering an account**|Notices queue and in-product state stays authoritative, but a member who cannot sign in also cannot recover unaided — they fall back to the staff request queue, which is why that path was kept|Tech lead|
 |**Google Identity**|OAuth 2.0 sign-in as an optional entry point ([ADR 0029](decisions/0029-google-sign-in.md))|No|The button is not offered; phone and email sign-in are unaffected|Tech lead|
 |**Sentry / Axiom / Better Stack**|Errors, logs and metrics, uptime and status page|No|We are blind but serving. Blindness during an incident is bad enough to alert on separately|Tech lead|
 |**1Password**|Secret storage of record|No, at runtime|Deployment and rotation are blocked; running systems are unaffected|Owner|
@@ -38,7 +38,8 @@ are absorbed is covered in [reliability.md](reliability.md#3-failure-modes).
 |Neon|99.95% on Business; best-effort on Scale|99.9% member area|The database is a single point of failure; our target sits on top of an uncommitted number|
 |Stripe|99.99% historical, no contractual SLA on standard accounts|Checkout availability|Accepted universally; no alternative provider is realistic|
 |Twilio|99.95% on Verify|Registration|A Twilio outage stops growth, not the club|
-|Upstash / R2 / Resend|99.9%-class|Nothing critical|Designed to degrade|
+|Upstash / R2|99.9%-class|Nothing critical|Designed to degrade|
+|Resend|99.9%-class|Account recovery|An outage delays recovery rather than denying it: the request is accepted, and a member who cannot wait reaches staff through the console queue|
 |CountryStateCity|None published|Nothing - the onboarding city picker|Degrades to a free-text field when the key is absent or the API is down ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md))|
 
 The honest summary: **our 99.9% target is a stack of vendors' 99.9%s, which
@@ -141,18 +142,21 @@ we expect, and adding one is a deliberate act.
 
 |Aspect|Detail|
 |-|-|
-|Purpose|Transactional email: moderation outcomes, payment failures, grace-expiry warnings, referral notifications, security notices|
+|Purpose|Transactional email: email verification links, password-reset links, moderation outcomes, payment failures, grace-expiry warnings, referral notifications, security notices|
 |Base URL(s)|`https://api.resend.com`|
 |Protocol|REST|
 |Authentication|API key|
 |Timeout|5 s|
-|Retry policy|3 attempts with backoff, driven by the job rather than inline — email is never on a user's critical path|
+|Retry policy|3 attempts with backoff, driven by the job rather than inline. Registration does not wait for the welcome verification either: it is sent after the account exists and a failure is logged, not surfaced ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|
 |Rate limit|Plan-dependent; far above our volume|
 |Sandbox available|Yes; in preview and staging every message is redirected to a team address|
 
-**Data sent:** email address, member display name, and the message content.
-Never a card serial, never a referral client's contact details, never a
-one-time code — email is not a verification channel in this product.
+**Data sent:** email address, member display name, and the message content —
+which for a verification or reset message includes a single-use link. Never a
+card serial, never a referral client's contact details, never an SMS one-time
+code. Email **is** a verification channel for the address itself and for
+account recovery ([ADR 0032](decisions/0032-phone-and-email-both-required.md));
+it is not one for the phone number, which Twilio owns.
 
 ### 2.4 Cloudflare R2
 
@@ -324,7 +328,11 @@ availability, which is why it is the only one with a hard cap and a page.
 |Request a verification code|Global hourly ceiling|Whole system|429, plus an alert — this one is a spend control|
 |Submit a verification code|5 attempts|Verification|The verification is destroyed; a new code must be requested|
 |Sign in|5 / minute, then escalating lockout (3 → 1 s, 5 → 30 s, 10 → 15 min)|Account, and separately per IP|429; the member is notified after the lockout threshold|
-|Password reset|3 / hour|Account|429|
+|Request a password reset|3 / hour|Identifier named by the caller|429|
+|Request a password reset|10 / hour|IP address|429|
+|Submit a registration|20 / hour|IP address|429. Same cap as the first-step lookup and for the same reason: this is where "that number is already registered" now comes from ([ADR 0030](decisions/0030-registration-says-a-number-is-taken.md))|
+|Resend an email verification|1 / 60 s|Member, for the address already on the account|The screen says to wait; changing the address is not throttled, so a typo is not punished|
+|Claim an email address|5 / hour per member, 20 / hour per IP|Member and address|429. The resend throttle above bounds one address; this bounds a caller naming a different address every time, which would otherwise send our mail to any inbox they like|
 |Card verification lookup|30 / minute|IP address|429. Deliberately generous — a partner scanning many cards at an event is legitimate — but bounded, because this endpoint is the enumeration surface|
 |Catalogue search|60 / minute|Member|429|
 |Send a referral|**10 / 24 h per sender; 3 / 24 h per sender-recipient pair**|Member and pair|Blocked in the UI before submission with the reset time shown; 409 server-side if attempted anyway (FR-073)|

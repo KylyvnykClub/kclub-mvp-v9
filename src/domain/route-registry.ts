@@ -38,6 +38,27 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Public, and deliberately says nothing about the token until the form is
+    // submitted (FR-006).
+    method: "GET",
+    path: "/:locale/reset-password/:token",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // Public: the link may be opened in a browser that has never signed in,
+    // which is the case it exists for. It reads only; the token is spent by
+    // the action behind the button (ADR 0032).
+    method: "GET",
+    path: "/:locale/verify-email",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/:locale/register",
     action: "read",

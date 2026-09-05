@@ -7,7 +7,7 @@ const active = { status: "active", emailVerifiedAt: null };
 const verified = { status: "active", emailVerifiedAt: new Date() };
 
 /**
- * Signing in with either identifier (FR-005, ADR 0028).
+ * Signing in with either identifier (FR-005, ADR 0032).
  *
  * The case that matters is the third one: an address that has been claimed but
  * never proved must not sign anyone in. Without it, typing somebody else's
@@ -15,7 +15,7 @@ const verified = { status: "active", emailVerifiedAt: new Date() };
  * claim is unauthenticated by design, and only the emailed link authenticates
  * it.
  */
-describe("sign-in eligibility (FR-005, ADR 0028)", () => {
+describe("sign-in eligibility (FR-005, ADR 0032)", () => {
   it("FR-005: a phone sign-in does not care about the email column", () => {
     expect(refuseSignIn("phone", active)).toBeNull();
     expect(refuseSignIn("phone", verified)).toBeNull();
@@ -25,7 +25,7 @@ describe("sign-in eligibility (FR-005, ADR 0028)", () => {
     expect(refuseSignIn("email", verified)).toBeNull();
   });
 
-  it("ADR 0028: an unproved address may not, and is refused as bad credentials", () => {
+  it("FR-005: an unproved address may not, and is refused as bad credentials", () => {
     // Not its own error: a distinct answer would confirm to an anonymous
     // caller that the address is registered (security.md §6).
     expect(refuseSignIn("email", active)).toBe("invalid_credentials");

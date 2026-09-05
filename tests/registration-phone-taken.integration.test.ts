@@ -1,7 +1,11 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import type { DbClient } from "@/data/db.js";
-import { findMemberByPhone, registerMemberTx } from "@/data/identity.js";
+import {
+  findMemberByEmail,
+  findMemberByPhone,
+  registerMemberTx,
+} from "@/data/identity.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 function testDbClient(): DbClient {
@@ -15,11 +19,13 @@ beforeAll(() => {
 
 let seq = 0;
 
-async function register(db: DbClient, phone: string) {
+async function register(db: DbClient, phone: string, email?: string | null) {
   seq += 1;
   await registerMemberTx(db, {
     phone,
-    email: null,
+    // Both identifiers, since ADR 0032 - except where a case is deliberately
+    // about an account that predates the rule and holds none.
+    email: email === undefined ? `taken${seq}@example.com` : email,
     passwordHash: "hash",
     displayName: `Taken ${seq}`,
     country: "UA",
@@ -80,5 +86,55 @@ describe("registration checks the number before the form (FR-001, ADR 0030)", ()
 
     expect(Array.isArray(found)).toBe(false);
     expect(found?.phone).toBe("+380671110004");
+  });
+});
+
+/**
+ * Both identifiers, and what happens when one of them is taken (FR-001,
+ * ADR 0032).
+ *
+ * The schema is what makes the address mandatory - `registration-schema.test.ts`
+ * proves that - and the unique index is what makes it exclusive. This is the
+ * second half: two members cannot hold one address, and the accounts that
+ * predate the rule and hold none are still legal rows.
+ */
+describe("registration holds a phone number and an address (FR-001, ADR 0032)", () => {
+  it("FR-001: a registration stores both identifiers", async () => {
+    const db = testDbClient();
+    await register(db, "+380671110010", "both@example.com");
+
+    const byPhone = await findMemberByPhone(db, "+380671110010");
+    const byEmail = await findMemberByEmail(db, "both@example.com");
+
+    expect(byPhone?.id).toBe(byEmail?.id);
+    expect(byPhone?.email).toBe("both@example.com");
+  });
+
+  it("FR-001: the address is stored unproved, so it cannot yet sign anyone in", async () => {
+    const db = testDbClient();
+    await register(db, "+380671110011", "unproved@example.com");
+
+    const member = await findMemberByEmail(db, "unproved@example.com");
+
+    expect(member?.emailVerifiedAt).toBeNull();
+  });
+
+  it("FR-001: a second member cannot take an address already held", async () => {
+    const db = testDbClient();
+    await register(db, "+380671110012", "only-one@example.com");
+
+    await expect(
+      register(db, "+380671110013", "only-one@example.com"),
+    ).rejects.toThrow();
+  });
+
+  it("ADR 0032: accounts predating the rule hold no address and are still valid", async () => {
+    // `members.email` stays nullable on purpose: enforcing the requirement in
+    // the database would have meant a destructive migration against the nine
+    // accounts that were registered before it existed.
+    const db = testDbClient();
+    await register(db, "+380671110014", null);
+
+    expect(await findMemberByPhone(db, "+380671110014")).toBeTruthy();
   });
 });

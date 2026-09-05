@@ -43,7 +43,7 @@ A member who visits twice a year and gets a discount both times is a success.
 
 ## 2. Screen inventory
 
-Thirty-eight screens. The count is the point — half of them are states nobody
+Forty-eight screens. The count is the point — half of them are states nobody
 plans for, and finding them now is cheaper than discovering them in week ten.
 
 **Public (`kclub.com`)**
@@ -63,12 +63,13 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 
 |Screen|User goal|Access|Notes|
 |-|-|-|-|
-|Register — phone + password|Start membership|public|Consent wording for SMS shown verbatim, and stored|
-|Register — enter code|Prove the number|public|Resend with visible countdown; attempts remaining|
-|Register — profile|Finish in one screen|authenticated, unverified profile|Name, language, country. Three fields, no more|
-|Sign in|Return|public|Phone number and password. The Google alternative below the button appears only when the `google_signin_enabled` flag is on, and it is off ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
+|Register|Start membership|public|**One screen, one form**: phone number, display name, email address, password, repeat password, country. Both identifiers are required ([ADR 0032](decisions/0032-phone-and-email-both-required.md)). The two refusals that can only come from the server land against their own field with everything else still typed — a taken number says so plainly ([ADR 0030](decisions/0030-registration-says-a-number-is-taken.md)), a taken address says only that it cannot be used. Consent wording is on the screen, not behind a link, and submitting the form is the act of agreement|
+|Register — enter code|Prove the number|public|Only while `AUTH_PHONE_VERIFICATION_ENABLED` is on ([ADR 0012](decisions/0012-postpone-phone-verification-turnstile-gate.md)); it is off. Shown after the form, not in the middle of it, so the form is never split. Resend with visible countdown; attempts remaining. Going back keeps everything already filled in|
+|Verify email|Prove the address|public|Opened from the link in the welcome mail. Reads nothing until the button is pressed, so a mail scanner following the URL cannot spend the token. States: confirmed, already used, expired, not a real link — the last two say the same thing|
+|Sign in|Return|public|Password plus one identifier, chosen by a tab: phone number or email address. An address the member has not verified is refused exactly like a wrong password, because saying otherwise would say who is in the club. The Google alternative below the button appears only when the `google_signin_enabled` flag is on, and it is off ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
 |Sign in — device challenge|Prove an unrecognised device|public|Appears only when the device is unknown|
-|Forgot password|Recover|public|Phone number, behind a Turnstile gate. The request lands in the staff console; the reply is the same in every case, so the form cannot be used to find out who is in the club. Staff confirm who the caller is outside the system, then reset the password ([ADR 0018](decisions/0018-staff-assisted-password-reset.md), [ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
+|Forgot password|Recover|public|Phone number or email address, same tabs as sign-in, behind a Turnstile gate. One reply in every case — that a link is on its way if the account holds a verified address, and that support has been asked otherwise — so the form discloses neither who is in the club nor which of the two happened. Accounts with no verified address land in the staff console as before ([ADR 0018](decisions/0018-staff-assisted-password-reset.md), [ADR 0032](decisions/0032-phone-and-email-both-required.md))|
+|Set a new password|Finish recovery|public|Reached only from the emailed link. The token is not checked when the page loads, so a visitor cannot learn whether a link is real without spending it. Every other session dies when the password changes|
 |Blocked / suspended|Understand and appeal|authenticated|Says what happened and how to contact support|
 
 Every screen that takes a phone number — the two above, the staff creation form
@@ -115,7 +116,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Send a referral|Introduce a client|member_vip|Consent attestation, quota shown before submitting|
 |Inbox|See what the system did to me and when|member|A tab under Profile, not a fifth navigation item. Unread count in the header; each row rendered in the member's current language ([decisions/0020](decisions/0020-member-inbox.md))|
 |Settings — profile|Change name, language, country|member||
-|Settings — security|Sessions, password, phone number|member|Active sessions with device and last-used|
+|Settings — security|Sessions, password, phone number, email address|member|Active sessions with device and last-used. The address panel shows whether it is verified, resends the link no more than once a minute, and accepts a replacement — which is how a mistyped address is corrected ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
 
 **Staff console (`/dashboard/admin`, shared shell: sidebar + breadcrumb topbar)**
@@ -161,12 +162,16 @@ These match the critical paths in
 1. Lands on Home from a founder's link or a partner's recommendation.
 2. Reads how it works; sees that membership is free and that the member list is
    never published.
-3. **Join** → enters phone number and password. The SMS consent wording is on
-   the screen, not behind a link.
-4. Receives a 6-digit code, enters it. Resend is available after 60 seconds with
-   a visible countdown; attempts remaining are shown after a wrong code.
-5. Enters name, language and country — three fields.
-6. Lands on **My card**, which is issued and animated in once. A one-time
+3. **Join** → fills in one form: phone number, name, email address, password
+   twice, country. Both identifiers are required
+   ([ADR 0032](decisions/0032-phone-and-email-both-required.md)) and the
+   address is not waited on — a verification link is sent and the member
+   carries on. The SMS consent wording is on the screen, not behind a link.
+4. While SMS verification is off ([ADR 0012](decisions/0012-postpone-phone-verification-turnstile-gate.md))
+   there is no second screen. When it is on, a 6-digit code is asked for after
+   the form; resend is available after 60 seconds with a visible countdown, and
+   attempts remaining are shown after a wrong code.
+5. Lands on **My card**, which is issued and animated in once. A one-time
    coach-mark points at the QR and at the catalogue.
 
 **Entry point:** Home, or a partner's link.

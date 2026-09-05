@@ -1,5 +1,5 @@
 /**
- * The one place that decides what an email address is (FR-001, ADR 0028).
+ * The one place that decides what an email address is (FR-001, ADR 0032).
  *
  * The counterpart to `src/lib/phone.ts`, and it exists for the same reason:
  * `members.email` is unique and is compared with `=`, so every boundary that

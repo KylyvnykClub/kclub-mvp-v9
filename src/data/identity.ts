@@ -29,7 +29,7 @@ export async function findMemberByPhone(db: DbClient, phone: string) {
 }
 
 /**
- * The member holding an address (FR-001, ADR 0028).
+ * The member holding an address (FR-001, ADR 0032).
  *
  * Matches on the address as stored, which `emailSchema` has already lowercased
  * — the callers of this function pass its output, so there is no second
@@ -38,6 +38,20 @@ export async function findMemberByPhone(db: DbClient, phone: string) {
 export async function findMemberByEmail(db: DbClient, email: string) {
   return db.query.members.findFirst({
     where: eq(members.email, email),
+  });
+}
+
+/**
+ * The member behind an id we already trust (FR-006).
+ *
+ * Used where a row has been reached by something other than an identifier — a
+ * spent verification token, say — and the member's current address, name or
+ * language is needed. Looking the address up again instead would find the
+ * wrong member, or none, whenever the account has moved to another one.
+ */
+export async function findMemberById(db: DbClient, memberId: string) {
+  return db.query.members.findFirst({
+    where: eq(members.id, memberId),
   });
 }
 
@@ -241,7 +255,7 @@ export async function setMemberPasswordHash(
 }
 
 /**
- * Claim an address, unverified (ADR 0028).
+ * Claim an address, unverified (ADR 0032).
  *
  * Claiming always clears `emailVerifiedAt`, including when the member retypes
  * the address they already proved: the proof belongs to a click on a link, and
@@ -289,7 +303,7 @@ export async function markEmailVerified(
 }
 
 /**
- * Issue a single-use link (ADR 0028).
+ * Issue a single-use link (ADR 0032).
  *
  * Takes the hash, never the token: the token exists in the email and in the
  * caller's local variable, and nowhere else. Any earlier token for the same

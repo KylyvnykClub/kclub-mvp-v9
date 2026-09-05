@@ -2,7 +2,7 @@ import type { SignInIdentifierKind } from "@/domain/sign-in";
 
 /**
  * What a member typed into the sign-in form, and which column it names
- * (FR-005, ADR 0028).
+ * (FR-005, ADR 0032).
  *
  * A discriminated union rather than two optional fields, so nothing
  * downstream has to guess which of the two it was handed.

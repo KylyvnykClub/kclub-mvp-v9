@@ -11,7 +11,12 @@ import {
   consentSourceDocument,
   type ConsentAcceptance,
 } from "@/lib/legal-consents";
-import { emailLookupSchema, emailSchema } from "@/lib/email";
+import { emailLookupSchema } from "@/lib/email";
+import { registerSchema } from "@/lib/registration-schema";
+import {
+  registerErrorField,
+  type RegisterErrorCode,
+} from "@/domain/registration";
 import { readLoginIdentifier } from "@/lib/login-identifier";
 import {
   PENDING_IDENTITY_COOKIE,
@@ -63,42 +68,19 @@ export async function requestPhoneVerificationAction(formData: FormData) {
     const sent = await IdentityService.requestPhoneVerification(data.phone);
     return { success: true, sent, taken: false };
   } catch (err) {
+    // Codes, like every other action here: this one is unreachable while SMS
+    // is postponed (ADR 0012), and a sentence chosen now is a sentence that
+    // reaches a Ukrainian applicant in English on the day Twilio comes back.
     if (err instanceof RateLimited) {
-      return { success: false, error: "Too many attempts. Try again later." };
+      return { success: false, error: "throttled" as const };
     }
-    if (err instanceof z.ZodError)
-      return { success: false, error: err.issues[0]?.message };
-    return { success: false, error: "Failed to send verification code" };
+    if (err instanceof z.ZodError) {
+      return { success: false, error: "invalid_input" as const };
+    }
+    return { success: false, error: "failed" as const };
   }
 }
 
-const consentAcceptanceSchema = z.object({
-  documentId: z.enum(CONSENT_DOCUMENT_IDS),
-  version: z.string().min(1).max(50),
-});
-
-const registerSchema = z.object({
-  phone: phoneSchema,
-  // Optional again (ADR 0031): the form no longer asks, and the only thing
-  // that still submits one is the hidden field a Google sign-up fills in.
-  email: emailSchema.optional(),
-  // Optional at the boundary because the code is only demanded when phone
-  // verification is enabled (ADR 0012); the service decides, not the form.
-  code: z.string().min(6).max(6).optional(),
-  turnstileToken: z.string().max(2048).optional(),
-  password: z.string().min(8).max(100),
-  displayName: z.string().min(2).max(255),
-  country: z.string().length(2),
-  language: z.string().length(2),
-  consents: z.array(consentAcceptanceSchema),
-});
-
-/**
- * Every submitted acknowledgement must reference the version currently
- * published for that document (FR-093, FR-097). A stale or fabricated
- * version fails registration; the recorded version is always the one the
- * member saw at submit time.
- */
 /**
  * FR-091: make the member's saved language the locale from now on.
  *
@@ -119,6 +101,12 @@ async function rememberPreferredLocale(language: unknown): Promise<void> {
   });
 }
 
+/**
+ * Every submitted acknowledgement must reference the version currently
+ * published for that document (FR-093, FR-097). A stale or fabricated
+ * version fails registration; the recorded version is always the one the
+ * member saw at submit time.
+ */
 async function consentVersionsMatch(
   consents: ConsentAcceptance[],
 ): Promise<boolean> {
@@ -158,14 +146,11 @@ export async function registerAction(formData: FormData) {
       [...requiredIds].every((id) => submittedIds.has(id));
 
     if (!allAccepted) {
-      return { success: false, error: "All acknowledgements are required" };
+      return { success: false, error: "consents_required" as const };
     }
 
     if (!(await consentVersionsMatch(data.consents))) {
-      return {
-        success: false,
-        error: "Legal documents have been updated. Please review them again.",
-      };
+      return { success: false, error: "consents_stale" as const };
     }
 
     // The bot gate runs before the account is created and before any password
@@ -177,12 +162,26 @@ export async function registerAction(formData: FormData) {
     if (!turnstile.ok) {
       return {
         success: false,
-        error:
-          turnstile.reason === "unavailable"
-            ? "Verification is temporarily unavailable. Please try again."
-            : "Please complete the verification challenge.",
+        error: (turnstile.reason === "unavailable"
+          ? "challenge_unavailable"
+          : "challenge") as RegisterErrorCode,
       };
     }
+
+    // ADR 0030 lets registration disclose that a phone number already belongs
+    // to a member, and rests that trade on a 20-an-hour cap. Until this form
+    // became one screen the cap lived on the first step's lookup; with the SMS
+    // code postponed (ADR 0012) that step is not called at all, and the
+    // disclosure now arrives here instead, out of the unique constraint. So
+    // the cap lives here too, or ADR 0030's bound is a sentence in a document
+    // and nothing else. Placed after the bot gate so a rejected challenge does
+    // not spend a real applicant's budget.
+    await assertRateLimit(
+      authRateLimiter(),
+      `register:submit:ip:${ipAddress}`,
+      20,
+      60 * 60 * 1000,
+    );
 
     // A Google identity parked by the callback (ADR 0029). It only counts for
     // the address it actually vouched for: a member who arrived through Google
@@ -202,7 +201,7 @@ export async function registerAction(formData: FormData) {
 
     const result = await IdentityService.registerMember({
       phone: data.phone,
-      email: data.email ?? null,
+      email: data.email,
       provenBy,
       code: data.code,
       passwordPlain: data.password,
@@ -229,18 +228,41 @@ export async function registerAction(formData: FormData) {
       await rememberPreferredLocale(data.language);
       return { success: true };
     } else {
-      return { success: false, error: result.error };
+      const error = result.error ?? ("failed" as const);
+      return { success: false, error, field: registerErrorField(error) };
     }
   } catch (err) {
-    if (err instanceof z.ZodError)
-      return { success: false, error: err.issues[0]?.message };
-    return { success: false, error: "Registration failed" };
+    if (err instanceof RateLimited) {
+      return { success: false, error: "throttled" as const };
+    }
+
+    // The issue's own message is not returned: it is written by Zod, in
+    // English, and would be the one part of registration an applicant could
+    // not read in their own language (FR-090).
+    if (err instanceof z.ZodError) {
+      return {
+        success: false,
+        error: "invalid_input" as const,
+        field: zodField(err),
+      };
+    }
+    return { success: false, error: "failed" as const };
   }
+}
+
+/**
+ * Which box a schema failure belongs against, where it is one of the two
+ * identifiers. Anything else is a form-level refusal — the form marks its own
+ * required fields, so a missing name is already visible without this.
+ */
+function zodField(error: z.ZodError): "phone" | "email" | null {
+  const path = error.issues[0]?.path[0];
+  return path === "phone" || path === "email" ? path : null;
 }
 
 // Sign-in looks an identifier up rather than claiming one, so both schemas
 // normalise without validating - see the note on phoneLookupSchema. A member
-// may arrive with either (FR-005, ADR 0028); the form says which tab they used.
+// may arrive with either (FR-005, ADR 0032); the form says which tab they used.
 const loginSchema = z.object({
   phone: phoneLookupSchema.optional(),
   email: emailLookupSchema.optional(),
@@ -258,7 +280,7 @@ export async function loginAction(formData: FormData) {
     const identifier = readLoginIdentifier(data);
 
     if (!identifier) {
-      return { success: false, error: "Invalid credentials" };
+      return { success: false, error: "invalid_credentials" as const };
     }
 
     // Neither sign-in nor registration was rate limited at all before this
@@ -319,9 +341,9 @@ export async function loginAction(formData: FormData) {
     }
   } catch (error) {
     if (error instanceof RateLimited) {
-      return { success: false, error: "Too many attempts. Try again later." };
+      return { success: false, error: "throttled" as const };
     }
-    return { success: false, error: "Login failed" };
+    return { success: false, error: "failed" as const };
   }
 }
 
@@ -337,7 +359,7 @@ export async function verifyTotpAction(formData: FormData) {
     const cookieStore = await cookies();
     const token = cookieStore.get("session")?.value;
     if (!token) {
-      return { success: false, error: "Session expired" };
+      return { success: false, error: "session_expired" as const };
     }
 
     const headerList = await headers();
@@ -368,7 +390,7 @@ export async function verifyTotpAction(formData: FormData) {
 
     return { success: false, error: result.error };
   } catch {
-    return { success: false, error: "Verification failed" };
+    return { success: false, error: "failed" as const };
   }
 }
 

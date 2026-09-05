@@ -73,19 +73,20 @@ async function issueReset(
 const inHalfAnHour = () => new Date(Date.now() + 30 * 60 * 1000);
 
 /**
- * The single-use token machinery, kept dormant (ADR 0031).
+ * Self-service password reset, proved by an emailed link (FR-006, ADR 0032).
  *
- * It was built for the emailed reset link that ADR 0028 introduced and ADR 0031
- * withdrew. The table and its guarantees remain, unused by any screen, because
- * bringing the email flow back should not mean rediscovering that a link has to
- * be single-use, expiring and purpose-bound. These tests are what keep those
- * three properties true while nothing exercises them.
+ * This is the ordinary recovery path again: it was built under ADR 0028,
+ * withdrawn by ADR 0031, and kept alive as a test-only guarantee through the
+ * fortnight in between so that bringing it back would not mean rediscovering
+ * that a link has to be single-use, expiring and purpose-bound. Those three
+ * properties are what the cases below hold down.
  *
- * Recovery today is a request to staff plus an owner-performed reset:
- * `password-reset-requests.integration.test.ts` and
- * `password-reset.integration.test.ts`.
+ * The other half of FR-006 — an account with no verified address, which falls
+ * through to the staff queue instead — is
+ * `password-reset-requests.integration.test.ts`, and the reset staff then
+ * perform is `password-reset.integration.test.ts`.
  */
-describe("verification token guarantees, dormant (ADR 0031)", () => {
+describe("self-service password reset (FR-006, ADR 0032)", () => {
   it("FR-006: a reset link replaces the hash and ends every session", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "reset@example.com");
@@ -166,7 +167,7 @@ describe("verification token guarantees, dormant (ADR 0031)", () => {
     ).toBeNull();
   });
 
-  it("ADR 0028: a reset token cannot be spent as an address confirmation", async () => {
+  it("ADR 0032: a reset token cannot be spent as an address confirmation", async () => {
     // The two purposes share a table. If either could be redeemed as the
     // other, a link sent to confirm an address would set a password.
     const db = testDbClient();
@@ -188,7 +189,7 @@ describe("verification token guarantees, dormant (ADR 0031)", () => {
     ).toBeNull();
   });
 
-  it("ADR 0028: asking again invalidates the link already sent", async () => {
+  it("ADR 0032: asking again invalidates the link already sent", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "reissue@example.com");
 
@@ -223,7 +224,7 @@ describe("verification token guarantees, dormant (ADR 0031)", () => {
     ).not.toBeNull();
   });
 
-  it("ADR 0028: the raw token never reaches the database", async () => {
+  it("ADR 0032: the raw token never reaches the database", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "opaque@example.com");
     const token = await issueReset(

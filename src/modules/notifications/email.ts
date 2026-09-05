@@ -131,7 +131,7 @@ export interface SendEmailParams {
 }
 
 /**
- * The link that proves an address belongs to the member (ADR 0028).
+ * The link that proves an address belongs to the member (ADR 0032).
  *
  * Sent by the member's own action rather than by the outbox worker, because it
  * is the one email whose failure the member is watching for: they are on the
@@ -203,7 +203,7 @@ export async function sendGraceExpiryWarningEmail(
 
 /**
  * The link that lets somebody who has forgotten their password set a new one
- * (FR-006, ADR 0028).
+ * (FR-006, ADR 0032).
  *
  * Sent by the request itself rather than queued, for the same reason the
  * address-verification link is: the member is on the screen that just asked

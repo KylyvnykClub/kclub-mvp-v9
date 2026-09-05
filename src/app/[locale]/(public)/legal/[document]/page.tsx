@@ -2,8 +2,28 @@ import { getLegalDocument } from "@/lib/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, BadgeCheck } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
+import { localeAlternates } from "@/lib/seo";
+import { legalProse } from "../_components/legal-prose";
+import { LegalOperator } from "../_components/legal-operator";
+import { LegalShell, LegalHeader } from "../_components/legal-shell";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; document: string }>;
+}) {
+  const { locale, document: documentSlug } = await params;
+  const doc = await getLegalDocument(documentSlug, locale);
+  if (!doc) {
+    const t = await getTranslations({ locale, namespace: "legal" });
+    return { title: t("notFound") };
+  }
+  return {
+    title: doc.title,
+    alternates: localeAlternates(locale, `/legal/${doc.id}`),
+  };
+}
 
 export default async function LegalDocumentPage({
   params,
@@ -25,43 +45,30 @@ export default async function LegalDocumentPage({
   }).format(new Date(doc.lastUpdated));
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <Link
-          href={`/${locale}/legal`}
-          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-accent-ink transition-colors mb-8"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("backToLegal")}
-        </Link>
-
-        <header className="mb-10 border-b border-border/40 pb-8">
-          <h1 className="text-4xl sm:text-5xl font-serif font-bold tracking-tight text-foreground mb-6">
-            {doc.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <span className="inline-flex items-center rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium ring-1 ring-inset ring-border/50">
-              {t("version", { version: doc.version })}
+    <LegalShell backHref={`/${locale}/legal`} backLabel={t("backToLegal")}>
+      <LegalHeader eyebrow={t("title")} title={doc.title}>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium ring-1 ring-border/60 ring-inset">
+            {t("version", { version: doc.version })}
+          </span>
+          {doc.authoritative && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/20 ring-inset"
+              title={t("authoritativeHint")}
+            >
+              <BadgeCheck className="h-3.5 w-3.5" />
+              {t("authoritative")}
             </span>
-            {doc.authoritative && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20"
-                title={t("authoritativeHint")}
-              >
-                <BadgeCheck className="h-3.5 w-3.5" />
-                {t("authoritative")}
-              </span>
-            )}
-            <span className="inline-flex items-center">
-              {t("lastUpdated", { date: lastUpdated })}
-            </span>
-          </div>
-        </header>
+          )}
+          <span>{t("lastUpdated", { date: lastUpdated })}</span>
+        </div>
+      </LegalHeader>
 
-        <main className="prose prose-base sm:prose-lg dark:prose-invert prose-headings:font-serif prose-a:text-accent-ink hover:prose-a:text-accent-ink/80 prose-a:transition-colors max-w-none">
-          <MDXRemote source={doc.content} />
-        </main>
+      <div>
+        <MDXRemote source={doc.content} components={legalProse} />
       </div>
-    </div>
+
+      <LegalOperator />
+    </LegalShell>
   );
 }

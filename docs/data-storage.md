@@ -38,7 +38,7 @@ account inherit staff scope.
    │    member     ├────▶ legal_acceptance         │ membership_card  │
    │               ├──────────────────────────────▶│  serial, tier    │
    │ phone (uniq)  │                                │  verify_token_h  │
-   │ email (unused)│   1:N   ┌───────────────┐      │  status          │
+   │ email (uniq)  │   1:N   ┌───────────────┐      │  status          │
    │ password_hash ├────────▶│ member_session│      └──────────────────┘
    │ display_name  │         └───────────────┘
    │ locale, status│   1:N   ┌────────────────────┐
@@ -153,7 +153,7 @@ mode over all subscriptions takes minutes at 3,000 rows.
 |Reversible?|Every migration ships with a `down.sql`, and CI proves it by applying up → down → up on a fresh branch database. Reversibility is not assumed; it is tested|
 |Zero-downtime rule|Expand, migrate, contract, across three releases. Release 1 adds the new column as nullable and starts writing both. Release 2 backfills and switches reads. Release 3 drops the old column. A pull request that adds a `NOT NULL` column without a default, renames a column, or drops one still referenced by the previous release fails review — the previous version of the application is still serving traffic during a rolling deploy|
 |Large-table changes|`CREATE INDEX CONCURRENTLY`; backfills in batches of 1,000 rows with a pause between batches, run as an Inngest job rather than inside a migration; `lock_timeout = 3s` and `statement_timeout = 30s` set for every migration session so a migration fails fast instead of blocking the site|
-|Who may run a migration in production|Nobody by hand. Only the deployment pipeline, using a role that can `CREATE`/`ALTER` but cannot read `member.phone_e164` (see §9)|
+|Who may run a migration in production|Nobody by hand. Only the deployment pipeline, using a role that can `CREATE`/`ALTER` but cannot read `member.phone_e164` or `member.email` (see §9)|
 
 **Seed and reference data.** Categories, countries and cities are seeded from a
 checked-in dataset (ISO 3166 for countries; a curated city list per country) and
@@ -189,11 +189,11 @@ security control first and a cost control second.
 |Data|Retention period|Deletion method|Driven by|
 |-|-|-|-|
 |Member account, active|While the account exists|—|—|
-|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, email address if one was ever stored, password hash, display name and sessions destroyed; password-reset requests and provider links cascade; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
+|Member account, after deletion request|30 days, then irreversible|Anonymise: phone number, email address, password hash, display name and sessions destroyed; password-reset requests and provider links cascade; the member row survives with `deleted_at` set so financial records keep a valid foreign key|GDPR Art. 17, balanced against tax record-keeping|
 |Pending (never verified) registration|24 hours|Hard delete|Minimisation — an unverified number is not a member|
 |`phone_verification` rows|90 days|Hard delete|Abuse investigation window|
-|`verification_tokens` rows|90 days, and unusable long before that|Hard delete; cascaded immediately on member deletion|Abuse investigation window. The table is **dormant** since [ADR 0031](decisions/0031-identity-returns-to-phone-only.md): nothing issues a token while the email surfaces are withdrawn|
-|`password_reset_requests` rows|Closed requests 12 months, open ones until they are closed|Hard delete; cascaded on member deletion|A record of who asked staff for their account back, and who dealt with it. Holds no secret and grants nothing ([ADR 0031](decisions/0031-identity-returns-to-phone-only.md))|
+|`verification_tokens` rows|90 days, and unusable long before that|Hard delete; cascaded immediately on member deletion|Abuse investigation window. In use again since [ADR 0032](decisions/0032-phone-and-email-both-required.md): every registration issues one, and so does every password reset that has an address to send to|
+|`password_reset_requests` rows|Closed requests 12 months, open ones until they are closed|Hard delete; cascaded on member deletion|A record of who asked staff for their account back, and who dealt with it. Holds no secret and grants nothing. Written only where the account has no verified address to email ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|
 |`member_session`|30 days idle, 90 days absolute|Hard delete|Session policy in [security.md §2](security.md#2-authentication-and-authorization)|
 |Membership card|Life of the member; revoked cards retained 24 months|Retain revoked record, destroy the QR token immediately on revocation|Fraud investigation|
 |Company application draft (`company_drafts`)|90 days from the last edit|Hard delete by the retention sweep; deleted immediately on submission, and cascaded on member deletion|Minimisation — an abandoned application is not a company|
@@ -384,7 +384,7 @@ volume in [requirements.md §5.3](requirements.md#53-scalability).
 |-|-|-|
 |Application|Pooled endpoint, role `app_rw`|`SELECT`/`INSERT`/`UPDATE` on domain tables; `INSERT` only on `audit_log` — no `UPDATE`, no `DELETE` grant, so the application literally cannot rewrite its own audit trail; no `DDL`|
 |Migration pipeline|Direct endpoint, role `app_migrate`|`DDL` only, used exclusively by CI, credentials not present in the runtime environment|
-|Developers|**No standing access to production.** Read-only access is granted for a named incident, time-boxed to 4 hours, through a Neon role that masks `member.phone_e164` and `referral.client_contact` behind a view|Granted by the owner, announced in the incident channel, logged, and expiring automatically. Every session is recorded in the audit log by hand as part of the runbook|
+|Developers|**No standing access to production.** Read-only access is granted for a named incident, time-boxed to 4 hours, through a Neon role that masks `member.phone_e164`, `member.email` and `referral.client_contact` behind a view|Granted by the owner, announced in the incident channel, logged, and expiring automatically. Every session is recorded in the audit log by hand as part of the runbook|
 |Analytics / BI|None. The staff console is the only reporting surface|If a BI tool is ever added it connects to a read replica with a masked view, never to the primary|
 |Support tooling|The staff console only, under the role model in [security.md §2](security.md#2-authentication-and-authorization)|Support staff see what the console shows them and nothing more; the console is the audit boundary|
 |Backups|Written by a job role with `pg_dump` rights, read by nobody routinely|Restoring a dump requires the 1Password age key, held by the owner and the tech lead|

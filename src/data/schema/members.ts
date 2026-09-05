@@ -33,7 +33,7 @@ export const members = pgTable("members", {
 
   /**
    * FR-001: the member's second identifier, and the only channel that can
-   * prove who they are when the phone number is gone (FR-006, ADR 0028).
+   * prove who they are when the phone number is gone (FR-006, ADR 0032).
    *
    * Nullable because the members who registered before this column existed
    * have none, and are asked rather than forced. Stored lowercased — the
