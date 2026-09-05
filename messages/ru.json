@@ -302,7 +302,9 @@
     "indexDescription": "Документы, регулирующие использование платформы KYLYVNYK CLUB. Это действующие версии политик клуба.",
     "backToLegal": "К правовым документам",
     "authoritative": "Действующая версия",
-    "authoritativeHint": "Это действующая версия документа"
+    "authoritativeHint": "Это действующая версия документа",
+    "operator": "Оператор платформы",
+    "contact": "Контакт"
   },
   "metadata": {
     "title": "KCLUB",

@@ -676,7 +676,9 @@
     "indexDescription": "Документи, що регулюють використання платформи KYLYVNYK CLUB. Це чинні версії політик клубу.",
     "backToLegal": "До правових документів",
     "authoritative": "Чинна версія",
-    "authoritativeHint": "Це чинна версія документа"
+    "authoritativeHint": "Це чинна версія документа",
+    "operator": "Оператор платформи",
+    "contact": "Контакт"
   },
   "metadata": {
     "title": "KCLUB",

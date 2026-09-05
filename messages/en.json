@@ -302,7 +302,9 @@
     "indexDescription": "The documents governing the use of the KYLYVNYK CLUB platform. These are the executed versions of the club's policies.",
     "backToLegal": "Back to legal documents",
     "authoritative": "Authoritative version",
-    "authoritativeHint": "This is the authoritative version of the document"
+    "authoritativeHint": "This is the authoritative version of the document",
+    "operator": "Platform operator",
+    "contact": "Contact"
   },
   "metadata": {
     "title": "KCLUB",

@@ -69,3 +69,60 @@ describe("constraint: legal document localization (FR-093)", () => {
     }
   });
 });
+
+describe("constraint: legal documents share one formatted shape", () => {
+  const documents = LEGAL_DOCUMENT_IDS.flatMap((id) =>
+    [".mdx", ".en.mdx"].map((suffix) => ({
+      name: `${id}${suffix}`,
+      parsed: matter(readFileSync(join(LEGAL_DIR, `${id}${suffix}`), "utf-8")),
+    })),
+  );
+
+  it("names every document in the same language, so the index reads as one set", () => {
+    for (const { name, parsed } of documents) {
+      expect(parsed.data.title, name).toMatch(/^[A-Z][A-Z /]+$/);
+    }
+  });
+
+  it("does not repeat the title, version or operator above the body", () => {
+    // The page template states all of this once, in the same place, for every
+    // document. A cover block inside the content is the old, ragged shape.
+    const COVER = [
+      /^## KYLYVNYK CLUB\.?$/m,
+      /^(Effective Date|Version|Platform Operator|Managed by)\b/m,
+      /^(Дата вступления|Версия|Оператор платформы|Управляется)/m,
+      /^kylyvnykclub@gmail\.com$/m,
+    ];
+    for (const { name, parsed } of documents) {
+      const preamble = parsed.content.split(/^## \d+\./m)[0] ?? "";
+      for (const pattern of COVER) {
+        expect(
+          preamble,
+          `${name} repeats ${pattern} above the body`,
+        ).not.toMatch(pattern);
+      }
+    }
+  });
+
+  it("reserves `##` for numbered sections and the preamble callout", () => {
+    for (const { name, parsed } of documents) {
+      const [preamble = "", ...sections] = parsed.content.split(/^(?=## )/m);
+      expect(preamble, `${name} starts with a heading`).not.toMatch(/^## /);
+      for (const section of sections) {
+        const heading = section.split("\n")[0] ?? "";
+        expect(heading, `${name}: ${heading}`).toMatch(
+          /^## (\d+\.(?!\d)|IMPORTANT NOTICE|ВАЖНОЕ УВЕДОМЛЕНИЕ)/,
+        );
+      }
+    }
+  });
+
+  it("keeps bullet lists tight, so spacing does not vary by document", () => {
+    for (const { name, parsed } of documents) {
+      expect(
+        parsed.content,
+        `${name} has a blank line inside a list`,
+      ).not.toMatch(/^- .*\n\n- /m);
+    }
+  });
+});
