@@ -34,7 +34,7 @@ import { routing } from "@/i18n/routing";
  *    a member who has **proved** that address here — sign them in;
  *  - nobody holds that address — park the proved identity in a signed cookie
  *    and send them to registration, because Google cannot supply the phone
- *    number that is still mandatory (ADR 0028);
+ *    number that is still mandatory (ADR 0032);
  *  - anything else — back to sign-in with a reason, and no session.
  *
  * Staff never come through here. They hold a mandatory second factor

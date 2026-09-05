@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Flag } from "@/components/ui/country-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import {
   Command,
   CommandEmpty,
@@ -325,15 +326,25 @@ export function PhoneInput({
  */
 export function PhoneField({
   label,
+  requiredMark = false,
   className,
   ...props
 }: React.ComponentProps<typeof PhoneInput> & {
   /** The field's own label. Wording differs per screen; the picker's does not. */
   label: string;
+  /**
+   * Whether to show the asterisk. Off by default: on sign-in and on the reset
+   * request this field is one of two the member chooses between, and marking
+   * it required there would be a lie.
+   */
+  requiredMark?: boolean;
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={props.id}>{label}</Label>
+      <Label htmlFor={props.id}>
+        {label}
+        {requiredMark && <RequiredMark />}
+      </Label>
       <PhoneInput className={className} {...props} />
     </div>
   );

@@ -11,19 +11,21 @@ import {
 } from "@/actions/password-reset";
 import { AuthCard } from "@/components/auth/auth-card";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { PhoneField } from "@/components/auth/phone-input";
+import { IdentifierField } from "@/components/auth/identifier-field";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 
 const initialState: ResetRequestState = { status: "idle" };
 
 /**
- * Asking for a reset link (FR-006, ADR 0028).
+ * Asking for a password reset (FR-006, ADR 0032).
  *
- * The answer is the same whether or not the account exists, and whether or not
- * it has an address on file. This is the one form an anonymous caller can put
- * any address into; a reply that varied would make it a membership oracle
- * (security.md §6, ADR 0005).
+ * The answer is the same whether or not the account exists, whether or not it
+ * holds an address, and whether or not that address is proved — which also
+ * means it does not say whether a link was emailed or a request was put in
+ * front of staff. One sentence covers both, and it is true in both. This is
+ * the one form an anonymous caller can put any identifier into; a reply that
+ * varied would make it a membership oracle (security.md §6, ADR 0005).
  */
 export function ForgotPasswordForm({
   turnstileSiteKey,
@@ -59,16 +61,9 @@ export function ForgotPasswordForm({
           </div>
         ) : (
           <form action={formAction} className="space-y-5">
-            {/* Phone only (ADR 0031): a member is identified by their
-                number, and staff recognise them by it. */}
-            <PhoneField
-              id="phone"
-              name="phone"
-              label={t("phoneLabel")}
-              autoComplete="username"
-              required
-              className="h-12 bg-background"
-            />
+            {/* The same control sign-in uses, for the same reason: whichever
+                identifier brought the member in should bring them back. */}
+            <IdentifierField />
 
             <p className="text-xs text-muted-foreground">{t("forgotHelp")}</p>
 

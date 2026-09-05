@@ -47,16 +47,19 @@ async function seedMember(db: DbClient) {
 }
 
 /**
- * The member's half of account recovery (FR-006, ADR 0031).
+ * The fallback half of account recovery (FR-006, ADR 0031, ADR 0032).
  *
- * Recovery itself is performed by a staff owner and is covered by
- * `password-reset.integration.test.ts`. What is new here is the queue: a
- * member can ask, staff can see who is waiting, and neither of those changes a
- * password. The cases below are the ones where a mistake is quiet — a request
- * that grants something, a queue that can be flooded, a row two staff members
- * can both close.
+ * Since ADR 0032 the ordinary path is an emailed link
+ * (`password-reset-self-service.integration.test.ts`), and this queue is what
+ * happens instead when the account holds no address it has proved — which is
+ * why every member seeded here is registered without one. The reset a staff
+ * owner then performs is `password-reset.integration.test.ts`.
+ *
+ * The cases below are the ones where a mistake is quiet — a request that
+ * grants something, a queue that can be flooded, a row two staff members can
+ * both close.
  */
-describe("password reset requests (FR-006, ADR 0031)", () => {
+describe("password reset requests (FR-006, ADR 0032)", () => {
   it("FR-006: a request reaches the queue", async () => {
     const db = testDbClient();
     const member = await seedMember(db);

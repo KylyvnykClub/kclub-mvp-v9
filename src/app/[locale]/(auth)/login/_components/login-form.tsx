@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
 import { loginAction, verifyTotpAction } from "@/actions/auth";
+import type { SignInErrorCode } from "@/domain/sign-in";
 import { AuthShell } from "@/components/auth/auth-shell";
 import {
   Card,
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/auth/password-input";
-import { PhoneField } from "@/components/auth/phone-input";
+import { IdentifierField } from "@/components/auth/identifier-field";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +52,7 @@ export function LoginForm({
 
   type LoginState = {
     success: boolean;
-    error?: string;
+    error?: SignInErrorCode;
     requiresTotp?: boolean;
     setupTotp?: boolean;
     totpUri?: string;
@@ -67,7 +68,7 @@ export function LoginForm({
 
   const [totpState, totpFormAction] = useActionState(
     async (
-      _prevState: { success: boolean; error?: string },
+      _prevState: { success: boolean; error?: SignInErrorCode },
       formData: FormData,
     ) => {
       const result = await verifyTotpAction(formData);
@@ -139,7 +140,7 @@ export function LoginForm({
               </div>
               {totpState?.error && (
                 <div className="border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive">
-                  {totpState.error}
+                  {t(`signInError.${signInErrorKey(totpState.error)}`)}
                 </div>
               )}
             </CardContent>
@@ -178,17 +179,10 @@ export function LoginForm({
         </CardHeader>
         <form action={loginFormAction}>
           <CardContent className="space-y-5 p-6 sm:p-8">
-            {/* Phone only (ADR 0031). The server still understands an
-                address, and `refuseSignIn` still refuses an unproved one, but
-                nothing offers it: members are identified by their number. */}
-            <PhoneField
-              id="phone"
-              name="phone"
-              label={t("phoneLabel")}
-              autoComplete="username"
-              required
-              className="h-12 bg-background"
-            />
+            {/* Either identifier (ADR 0032). An address the member has not
+                proved is refused by `refuseSignIn` exactly like a wrong
+                password, so nothing here can be read as a membership oracle. */}
+            <IdentifierField />
             <div className="space-y-2 text-left">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">{t("passwordLabel")}</Label>
@@ -211,7 +205,7 @@ export function LoginForm({
             </div>
             {loginState?.error && (
               <div className="border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive">
-                {loginState.error}
+                {t(`signInError.${signInErrorKey(loginState.error)}`)}
               </div>
             )}
             {providerError && !loginState?.error && (
@@ -242,6 +236,29 @@ export function LoginForm({
       </Card>
     </AuthShell>
   );
+}
+
+/**
+ * The sign-in path speaks in codes for the same reason the callback does: the
+ * server has no locale, and a sentence chosen there reaches every member in
+ * English. Anything unrecognised — an older deployment's code, say — falls back
+ * to the generic refusal rather than rendering the code itself.
+ */
+function signInErrorKey(code: string): string {
+  // A record rather than a list, so a new code added to `SignInErrorCode`
+  // fails to compile here until it has a message to render.
+  const known = {
+    invalid_credentials: true,
+    not_active: true,
+    throttled: true,
+    totp_unavailable: true,
+    session_expired: true,
+    totp_not_configured: true,
+    invalid_code: true,
+    failed: true,
+  } satisfies Record<SignInErrorCode, true>;
+
+  return code in known ? code : "failed";
 }
 
 /**

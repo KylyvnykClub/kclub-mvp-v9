@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
+import { maskEmail } from "@/lib/email";
 import { listCompaniesByOwner } from "@/data/companies";
 import { listNotificationsForMember } from "@/data/notifications";
 import {
@@ -18,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfileForm } from "@/components/profile/edit-profile-form";
 import { PersonalInfoForm } from "@/components/profile/personal-info-form";
 import { PhoneChangeForm } from "@/components/profile/phone-change-form";
+import { EmailForm } from "@/components/profile/email-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { NotificationList } from "./_components/notification-list";
@@ -285,6 +287,24 @@ export default async function ProfilePage({ params }: Props) {
                   displayName={member.displayName}
                   language={member.language || locale}
                   country={member.country}
+                />
+              </CardContent>
+            </Card>
+
+            {/* The only way a mistyped address is corrected, and the only
+                way an unverified one gets a second link (ADR 0032). Without
+                this panel a typo at registration is unrecoverable by the
+                member. */}
+            <Card className="border-border bg-background shadow-none">
+              <CardHeader>
+                <CardTitle className="text-xl font-black uppercase tracking-[-0.01em]">
+                  {tDashboard("emailTitle")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EmailForm
+                  maskedEmail={member.email ? maskEmail(member.email) : null}
+                  verified={member.emailVerifiedAt !== null}
                 />
               </CardContent>
             </Card>

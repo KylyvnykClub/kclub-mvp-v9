@@ -57,14 +57,14 @@ async function issue(
 const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000);
 
 /**
- * The email identifier and the link that proves it (FR-001, ADR 0028).
+ * The email identifier and the link that proves it (FR-001, ADR 0032).
  *
  * Every case here is one where a mistake is silent: a link that still works
  * after being used, a link that verifies an address it was not issued for, a
  * second member quietly taking an address that already belongs to someone.
  * None of them show up as an error at the time.
  */
-describe("email verification (FR-001, ADR 0028)", () => {
+describe("email verification (FR-001, ADR 0032)", () => {
   it("FR-001: a claimed address is stored unverified", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0001");
@@ -100,7 +100,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(stored?.emailVerifiedAt).toBeNull();
   });
 
-  it("ADR 0028: a link verifies once, and the second attempt finds nothing", async () => {
+  it("ADR 0032: a link verifies once, and the second attempt finds nothing", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0005");
     await setMemberEmail(db, member.id, "once@example.com");
@@ -123,7 +123,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(second).toBeNull();
   });
 
-  it("ADR 0028: an expired link is refused", async () => {
+  it("ADR 0032: an expired link is refused", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0006");
     await setMemberEmail(db, member.id, "stale@example.com");
@@ -144,7 +144,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(consumed).toBeNull();
   });
 
-  it("ADR 0028: a token presented for the other purpose is refused", async () => {
+  it("ADR 0032: a token presented for the other purpose is refused", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0007");
     await setMemberEmail(db, member.id, "purpose@example.com");
@@ -160,7 +160,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(consumed).toBeNull();
   });
 
-  it("ADR 0028: issuing a new link invalidates the previous one", async () => {
+  it("ADR 0032: issuing a new link invalidates the previous one", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0008");
     await setMemberEmail(db, member.id, "resend@example.com");
@@ -185,7 +185,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(fresh?.memberId).toBe(member.id);
   });
 
-  it("ADR 0028: a link cannot verify an address the member has since replaced", async () => {
+  it("ADR 0032: a link cannot verify an address the member has since replaced", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0009");
 
@@ -215,7 +215,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(stored?.emailVerifiedAt).toBeNull();
   });
 
-  it("ADR 0028: the raw token is never stored", async () => {
+  it("ADR 0032: the raw token is never stored", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0010");
     await setMemberEmail(db, member.id, "secret@example.com");
@@ -231,7 +231,7 @@ describe("email verification (FR-001, ADR 0028)", () => {
     expect(rows[0]!.tokenHash).toBe(hashVerificationToken(token));
   });
 
-  it("ADR 0028: the resend throttle can see when the last link went out", async () => {
+  it("ADR 0032: the resend throttle can see when the last link went out", async () => {
     const db = testDbClient();
     const member = await seedMember(db, "0011");
     await setMemberEmail(db, member.id, "throttle@example.com");

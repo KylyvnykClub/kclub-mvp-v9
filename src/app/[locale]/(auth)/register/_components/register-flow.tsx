@@ -13,6 +13,7 @@ import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
+import type { RegisterErrorCode } from "@/domain/registration";
 
 import {
   Card,
@@ -25,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 
 function SubmitButton({
   label,
@@ -47,27 +49,33 @@ function SubmitButton({
   );
 }
 
-/**
- * Marks a field the form refuses to submit without. Hidden from assistive
- * technology, which already hears "required" from the input's own attribute,
- * so the mark is a visual cue and not a second announcement.
- */
-function RequiredMark() {
-  return (
-    <span aria-hidden="true" className="ml-0.5 text-accent">
-      *
-    </span>
-  );
-}
-
-type AuthActionResult = {
+type RegisterResult = {
   success: boolean;
   error?: string;
-  sent?: boolean;
+  /** The box the refusal belongs against, where it is one of the two. */
+  field?: "phone" | "email" | null;
   /** The number already belongs to a member (ADR 0030). */
   taken?: boolean;
 } | null;
 
+/**
+ * Registration, on one screen (FR-001).
+ *
+ * Everything a member is asked for is visible at once: the number, the name,
+ * the address, the password and where they are. It used to be three steps —
+ * number, code, then the rest — and the split bought nothing while the SMS
+ * code is postponed (ADR 0012), because the middle screen was skipped and the
+ * first was one field on a page of its own.
+ *
+ * The one thing the split did buy was ADR 0030's early "that number is
+ * taken", which used to arrive only after the whole form was filled in. On a
+ * single screen that message lands against the phone field on submit with
+ * every other answer still in place, which is the outcome ADR 0030 was after.
+ *
+ * The code screen survives, unreachable, behind `phoneVerificationEnabled`:
+ * when Twilio comes back the form is filled in first and the code asked for
+ * afterwards, so the number is proved without the form being split again.
+ */
 export function RegisterFlow({
   termsVersion,
   privacyVersion,
@@ -94,11 +102,16 @@ export function RegisterFlow({
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
 
-  const [step, setStep] = useState(1);
+  const [awaitingCode, setAwaitingCode] = useState(false);
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Held between the form and the code screen, so nothing has to be typed
+  // twice when Twilio is switched back on. Null whenever the code screen is
+  // not showing.
+  const [pendingForm, setPendingForm] = useState<FormData | null>(null);
 
   // Only complain about what the applicant has actually typed: an empty field
   // is not yet wrong, it is unfinished.
@@ -139,39 +152,11 @@ export function RegisterFlow({
   // the applicant would be told the documents had changed.
   const legalReady = termsVersion !== null && privacyVersion !== null;
 
-  const [phoneState, submitPhone] = useActionState(
-    async (_prevState: AuthActionResult, formData: FormData) => {
-      const p = formData.get("phone") as string;
-
-      // Always asked, even with SMS postponed and nothing to send. This step
-      // used to skip the server entirely when the code screen was off, which
-      // is why a number that was already taken was only discovered at the end
-      // of the form, after a password and four acknowledgements (ADR 0030).
-      const res = await requestPhoneVerificationAction(formData);
-
-      if (!res?.success || res.taken) {
-        return res;
-      }
-
-      setPhone(p);
-      // The code screen exists only while SMS does (ADR 0012).
-      setStep(phoneVerificationEnabled ? 2 : 3);
-      return res;
-    },
-    null,
-  );
-
-  const [registerState, submitRegister] = useActionState(
-    async (_prevState: AuthActionResult, formData: FormData) => {
-      formData.append("phone", phone);
-      if (phoneVerificationEnabled) {
-        formData.append("code", code);
-      }
-      // Cloudflare injects this input next to the widget inside the form.
-      const turnstileToken = formData.get("cf-turnstile-response");
-      if (typeof turnstileToken === "string") {
-        formData.append("turnstileToken", turnstileToken);
-      }
+  const [state, submit] = useActionState(
+    async (
+      _prevState: RegisterResult,
+      formData: FormData,
+    ): Promise<RegisterResult> => {
       formData.append(
         "consents",
         // Every acknowledgement, not a filtered subset: with the checkboxes
@@ -181,21 +166,68 @@ export function RegisterFlow({
           consents.map(({ documentId, version }) => ({ documentId, version })),
         ),
       );
-      const res = await registerAction(formData);
-      if (res?.success) {
+
+      // Cloudflare injects this input next to the widget inside the form. It
+      // is spent by registerAction and by nothing before it, so carrying it
+      // across the code screen is safe.
+      const turnstileToken = formData.get("cf-turnstile-response");
+      if (typeof turnstileToken === "string") {
+        formData.append("turnstileToken", turnstileToken);
+      }
+
+      // ADR 0012: while SMS is postponed there is no code to ask for, and the
+      // account is created from this one submit.
+      if (phoneVerificationEnabled) {
+        const submitted = formData.get("phone");
+        const requested = await requestPhoneVerificationAction(formData);
+
+        if (requested?.taken) {
+          return { success: false, error: "phone_taken", field: "phone" };
+        }
+
+        if (!requested?.success) {
+          return { success: false, error: "failed" };
+        }
+
+        setPhone(typeof submitted === "string" ? submitted : "");
+        setPendingForm(formData);
+        setAwaitingCode(true);
+        return null;
+      }
+
+      const result = await registerAction(formData);
+
+      if (result?.success) {
         router.push(`/${locale}/dashboard/profile`);
       }
-      return res;
+
+      return result;
     },
     null,
   );
 
-  const handleVerifyCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code.length === 6) {
-      setStep(3);
-    }
-  };
+  const [codeState, submitCode] = useActionState(
+    async (_prevState: RegisterResult): Promise<RegisterResult> => {
+      if (!pendingForm) return { success: false, error: "failed" };
+
+      pendingForm.set("code", code);
+      const result = await registerAction(pendingForm);
+
+      if (result?.success) {
+        router.push(`/${locale}/dashboard/profile`);
+      }
+
+      return result;
+    },
+    null,
+  );
+
+  const active = awaitingCode ? codeState : state;
+
+  // The two refusals that belong against a box rather than above the button,
+  // which is why the action says which field each one was.
+  const emailRefused = active?.field === "email";
+  const phoneRefused = active?.field === "phone";
 
   return (
     <AuthShell
@@ -205,99 +237,17 @@ export function RegisterFlow({
     >
       <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-4 border-b border-border p-6 sm:p-8">
-          <div className="mb-2 flex justify-center gap-2">
-            {(phoneVerificationEnabled ? [1, 2, 3] : [1, 3]).map((s) => (
-              <div
-                key={s}
-                className={`h-1 w-10 transition-colors ${
-                  step === s ? "bg-accent" : "bg-border"
-                }`}
-                aria-hidden="true"
-              />
-            ))}
-          </div>
           <CardTitle className="text-center text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
-            {step === 1 && t("step1Title")}
-            {step === 2 && t("step2Title")}
-            {step === 3 && t("step3Title")}
+            {awaitingCode ? t("step2Title") : t("title")}
           </CardTitle>
-          {/* Step 1 carries no subtitle: with SMS postponed (ADR 0012) there is
-              no code to announce, and an empty element would still take space. */}
-          {step !== 1 && (
-            <CardDescription className="text-center text-sm font-light leading-6 text-muted-foreground">
-              {step === 2 && t("step2Subtitle")}
-              {step === 3 && t("step3Subtitle")}
-            </CardDescription>
-          )}
+          <CardDescription className="text-center text-sm font-light leading-6 text-muted-foreground">
+            {awaitingCode ? t("step2Subtitle") : t("subtitle")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
-          {step === 1 && (
+          {awaitingCode ? (
             <form
-              action={submitPhone}
-              className="animate-in space-y-5 fade-in duration-300"
-            >
-              {/* Coming back from Google lands here, on a phone form, with the
-                  address it proved sitting invisibly on step 3. Without this
-                  the member picks their Google account and gets what looks
-                  like a form that ignored them (ADR 0029). */}
-              {googleEmail && (
-                <div className="border border-accent/40 bg-accent/10 p-3 text-sm">
-                  <p className="font-medium text-foreground">
-                    {t("googleConfirmed", { email: googleEmail })}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">
-                    {t("googleNeedsPhone")}
-                  </p>
-                </div>
-              )}
-              <PhoneField
-                id="phone"
-                name="phone"
-                label={tAuth("phoneLabel")}
-                autoComplete="username"
-                required
-                defaultValue={phone}
-                className="h-12 bg-background"
-              />
-              {phoneState?.error && (
-                <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  {phoneState.error}
-                </p>
-              )}
-              {/* Said here rather than after the form is filled in. It does
-                  disclose that the number is a member's, which is the trade
-                  ADR 0030 makes and rate-limits. */}
-              {phoneState?.taken && (
-                <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm">
-                  <p className="font-medium text-destructive">
-                    {t("phoneTaken")}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">
-                    {t("haveAccount")}{" "}
-                    <Link
-                      href={`/${locale}/login`}
-                      className="font-bold text-foreground hover:text-accent-ink"
-                    >
-                      {t("loginLink")}
-                    </Link>
-                  </p>
-                </div>
-              )}
-              <SubmitButton label={tAuth("sendCode")} />
-              {/* On the first step only: Google settles the address, and the
-                  phone number still has to be typed either way (ADR 0029). */}
-              {google && !googleEmail && (
-                <>
-                  <AuthDivider />
-                  <GoogleButton />
-                </>
-              )}
-            </form>
-          )}
-
-          {step === 2 && (
-            <form
-              onSubmit={handleVerifyCode}
+              action={submitCode}
               className="animate-in space-y-5 fade-in duration-300"
             >
               <div className="mb-4 border border-border bg-muted/30 p-3 text-center text-sm text-muted-foreground">
@@ -316,32 +266,92 @@ export function RegisterFlow({
                   className="h-12 bg-background text-center text-lg tracking-widest"
                 />
               </div>
-              <Button
-                type="submit"
-                className="h-12 w-full bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+
+              {codeState?.error && (
+                <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                  {registerErrorMessage(t, codeState.error)}
+                </p>
+              )}
+
+              <SubmitButton
+                label={t("createAccount")}
                 disabled={code.length !== 6}
-              >
-                {tAuth("verifyCode")}
-              </Button>
+              />
+
+              {/* Back to the form, with everything still in it: the code
+                  screen exists to prove the number, not to make the applicant
+                  start again. */}
               <div className="mt-4 text-center">
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setAwaitingCode(false);
+                    setPendingForm(null);
+                  }}
                   className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
                 >
                   {tCommon("back")}
                 </button>
               </div>
             </form>
-          )}
-
-          {step === 3 && (
+          ) : (
             <form
-              action={submitRegister}
+              action={submit}
               className="animate-in space-y-5 fade-in duration-300"
             >
+              {/* Coming back from Google lands here, on the one form, with the
+                  address it proved already in the field below. Without this
+                  the member picks their Google account and gets what looks
+                  like a form that ignored them (ADR 0029). */}
+              {googleEmail && (
+                <div className="border border-accent/40 bg-accent/10 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {t("googleConfirmed", { email: googleEmail })}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {t("googleNeedsPhone")}
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="displayName">{t("nameLabel")}</Label>
+                <PhoneField
+                  id="phone"
+                  name="phone"
+                  label={tAuth("phoneLabel")}
+                  requiredMark
+                  autoComplete="username"
+                  required
+                  defaultValue={phone}
+                  className="h-12 bg-background"
+                />
+                {/* ADR 0030 discloses that a number belongs to a member, and
+                    says so against the field with everything else still
+                    typed. The 20-per-hour limit on the asking is what bounds
+                    the disclosure. */}
+                {phoneRefused && (
+                  <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm">
+                    <p className="font-medium text-destructive">
+                      {registerErrorMessage(t, active?.error)}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {t("haveAccount")}{" "}
+                      <Link
+                        href={`/${locale}/login`}
+                        className="font-bold text-foreground hover:text-accent-ink"
+                      >
+                        {t("loginLink")}
+                      </Link>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="displayName">
+                  {t("nameLabel")}
+                  <RequiredMark />
+                </Label>
                 <Input
                   id="displayName"
                   name="displayName"
@@ -352,13 +362,42 @@ export function RegisterFlow({
                 />
               </div>
 
-              {/* No address is asked for (ADR 0031): a member is a phone
-                  number again. The hidden field below carries one only when
-                  Google proved it in this session, so re-enabling that feature
-                  needs no change here. */}
-              {googleEmail && (
-                <input type="hidden" name="email" value={googleEmail} />
-              )}
+              {/* Required (ADR 0032): this is the address account recovery
+                  runs on, so it is asked for here rather than offered later.
+                  Prefilled where Google vouched for one in this session — the
+                  applicant may still change it, and then gets the ordinary
+                  emailed link instead. */}
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  {tAuth("emailLabel")}
+                  <RequiredMark />
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  required
+                  maxLength={255}
+                  defaultValue={googleEmail ?? undefined}
+                  placeholder={tAuth("emailPlaceholder")}
+                  aria-invalid={emailRefused || undefined}
+                  aria-describedby="email-help"
+                  className="h-12 bg-background"
+                />
+                <p id="email-help" className="text-xs text-muted-foreground">
+                  {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
+                </p>
+                {/* Against the field, and the form keeps everything typed. It
+                    says nothing about who holds the address: ADR 0030's
+                    disclosure covers the number only (ADR 0032). */}
+                {emailRefused && (
+                  <p className="text-sm font-medium text-destructive">
+                    {registerErrorMessage(t, active?.error)}
+                  </p>
+                )}
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">
@@ -400,7 +439,10 @@ export function RegisterFlow({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">{t("countryLabel")}</Label>
+                <Label htmlFor="country">
+                  {t("countryLabel")}
+                  <RequiredMark />
+                </Label>
                 <CountrySelect
                   id="country"
                   name="country"
@@ -442,9 +484,9 @@ export function RegisterFlow({
 
               <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
-              {registerState?.error && (
+              {state?.error && !emailRefused && !phoneRefused && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  {registerState.error}
+                  {registerErrorMessage(t, state.error)}
                 </p>
               )}
 
@@ -452,19 +494,15 @@ export function RegisterFlow({
                 label={t("createAccount")}
                 disabled={!legalReady || !passwordsUsable}
               />
-              {/* Back to whichever step actually precedes this one: the code
-                  screen when SMS is on, the phone screen when it is not (ADR
-                  0012). Without it a mistyped number could only be corrected by
-                  reloading, which loses the whole form. */}
-              <div className="mt-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => setStep(phoneVerificationEnabled ? 2 : 1)}
-                  className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
-                >
-                  {tCommon("back")}
-                </button>
-              </div>
+
+              {/* Google settles the address; the phone number still has to be
+                  typed either way (ADR 0029). */}
+              {google && !googleEmail && (
+                <>
+                  <AuthDivider />
+                  <GoogleButton />
+                </>
+              )}
             </form>
           )}
         </CardContent>
@@ -482,4 +520,32 @@ export function RegisterFlow({
       </Card>
     </AuthShell>
   );
+}
+
+/**
+ * The refusal, in the applicant's language.
+ *
+ * The action speaks in codes for the reason `src/domain/registration.ts`
+ * gives. Anything unrecognised — an older deployment's code, say — falls back
+ * to the generic refusal rather than rendering the code itself.
+ */
+function registerErrorMessage(
+  t: ReturnType<typeof useTranslations<"register">>,
+  code: string | undefined,
+): string {
+  // A record rather than a list, so a new code added to `RegisterErrorCode`
+  // fails to compile here until it has a message to render.
+  const known = {
+    invalid_input: true,
+    consents_required: true,
+    consents_stale: true,
+    challenge: true,
+    challenge_unavailable: true,
+    code_invalid: true,
+    phone_taken: true,
+    email_taken: true,
+    failed: true,
+  } satisfies Record<RegisterErrorCode, true>;
+
+  return t(`error.${code && code in known ? code : "failed"}`);
 }
