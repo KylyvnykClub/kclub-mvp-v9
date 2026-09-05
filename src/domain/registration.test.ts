@@ -18,6 +18,7 @@ describe("FR-001: a refusal knows which box it belongs against (ADR 0032)", () =
     "challenge",
     "challenge_unavailable",
     "code_invalid",
+    "throttled",
     "failed",
   ] satisfies RegisterErrorCode[])(
     "FR-001: %s belongs to the form, not to one field",

@@ -68,12 +68,16 @@ export async function requestPhoneVerificationAction(formData: FormData) {
     const sent = await IdentityService.requestPhoneVerification(data.phone);
     return { success: true, sent, taken: false };
   } catch (err) {
+    // Codes, like every other action here: this one is unreachable while SMS
+    // is postponed (ADR 0012), and a sentence chosen now is a sentence that
+    // reaches a Ukrainian applicant in English on the day Twilio comes back.
     if (err instanceof RateLimited) {
-      return { success: false, error: "Too many attempts. Try again later." };
+      return { success: false, error: "throttled" as const };
     }
-    if (err instanceof z.ZodError)
-      return { success: false, error: err.issues[0]?.message };
-    return { success: false, error: "Failed to send verification code" };
+    if (err instanceof z.ZodError) {
+      return { success: false, error: "invalid_input" as const };
+    }
+    return { success: false, error: "failed" as const };
   }
 }
 
@@ -164,6 +168,21 @@ export async function registerAction(formData: FormData) {
       };
     }
 
+    // ADR 0030 lets registration disclose that a phone number already belongs
+    // to a member, and rests that trade on a 20-an-hour cap. Until this form
+    // became one screen the cap lived on the first step's lookup; with the SMS
+    // code postponed (ADR 0012) that step is not called at all, and the
+    // disclosure now arrives here instead, out of the unique constraint. So
+    // the cap lives here too, or ADR 0030's bound is a sentence in a document
+    // and nothing else. Placed after the bot gate so a rejected challenge does
+    // not spend a real applicant's budget.
+    await assertRateLimit(
+      authRateLimiter(),
+      `register:submit:ip:${ipAddress}`,
+      20,
+      60 * 60 * 1000,
+    );
+
     // A Google identity parked by the callback (ADR 0029). It only counts for
     // the address it actually vouched for: a member who arrived through Google
     // and then typed a different address gets the ordinary emailed link.
@@ -213,6 +232,10 @@ export async function registerAction(formData: FormData) {
       return { success: false, error, field: registerErrorField(error) };
     }
   } catch (err) {
+    if (err instanceof RateLimited) {
+      return { success: false, error: "throttled" as const };
+    }
+
     // The issue's own message is not returned: it is written by Zod, in
     // English, and would be the one part of registration an applicant could
     // not read in their own language (FR-090).

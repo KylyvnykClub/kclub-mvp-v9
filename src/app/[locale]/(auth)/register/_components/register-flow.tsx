@@ -167,9 +167,12 @@ export function RegisterFlow({
         ),
       );
 
-      // Cloudflare injects this input next to the widget inside the form. It
-      // is spent by registerAction and by nothing before it, so carrying it
-      // across the code screen is safe.
+      // Cloudflare injects this input next to the widget inside the form. A
+      // token is single-use, so it is attached to the submit that spends it
+      // and never carried: when the code screen follows, that screen renders
+      // its own widget and supplies its own token per attempt. Reusing this
+      // one would turn a mistyped code into an unrecoverable "complete the
+      // challenge" on a screen with no challenge to complete.
       const turnstileToken = formData.get("cf-turnstile-response");
       if (typeof turnstileToken === "string") {
         formData.append("turnstileToken", turnstileToken);
@@ -186,7 +189,7 @@ export function RegisterFlow({
         }
 
         if (!requested?.success) {
-          return { success: false, error: "failed" };
+          return { success: false, error: requested?.error ?? "failed" };
         }
 
         setPhone(typeof submitted === "string" ? submitted : "");
@@ -207,10 +210,23 @@ export function RegisterFlow({
   );
 
   const [codeState, submitCode] = useActionState(
-    async (_prevState: RegisterResult): Promise<RegisterResult> => {
+    async (
+      _prevState: RegisterResult,
+      formData: FormData,
+    ): Promise<RegisterResult> => {
       if (!pendingForm) return { success: false, error: "failed" };
 
       pendingForm.set("code", code);
+
+      // A fresh token from this screen's own widget, replacing whatever the
+      // previous attempt spent. Cloudflare tokens are single-use, and a wrong
+      // code is exactly the case where a second attempt happens.
+      const turnstileToken = formData.get("cf-turnstile-response");
+      pendingForm.set(
+        "turnstileToken",
+        typeof turnstileToken === "string" ? turnstileToken : "",
+      );
+
       const result = await registerAction(pendingForm);
 
       if (result?.success) {
@@ -266,6 +282,11 @@ export function RegisterFlow({
                   className="h-12 bg-background text-center text-lg tracking-widest"
                 />
               </div>
+
+              {/* This screen's own challenge, not the form's: the token the
+                  form spent cannot be presented twice, and a wrong code is
+                  precisely when a second attempt is made. */}
+              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
 
               {codeState?.error && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
@@ -542,6 +563,7 @@ function registerErrorMessage(
     challenge: true,
     challenge_unavailable: true,
     code_invalid: true,
+    throttled: true,
     phone_taken: true,
     email_taken: true,
     failed: true,

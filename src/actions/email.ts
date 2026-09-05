@@ -3,13 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { headers } from "next/headers";
+
 import { getCurrentMember } from "@/actions/session";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
+import { RateLimited } from "@/domain/errors";
 import { emailSchema } from "@/lib/email";
+import { narrowLocale } from "@/lib/locale";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
 import { IdentityService } from "@/modules/identity/service";
+import {
+  assertRateLimit,
+  authRateLimiter,
+} from "@/modules/platform/rate-limit";
 
 /**
  * A code, not a sentence. The screen that renders it has all three locales;
@@ -55,18 +63,47 @@ export async function claimEmailAction(
       return { status: "invalid" };
     }
 
+    // The service throttles a *resend* to the address already on the account,
+    // and deliberately does not throttle a change — a member correcting a
+    // typo should not be made to wait for the mistake. That leaves one hole,
+    // which is this: a caller naming a different address every time takes the
+    // unthrottled branch every time, and sends our mail to whatever inbox
+    // they like. Authenticated is not the same as trusted; this bounds it by
+    // who is asking and by where they are asking from, the way every other
+    // outward-facing action in `src/actions` already does.
+    const headerList = await headers();
+    const ipAddress =
+      headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+
+    await assertRateLimit(
+      authRateLimiter(),
+      `email-claim:member:${auth.member.id}`,
+      5,
+      60 * 60 * 1000,
+    );
+    await assertRateLimit(
+      authRateLimiter(),
+      `email-claim:ip:${ipAddress}`,
+      20,
+      60 * 60 * 1000,
+    );
+
     const result = await IdentityService.claimEmail({
       memberId: auth.member.id,
       currentEmail: auth.member.email,
       email: parsed.data.email,
       displayName: auth.member.displayName,
-      locale: normaliseLocale(auth.member.language),
+      locale: narrowLocale(auth.member.language),
     });
 
     revalidatePath("/dashboard/profile");
 
     return result.ok ? { status: "sent" } : { status: result.reason };
   } catch (error) {
+    if (error instanceof RateLimited) {
+      return { status: "throttled" };
+    }
+
     logger.error("email claim failed", safeErrorFields(error));
     return { status: "failed" };
   }
@@ -108,9 +145,4 @@ export async function confirmEmailAction(
     logger.error("email confirmation failed", safeErrorFields(error));
     return { status: "invalid" };
   }
-}
-
-/** The member's stored language, narrowed to the three the emails exist in. */
-function normaliseLocale(language: string): "en" | "ru" | "uk" {
-  return language === "ru" || language === "uk" ? language : "en";
 }

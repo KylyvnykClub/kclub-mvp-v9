@@ -152,7 +152,8 @@
       "code_invalid": "That code is wrong or has expired. Ask for a new one.",
       "phone_taken": "This phone number is already registered.",
       "email_taken": "That address cannot be used. Try a different one.",
-      "failed": "The account could not be created. Please try again."
+      "failed": "The account could not be created. Please try again.",
+      "throttled": "Too many attempts from here. Try again in an hour."
     }
   },
   "dashboard": {

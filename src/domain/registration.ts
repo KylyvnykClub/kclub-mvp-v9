@@ -18,6 +18,7 @@ export type RegisterErrorCode =
   | "challenge"
   | "challenge_unavailable"
   | "code_invalid"
+  | "throttled"
   | "phone_taken"
   | "email_taken"
   | "failed";

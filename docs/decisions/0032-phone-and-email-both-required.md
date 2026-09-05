@@ -93,8 +93,13 @@ early "that number is taken" — and ADR 0030's actual complaint was that the
 message arrived _after_ a name, an address, a password typed twice, a country
 and four acknowledgements. On a single screen it arrives against the phone
 field with all of those still on the screen and none of them cleared, which is
-the outcome that record wanted. The check itself is unchanged and still rate
-limited at 20 an hour per address.
+the outcome that record wanted.
+
+ADR 0030's cap moves with the disclosure. It used to sit on the first step's
+lookup; with the SMS code postponed that step is not called at all, so the
+message now comes out of the unique constraint on submit — and the cap sits
+there too, 20 an hour per address, or the bound would have been a sentence in a
+document and nothing else.
 
 **Optional was the defect, not email.** ADR 0031's complaint was that the
 address bought nothing, and it bought nothing because it was optional and nobody

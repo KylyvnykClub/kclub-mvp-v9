@@ -330,7 +330,9 @@ availability, which is why it is the only one with a hard cap and a page.
 |Sign in|5 / minute, then escalating lockout (3 → 1 s, 5 → 30 s, 10 → 15 min)|Account, and separately per IP|429; the member is notified after the lockout threshold|
 |Request a password reset|3 / hour|Identifier named by the caller|429|
 |Request a password reset|10 / hour|IP address|429|
+|Submit a registration|20 / hour|IP address|429. Same cap as the first-step lookup and for the same reason: this is where "that number is already registered" now comes from ([ADR 0030](decisions/0030-registration-says-a-number-is-taken.md))|
 |Resend an email verification|1 / 60 s|Member, for the address already on the account|The screen says to wait; changing the address is not throttled, so a typo is not punished|
+|Claim an email address|5 / hour per member, 20 / hour per IP|Member and address|429. The resend throttle above bounds one address; this bounds a caller naming a different address every time, which would otherwise send our mail to any inbox they like|
 |Card verification lookup|30 / minute|IP address|429. Deliberately generous — a partner scanning many cards at an event is legitimate — but bounded, because this endpoint is the enumeration surface|
 |Catalogue search|60 / minute|Member|429|
 |Send a referral|**10 / 24 h per sender; 3 / 24 h per sender-recipient pair**|Member and pair|Blocked in the UI before submission with the reset time shown; 409 server-side if attempted anyway (FR-073)|

@@ -41,6 +41,20 @@ export async function findMemberByEmail(db: DbClient, email: string) {
   });
 }
 
+/**
+ * The member behind an id we already trust (FR-006).
+ *
+ * Used where a row has been reached by something other than an identifier — a
+ * spent verification token, say — and the member's current address, name or
+ * language is needed. Looking the address up again instead would find the
+ * wrong member, or none, whenever the account has moved to another one.
+ */
+export async function findMemberById(db: DbClient, memberId: string) {
+  return db.query.members.findFirst({
+    where: eq(members.id, memberId),
+  });
+}
+
 export interface RegisterMemberInput {
   phone: string;
   /** Claimed at registration, unverified until the emailed link is opened. */

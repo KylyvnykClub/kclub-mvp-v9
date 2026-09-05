@@ -7,6 +7,7 @@ import {
   createVerificationToken,
   findLatestVerificationTokenIssuedAt,
   findMemberByEmail,
+  findMemberById,
   markEmailVerified,
   setMemberEmail,
 } from "@/data/identity.js";
@@ -98,6 +99,42 @@ describe("email verification (FR-001, ADR 0032)", () => {
 
     const stored = await findMemberByEmail(db, "after@example.com");
     expect(stored?.emailVerifiedAt).toBeNull();
+  });
+
+  it("FR-001: a resend leaves the proof alone — only a change of address drops it", async () => {
+    // The bug this pins down: `claimEmail` used to write the address on every
+    // submit, and `setMemberEmail` clears `email_verified_at` by design. A
+    // member pressing "send a new link" for the address they had already
+    // proved was therefore un-verified on the spot, and if that message never
+    // arrived they could no longer sign in by address or reset their own
+    // password. A resend issues a token and touches nothing else.
+    const db = testDbClient();
+    const member = await seedMember(db, "0020");
+    await setMemberEmail(db, member.id, "resend@example.com");
+    await markEmailVerified(db, member.id, "resend@example.com", new Date());
+
+    await issue(db, member.id, "resend@example.com", inAnHour());
+
+    const stored = await findMemberByEmail(db, "resend@example.com");
+    expect(stored?.emailVerifiedAt).not.toBeNull();
+  });
+
+  it("FR-006: a member is reachable by id after the address the token names is gone", async () => {
+    // A reset token carries the address it was minted for. If the account
+    // moves to another address inside the token's lifetime, looking that
+    // address up finds nobody — which is how the mandatory "your password
+    // changed" notice (security.md §1) came to be silently dropped. By id it
+    // is always found.
+    const db = testDbClient();
+    const member = await seedMember(db, "0021");
+    await setMemberEmail(db, member.id, "old@example.com");
+    await setMemberEmail(db, member.id, "new@example.com");
+
+    expect(await findMemberByEmail(db, "old@example.com")).toBeFalsy();
+
+    const byId = await findMemberById(db, member.id);
+    expect(byId?.id).toBe(member.id);
+    expect(byId?.email).toBe("new@example.com");
   });
 
   it("ADR 0032: a link verifies once, and the second attempt finds nothing", async () => {

@@ -10,6 +10,7 @@ import {
   findActiveSessionByToken,
   findLatestVerificationTokenIssuedAt,
   findMemberByEmail,
+  findMemberById,
   findMemberByPhone,
   markEmailVerified,
   registerMemberTx,
@@ -22,6 +23,7 @@ import {
   sendPasswordResetEmail,
 } from "@/modules/notifications/email";
 import { absoluteUrl } from "@/lib/seo";
+import { narrowLocale } from "@/lib/locale";
 import { hashVerificationToken } from "@/lib/verification-token";
 import { generateToken, hashPassword, verifyPassword } from "./crypto";
 import { generateTotpSecret, verifyTotpCode } from "./totp";
@@ -62,11 +64,6 @@ export const EMAIL_RESEND_INTERVAL_MS = 60_000;
  * inbox stops being a way in.
  */
 export const PASSWORD_RESET_TTL_MINUTES = 30;
-
-/** The member's stored language, narrowed to the three the emails exist in. */
-function narrowLocale(language: string): "en" | "ru" | "uk" {
-  return language === "ru" || language === "uk" ? language : "en";
-}
 
 export type ClaimEmailResult =
   | { ok: true }
@@ -457,13 +454,21 @@ export class IdentityService {
       }
     }
 
-    try {
-      await setMemberEmail(db, params.memberId, params.email);
-    } catch (error) {
-      if (isUniqueViolation(error, "members_email_unique")) {
-        return { ok: false, reason: "unavailable" };
+    // Only a *change* of address is written. `setMemberEmail` clears
+    // `email_verified_at` by design — a new address is unproved — but running
+    // it for a resend would un-verify an address the member had already
+    // proved, and a message that then failed to arrive would leave them
+    // unable to sign in by address or to reset their own password. A resend
+    // issues a fresh token against the address that is already there.
+    if (params.currentEmail !== params.email) {
+      try {
+        await setMemberEmail(db, params.memberId, params.email);
+      } catch (error) {
+        if (isUniqueViolation(error, "members_email_unique")) {
+          return { ok: false, reason: "unavailable" };
+        }
+        throw error;
       }
-      throw error;
     }
 
     const sent = await IdentityService.issueEmailVerification({
@@ -658,13 +663,20 @@ export class IdentityService {
       meta: { sessionsRevoked: true, provenBy: "email" },
     });
 
-    const member = await findMemberByEmail(db, consumed.email);
+    // By id, not by `consumed.email`. The token carries the address it was
+    // minted for, and the account can have moved to another one inside the
+    // 30 minutes since — in which case looking the address up finds nobody
+    // and this notice is silently dropped, or finds whoever has claimed the
+    // freed address since and tells *them* that their password changed.
+    // security.md §1 requires this message; it must not depend on the address
+    // having stayed put.
+    const member = await findMemberById(db, consumed.memberId);
 
-    if (member) {
+    if (member?.email) {
       // Told after the fact (security.md §1): if the reset was not theirs,
       // this is the message that says so.
       await sendPasswordChangedEmail({
-        to: consumed.email,
+        to: member.email,
         displayName: member.displayName,
         locale: narrowLocale(member.language),
       }).catch((error: unknown) => {
