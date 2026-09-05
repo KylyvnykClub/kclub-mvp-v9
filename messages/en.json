@@ -1301,6 +1301,10 @@
       "roleLabel": "Role",
       "totpOn": "2FA on",
       "totpOff": "No 2FA",
+      "resetTotp": "Reset 2FA",
+      "resetTotpTitle": "Discard this authenticator?",
+      "resetTotpDescription": "{name} will be asked to scan a new QR code the next time they sign in, and every session they hold now ends. Their password is unchanged. Use this when their authenticator stops being accepted — a replaced phone, or an entry that no longer matches the server.",
+      "resetTotpToast": "Authenticator discarded. They enrol a new one at the next sign-in.",
       "colTotp": "2FA"
     }
   },

@@ -7,6 +7,7 @@ import { db } from "@/data/db";
 import { appendAuditEntry } from "@/data/audit-log";
 import { deleteSessionsByMemberId } from "@/data/identity";
 import {
+  clearStaffTotpEnrolment,
   createStaffMember,
   findStaffMemberById,
   setStaffMemberRole,
@@ -169,6 +170,61 @@ export async function setStaffStatusAction(
     subjectId: staffId,
     before: { status: before?.status ?? null },
     after: { status: updated.status },
+  });
+
+  revalidatePath("/dashboard/admin/staff");
+}
+
+/**
+ * Discard a staff member's authenticator so they can enrol a new one
+ * (FR-080, ADR 0016).
+ *
+ * The case this exists for: the seed in someone's authenticator app stops
+ * matching the one on the server — a phone replaced, an entry made against a
+ * different database, or a seed reissued when ADR 0016 discarded the plaintext
+ * ones. The symptom is that every code is rejected, forever, and until now the
+ * only cure was a SQL statement typed against production.
+ *
+ * Owner-only, and for the same reason the password reset is: whoever can clear
+ * a second factor can stand in front of the account it protects. It is gated
+ * on `reset_password` rather than `manage_staff` deliberately — this is the
+ * same capability, not staff administration.
+ *
+ * Every session of that staff member ends with it. If the reason for the reset
+ * is a lost or stolen authenticator, a live session is the thing an attacker
+ * still holds; if it is a mismatched seed, there is nothing to lose because
+ * they could not sign in anyway.
+ */
+export async function resetStaffTotpAction(staffId: string) {
+  const session = await getCurrentMember();
+
+  if (!session?.member) {
+    throw new Error("Unauthorized");
+  }
+
+  const actor = buildActor(session.member);
+
+  if (!can(actor, "reset_password", "member")) {
+    throw new Error("Unauthorized");
+  }
+
+  const before = await findStaffMemberById(db, staffId);
+  const cleared = await clearStaffTotpEnrolment(db, staffId);
+
+  if (!cleared) {
+    throw new Error("Staff member not found");
+  }
+
+  await deleteSessionsByMemberId(db, staffId);
+
+  await auditStaffChange({
+    actor: { id: session.member.id, role: normalizeRole(session.member.role) },
+    action: "reset_staff_totp",
+    subjectId: staffId,
+    // The seed itself is never recorded, here or anywhere: what matters for
+    // the record is that an enrolment was discarded and by whom.
+    before: { totpEnabled: before?.totpEnabled ?? null },
+    after: { totpEnabled: false, sessionsRevoked: true },
   });
 
   revalidatePath("/dashboard/admin/staff");

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { UserRoundX, UserRoundCheck } from "lucide-react";
+import { ShieldOff, UserRoundX, UserRoundCheck } from "lucide-react";
 import {
   createStaffAction,
+  resetStaffTotpAction,
   setStaffRoleAction,
   setStaffStatusAction,
 } from "@/actions/staff";
@@ -209,7 +210,29 @@ export default async function AdminStaffPage({ params }: Props) {
                         }
                       />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="space-x-1 text-right">
+                      {/* Discarding an authenticator (FR-080). Offered only
+                          where there is one to discard, and never for the
+                          person clicking: an owner who resets their own is
+                          locked out of the screen that holds the button. */}
+                      <ConfirmActionButton
+                        action={async () => {
+                          "use server";
+                          await resetStaffTotpAction(staffMember.id);
+                        }}
+                        label={t("resetTotp")}
+                        icon={
+                          <ShieldOff className="size-4" aria-hidden="true" />
+                        }
+                        title={t("resetTotpTitle")}
+                        description={t("resetTotpDescription", {
+                          name: staffMember.displayName,
+                        })}
+                        confirmLabel={t("resetTotp")}
+                        successMessage={t("resetTotpToast")}
+                        disabled={isSelf || !staffMember.totpEnabled}
+                      />
+
                       {/* Disabling signs the person out everywhere (FR-082),
                           so the click gets a confirmation step. */}
                       <ConfirmActionButton
