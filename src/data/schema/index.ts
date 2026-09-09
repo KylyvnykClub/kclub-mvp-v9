@@ -26,6 +26,7 @@ export * from "./company-drafts";
 export * from "./stripe-customers";
 export * from "./subscriptions";
 export * from "./processed-webhooks";
+export * from "./join-links";
 export * from "./plan-prices";
 export * from "./account-deletion-requests";
 export * from "./database-environment";

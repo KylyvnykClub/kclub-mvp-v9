@@ -132,6 +132,8 @@ export class IdentityService {
     displayName: string;
     country: string;
     language: string;
+    /** Sponsored where the join link was opened in this session (ADR 0033). */
+    duesKind?: "paying" | "sponsored";
     userAgent: string;
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
@@ -177,6 +179,7 @@ export class IdentityService {
         displayName: params.displayName,
         country: params.country,
         language: params.language,
+        duesKind: params.duesKind ?? "paying",
         userAgent: params.userAgent,
         ipAddress: params.ipAddress,
         consents: params.consents,

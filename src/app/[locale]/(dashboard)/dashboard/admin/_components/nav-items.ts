@@ -94,6 +94,13 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     group: "platform",
   },
   {
+    key: "joinLink",
+    href: "/join-link",
+    icon: KeyRound,
+    show: (a) => can(a, "manage_join_link", "join_link"),
+    group: "platform",
+  },
+  {
     key: "audit",
     href: "/audit",
     icon: ScrollText,

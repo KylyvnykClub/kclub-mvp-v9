@@ -21,7 +21,9 @@ export type Action =
   | "manage_reference_data"
   | "manage_staff"
   | "manage_flags"
-  | "manage_prices";
+  | "manage_prices"
+  /** Read, rotate and revoke the club's join link (FR-106, ADR 0033). */
+  | "manage_join_link";
 
 export type Subject =
   | "marketing"
@@ -44,6 +46,7 @@ export type Subject =
   | "reference_data"
   | "audit_log"
   | "staff_user"
+  | "join_link"
   | "feature_flag"
   | "plan_price";
 
@@ -263,6 +266,13 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "manage_prices",
     subject: "plan_price",
+    check: (a) => isStaff(a) && a.role === "staff_owner",
+  },
+  {
+    // The join link waives dues for whoever holds it, so it is the owner's to
+    // hand out and nobody else's (FR-106).
+    action: "manage_join_link",
+    subject: "join_link",
     check: (a) => isStaff(a) && a.role === "staff_owner",
   },
 

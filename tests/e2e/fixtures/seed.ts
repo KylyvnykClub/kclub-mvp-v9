@@ -65,6 +65,10 @@ export async function seedE2eFixtures(
         displayName: "Ada Member",
         country: "PL",
         language: "en",
+        // Dues waived, or the audit would walk ten screens and find the dues
+        // gate on every one of them (ADR 0033). The harness is here to look at
+        // the club, not at the till.
+        duesKind: "legacy_free",
       })
       .returning({ id: schema.members.id });
 
@@ -76,6 +80,7 @@ export async function seedE2eFixtures(
         displayName: "Vera VIP",
         country: "PL",
         language: "en",
+        duesKind: "legacy_free",
       })
       .returning({ id: schema.members.id });
 

@@ -70,6 +70,12 @@ export interface RegisterMemberInput {
   displayName: string;
   country: string;
   language: string;
+  /**
+   * Who owes membership dues (ADR 0033). `paying` unless the applicant came
+   * through the club's join link, which the Server Action proves from a signed
+   * cookie rather than from anything the form posted.
+   */
+  duesKind?: "paying" | "sponsored";
   userAgent: string;
   ipAddress: string;
   consents: Array<{ documentId: string; version: string }>;
@@ -93,6 +99,7 @@ export async function registerMemberTx(
         displayName: input.displayName,
         country: input.country,
         language: input.language,
+        duesKind: input.duesKind ?? "paying",
       })
       .returning();
 
