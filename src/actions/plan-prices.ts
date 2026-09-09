@@ -10,12 +10,15 @@ import { getCurrentMember } from "./session";
 import { z } from "zod";
 
 const planPriceSchema = z.object({
-  plan: z.enum(["vip", "listing"]),
+  // `membership` since ADR 0033. The three plans are sold and repriced through
+  // one path; a plan missing here could only ever be priced by an environment
+  // variable, which is a redeploy rather than a decision.
+  plan: z.enum(["membership", "vip", "listing"]),
   stripePriceId: z.string().startsWith("price_"),
 });
 
 export async function setPlanPriceAction(input: {
-  plan: "vip" | "listing";
+  plan: "membership" | "vip" | "listing";
   stripePriceId: string;
 }) {
   const current = await getCurrentMember();

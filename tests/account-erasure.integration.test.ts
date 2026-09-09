@@ -359,6 +359,7 @@ describe("FR-009: the Stripe Customer is deleted through the API (data-storage.m
       [alreadyCancelled, "canceled"],
     ] as const) {
       await db.insert(subscriptions).values({
+        plan: "vip",
         stripeSubscriptionId,
         memberId: member.id,
         stripeCustomerId,

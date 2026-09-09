@@ -15,6 +15,25 @@ export async function findActivePlanPrice(
   return row?.stripePriceId ?? null;
 }
 
+/**
+ * Which plan a Stripe price belongs to, including prices no longer active.
+ *
+ * A repriced plan keeps its old subscriptions on the old price (FR-059), so a
+ * lookup that only saw active rows would fail to recognise exactly the
+ * subscriptions that have been running longest.
+ */
+export async function findPlanByStripePriceId(
+  db: DbClient,
+  stripePriceId: string,
+): Promise<CheckoutPlan | null> {
+  const row = await db.query.planPrices.findFirst({
+    where: eq(planPrices.stripePriceId, stripePriceId),
+    orderBy: [desc(planPrices.effectiveFrom)],
+  });
+
+  return (row?.plan as CheckoutPlan | undefined) ?? null;
+}
+
 export async function setActivePlanPrice(
   db: Db,
   plan: CheckoutPlan,

@@ -91,6 +91,7 @@ describe("plan price management (FR-059)", () => {
       tier: "vip",
     });
     await db.insert(subscriptions).values({
+      plan: "vip",
       stripeSubscriptionId: `sub_${crypto.randomUUID()}`,
       memberId: member.id,
       stripeCustomerId: `cus_${crypto.randomUUID()}`,

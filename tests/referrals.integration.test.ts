@@ -69,6 +69,7 @@ async function seedCompany(db: DbClient, ownerId: string, suffix: string) {
     .returning();
 
   await db.insert(subscriptions).values({
+    plan: "listing",
     memberId: ownerId,
     companyId: company!.id,
     stripeCustomerId: `cus_${suffix}`,

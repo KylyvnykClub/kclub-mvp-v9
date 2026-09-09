@@ -1,8 +1,15 @@
 import { createHash } from "node:crypto";
 
-export type CheckoutPlan = "vip" | "listing";
+/**
+ * `membership` is the standard membership dues added by ADR 0033. It shares
+ * every mechanic with the two plans that came before it - the same Checkout
+ * session, the same projection, the same dunning - and differs only in what it
+ * unlocks.
+ */
+export type CheckoutPlan = "membership" | "vip" | "listing";
 
 export interface CheckoutPriceConfig {
+  membershipPriceId?: string;
   vipPriceId?: string;
   legacyVipPriceId?: string;
   businessPriceId?: string;
@@ -14,9 +21,11 @@ export function resolveCheckoutPriceId(
   config: CheckoutPriceConfig,
 ): string {
   const priceId =
-    plan === "vip"
-      ? (config.vipPriceId ?? config.legacyVipPriceId)
-      : (config.businessPriceId ?? config.legacyBusinessPriceId);
+    plan === "membership"
+      ? config.membershipPriceId
+      : plan === "vip"
+        ? (config.vipPriceId ?? config.legacyVipPriceId)
+        : (config.businessPriceId ?? config.legacyBusinessPriceId);
 
   if (!priceId) {
     throw new Error(`${plan} checkout price is not configured`);
