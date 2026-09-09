@@ -1,0 +1,116 @@
+# The application on a laptop, with nothing rented from a vendor.
+#
+# Four services, because the production stack has two dependencies that do not
+# exist as ordinary local servers:
+#   - Neon's driver speaks Postgres over a WebSocket and cannot reach a plain
+#     server, so the same wsproxy tools/e2e-env.ts starts sits in front of it;
+#   - Upstash is a REST API, so tools/dev-upstash.ts answers the three commands
+#     the rate limiter issues.
+# Everything else - Stripe, Resend, Twilio, R2, Turnstile - is deliberately
+# absent: with no secret configured the code paths that need them are skipped,
+# which is what makes registration testable here without a bot challenge.
+
+name: kclub
+
+x-app-env: &app-env
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: "1"
+
+  # Two views of one database: the application reaches it through the proxy,
+  # migrations and fixtures over plain TCP.
+  DATABASE_URL: postgresql://kclub:kclub@postgres:5432/kclub
+  DATABASE_URL_DIRECT: postgresql://kclub:kclub@postgres:5432/kclub
+  NEON_WS_PROXY: wsproxy:80/v1
+
+  UPSTASH_REDIS_REST_URL: http://upstash:8079
+  UPSTASH_REDIS_REST_TOKEN: local
+
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  BETTER_AUTH_URL: http://localhost:3000
+  BETTER_AUTH_SECRET: docker-local-secret-not-a-real-secret
+
+  # Present and well-shaped, never called: no local flow reaches Stripe.
+  STRIPE_SECRET_KEY: sk_docker_local_not_a_real_key
+  STRIPE_WEBHOOK_SECRET: whsec_docker_local_not_a_real_key
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_docker_local_not_a_real_key
+
+  # Staff sign-in needs a second factor, and the identity module refuses to
+  # enrol one without this key rather than storing a seed in the clear.
+  TOTP_ENCRYPTION_KEY: docker-local-totp-encryption-key-32b
+  ADMIN_BOOTSTRAP_OWNER_PHONE: "+380000000000"
+  ADMIN_BOOTSTRAP_OWNER_PASSWORD: docker-local-owner-password
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: kclub
+      POSTGRES_PASSWORD: kclub
+      POSTGRES_DB: kclub
+    ports:
+      # Exposed so psql on the host can look at what a test actually wrote.
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kclub -d kclub"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  wsproxy:
+    image: ghcr.io/neondatabase/wsproxy:latest
+    environment:
+      APPEND_PORT: "postgres:5432"
+      ALLOW_ADDR_REGEX: ".*"
+      LOG_TRAFFIC: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  upstash:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    entrypoint: ["pnpm", "exec", "tsx", "tools/dev-upstash.ts"]
+    environment:
+      DEV_UPSTASH_HOST: 0.0.0.0
+      DEV_UPSTASH_PORT: "8079"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment: *app-env
+    # Real vendor keys, when a test needs one. Optional: absent is the case
+    # this stack is designed for.
+    env_file:
+      - path: .env.docker
+        required: false
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      wsproxy:
+        condition: service_started
+      upstash:
+        condition: service_started
+    volumes:
+      - .:/app
+      # Linux binaries (argon2, sharp) and the build output stay in volumes, so
+      # neither lands in the checkout the host builds from.
+      - node_modules:/app/node_modules
+      - next_build:/app/.next
+      # Chromium, when a run wants to drive the application rather than curl it:
+      # `docker compose exec app pnpm exec playwright install chromium`.
+      - playwright:/root/.cache/ms-playwright
+
+volumes:
+  pgdata:
+  node_modules:
+  next_build:
+  playwright:

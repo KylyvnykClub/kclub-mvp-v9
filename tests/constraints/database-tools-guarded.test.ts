@@ -25,6 +25,13 @@ const ALLOWLIST = new Set([
   // Throwaway Testcontainers databases with their own confirmation flag.
   "db-updownup.ts",
   "e2e-env.ts",
+  // The docker-compose database: created by this stack, dropped with it, and
+  // refused outright when it says production.
+  "docker-bootstrap.ts",
+  // The deployment pipeline itself: data-storage.md §3 names it as the one
+  // thing that may migrate production, and it opens no connection of its own -
+  // it runs drizzle-kit, which reads the environment Vercel injected.
+  "vercel-build.ts",
   // Pure function over an env object; never connects.
   "check-production-env.ts",
   "gen-env-example.ts",

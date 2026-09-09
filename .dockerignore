@@ -1,0 +1,15 @@
+# The build context only needs the manifests and the entrypoint; everything
+# else arrives through the bind mount in docker-compose.yml.
+node_modules
+.next
+.next-*
+.git
+.playwright
+playwright-report
+test-results
+coverage
+outputs
+.terraform
+.env
+.env.local
+.env.*.local

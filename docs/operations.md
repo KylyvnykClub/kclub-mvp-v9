@@ -138,7 +138,8 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm verify`|Typecheck, lint, format, i18n, unit tests, production build — the gate before any commit|
 |`pnpm build`|Production build alone; already included in `pnpm verify`, useful standalone when iterating on build-only errors|
 |`pnpm test:integration`|Integration suite; needs Docker for Testcontainers|
-|`pnpm db:migrate`|Apply migrations|
+|`docker compose up`|The whole application locally in containers — PostgreSQL, the Neon WebSocket proxy and an Upstash stand-in — with no Neon branch, no vendor keys and no Node on the host. See the paragraph below|
+|`pnpm db:migrate`|Apply migrations. Production does not need this by hand: the Vercel build runs it (`tools/vercel-build.ts`) before the new version takes traffic, using credentials nobody has to copy|
 |`pnpm db:mark-environment --show`|Which environment the database at `DATABASE_URL` says it is ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md))|
 |`pnpm db:mark-environment production`|Mark production once, after its marker migration is applied. Relabelling a production-marked database as anything else is refused|
 |`pnpm db:reset:dev`|Rebuild the `dev` branch from zero: drop the schema, apply every migration, mark it `dev`, seed categories, the staff owner, the Stripe test prices and the beta dataset. `--no-beta` skips the partners; the first run on a branch not yet marked `dev` needs `--confirm-endpoint <ep-id>`. Refuses a `production` marker with no override|
@@ -168,6 +169,22 @@ idempotent and takes about a minute. Afterwards `pnpm dev` logs
 second terminal as always, and checkout uses the test-mode price the seed
 recorded in `plan_prices` — that row wins over `STRIPE_*_PRICE_ID` locally,
 exactly as it does in production.
+
+**The whole stack in Docker, with no Neon and no vendor keys.**
+`docker compose up` builds the image, raises PostgreSQL 17, the Neon WebSocket
+proxy the driver needs in order to reach a plain server, and the Upstash
+stand-in, then migrates, seeds and serves on `http://localhost:3000`. It is the
+way in on a machine with no Node and no `.env.local`, and the way to reproduce
+a member-facing report without touching the `dev` branch. The seeded sign-ins
+are `+380000000001` and `+380000000002`, with the password in
+[`tests/e2e/fixtures/seed.ts`](../tests/e2e/fixtures/seed.ts). Stripe, Resend,
+Twilio and Turnstile are deliberately unconfigured, which is what makes
+registration testable here: with no `TURNSTILE_SECRET_KEY` the bot challenge is
+skipped, and the verification email is logged as a failure rather than sent — so
+a new account can sign in by phone and not by address, exactly like a member who
+never opened their link. `docker compose exec app pnpm ...` runs anything else,
+`docker compose down -v` drops the database, and real keys go in `.env.docker`,
+which is read when it exists.
 
 **That rule is enforced by the database, not by memory** ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)).
 Every database carries a one-row marker saying which environment it _is_.
