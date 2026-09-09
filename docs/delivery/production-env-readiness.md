@@ -122,6 +122,7 @@ External checks, when it is turned back on:
 |`STRIPE_SECRET_KEY`|Yes|Stripe live restricted key|Confirm it starts with `sk_`, belongs to the live account, and has the minimum permissions used by checkout, webhooks, and admin metrics.|
 |`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`|Yes|Stripe live publishable key|Confirm it starts with `pk_` and matches the same account as `STRIPE_SECRET_KEY`.|
 |`STRIPE_WEBHOOK_SECRET`|Yes|Stripe webhook endpoint|Confirm endpoint is `/api/webhooks/stripe` and replay a live-mode test event before promotion.|
+|`STRIPE_MEMBER_PRICE_ID`|Yes for membership dues|Stripe product catalog|The $4.99 standard membership price ([ADR 0033](../decisions/0033-standard-membership-is-paid.md)). Optional only where an active `plan_prices` row for `membership` already names one — that row wins. Without either, registration completes and the dues screen cannot start a checkout.|
 |`STRIPE_VIP_PRICE_ID`|Yes for VIP sale|Stripe product catalog|Confirm it is the production VIP subscription price.|
 |`STRIPE_BUSINESS_PRICE_ID`|Yes for business sale|Stripe product catalog|Confirm it is the production partner listing subscription price.|
 |`NEXT_PUBLIC_STRIPE_VIP_PRICE_ID`|Compatibility only|Stripe product catalog|Keep only if a deployed client still reads the public legacy key.|
