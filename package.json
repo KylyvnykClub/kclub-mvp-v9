@@ -10,6 +10,7 @@
     "dev": "next dev",
     "dev:turbopack": "next dev --turbopack",
     "build": "next build",
+    "vercel-build": "tsx tools/vercel-build.ts",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
