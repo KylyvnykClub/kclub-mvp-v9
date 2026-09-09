@@ -59,6 +59,38 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Public on purpose: what the club costs is the question people ask before
+    // they register, and a page only members can read cannot answer it
+    // (ADR 0033).
+    method: "GET",
+    path: "/:locale/pricing",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // The join link (FR-105). Public because whoever holds it has no account
+    // yet; it grants nothing by itself - it stamps a cookie and forwards to
+    // the ordinary registration form.
+    method: "GET",
+    path: "/:locale/join/:secret",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // The dues screen (FR-103). Signed in, but deliberately outside the member
+    // area: whoever sees it is not inside the club yet.
+    method: "GET",
+    path: "/:locale/membership",
+    action: "read",
+    subject: "own_subscription",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/:locale/register",
     action: "read",
@@ -377,6 +409,32 @@ const staticRoutes: RouteEntry[] = [
     subject: "feature_flag",
     mutating: false,
     staffOnly: true,
+  },
+  {
+    method: "GET",
+    path: "/:locale/dashboard/admin/join-link",
+    action: "manage_join_link",
+    subject: "join_link",
+    mutating: false,
+    staffOnly: true,
+  },
+  {
+    method: "POST",
+    path: "action:rotateJoinLinkAction",
+    action: "manage_join_link",
+    subject: "join_link",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
+    method: "POST",
+    path: "action:revokeJoinLinkAction",
+    action: "manage_join_link",
+    subject: "join_link",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
   },
   {
     method: "POST",

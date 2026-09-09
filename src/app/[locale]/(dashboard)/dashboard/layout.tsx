@@ -3,9 +3,11 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
+import { listMemberSubscriptionPlans } from "@/data/billing";
 import { db } from "@/data/db";
 import { countUnreadForMember } from "@/data/notifications";
 import { buildActor, staffAtLeast } from "@/domain/actor";
+import { membershipAccess } from "@/domain/membership";
 import { DashboardChrome } from "./_components/dashboard-chrome";
 
 type Props = {
@@ -36,6 +38,24 @@ export default async function DashboardLayout({ children, params }: Props) {
   }
   const actor = buildActor(result.member);
   const canAccessAdmin = staffAtLeast(actor, "staff_support");
+
+  // FR-103: a member whose dues are neither paid nor waived reaches the screen
+  // that asks for them and nothing else. One gate, in the layout every member
+  // surface renders inside, so a new page under (dashboard) is covered by
+  // existing and cannot forget.
+  //
+  // Staff are exempt: a staff account is not a club membership (ADR 0007), and
+  // gating the console behind a member's dues would lock the owner out of the
+  // screen where dues are managed.
+  if (!canAccessAdmin) {
+    const subscriptions = await listMemberSubscriptionPlans(
+      db,
+      result.member.id,
+    );
+    if (membershipAccess(result.member, subscriptions) === "awaiting_payment") {
+      redirect(`/${locale}/membership`);
+    }
+  }
 
   // The badge count is fetched here rather than inside SiteHeader, because that
   // header is also the marketing header on every public page - giving it a
