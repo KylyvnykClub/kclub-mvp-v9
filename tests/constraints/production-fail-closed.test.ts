@@ -20,6 +20,7 @@ function productionBase(): Record<string, string> {
     BETTER_AUTH_SECRET: "better-auth-secret",
     STRIPE_SECRET_KEY: "sk_live_stub",
     STRIPE_WEBHOOK_SECRET: "whsec_stub",
+    STRIPE_MEMBER_PRICE_ID: "price_member_live",
     STRIPE_VIP_PRICE_ID: "price_vip_live",
     STRIPE_BUSINESS_PRICE_ID: "price_listing_live",
     UPSTASH_REDIS_REST_URL: "https://redis.upstash.io",
@@ -65,6 +66,7 @@ describe("constraint: production fail-closed env (FR-056)", () => {
 
   it("rejects production Stripe test mode and missing checkout prices", () => {
     const {
+      STRIPE_MEMBER_PRICE_ID: _duesPrice,
       STRIPE_VIP_PRICE_ID: _vipPrice,
       STRIPE_BUSINESS_PRICE_ID: _listingPrice,
       ...base
@@ -84,6 +86,10 @@ describe("constraint: production fail-closed env (FR-056)", () => {
         [
           "STRIPE_SECRET_KEY",
           "STRIPE_SECRET_KEY must be a live key in production",
+        ],
+        [
+          "STRIPE_MEMBER_PRICE_ID",
+          "STRIPE_MEMBER_PRICE_ID is required in production",
         ],
         [
           "STRIPE_VIP_PRICE_ID",

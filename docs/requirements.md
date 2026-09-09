@@ -40,8 +40,11 @@ plus partner listings combined, ~$8,000 MRR). Leading indicators are in
   and city.
 - Partner onboarding as a four-step application, followed by staff moderation
   and a paid listing subscription before publication.
-- Two Stripe subscription products at $19.99/month: **VIP membership** (member)
-  and **Partner listing** (per company).
+- Three Stripe subscription products: **standard membership** at $4.99/month
+  (member), **VIP membership** at $19.99/month (member) and **Partner listing**
+  at $19.99/month (per company). Membership dues are waived permanently for
+  members who registered before [ADR 0033](decisions/0033-standard-membership-is-paid.md)
+  and for members who join through the club's join link.
 - Client referrals between published partner companies, gated on VIP, rate
   limited, and moderated before delivery.
 - Staff console: dashboards, finance reporting, member and card administration,
@@ -83,13 +86,13 @@ who is also a club member holds two accounts — see
 |Role|Description|Key permissions|
 |-|-|-|
 |`guest`|Unauthenticated visitor|Marketing site, legal pages, curated showcase, card verification page, sign-up|
-|`member`|Verified member, free tier|Own card, browse and search the catalogue, see discounts, submit own company, manage own subscription and profile|
+|`member`|Verified member whose membership dues are paid, sponsored or waived ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Own card, browse and search the catalogue, see discounts, submit own company, manage own subscription and profile|
 |`member_vip`|Member with an active VIP subscription|Everything `member` has, plus sending client referrals and priority support|
 |`partner_owner`|A member who owns at least one company in the catalogue (an attribute, not a separate login)|Edit own company, receive and accept/decline incoming referrals, manage that company's listing subscription|
 |`staff_support`|Support staff|Read-only across the console: members, cards, subscriptions, payments, moderation history. No mutations|
 |`staff_moderator`|Content moderation|Everything `staff_support` has, plus approve/reject companies, moderate referrals, manage categories/countries/cities|
 |`staff_admin`|Day-to-day operations|Everything `staff_moderator` has, plus block/unblock members, revoke/reissue cards, publish/hide companies, set discounts and showcase ranks, view finance|
-|`staff_owner`|Club owner|Everything. Uniquely: manage staff accounts and roles, change prices, read the full audit log, approve data-erasure requests|
+|`staff_owner`|Club owner|Everything. Uniquely: manage staff accounts and roles, change prices, read, rotate and revoke the join link ([ADR 0033](decisions/0033-standard-membership-is-paid.md)), read the full audit log, approve data-erasure requests|
 |`system`|Scheduled jobs and webhook handlers (non-human)|Provision and revoke entitlements, dunning, reconciliation, card expiry. Acts under an explicit `system` actor in the audit log|
 
 ---
@@ -168,6 +171,13 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-058|The system must reconcile local subscription state against Stripe daily and must alert on any divergence|system|M|
 |FR-059|The `staff_owner` role must be able to change a plan's price; a change must apply to new subscriptions only and must never silently reprice an existing one|staff_owner|M|
 |FR-060|The system must never store a card number, CVC or full PAN; all card data entry must happen on Stripe-hosted surfaces|system|M|
+|FR-102|The system must sell standard membership as a monthly subscription at the price configured for the `member_monthly` plan (launch price $4.99/month) through Stripe Checkout|member|M|
+|FR-103|A member whose membership dues are neither paid nor waived must reach no member surface other than the screen that asks for payment|member|M|
+|FR-104|Membership access must be projected from Stripe subscription state; a return from the Stripe redirect must never itself grant it|system|M|
+|FR-105|Registration through an active join link must create a sponsored member, who is never asked to pay and is never shown the payment screen|member|M|
+|FR-106|The `staff_owner` role must be able to read, rotate and revoke the join link in the console, and every such change must write an audit entry|staff_owner|M|
+|FR-107|A member who registered before membership dues were introduced must keep access permanently without paying|member|M|
+|FR-108|Membership access must follow the subscription state within 60 seconds of it changing, in both directions|system|M|
 
 ### 4.6 Client referrals
 
@@ -342,6 +352,7 @@ before the largest surface (the staff console) is built.
 |5 — Staff console|9–13|FR-080…FR-089, FR-094|Staff run the club without database access|
 |6 — Referrals|11–14|FR-070…FR-078, FR-095, FR-099|End-to-end referral with consent, quotas and moderation|
 |7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
+|8 — Membership dues|15–16|FR-102…FR-108|Standard membership sells and lapses against a Stripe test clock; a join link admits a member free; nobody who was already here is ever billed|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

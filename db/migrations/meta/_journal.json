@@ -253,6 +253,13 @@
       "when": 1788551141598,
       "tag": "20260904194541_password_reset_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1788972000000,
+      "tag": "20260909120000_membership_dues",
+      "breakpoints": true
     }
   ]
 }

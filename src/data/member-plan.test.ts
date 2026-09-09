@@ -14,8 +14,8 @@ import { memberPlansOf } from "./billing-access";
  * access disagreeing on a screen.
  */
 
-const VIP = { companyId: null, status: "active" };
-const LISTING = { companyId: "company-1", status: "active" };
+const VIP = { plan: "vip", status: "active" };
+const LISTING = { plan: "listing", status: "active" };
 
 describe("FR-083: memberPlansOf reads the access rule, not just 'active'", () => {
   it("reports free when there are no subscriptions at all", () => {
@@ -35,7 +35,7 @@ describe("FR-083: memberPlansOf reads the access rule, not just 'active'", () =>
   });
 
   it("FR-056: keeps VIP through past_due, because access survives dunning", () => {
-    expect(memberPlansOf([{ companyId: null, status: "past_due" }])).toEqual([
+    expect(memberPlansOf([{ plan: "vip", status: "past_due" }])).toEqual([
       "vip",
     ]);
   });
@@ -47,11 +47,11 @@ describe("FR-083: memberPlansOf reads the access rule, not just 'active'", () =>
     "incomplete_expired",
     "deleted",
   ])("reports free for a %s subscription", (status) => {
-    expect(memberPlansOf([{ companyId: null, status }])).toEqual(["free"]);
+    expect(memberPlansOf([{ plan: "vip", status }])).toEqual(["free"]);
   });
 
   it("never reports free alongside a paid plan", () => {
-    const plans = memberPlansOf([VIP, { companyId: null, status: "canceled" }]);
+    const plans = memberPlansOf([VIP, { plan: "vip", status: "canceled" }]);
 
     expect(plans).toContain("vip");
     expect(plans).not.toContain("free");
@@ -60,8 +60,8 @@ describe("FR-083: memberPlansOf reads the access rule, not just 'active'", () =>
   it("ignores a lapsed listing while an active one is held", () => {
     expect(
       memberPlansOf([
-        { companyId: "company-1", status: "canceled" },
-        { companyId: "company-2", status: "active" },
+        { plan: "listing", status: "canceled" },
+        { plan: "listing", status: "active" },
       ]),
     ).toEqual(["business"]);
   });

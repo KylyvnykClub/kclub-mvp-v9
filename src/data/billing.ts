@@ -1,13 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-  isNull,
-  lte,
-  notExists,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, inArray, lte, notExists, sql } from "drizzle-orm";
 
 import {
   ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
@@ -146,16 +137,39 @@ export async function findActiveVipSubscription(
   return db.query.subscriptions.findFirst({
     where: and(
       eq(subscriptions.memberId, memberId),
-      isNull(subscriptions.companyId),
+      // The plan, not the absent company: membership dues are member-scoped
+      // too, and matching on `company_id is null` would have made every member
+      // paying dues a VIP (ADR 0033).
+      eq(subscriptions.plan, "vip"),
       eq(subscriptions.status, "active"),
     ),
   });
+}
+
+/**
+ * Every subscription this member holds, as `membershipAccess` wants to read
+ * them (ADR 0033): the plan and the status, nothing else. Deliberately not
+ * filtered by status - the rule decides which statuses grant access, and a
+ * query that pre-filtered would be a second copy of that decision.
+ */
+export async function listMemberSubscriptionPlans(
+  db: DbClient,
+  memberId: string,
+): Promise<{ plan: "membership" | "vip" | "listing"; status: string }[]> {
+  const rows = await db.query.subscriptions.findMany({
+    where: eq(subscriptions.memberId, memberId),
+    columns: { plan: true, status: true },
+  });
+
+  return rows;
 }
 
 export interface SubscriptionUpsert {
   stripeSubscriptionId: string;
   memberId: string;
   companyId: string | null;
+  /** Which product this pays for (ADR 0033), resolved from the price. */
+  plan: "membership" | "vip" | "listing";
   stripeCustomerId: string;
   status: string;
   priceId: string;

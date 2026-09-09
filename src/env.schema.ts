@@ -62,6 +62,11 @@ export const serverSchema = z
     // ── Billing — Stripe ────────────────────────────────────
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+    /**
+     * The membership dues price (ADR 0033). Optional like the other two: the
+     * active `plan_prices` row wins over it, and the seed records one.
+     */
+    STRIPE_MEMBER_PRICE_ID: z.string().optional(),
     STRIPE_VIP_PRICE_ID: z.string().optional(),
     STRIPE_BUSINESS_PRICE_ID: z.string().optional(),
     NEXT_PUBLIC_STRIPE_VIP_PRICE_ID: z.string().optional(),
@@ -217,6 +222,18 @@ export const serverSchema = z
           code: "custom",
           path: ["STRIPE_SECRET_KEY"],
           message: "STRIPE_SECRET_KEY must be a live key in production",
+        });
+      }
+
+      // ADR 0033. The same rule as the two plans beside it, and with a sharper
+      // edge: without this the projection cannot tell a dues subscription from
+      // a VIP one, so a member paying $4.99 would be handed the VIP
+      // entitlement. Refusing to boot is the cheaper failure.
+      if (!env.STRIPE_MEMBER_PRICE_ID) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["STRIPE_MEMBER_PRICE_ID"],
+          message: "STRIPE_MEMBER_PRICE_ID is required in production",
         });
       }
 

@@ -136,6 +136,7 @@ describe("admin member directory (FR-083, FR-084)", () => {
     });
 
     await db.insert(subscriptions).values({
+      plan: "vip",
       memberId: member.id,
       stripeCustomerId: `cus_${crypto.randomUUID()}`,
       stripeSubscriptionId: `sub_${crypto.randomUUID()}`,

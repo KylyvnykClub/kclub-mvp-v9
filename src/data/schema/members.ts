@@ -14,6 +14,19 @@ export const memberStatusEnum = pgEnum("member_status", [
   "pending_deletion",
 ]);
 
+/**
+ * Who owes membership dues (ADR 0033). Never whether they are paid up - that
+ * answer is read from the projected subscription rows and nowhere else.
+ *
+ * `paying` is the default because a code path that forgets to set this should
+ * create a member who owes money, not one who is let in free.
+ */
+export const memberDuesKindEnum = pgEnum("member_dues_kind", [
+  "paying",
+  "sponsored",
+  "legacy_free",
+]);
+
 export const memberRoleEnum = pgEnum("member_role", [
   "user",
   "admin",
@@ -56,6 +69,12 @@ export const members = pgTable("members", {
   displayName: varchar("display_name", { length: 255 }).notNull(),
   locale: varchar("locale", { length: 10 }).notNull().default("en"),
   canSendReferrals: boolean("can_send_referrals").notNull().default(true),
+
+  /**
+   * FR-102, FR-105, FR-107. `legacy_free` is every member who existed before
+   * dues did; `sponsored` came in through the join link.
+   */
+  duesKind: memberDuesKindEnum("dues_kind").notNull().default("paying"),
   country: varchar("country", { length: 2 }).notNull(), // ISO 3166-1 alpha-2
   language: varchar("language", { length: 2 }).notNull(), // ISO 639-1
 

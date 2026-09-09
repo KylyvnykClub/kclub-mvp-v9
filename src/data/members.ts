@@ -144,10 +144,11 @@ export interface MemberAdminFilters {
  * on the same member: a filter that disagrees with the badge it filters on is
  * worse than no filter.
  */
-function hasAccessGrantingSubscription(companyIdIsNull: boolean): SQL {
-  const companyPredicate = companyIdIsNull
-    ? sql`member_subscription.company_id is null`
-    : sql`member_subscription.company_id is not null`;
+function hasAccessGrantingSubscription(plan: "vip" | "listing"): SQL {
+  // The subscription's own plan since ADR 0033, not "is a company attached":
+  // membership dues are member-scoped and carry no company, and would have
+  // matched the VIP filter.
+  const planPredicate = sql`member_subscription.plan = ${plan}`;
 
   // The subquery names its own columns for the same reason the card-serial one
   // does: inside a relational query drizzle rewrites embedded column
@@ -155,18 +156,18 @@ function hasAccessGrantingSubscription(companyIdIsNull: boolean): SQL {
   return sql`exists (
     select 1 from ${subscriptions} as member_subscription
     where member_subscription.member_id = ${members.id}
-      and ${companyPredicate}
+      and ${planPredicate}
       and member_subscription.status in ${ACCESS_GRANTING_SUBSCRIPTION_STATUSES}
   )`;
 }
 
 function planCondition(plan: MemberPlan): SQL {
-  if (plan === "vip") return hasAccessGrantingSubscription(true);
-  if (plan === "business") return hasAccessGrantingSubscription(false);
+  if (plan === "vip") return hasAccessGrantingSubscription("vip");
+  if (plan === "business") return hasAccessGrantingSubscription("listing");
 
   // Free is the absence of both, not a plan of its own - so it is the negation
   // of the union rather than a third predicate that could drift from them.
-  return sql`not (${hasAccessGrantingSubscription(true)}) and not (${hasAccessGrantingSubscription(false)})`;
+  return sql`not (${hasAccessGrantingSubscription("vip")}) and not (${hasAccessGrantingSubscription("listing")})`;
 }
 
 const MEMBER_ADMIN_RELATIONS = {

@@ -64,6 +64,20 @@ function productionOnlyIssues(env: Record<string, unknown>): EnvCheckIssue[] {
     });
   }
 
+  // ADR 0033: without this the dues screen cannot open Checkout, and — worse —
+  // the projection cannot tell a dues subscription from a VIP one, so a member
+  // paying $4.99 would be granted VIP.
+  if (!hasValue(env["STRIPE_MEMBER_PRICE_ID"])) {
+    issues.push({
+      key: "STRIPE_MEMBER_PRICE_ID",
+      message:
+        "is required before selling standard membership (ADR 0033). An active " +
+        "plan_prices row for `membership` also works and wins over this " +
+        "variable, but this check reads the environment and cannot see the " +
+        "database — so it asks for the variable",
+    });
+  }
+
   if (!hasValue(env["STRIPE_VIP_PRICE_ID"])) {
     issues.push({
       key: "STRIPE_VIP_PRICE_ID",

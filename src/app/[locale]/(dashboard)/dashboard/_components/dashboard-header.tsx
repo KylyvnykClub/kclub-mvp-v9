@@ -69,6 +69,11 @@ export function DashboardHeader({ actor }: { actor: Actor }) {
       show: can(actor, "manage_flags", "feature_flag"),
     },
     {
+      href: `/${locale}/dashboard/admin/join-link`,
+      label: tDashboard("navAdminJoinLink"),
+      show: can(actor, "manage_join_link", "join_link"),
+    },
+    {
       href: `/${locale}/dashboard/admin/audit`,
       label: tDashboard("navAdminAudit"),
       show: can(actor, "read", "audit_log"),

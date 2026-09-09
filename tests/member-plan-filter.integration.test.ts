@@ -72,6 +72,7 @@ async function seedSubscription(
   input: { memberId: string; companyId?: string | null; status: string },
 ) {
   await db.insert(subscriptions).values({
+    plan: "listing",
     memberId: input.memberId,
     companyId: input.companyId ?? null,
     stripeCustomerId: `cus_${crypto.randomUUID()}`,

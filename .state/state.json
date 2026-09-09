@@ -1,0 +1,44 @@
+{
+  "currentFocus": null,
+  "shipped": [],
+  "backlog": [
+    {
+      "id": "membership-dues-integration-tests",
+      "note": "Phase 8 shipped with browser checks but no integration tests: the dues gate, the member_monthly projection and the join link are unproved in CI. Testcontainers needs a Docker socket the container this was built in does not have."
+    },
+    {
+      "id": "console-does-not-show-dues-kind",
+      "note": "Staff still see three plan chips (VIP, listing, neither), so a member paying $4.99 reads as 'free' in the console."
+    },
+    {
+      "id": "published-prices-drift-from-plan-prices",
+      "note": "src/domain/pricing.ts decides what the pages say; plan_prices decides what Stripe charges. Changing a price in the console without changing the table makes the copy lie."
+    },
+    {
+      "id": "phone-field-mangles-impossible-numbers",
+      "note": "Typing +380000000000 (ADMIN_BOOTSTRAP_OWNER_PHONE) into the phone field submits +38000000000 — AsYouType strips the leading zero as a trunk prefix. Real member numbers round-trip correctly; the staff owner cannot sign in by typing their own number."
+    },
+    {
+      "id": "production-outbox-stalled",
+      "note": "Production /health/deep reported degraded on 2026-09-08: 2 outbox messages pending since 2026-08-29. Email delivery for company/billing notifications is not draining."
+    }
+  ],
+  "lastSession": {
+    "date": "2026-09-09",
+    "checklist": [
+      "Built a Docker stack for the whole app (postgres 17, Neon wsproxy, Upstash stand-in) — no Node, no Neon branch and no vendor keys needed on the host",
+      "Proved registration and sign-in work in a real browser; the client's report traces to email sign-in being refused until the address is verified",
+      "Created the client's test account: +380671112233 / test@kclub.local / TestUser2026!",
+      "Agreed and recorded ADR 0033: standard membership costs $4.99 a month, a join link waives it, everyone already here stays free",
+      "Shipped phase 8: dues_kind on members, subscriptions.plan, join_links, the membershipAccess rule, the dues gate and screen, the join link and its console screen, and a public pricing page",
+      "Added a 404 with a way home, in three locales"
+    ],
+    "stoppedAt": "Phase 8 code is complete and verified in a browser against the docker stack; pnpm verify passes. Nothing is committed — waiting for /commit.",
+    "nextSteps": [
+      "Write the integration tests phase 8 owes (dues gate, member_monthly projection, join link) on a machine with a Docker socket for Testcontainers",
+      "Decide whether the console should show a member's dues kind alongside the VIP and listing chips",
+      "Look at the stalled production outbox — 2 messages have not drained since 2026-08-29",
+      "Create the production Stripe $4.99 price and set STRIPE_MEMBER_PRICE_ID (or seed a plan_prices row) before phase 8 is deployed"
+    ]
+  }
+}

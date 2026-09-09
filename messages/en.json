@@ -272,7 +272,8 @@
       "invalid": "Enter a valid email address.",
       "unauthorized": "Sign in again to change this.",
       "failed": "Something went wrong. Try again."
-    }
+    },
+    "navAdminJoinLink": "Join link"
   },
   "card": {
     "membershipCard": "Membership Card",
@@ -352,7 +353,8 @@
       "signOut": "Sign Out",
       "signingOut": "Signing out...",
       "signOutError": "Could not sign out. Please try again.",
-      "myAccount": "My Account"
+      "myAccount": "My Account",
+      "pricing": "Pricing"
     },
     "hero": {
       "eyebrow": "International Business Club",
@@ -954,7 +956,8 @@
       },
       "toggleSidebar": "Toggle sidebar",
       "navigationDescription": "Console navigation",
-      "memberDashboard": "Member dashboard"
+      "memberDashboard": "Member dashboard",
+      "joinLink": "Join link"
     },
     "shell": {
       "previous": "Previous",
@@ -1368,6 +1371,22 @@
       "resetTotpDescription": "{name} will be asked to scan a new QR code the next time they sign in, and every session they hold now ends. Their password is unchanged. Use this when their authenticator stops being accepted — a replaced phone, or an entry that no longer matches the server.",
       "resetTotpToast": "Authenticator discarded. They enrol a new one at the next sign-in.",
       "colTotp": "2FA"
+    },
+    "joinLink": {
+      "title": "Join link",
+      "description": "The club's private link. Anyone who registers through it joins without paying membership dues.",
+      "currentTitle": "Current link",
+      "currentDescription": "Hand this out by hand. Rotating it makes every copy already shared stop working.",
+      "noneDescription": "There is no live link right now, so every registration pays dues.",
+      "noneBody": "Create one when the club next wants to let someone in free.",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "create": "Create a link",
+      "rotate": "Rotate the link",
+      "revoke": "Revoke the link",
+      "rotated": "New link created; the previous one no longer works",
+      "revoked": "Link revoked",
+      "failed": "That did not work. Try again."
     }
   },
   "sessions": {
@@ -1392,5 +1411,42 @@
     "referral_received": "{companyName} received a new client introduction. Open Referrals to accept or decline it.",
     "payment_failed": "A payment failed. You keep access while we retry — update your payment method to avoid losing it.",
     "grace_expiry_warning": "Your payment is still failing. Access ends soon unless the payment method is updated."
+  },
+  "membership": {
+    "duesTitle": "Membership dues",
+    "duesSubtitle": "Your account is ready. Membership costs {price} a month — pay it and the club opens.",
+    "duesPrice": "{price} / month, USD",
+    "includesTitle": "What membership includes",
+    "include1": "Your membership card, with a QR anyone can verify",
+    "include2": "The partner catalogue, with every member discount",
+    "include3": "Your own business in the catalogue, once it is approved",
+    "payButton": "Pay {price} a month",
+    "pricingLink": "See all plans",
+    "signOut": "Sign out",
+    "cancelAnytime": "Cancel any time from the billing portal. Payment is taken by Stripe; we never see your card.",
+    "sponsoredNote": "Joined through the club's link? You are not asked to pay — sign in and you are in.",
+    "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later."
+  },
+  "pricing": {
+    "title": "Plans and prices",
+    "subtitle": "Three subscriptions, all monthly, all in USD. Nothing is charged until you choose it.",
+    "perMonth": "/ month",
+    "currencyNote": "All prices in USD. Payment is taken by Stripe.",
+    "membershipName": "Membership",
+    "membershipDescription": "Being in the club: your card, the partner catalogue and every member discount.",
+    "membershipCta": "Join the club",
+    "vipName": "VIP membership",
+    "vipDescription": "Everything membership has, plus sending client introductions and priority support.",
+    "vipCta": "Upgrade to VIP",
+    "listingName": "Partner listing",
+    "listingDescription": "Your business published in the catalogue, per company, after moderation approves it.",
+    "listingCta": "Apply as a partner",
+    "sponsoredTitle": "Joined through the club's link?",
+    "sponsoredBody": "Membership dues are waived for as long as the club says. Nothing to pay, nothing to cancel."
+  },
+  "notFound": {
+    "title": "This page does not exist",
+    "body": "The link may be old, or the page may have moved. Everything else is still where it was.",
+    "home": "Go to the home page"
   }
 }

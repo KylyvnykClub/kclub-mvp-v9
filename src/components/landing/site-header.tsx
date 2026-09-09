@@ -23,6 +23,7 @@ const navigation = [
   ["about", "/#about"],
   ["how_it_works", "/#how-it-works"],
   ["partners", "/directory"],
+  ["pricing", "/pricing"],
   ["faq", "/#faq"],
 ] as const;
 

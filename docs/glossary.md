@@ -43,7 +43,7 @@ variation.
 
 |Term|Definition|In code|In the database|Not to be confused with|
 |-|-|-|-|-|
-|Member|A person whose phone number is verified and who holds a membership card. Free unless they subscribe to VIP. Registering also requires an email address ([ADR 0032](decisions/0032-phone-and-email-both-required.md)), but an unproved address makes nobody less of a member — it only leaves them without the recovery channel|`Member`|`member`|"User" — never used in the interface or in domain code. "Customer", which in this codebase means only a Stripe Customer object|
+|Member|A person whose phone number is verified and who holds a membership card. Pays membership dues unless they are sponsored or predate them ([ADR 0033](decisions/0033-standard-membership-is-paid.md)); VIP is a further subscription on top. Registering also requires an email address ([ADR 0032](decisions/0032-phone-and-email-both-required.md)), but an unproved address makes nobody less of a member — it only leaves them without the recovery channel|`Member`|`member`|"User" — never used in the interface or in domain code. "Customer", which in this codebase means only a Stripe Customer object|
 |Verified address|An email address a member has proved by opening the link sent to it, stamped in `email_verified_at`. Only a verified address signs anyone in or receives a reset link|`emailVerifiedAt`|`member.email_verified_at`|The address itself, which is merely claimed until the link is opened|
 |VIP member|A member with an active VIP subscription. A tier, not a separate entity|`MemberTier.Vip`|`member.tier`|"Premium", "Gold" — both rejected; "Gold" is the card's colour, not a tier|
 |Verification link|A single-use, expiring URL emailed to a member to prove an address is theirs (24 hours) or to let them set a new password (30 minutes). Only its hash is stored ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|`VerificationToken`|`verification_tokens`|"Magic link" — this never signs anyone in on its own; the one-time SMS "code", which Twilio owns and we never store|
@@ -64,7 +64,10 @@ variation.
 |Platform Operator|Kylyvnyk Consulting LLC, a Florida LLC. The legal entity behind KCLUB and the data controller|—|—|KYLYVNYK CLUB, which is the brand. Legal documents name the operator; the interface names the club|
 |Client (in a referral)|The third party being introduced. **Not a member and not our user**|`ReferralClient`|`referral.client_*`|A member. This distinction carries the legal weight of the whole feature|
 |Consent attestation|The sender's recorded statement that the client agreed to the introduction|`ConsentAttestation`|`referral.consent_*`|Consent given to us by the client — we never obtain that directly|
-|Subscription|A recurring payment for VIP membership or for a listing. Owned by Stripe, projected locally|`Subscription`|`subscription`|"Membership", which is free and permanent. A member is not a subscriber|
+|Subscription|A recurring payment: membership dues, VIP membership or a listing. Owned by Stripe, projected locally|`Subscription`|`subscription`|Membership itself, which outlives any one subscription — a member whose dues lapse is still a member, they just cannot get in|
+|Membership dues|What standard membership costs: $4.99 a month, sold as the `member_monthly` plan ([ADR 0033](decisions/0033-standard-membership-is-paid.md)). A member owes them, is sponsored, or predates them|`membershipAccess`|`members.dues_kind`|The VIP subscription, which buys referrals and priority support on top and is not a substitute for dues|
+|Sponsored membership|Membership whose dues the club waives, because the member joined through the join link or an owner said so. Free for as long as the club says|`dues_kind = "sponsored"`|`members.dues_kind`|An "invited member" — there is no invitation mechanic here, and nobody is credited for a sponsored member ([ADR 0009](decisions/0009-referral-data-minimisation.md))|
+|Join link|The club's current private URL that admits a person with dues waived. One at a time, rotated and revoked by the owner|`JoinLink`|`join_links`|An "invite link" or a "referral link". It carries no identity, credits nobody, has no quota and rewards no one for sharing it|
 |Plan|What can be sold: `vip_monthly`, `listing_monthly`, `business`|`Plan`|`plan`|"Tier", which is what a member gets from a plan|
 |Price|An amount for a plan, valid from a date. Multiple prices per plan over time|`Price`|`price`|The plan. Changing a price never changes the plan|
 |Entitlement|What an active subscription unlocks inside the product|`Entitlement`|`entitlement`|The subscription. Stripe owns subscriptions; we own entitlements|
@@ -93,6 +96,9 @@ variation.
 |Business Introduction|Business Introduction|Business Introduction|Left untranslated in all three languages, as the legal pack does|
 |Client|Клиент|Клієнт||
 |Subscription|Подписка|Підписка||
+|Membership dues|Членский взнос|Членський внесок|Never "абонплата" — the club has members, not subscribers|
+|Sponsored membership|Спонсируемое членство|Спонсоване членство|Never "приглашение" — nobody is invited, the dues are waived|
+|Join link|Ссылка для вступления|Посилання для вступу|Never "инвайт" or "реферальная ссылка"|
 |Moderation|Проверка|Перевірка|"Модерация" only in staff-facing text|
 |Staff|Команда клуба|Команда клубу||
 

@@ -51,6 +51,8 @@ function SubmitButton({
 
 type RegisterResult = {
   success: boolean;
+  /** Dues are owed, so the next screen is the one that asks for them. */
+  duesOwed?: boolean;
   error?: string;
   /** The box the refusal belongs against, where it is one of the two. */
   field?: "phone" | "email" | null;
@@ -201,7 +203,11 @@ export function RegisterFlow({
       const result = await registerAction(formData);
 
       if (result?.success) {
-        router.push(`/${locale}/dashboard/profile`);
+        router.push(
+          result.duesOwed
+            ? `/${locale}/membership`
+            : `/${locale}/dashboard/profile`,
+        );
       }
 
       return result;
@@ -230,7 +236,11 @@ export function RegisterFlow({
       const result = await registerAction(pendingForm);
 
       if (result?.success) {
-        router.push(`/${locale}/dashboard/profile`);
+        router.push(
+          result.duesOwed
+            ? `/${locale}/membership`
+            : `/${locale}/dashboard/profile`,
+        );
       }
 
       return result;

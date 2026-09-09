@@ -121,8 +121,8 @@ both present, and the second is the one that counts.
 |`partner_owner`|Edit their own company; accept or decline referrals addressed to it|Publish their own company; set their own showcase rank; see referrals addressed elsewhere|
 |`staff_support`|Read members, cards, subscriptions, payments, moderation history, audit log entries about their own actions|Any mutation whatsoever; export data; see referral client contact details|
 |`staff_moderator`|Everything `staff_support` may, plus approve/reject companies and referrals, and manage categories, countries and cities|Block members; revoke cards; touch billing; see full payment details|
-|`staff_admin`|Everything `staff_moderator` may, plus block/unblock members, revoke/reissue cards, publish/hide companies, set discounts and ranks, read finance dashboards|Manage staff accounts; change prices; approve an erasure request; read the full audit log|
-|`staff_owner`|Everything|Nothing — which is why the role has two people at most, mandatory TOTP, and every action audited|
+|`staff_admin`|Everything `staff_moderator` may, plus block/unblock members, revoke/reissue cards, publish/hide companies, set discounts and ranks, read finance dashboards|Manage staff accounts; change prices; read, rotate or revoke the join link; approve an erasure request; read the full audit log|
+|`staff_owner`|Everything, including `manage_join_link` — reading, rotating and revoking the club's join link, which waives membership dues for whoever holds it ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Nothing — which is why the role has two people at most, mandatory TOTP, and every action audited|
 |`system`|Grant and revoke entitlements, publish and unpublish on billing state, expire referrals, run reconciliation|Act on behalf of a named staff user. System actions are attributed to `system` in the audit log, never to a person|
 
 Two structural rules that outrank the table:

@@ -52,7 +52,7 @@ let databaseMarker: DatabaseMarker = { kind: "no_table" };
 
 // ── Stripe seed ──────────────────────────────────────────────
 
-type PlanLookupKey = "vip_monthly" | "listing_monthly";
+type PlanLookupKey = "member_monthly" | "vip_monthly" | "listing_monthly";
 
 interface StripePlan {
   name: string;
@@ -65,6 +65,14 @@ interface StripePlan {
 type SeededPriceIds = Partial<Record<PlanLookupKey, string>>;
 
 const PLANS: StripePlan[] = [
+  {
+    // ADR 0033: standard membership is what a member pays to be in the club at
+    // all. VIP below is a further subscription on top of it.
+    name: "Club Membership",
+    lookup_key: "member_monthly",
+    amount_cents: 499,
+    interval: "month",
+  },
   {
     name: "VIP Membership",
     lookup_key: "vip_monthly",
@@ -261,6 +269,7 @@ async function seedPlanPrices(
   ownerId: string | null,
 ): Promise<void> {
   const plans = [
+    { plan: "membership", priceId: priceIds.member_monthly },
     { plan: "vip", priceId: priceIds.vip_monthly },
     { plan: "listing", priceId: priceIds.listing_monthly },
   ] as const;
@@ -782,6 +791,7 @@ async function seedBetaData(): Promise<void> {
       const now = new Date();
       const oneYear = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
       await db.insert(subscriptions).values({
+        plan: "vip",
         stripeSubscriptionId: stripeSubId,
         memberId: ownerId,
         companyId,

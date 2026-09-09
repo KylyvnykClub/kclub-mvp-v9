@@ -1,7 +1,23 @@
-import { pgTable, varchar, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, varchar, timestamp, uuid } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
 import { members } from "./members";
 import { companies } from "./companies";
+
+/**
+ * Which product a subscription is for (ADR 0033).
+ *
+ * Until membership dues existed this was inferred - "a member subscription with
+ * no company attached is VIP" - and that inference is exactly what dues break:
+ * they are also member-scoped and also carry no company, so every member paying
+ * $4.99 would have read as VIP and been handed the referral entitlement
+ * (FR-070). The plan is therefore stored, resolved from the price when the
+ * subscription is projected.
+ */
+export const subscriptionPlanEnum = pgEnum("subscription_plan", [
+  "membership",
+  "vip",
+  "listing",
+]);
 
 export const subscriptions = pgTable("subscriptions", {
   ...baseColumns,
@@ -18,6 +34,9 @@ export const subscriptions = pgTable("subscriptions", {
   companyId: uuid("company_id").references(() => companies.id, {
     onDelete: "cascade",
   }), // only set if it's a listing subscription
+
+  /** Which product this pays for (ADR 0033). Never inferred at read time. */
+  plan: subscriptionPlanEnum("plan").notNull(),
 
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).notNull(), // active, past_due, canceled, unpaid, etc.

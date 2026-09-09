@@ -228,6 +228,14 @@ const matrix: MatrixEntry[] = [
     admin: false,
     owner: true,
   },
+  {
+    action: "manage_join_link",
+    subject: "join_link",
+    support: false,
+    moderator: false,
+    admin: false,
+    owner: true,
+  },
 ];
 
 describe("constraint: staff role matrix (security.md §2)", () => {

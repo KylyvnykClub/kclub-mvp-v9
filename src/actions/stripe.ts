@@ -138,6 +138,21 @@ async function createSubscriptionCheckout(params: {
   redirect(session.url);
 }
 
+/**
+ * Open membership dues checkout (FR-102).
+ *
+ * The session grants nothing on its return, exactly like the two beside it: the
+ * member reaches the club when the subscription is projected from Stripe's own
+ * event (FR-104, ADR 0004). Until then they are back on the dues screen, which
+ * is the correct place for someone who has not paid.
+ */
+export async function createMembershipCheckoutAction() {
+  await createSubscriptionCheckout({
+    plan: "membership",
+    priceId: await checkoutPriceIdForPlan(db, "membership"),
+  });
+}
+
 export async function createVipCheckoutAction() {
   await createSubscriptionCheckout({
     plan: "vip",

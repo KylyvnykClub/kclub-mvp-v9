@@ -22,6 +22,9 @@ import {
   PENDING_IDENTITY_COOKIE,
   openPendingIdentity,
 } from "@/lib/pending-identity";
+import { PENDING_JOIN_COOKIE, openPendingJoin } from "@/lib/pending-join";
+import { db } from "@/data/db";
+import { findActiveJoinLinkById } from "@/data/join-links";
 import { env } from "@/env";
 import { phoneLookupSchema, phoneSchema } from "@/lib/phone";
 import {
@@ -199,9 +202,23 @@ export async function registerAction(formData: FormData) {
           } as const)
         : undefined;
 
+    // FR-105: the join link waives dues, and only the cookie the link itself
+    // set can say so. Nothing the form posted is consulted, and the cookie is
+    // spent below whether or not it applied.
+    const pendingJoin = openPendingJoin(
+      cookieStore.get(PENDING_JOIN_COOKIE)?.value,
+      env.server.BETTER_AUTH_SECRET,
+    );
+    // And the door has to still be open: the seal says it was, half an hour
+    // ago at most, but revoking a leaked link must take effect at once.
+    const sponsored = pendingJoin
+      ? Boolean(await findActiveJoinLinkById(db, pendingJoin.joinLinkId))
+      : false;
+
     const result = await IdentityService.registerMember({
       phone: data.phone,
       email: data.email,
+      duesKind: sponsored ? "sponsored" : "paying",
       provenBy,
       code: data.code,
       passwordPlain: data.password,
@@ -217,6 +234,9 @@ export async function registerAction(formData: FormData) {
       // Spent, whether or not it was used: a stale identity cookie left on the
       // browser would attach to the next registration from this machine.
       cookieStore.set(PENDING_IDENTITY_COOKIE, "", { path: "/", maxAge: 0 });
+      // Spent for the same reason: a join cookie left on the browser would
+      // waive dues for the next registration from this machine too.
+      cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
 
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,
@@ -226,7 +246,11 @@ export async function registerAction(formData: FormData) {
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
       await rememberPreferredLocale(data.language);
-      return { success: true };
+      // Where to send them: a sponsored member is in, everyone else owes dues
+      // and the dues screen is the next thing they should see (FR-103). The
+      // dashboard would only bounce them here anyway; saying so now saves the
+      // flash of a screen they cannot have.
+      return { success: true, duesOwed: !sponsored };
     } else {
       const error = result.error ?? ("failed" as const);
       return { success: false, error, field: registerErrorField(error) };

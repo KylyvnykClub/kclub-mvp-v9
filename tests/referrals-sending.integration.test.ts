@@ -82,6 +82,7 @@ async function seedCompany(
 
   if (options.subscriptionStatus !== null) {
     await db.insert(subscriptions).values({
+      plan: "listing",
       memberId: ownerId,
       companyId: company!.id,
       stripeCustomerId: `cus_s${suffix}`,

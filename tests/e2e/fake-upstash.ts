@@ -28,7 +28,10 @@ export interface FakeUpstash {
   reset: () => void;
 }
 
-export async function startFakeUpstash(): Promise<FakeUpstash> {
+export async function startFakeUpstash(
+  /** Where to listen. Defaults to an ephemeral port on the loopback. */
+  options: { host?: string; port?: number } = {},
+): Promise<FakeUpstash> {
   const store = new Map<string, Entry>();
 
   function live(key: string): Entry | undefined {
@@ -85,7 +88,10 @@ export async function startFakeUpstash(): Promise<FakeUpstash> {
     });
   });
 
-  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const host = options.host ?? "127.0.0.1";
+  await new Promise<void>((resolve) =>
+    server.listen(options.port ?? 0, host, resolve),
+  );
 
   const address = server.address();
   if (typeof address === "string" || address === null) {
@@ -93,7 +99,7 @@ export async function startFakeUpstash(): Promise<FakeUpstash> {
   }
 
   return {
-    url: `http://127.0.0.1:${address.port}`,
+    url: `http://${host}:${address.port}`,
     reset: () => store.clear(),
     close: () =>
       new Promise<void>((resolve, reject) =>

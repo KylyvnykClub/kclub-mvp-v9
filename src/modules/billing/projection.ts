@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import type { DbClient } from "@/data/db";
+import { planForSubscription } from "@/data/plan-prices";
 import {
   findSubscriptionByStripeId,
   setCardTierForMember,
@@ -52,6 +53,7 @@ export type ProjectionResult = "applied" | "stale" | "deleted";
 function subscriptionToUpsert(
   subscription: Stripe.Subscription,
   watermark: Date,
+  plan: "membership" | "vip" | "listing",
 ): SubscriptionUpsert {
   const item = subscription.items.data[0];
   const memberId = subscription.metadata.memberId;
@@ -65,6 +67,7 @@ function subscriptionToUpsert(
     stripeSubscriptionId: subscription.id,
     memberId,
     companyId: companyId ?? null,
+    plan,
     stripeCustomerId:
       typeof subscription.customer === "string"
         ? subscription.customer
@@ -137,7 +140,12 @@ export async function foldSubscription(
   subscription: Stripe.Subscription,
   watermark: Date,
 ): Promise<ProjectionResult> {
-  const values = subscriptionToUpsert(subscription, watermark);
+  const item = subscription.items.data[0];
+  const plan = await planForSubscription(db, {
+    priceId: item?.price?.id ?? "",
+    companyId: subscription.metadata.companyId ?? null,
+  });
+  const values = subscriptionToUpsert(subscription, watermark, plan);
 
   const result = await db.transaction(async (tx) => {
     const current = await findSubscriptionByStripeId(
@@ -149,11 +157,12 @@ export async function foldSubscription(
     }
 
     await upsertSubscription(tx, values);
-    // A subscription without a company is a VIP membership (FR-050). The
-    // entitlement is projected onto the member's card tier through the single
-    // access rule (data/billing.ts): FR-056 keeps past_due while Stripe retries,
-    // and every terminal status demotes.
-    if (!values.companyId) {
+    // Only VIP moves the card tier (FR-050). Membership dues decide whether the
+    // member is inside the club at all, which `membershipAccess` reads from the
+    // same rows — a member paying dues holds a free-tier card, exactly as they
+    // did when membership was free (ADR 0033). FR-056 keeps past_due while
+    // Stripe retries, and every terminal status demotes.
+    if (values.plan === "vip") {
       await setCardTierForMember(
         tx,
         values.memberId,
@@ -178,6 +187,7 @@ async function markDeleted(
       stripeSubscriptionId: existing.stripeSubscriptionId,
       memberId: existing.memberId,
       companyId: existing.companyId,
+      plan: existing.plan,
       stripeCustomerId: existing.stripeCustomerId,
       status: "deleted",
       priceId: existing.priceId,
@@ -187,7 +197,7 @@ async function markDeleted(
       canceledAt: existing.canceledAt ?? new Date(),
       stripeUpdatedAt: watermark,
     });
-    if (!existing.companyId) {
+    if (existing.plan === "vip") {
       await setCardTierForMember(tx, existing.memberId, "free");
     }
   });

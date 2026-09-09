@@ -6,22 +6,20 @@
  */
 
 /**
- * The subscription statuses that grant access. `active` is the paid steady
- * state; `past_due` is kept deliberately while Stripe retries a failed payment
- * across the dunning window (FR-056). Every other status - `unpaid`,
- * `canceled`, `incomplete`, `incomplete_expired`, `paused`, and the
- * projection's terminal `deleted` - is a loss of entitlement.
+ * The single definition of "a subscription that grants access" now lives in
+ * `@/domain/subscription-access`, because the membership rule that also needs
+ * it is domain code and may not import from this layer (ADR 0033). It is
+ * re-exported here so every existing caller keeps importing it from
+ * `@/data/billing`.
  *
- * This is the single definition of "a subscription that grants access". The
- * entitlement projection reads it to set a member's card tier, and
+ * The entitlement projection reads it to set a member's card tier, and
  * `listActiveSubscriptionsForDeletion` reads it to decide which subscriptions a
  * member still holds. Money and access must never disagree (ADR 0004), so the
  * rule lives in one place with a test rather than being copied per call site.
  */
-export const ACCESS_GRANTING_SUBSCRIPTION_STATUSES: readonly string[] = [
-  "active",
-  "past_due",
-];
+export { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "@/domain/subscription-access";
+
+import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "@/domain/subscription-access";
 
 /**
  * VIP while the subscription status grants access, free for every terminal or
@@ -38,10 +36,15 @@ export function tierForSubscriptionStatus(status: string): "vip" | "free" {
 /**
  * What a member is currently paying for.
  *
- * `vip` is a membership subscription, which is one with no company attached
- * (FR-050). `business` is a company listing (FR-051) - it belongs to a company
- * the member owns, so a member can hold both at once and this returns both.
- * `free` means neither, and is never returned alongside another plan.
+ * `vip` is the VIP subscription (FR-050); `business` is a company listing
+ * (FR-051), which belongs to a company the member owns, so a member can hold
+ * both at once and this returns both. `free` means neither.
+ *
+ * Read from the subscription's own `plan` since ADR 0033. It used to read "no
+ * company attached" as VIP, which stopped being true the moment membership
+ * dues became a member-scoped subscription too: every member paying $4.99
+ * would have been handed the VIP entitlement. Dues are deliberately not a chip
+ * here - the console's three chips still mean VIP, listing and neither.
  *
  * Derived from `ACCESS_GRANTING_SUBSCRIPTION_STATUSES` rather than from
  * `status === "active"`, which matters during dunning: FR-056 keeps access
@@ -53,17 +56,17 @@ export function tierForSubscriptionStatus(status: string): "vip" | "free" {
 export type MemberPlan = "vip" | "business" | "free";
 
 export function memberPlansOf(
-  subscriptions: readonly { companyId: string | null; status: string }[],
+  subscriptions: readonly { plan: string; status: string }[],
 ): MemberPlan[] {
   const paid = subscriptions.filter((subscription) =>
     ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
   );
 
   const plans: MemberPlan[] = [];
-  if (paid.some((subscription) => subscription.companyId === null)) {
+  if (paid.some((subscription) => subscription.plan === "vip")) {
     plans.push("vip");
   }
-  if (paid.some((subscription) => subscription.companyId !== null)) {
+  if (paid.some((subscription) => subscription.plan === "listing")) {
     plans.push("business");
   }
 

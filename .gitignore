@@ -24,6 +24,8 @@ blob-report/
 # from src/env.ts — see docs/technology.md and CONTRIBUTING.md.
 .env
 .env.local
+# Real vendor keys for the docker stack, when a local test needs one.
+.env.docker
 .env.*.local
 CREDENTIALS.md
 

@@ -53,6 +53,8 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 |Home|Decide whether this club is real and worth joining|public|Hero, how it works, curated showcase, testimonials, FAQ, join|
 |How it works|Understand membership vs. partnership|public|Explicit "this is not MLM" statement|
 |For partners|Decide whether to apply|public|Pricing, what a listing gets, the application steps|
+|Pricing|Compare what membership, VIP and a listing cost before signing up|public|Reachable from the main navigation. Amounts come from `src/domain/pricing.ts` — one table for the whole product, never a price written into a translation string — in USD with an explicit `$` ([ADR 0033](decisions/0033-standard-membership-is-paid.md)). Stripe remains what actually charges: the `plan_prices` row is the price that is billed|
+|Join link (`/join/<secret>`)|Register with dues waived|public, secret|Not a screen: it stamps a signed cookie and forwards to registration. An unknown secret forwards to the ordinary form and says nothing ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|
 |Partner showcase|See that the catalogue is not empty|public|Curated subset only — never the full catalogue|
 |FAQ|Answer the objection before it is raised|public|Includes "why phone only" and "what do you show about me"|
 |Legal ×5|Read Terms, Privacy, Club Rules, Partner Rules, Refunds|public|Versioned; the version accepted is recorded|
@@ -100,6 +102,7 @@ a translation table of its own; it now offers all of them, searchable.
 
 |Screen|User goal|Access|Notes|
 |-|-|-|-|
+|Membership dues (`/{locale}/membership`)|Pay the $4.99 monthly dues and get in|member|The only screen a member reaches while their dues are unpaid — everything else under `(dashboard)` redirects here (FR-103). It sits outside the member area, because a screen inside the gated layout would redirect to itself. Price, what membership includes, one button to Stripe Checkout, a link to Pricing, sign out. Never shown to a sponsored or legacy-free member|
 |My card|Show membership|member|Default landing. Large QR, tier, serial, name-visibility toggle|
 |Catalogue|Find a trusted business|member|Search, category/country/city filters, results|
 |Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element|
@@ -118,6 +121,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Settings — profile|Change name, language, country|member||
 |Settings — security|Sessions, password, phone number, email address|member|Active sessions with device and last-used. The address panel shows whether it is verified, resends the link no more than once a minute, and accepts a replacement — which is how a mistyped address is corrected ([ADR 0032](decisions/0032-phone-and-email-both-required.md))|
 |Settings — delete account|Leave|member|Explains what is deleted, what is kept and why|
+|404|Get back to somewhere real|public|Says the page is gone and offers one button home — a dead end with no way out is the state members report as "the site broke"|
 
 **Staff console (`/dashboard/admin`, shared shell: sidebar + breadcrumb topbar)**
 

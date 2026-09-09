@@ -21,12 +21,19 @@ moderation records how a company was judged, referrals connect two companies,
 and the audit log records what staff did to any of it.
 
 Two shapes are worth noticing. First, a subscription is **polymorphic** — it
-attaches either to a member (VIP) or to a company (listing) — because the two
-products have identical mechanics and different subjects; keeping them in one
-table means the billing lifecycle is implemented once. Second, `staff_user` has
+attaches either to a member (membership dues or VIP) or to a company (listing) —
+because the products have identical mechanics and different subjects; keeping
+them in one table means the billing lifecycle is implemented once. Second, `staff_user` has
 no relationship to `member` at all: they are different populations with
 different authentication, and joining them would let a compromised member
 account inherit staff scope.
+
+A third shape arrived with [ADR 0033](decisions/0033-standard-membership-is-paid.md):
+`members.dues_kind` (`paying` | `sponsored` | `legacy_free`) records **who owes
+membership dues**, and never whether they are paid up — that answer is only ever
+read from the projected subscription rows. `join_links` holds the club's current
+private join URL, one active row at a time; it references no member, counts
+nobody and is not personal data.
 
 ```text
                       ┌──────────────────┐
@@ -149,7 +156,7 @@ mode over all subscriptions takes minutes at 3,000 rows.
 |-|-|
 |Migration tool|`drizzle-kit generate` produces SQL; the SQL is reviewed and committed, never generated at deploy time|
 |Where migrations live|`db/migrations/NNNN_description.sql`, immutable once merged|
-|Applied when|As an explicit CI step **before** the new application version receives traffic, against the same database the old version is still using|
+|Applied when|As an explicit step **before** the new application version receives traffic, against the same database the old version is still using. In production that step is the Vercel build ([`tools/vercel-build.ts`](../tools/vercel-build.ts), run only when `VERCEL_ENV=production`); a failed migration fails the build, and a failed build is never promoted. Preview branches are migrated by [`preview.yml`](../.github/workflows/preview.yml) when the branch is created|
 |Reversible?|Every migration ships with a `down.sql`, and CI proves it by applying up → down → up on a fresh branch database. Reversibility is not assumed; it is tested|
 |Zero-downtime rule|Expand, migrate, contract, across three releases. Release 1 adds the new column as nullable and starts writing both. Release 2 backfills and switches reads. Release 3 drops the old column. A pull request that adds a `NOT NULL` column without a default, renames a column, or drops one still referenced by the previous release fails review — the previous version of the application is still serving traffic during a rolling deploy|
 |Large-table changes|`CREATE INDEX CONCURRENTLY`; backfills in batches of 1,000 rows with a pause between batches, run as an Inngest job rather than inside a migration; `lock_timeout = 3s` and `statement_timeout = 30s` set for every migration session so a migration fails fast instead of blocking the site|
@@ -201,6 +208,7 @@ security control first and a cost control second.
 |Referral **client contact details**|Until accepted, declined, expired (14 days), or rejected — then 24 hours|Hard delete of the encrypted contact column; the referral shell is retained|Minimisation; the client is not our user ([decisions/0009](decisions/0009-referral-data-minimisation.md))|
 |Referral shell (who referred whom, when, outcome)|24 months|Hard delete|Abuse and dispute handling|
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
+|`join_links`|Life of the club; a revoked link is retained|Never swept — one row per rotation, holding no personal data. The secret is stored in clear on purpose ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Knowing which link admitted which cohort|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
 |Member inbox (`notifications`)|180 days from creation, read or unread alike|Hard delete by the retention sweep. On member erasure, deleted **explicitly** — the anonymise-not-delete rule above means the `ON DELETE CASCADE` on `member_id` never fires|An inbox is a record of recent events ([decisions/0020](decisions/0020-member-inbox.md))|
 |Member avatar (R2 `media/avatars/{memberId}.webp`)|While the account exists, same 30-day clock as the rest of the member's data|Hard delete of the R2 object, best-effort, in the day-30 erasure job|New personal data needs a retention period and a deletion path before it ships ([ADR 0021](decisions/0021-member-avatar-upload.md)); one object per member means there is nothing to sweep|

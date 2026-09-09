@@ -531,6 +531,7 @@ describe("admin company detail: what the drawer can read", () => {
     const other = await seedCompany(db);
 
     await db.insert(subscriptions).values({
+      plan: "listing",
       memberId: owner.id,
       companyId: company.id,
       stripeCustomerId: `cus_${crypto.randomUUID()}`,

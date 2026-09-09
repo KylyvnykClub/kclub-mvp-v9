@@ -15,6 +15,7 @@ const baseProductionEnv = {
   TURNSTILE_SECRET_KEY: "turnstile-secret",
   STRIPE_SECRET_KEY: "sk_live_123",
   STRIPE_WEBHOOK_SECRET: "whsec_123",
+  STRIPE_MEMBER_PRICE_ID: "price_member",
   STRIPE_VIP_PRICE_ID: "price_vip",
   STRIPE_BUSINESS_PRICE_ID: "price_listing",
   CRON_SECRET: "cron-secret",
@@ -85,6 +86,7 @@ describe("constraint: production environment check", () => {
         ...baseProductionEnv,
         STRIPE_SECRET_KEY: "sk_test_123",
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_123",
+        STRIPE_MEMBER_PRICE_ID: "",
         STRIPE_VIP_PRICE_ID: "",
         STRIPE_BUSINESS_PRICE_ID: "",
       },
@@ -96,6 +98,7 @@ describe("constraint: production environment check", () => {
       expect.arrayContaining([
         "STRIPE_SECRET_KEY",
         "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_MEMBER_PRICE_ID",
         "STRIPE_VIP_PRICE_ID",
         "STRIPE_BUSINESS_PRICE_ID",
       ]),
