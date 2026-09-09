@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import type { DbClient } from "@/data/db";
-import { planForSubscription } from "@/modules/billing/prices";
+import { planForSubscription } from "@/data/plan-prices";
 import {
   findSubscriptionByStripeId,
   setCardTierForMember,
