@@ -218,7 +218,6 @@ export default async function CatalogueDirectoryPage({
                   view={currentView}
                   noDescription={t("noDescription")}
                   detailsLabel={t("details")}
-                  verifiedLabel={t("verifiedPartner")}
                 />
               ))
             )}

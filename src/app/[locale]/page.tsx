@@ -15,7 +15,6 @@ import { PrinciplesSection } from "@/components/landing/principles-section";
 import { ServicesSection } from "@/components/landing/services-section";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
-import { StatsSection } from "@/components/landing/stats-section";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
 import { localeAlternates } from "@/lib/seo";
@@ -49,7 +48,6 @@ export default async function Page({ params }: Props) {
       <SiteHeader member={Boolean(current?.member)} admin={canAccessAdmin} />
       <main>
         <HeroSection />
-        <StatsSection />
         <AboutSection />
         <BenefitsSection />
         <PrinciplesSection />

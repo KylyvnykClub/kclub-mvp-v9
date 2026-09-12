@@ -303,9 +303,11 @@ export default async function PartnerLandingPage({ params }: Props) {
               partner.discount
                 ? {
                     title: tc("conditionsTitle"),
-                    value: isResident
-                      ? partner.discount
-                      : tc("conditionsLockedValue"),
+                    // The discount itself is public (ADR 0034) — it is the
+                    // reason to join, and the catalogue card already shows it.
+                    // What stays behind sign-in is how to redeem it and who to
+                    // contact, below.
+                    value: partner.discount,
                     note: isResident
                       ? tc("conditionsNote")
                       : tc("conditionsLockedNote"),
@@ -558,7 +560,6 @@ export default async function PartnerLandingPage({ params }: Props) {
                     view="grid"
                     noDescription={tc("noDescription")}
                     detailsLabel={tc("details")}
-                    verifiedLabel={tc("verifiedPartner")}
                   />
                 ))}
               </div>

@@ -88,6 +88,8 @@ that the folder cannot be trusted.
 |[0030](0030-registration-says-a-number-is-taken.md)|Registration says a phone number is taken, rate limited, as a stated exception to the enumeration rule|Accepted|2026-09-04|
 |[0031](0031-identity-returns-to-phone-only.md)|Identity returns to phone only; recovery is a request to staff; Google is hidden behind a flag|Superseded by 0032|2026-09-04|
 |[0032](0032-phone-and-email-both-required.md)|A phone number and an email address are both required; recovery emails a link, with the staff queue as the fallback|Accepted|2026-09-05|
+|[0033](0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|2026-09-09|
+|[0034](0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|2026-09-12|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

@@ -17,7 +17,13 @@ describe("can", () => {
     expect(can(guest, "read", "marketing")).toBe(true);
   });
 
-  it("FR-030: guest cannot read catalogue", () => {
+  // FR-030 opened the catalogue listing to guests behind the
+  // `public_catalogue` flag (ADR 0034), but this subject also guards
+  // /api/company-image/:imageId, where gallery photos stay member-only
+  // (ADR 0022). So the policy rule keeps describing the closed baseline, and
+  // the flag — read in the page and in the list action — is what opens the
+  // listing. Flipping this to true would open the photos with it.
+  it("FR-030: guest cannot read catalogue without the public_catalogue flag", () => {
     expect(can(guest, "read", "catalogue")).toBe(false);
   });
 
