@@ -33,29 +33,34 @@
     {
       "id": "member-plan-filter-integration-failing",
       "note": "tests/member-plan-filter.integration.test.ts fails 3 of 6 (FR-083): countMembersByPlan returns 0 where the test expects 1. Confirmed pre-existing on 2026-09-12 by stashing an unrelated change and re-running. Likely fallout from phase 8 adding subscriptions.plan, which the count query may not read. Not in `pnpm verify` — integration runs separately."
+    },
+    {
+      "id": "landing-category-tiles-have-no-photography",
+      "note": "The reference design showed eight photographic category tiles; shipped as icons over gradients because the repository owns no such imagery. Swapping them for photographs is one commit once the client supplies files."
+    },
+    {
+      "id": "dark-primary-foreground-may-share-the-contrast-bug",
+      "note": "--accent-foreground was fixed to near-black in dark mode (3.19:1 -> 6.21:1). --primary-foreground is still #ffffff over --primary #b18a44, the identical pair; axe did not flag it on the landing page, so it is unproven rather than fine. Worth an axe pass over a dark catalogue and dashboard."
     }
   ],
   "lastSession": {
     "date": "2026-09-12",
     "checklist": [
-      "Read the client's PDF of three marked-up phone screenshots and applied all three edits",
-      "Removed the members/countries counter from the landing page, with its component and its i18n keys",
-      "Cleaned the catalogue card image: only the discount (gold, top left) and the country stay; the 'verified partner' and category strips are gone",
-      "Moved the discount off the card footer onto the card image, where the client asked for it",
-      "Opened the partner catalogue to signed-out visitors — migration turns public_catalogue on, and the discount is now public on the partner page too",
-      "Contacts, the referral action and gallery photos stay member-only; nothing about members changed",
-      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the opposite",
-      "Verified all three in a real browser against the docker stack: the guest redirect is gone and the card renders as asked",
-      "Ran the integration suite for the first time on this host: 305 of 308 pass; the 3 failures are a pre-existing FR-083 bug, proved by re-running on a stashed tree",
-      "Confirmed the deploy applies the migration itself — tools/vercel-build.ts runs drizzle-kit migrate on production before the version takes traffic"
+      "Applied the client's three PDF edits: landing counter removed, catalogue card image cleaned to discount + country, partner catalogue opened to signed-out visitors",
+      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the catalogue was members-only",
+      "Rebuilt the landing page to the client's reference design: dark hero with the emblem, top partners, membership and price, catalogue search, category tiles, flags band",
+      "Hero background is a licensed Unsplash photograph, recorded in public/brand/backgrounds/CREDITS.md",
+      "Category tiles and the flags band read real data, so neither overstates the club",
+      "Refused the reference's 'free by invitation from club partners' copy and shipped 'free with the club's join link' instead (ADR 0033, ADR 0009)",
+      "Fixed a real WCAG AA failure the redesign exposed: white on gold in dark mode was 3.19:1, now near-black at 6.21:1; axe went 1 violation to 0",
+      "Eight landing sections the design does not have were deleted; About, How it works and the FAQ stay because the header links to them"
     ],
-    "stoppedAt": "All three PDF edits are code-complete, pnpm verify is green (577 unit tests), and the screens were confirmed in a browser. Nothing is committed — waiting for /commit.",
+    "stoppedAt": "Two branches pushed and unmerged: feat/FR-030-public-catalogue (the PDF edits) and feat/home-redesign, which is stacked on it. pnpm verify green on both; the redesign was checked in a browser at 1440 and 400 px in ru and en.",
     "nextSteps": [
-      "Run /commit, then deploy — tools/vercel-build.ts applies the migration on production automatically, no manual step",
-      "Look at the 3 failing FR-083 member-plan-filter integration tests — pre-existing, unrelated to this session",
-      "Decide whether the landing counter comes back at some member threshold, or stays gone for good",
-      "Bring docs/architecture.md §6's ADR index up to date — it stops at 0027",
-      "Still open from last session: phase 8 integration tests, the stalled production outbox, and the production $4.99 Stripe price"
+      "Open both PRs and merge feat/FR-030-public-catalogue first — feat/home-redesign is stacked on it",
+      "Deploy: tools/vercel-build.ts applies 20260912100000_public_catalogue on production automatically",
+      "Ask the client for real photography if the category tiles should be pictures rather than icons",
+      "Still open: 3 failing FR-083 member-plan-filter integration tests, the stalled production outbox, phase 8 integration tests"
     ]
   }
 }
