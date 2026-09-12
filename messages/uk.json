@@ -367,6 +367,62 @@
       "fallbackCity": "Глобально",
       "fallbackCountry": "Онлайн",
       "fallbackDescription": "Перевірений партнер KCLUB"
+    },
+    "landing": {
+      "hero": {
+        "wordmark": "Kylyvnyk Club",
+        "kicker": "Міжнародний бізнес-клуб",
+        "tagline": "Більше, ніж бізнес-клуб",
+        "scriptLeft": "People Business Opportunities Worldwide",
+        "scriptRight": "Stronger Together",
+        "pillars": {
+          "people": "Люди",
+          "opportunity": "Можливості",
+          "growth": "Розвиток",
+          "borderless": "Без кордонів"
+        }
+      },
+      "topPartners": {
+        "title": "Топ-партнери",
+        "seeAll": "Дивитися всіх",
+        "details": "Детальніше"
+      },
+      "membership": {
+        "eyebrow": "Стань учасником",
+        "brand": "Kylyvnyk Club",
+        "cardCaption": "Перевірений доступ",
+        "cardTier": "VIP",
+        "benefits": {
+          "discounts": "Доступ до знижок партнерів",
+          "connections": "Нові ділові знайомства",
+          "opportunities": "Бізнес-можливості по всьому світу",
+          "events": "Перевірена цифрова клубна картка"
+        },
+        "priceLabel": "Членство",
+        "perMonth": "/ місяць",
+        "cta": "Вступити до клубу",
+        "note": "Безкоштовно — за посиланням клубу."
+      },
+      "search": {
+        "title": "Знайдіть партнера",
+        "placeholder": "Пошук за назвою, послугою або ключовим словом…",
+        "submit": "Знайти",
+        "country": "Країна",
+        "city": "Місто",
+        "block": "Сфера",
+        "category": "Категорія",
+        "subcategory": "Підкатегорія",
+        "anyCountry": "Усі країни",
+        "anyCity": "Усі міста",
+        "anyBlock": "Усі сфери",
+        "anyCategory": "Усі категорії",
+        "anySubcategory": "Усі підкатегорії",
+        "subcategoryHint": "Спершу оберіть категорію"
+      },
+      "community": {
+        "title": "Міжнародна спільнота",
+        "subtitle": "Без кордонів"
+      }
     }
   },
   "common": {
