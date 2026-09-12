@@ -97,7 +97,11 @@ async function seedPartner(
   return id;
 }
 
-describe("FR-030: the catalogue is a members-only view", () => {
+// Since ADR 0034 the catalogue is readable without an account, so the gates
+// that survive are the two this layer has always owned: a company is in the
+// catalogue only while it is approved AND paying. Who is asking is decided
+// above, by the `public_catalogue` flag — never here.
+describe("FR-030: the catalogue holds only approved, paying companies", () => {
   it("returns nothing when no company has an active listing subscription", async () => {
     const db = testDbClient();
     await seedPartner(db);

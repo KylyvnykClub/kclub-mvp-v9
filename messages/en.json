@@ -329,8 +329,7 @@
       "discountLabel": "{percent}% off",
       "primaryNav": "Primary navigation",
       "mobileNav": "Mobile navigation",
-      "languageSwitcher": "Language",
-      "statsSection": "KCLUB in numbers"
+      "languageSwitcher": "Language"
     },
     "carousel": {
       "navigationLabel": "Carousel navigation",
@@ -381,10 +380,6 @@
       },
       "flagsMarquee": "Members from every region, including —",
       "metaTitle": "International Business Club"
-    },
-    "stats": {
-      "members": "Members",
-      "countries": "Countries"
     },
     "features": {
       "eyebrow": "Member Platform",
@@ -825,7 +820,6 @@
     "partnerSince": "with the club since {year}",
     "conditionsTitle": "Member terms",
     "conditionsNote": "for verified KCLUB members",
-    "conditionsLockedValue": "••••",
     "conditionsLockedNote": "Available after verification",
     "businessDataSection": "Business data",
     "subcategoriesLabel": "Subcategories",

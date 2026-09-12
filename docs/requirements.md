@@ -85,7 +85,7 @@ who is also a club member holds two accounts — see
 
 |Role|Description|Key permissions|
 |-|-|-|
-|`guest`|Unauthenticated visitor|Marketing site, legal pages, curated showcase, card verification page, sign-up|
+|`guest`|Unauthenticated visitor|Marketing site, legal pages, curated showcase, the partner catalogue and its discounts without contact details ([ADR 0034](decisions/0034-the-catalogue-is-public.md)), card verification page, sign-up|
 |`member`|Verified member whose membership dues are paid, sponsored or waived ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Own card, browse and search the catalogue, see discounts, submit own company, manage own subscription and profile|
 |`member_vip`|Member with an active VIP subscription|Everything `member` has, plus sending client referrals and priority support|
 |`partner_owner`|A member who owns at least one company in the catalogue (an attribute, not a separate login)|Edit own company, receive and accept/decline incoming referrals, manage that company's listing subscription|
@@ -134,10 +134,10 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 
 |ID|Requirement|Role|Priority|
 |-|-|-|-|
-|FR-030|The system must show the catalogue only to authenticated members; an unauthenticated request must receive the sign-in page, not a partial listing|member|M|
+|FR-030|The catalogue must be readable without an account while the `public_catalogue` flag is on ([ADR 0034](decisions/0034-the-catalogue-is-public.md)): a signed-out visitor sees the partner list, the discounts and the detail pages, but never a partner's contact details or gallery photos. With the flag off, an unauthenticated request must receive the sign-in page, not a partial listing|guest|M|
 |FR-031|The system must let a member filter the catalogue by category, country and city, and combine those filters|member|M|
 |FR-032|The system must let a member search partner names and descriptions, returning results ranked by relevance, in any of the three supported languages|member|M|
-|FR-033|A partner detail page must show the discount offered, its conditions, the category, location, contact details and the partner's own description|member|M|
+|FR-033|A partner detail page must show the discount offered, its conditions, the category, location, contact details and the partner's own description. Contact details are shown to a signed-in member only; the discount itself is public (FR-030)|member|M|
 |FR-034|The system must show at most 3 partners in the "Top" block and at most 3 in the "Featured" block, ordered by a rank set by staff|member|M|
 |FR-035|The marketing site must show a curated showcase of partners without disclosing the full catalogue|guest|S|
 |FR-036|The catalogue must return the first page of results within 400 ms at p95 measured at the server|member|S|

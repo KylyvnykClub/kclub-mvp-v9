@@ -1,4 +1,4 @@
-import { ArrowRight, BadgeCheck, MapPin } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -9,9 +9,21 @@ function locationLabel(partner: PartnerCompanyView) {
   return [partner.city, partner.country].filter(Boolean).join(", ");
 }
 
-function OverlayBadge({ children }: { children: ReactNode }) {
+function OverlayBadge({
+  children,
+  tone = "muted",
+}: {
+  children: ReactNode;
+  tone?: "muted" | "accent";
+}) {
   return (
-    <span className="inline-flex max-w-full items-center rounded border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/85 backdrop-blur">
+    <span
+      className={`inline-flex max-w-full items-center rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur ${
+        tone === "accent"
+          ? "border-accent-ink bg-black/70 text-accent-ink"
+          : "border-white/20 bg-black/60 text-white/85"
+      }`}
+    >
       <span className="truncate">{children}</span>
     </span>
   );
@@ -23,23 +35,14 @@ export function PartnerCard({
   view,
   noDescription,
   detailsLabel,
-  verifiedLabel,
 }: {
   partner: PartnerCompanyView;
   href: string;
   view: "grid" | "list";
   noDescription: string;
   detailsLabel: string;
-  verifiedLabel: string;
 }) {
   const location = locationLabel(partner);
-  const category =
-    partner.categories
-      ?.map((c) => c.businessCategory?.subcategory)
-      .filter(Boolean)
-      .join(", ") ||
-    partner.categories?.[0]?.businessCategory?.category ||
-    partner.categories?.[0]?.businessCategory?.block;
   const description = partner.description || noDescription;
   const initial = partner.name.charAt(0).toUpperCase();
 
@@ -70,24 +73,15 @@ export function PartnerCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-      <div className="absolute left-3 top-3">
-        <OverlayBadge>
-          <span className="inline-flex items-center gap-1.5">
-            <BadgeCheck className="size-3.5 text-accent-ink" aria-hidden />
-            {verifiedLabel}
-          </span>
-        </OverlayBadge>
-      </div>
+      {partner.discount && (
+        <div className="absolute left-3 top-3 max-w-[60%]">
+          <OverlayBadge tone="accent">{partner.discount}</OverlayBadge>
+        </div>
+      )}
 
       {partner.country && (
         <div className="absolute right-3 top-3 max-w-[35%]">
           <OverlayBadge>{partner.country}</OverlayBadge>
-        </div>
-      )}
-
-      {category && (
-        <div className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)]">
-          <OverlayBadge>{category}</OverlayBadge>
         </div>
       )}
     </div>
@@ -120,15 +114,7 @@ export function PartnerCard({
           {description}
         </p>
 
-        <div className="mt-auto flex items-center justify-between gap-4 border-t border-border pt-4">
-          {partner.discount ? (
-            <span className="min-w-0 truncate font-mono text-lg font-semibold tracking-normal text-foreground">
-              {partner.discount}
-            </span>
-          ) : (
-            <span />
-          )}
-
+        <div className="mt-auto flex items-center justify-end gap-4 border-t border-border pt-4">
           <span className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors group-hover:text-accent-ink">
             {detailsLabel}
             <ArrowRight

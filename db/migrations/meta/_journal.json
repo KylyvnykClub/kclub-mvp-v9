@@ -260,6 +260,13 @@
       "when": 1788972000000,
       "tag": "20260909120000_membership_dues",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1789207200000,
+      "tag": "20260912100000_public_catalogue",
+      "breakpoints": true
     }
   ]
 }

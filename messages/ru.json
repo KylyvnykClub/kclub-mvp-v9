@@ -329,8 +329,7 @@
       "discountLabel": "−{percent}%",
       "primaryNav": "Основная навигация",
       "mobileNav": "Мобильная навигация",
-      "languageSwitcher": "Язык",
-      "statsSection": "KCLUB в цифрах"
+      "languageSwitcher": "Язык"
     },
     "carousel": {
       "navigationLabel": "Навигация карусели",
@@ -381,10 +380,6 @@
       },
       "flagsMarquee": "Участники из каждого региона, включая —",
       "metaTitle": "Международный бизнес-клуб"
-    },
-    "stats": {
-      "members": "Участники",
-      "countries": "Страны"
     },
     "features": {
       "eyebrow": "Платформа участника",
@@ -825,7 +820,6 @@
     "partnerSince": "с клубом с {year}",
     "conditionsTitle": "Условия для членов",
     "conditionsNote": "для верифицированных членов KCLUB",
-    "conditionsLockedValue": "••••",
     "conditionsLockedNote": "Доступно после верификации",
     "businessDataSection": "Данные бизнеса",
     "subcategoriesLabel": "Подкатегории",
