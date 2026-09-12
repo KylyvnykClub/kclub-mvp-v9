@@ -4,7 +4,7 @@
   "backlog": [
     {
       "id": "membership-dues-integration-tests",
-      "note": "Phase 8 shipped with browser checks but no integration tests: the dues gate, the member_monthly projection and the join link are unproved in CI. Testcontainers needs a Docker socket the container this was built in does not have."
+      "note": "Phase 8 shipped with browser checks but no integration tests: the dues gate, the member_monthly projection and the join link are unproved in CI. Testcontainers DOES run on this WSL host (`pnpm test:integration` = 37 files, 308 tests), so the tests can now be written — only the phase 8 ones are missing."
     },
     {
       "id": "console-does-not-show-dues-kind",
@@ -21,24 +21,41 @@
     {
       "id": "production-outbox-stalled",
       "note": "Production /health/deep reported degraded on 2026-09-08: 2 outbox messages pending since 2026-08-29. Email delivery for company/billing notifications is not draining."
+    },
+    {
+      "id": "architecture-adr-index-stale",
+      "note": "docs/architecture.md §6 indexes ADRs 0001–0027 only; 0028–0034 are missing. decisions/README.md is current, so the two indexes disagree."
+    },
+    {
+      "id": "public-catalogue-needs-production-migration",
+      "note": "20260912100000_public_catalogue must run on production for 'Our partners' to stop redirecting to sign-in. It sets the flag rather than inserting it, so it also fixes a database where the row exists and reads false."
+    },
+    {
+      "id": "member-plan-filter-integration-failing",
+      "note": "tests/member-plan-filter.integration.test.ts fails 3 of 6 (FR-083): countMembersByPlan returns 0 where the test expects 1. Confirmed pre-existing on 2026-09-12 by stashing an unrelated change and re-running. Likely fallout from phase 8 adding subscriptions.plan, which the count query may not read. Not in `pnpm verify` — integration runs separately."
     }
   ],
   "lastSession": {
-    "date": "2026-09-09",
+    "date": "2026-09-12",
     "checklist": [
-      "Built a Docker stack for the whole app (postgres 17, Neon wsproxy, Upstash stand-in) — no Node, no Neon branch and no vendor keys needed on the host",
-      "Proved registration and sign-in work in a real browser; the client's report traces to email sign-in being refused until the address is verified",
-      "Created the client's test account: +380671112233 / test@kclub.local / TestUser2026!",
-      "Agreed and recorded ADR 0033: standard membership costs $4.99 a month, a join link waives it, everyone already here stays free",
-      "Shipped phase 8: dues_kind on members, subscriptions.plan, join_links, the membershipAccess rule, the dues gate and screen, the join link and its console screen, and a public pricing page",
-      "Added a 404 with a way home, in three locales"
+      "Read the client's PDF of three marked-up phone screenshots and applied all three edits",
+      "Removed the members/countries counter from the landing page, with its component and its i18n keys",
+      "Cleaned the catalogue card image: only the discount (gold, top left) and the country stay; the 'verified partner' and category strips are gone",
+      "Moved the discount off the card footer onto the card image, where the client asked for it",
+      "Opened the partner catalogue to signed-out visitors — migration turns public_catalogue on, and the discount is now public on the partner page too",
+      "Contacts, the referral action and gallery photos stay member-only; nothing about members changed",
+      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the opposite",
+      "Verified all three in a real browser against the docker stack: the guest redirect is gone and the card renders as asked",
+      "Ran the integration suite for the first time on this host: 305 of 308 pass; the 3 failures are a pre-existing FR-083 bug, proved by re-running on a stashed tree",
+      "Confirmed the deploy applies the migration itself — tools/vercel-build.ts runs drizzle-kit migrate on production before the version takes traffic"
     ],
-    "stoppedAt": "Phase 8 code is complete and verified in a browser against the docker stack; pnpm verify passes. Nothing is committed — waiting for /commit.",
+    "stoppedAt": "All three PDF edits are code-complete, pnpm verify is green (577 unit tests), and the screens were confirmed in a browser. Nothing is committed — waiting for /commit.",
     "nextSteps": [
-      "Write the integration tests phase 8 owes (dues gate, member_monthly projection, join link) on a machine with a Docker socket for Testcontainers",
-      "Decide whether the console should show a member's dues kind alongside the VIP and listing chips",
-      "Look at the stalled production outbox — 2 messages have not drained since 2026-08-29",
-      "Create the production Stripe $4.99 price and set STRIPE_MEMBER_PRICE_ID (or seed a plan_prices row) before phase 8 is deployed"
+      "Run /commit, then deploy — tools/vercel-build.ts applies the migration on production automatically, no manual step",
+      "Look at the 3 failing FR-083 member-plan-filter integration tests — pre-existing, unrelated to this session",
+      "Decide whether the landing counter comes back at some member threshold, or stays gone for good",
+      "Bring docs/architecture.md §6's ADR index up to date — it stops at 0027",
+      "Still open from last session: phase 8 integration tests, the stalled production outbox, and the production $4.99 Stripe price"
     ]
   }
 }
