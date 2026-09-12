@@ -19,6 +19,7 @@ import {
   listActiveSubcategories,
   listLocalizedCategoryTree,
   countApprovedCompaniesByIds,
+  listPartnerCountryCodes,
   listPartnerLocations,
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
@@ -357,6 +358,20 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
   }
 
   return { success: true };
+}
+
+/**
+ * The registration countries of the published partners, for the landing page's
+ * "international community" band (ADR 0034: the landing page is public, and so
+ * is this - it names countries, never partners or members).
+ */
+export async function getPartnerCountryCodesAction() {
+  if (SKIP_DB_PRERENDER) return [];
+
+  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  if (activeCompanyIds.length === 0) return [];
+
+  return listPartnerCountryCodes(db, activeCompanyIds);
 }
 
 /**

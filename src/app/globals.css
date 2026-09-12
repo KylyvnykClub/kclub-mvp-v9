@@ -165,7 +165,13 @@
   --muted: #111111;
   --muted-foreground: #888888;
   --accent: #b18a44;
-  --accent-foreground: #ffffff;
+  /*
+   * Near-black on the gold, not white. White on #b18a44 is 3.19:1 and fails
+   * WCAG AA for the button labels this pair renders; the same near-black the
+   * light theme uses is 6.21:1. Caught by axe on the landing page, which is
+   * always dark since the home redesign and so always renders this pair.
+   */
+  --accent-foreground: #0a0a0a;
   /* 8.91:1 on this background - the bright gold is legible on dark. */
   --accent-ink: #d4af37;
   --destructive: #ef4444;

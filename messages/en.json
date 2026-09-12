@@ -680,6 +680,62 @@
       "fallbackCity": "Global",
       "fallbackCountry": "Online",
       "fallbackDescription": "Verified KCLUB Partner"
+    },
+    "landing": {
+      "hero": {
+        "wordmark": "Kylyvnyk Club",
+        "kicker": "International Business Club",
+        "tagline": "More than a business club",
+        "scriptLeft": "People Business Opportunities Worldwide",
+        "scriptRight": "Stronger Together",
+        "pillars": {
+          "people": "People",
+          "opportunity": "Opportunity",
+          "growth": "Growth",
+          "borderless": "No borders"
+        }
+      },
+      "topPartners": {
+        "title": "Top partners",
+        "seeAll": "See all",
+        "details": "Details"
+      },
+      "membership": {
+        "eyebrow": "Become a member of",
+        "brand": "Kylyvnyk Club",
+        "cardCaption": "Verified access",
+        "cardTier": "VIP",
+        "benefits": {
+          "discounts": "Access to partner discounts",
+          "connections": "New business acquaintances",
+          "opportunities": "Business opportunities worldwide",
+          "events": "A verified digital club card"
+        },
+        "priceLabel": "Membership",
+        "perMonth": "/ month",
+        "cta": "Join the club",
+        "note": "Free with the club's join link."
+      },
+      "search": {
+        "title": "Find a partner",
+        "placeholder": "Search by name, service or keyword…",
+        "submit": "Search",
+        "country": "Country",
+        "city": "City",
+        "block": "Scope",
+        "category": "Category",
+        "subcategory": "Subcategory",
+        "anyCountry": "All countries",
+        "anyCity": "All cities",
+        "anyBlock": "All scopes",
+        "anyCategory": "All categories",
+        "anySubcategory": "All subcategories",
+        "subcategoryHint": "Choose a category first"
+      },
+      "community": {
+        "title": "An international community",
+        "subtitle": "Without borders"
+      }
     }
   },
   "Referral": {

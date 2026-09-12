@@ -680,6 +680,62 @@
       "fallbackCity": "Глобально",
       "fallbackCountry": "Онлайн",
       "fallbackDescription": "Проверенный партнёр KCLUB"
+    },
+    "landing": {
+      "hero": {
+        "wordmark": "Kylyvnyk Club",
+        "kicker": "Международный бизнес-клуб",
+        "tagline": "Больше, чем бизнес-клуб",
+        "scriptLeft": "People Business Opportunities Worldwide",
+        "scriptRight": "Stronger Together",
+        "pillars": {
+          "people": "Люди",
+          "opportunity": "Возможности",
+          "growth": "Развитие",
+          "borderless": "Без границ"
+        }
+      },
+      "topPartners": {
+        "title": "Топ-партнёры",
+        "seeAll": "Смотреть всех",
+        "details": "Подробнее"
+      },
+      "membership": {
+        "eyebrow": "Стань участником",
+        "brand": "Kylyvnyk Club",
+        "cardCaption": "Проверенный доступ",
+        "cardTier": "VIP",
+        "benefits": {
+          "discounts": "Доступ к скидкам партнёров",
+          "connections": "Новые деловые знакомства",
+          "opportunities": "Бизнес-возможности по всему миру",
+          "events": "Проверенная цифровая клубная карта"
+        },
+        "priceLabel": "Членство",
+        "perMonth": "/ месяц",
+        "cta": "Вступить в клуб",
+        "note": "Бесплатно — по ссылке клуба."
+      },
+      "search": {
+        "title": "Найдите партнёра",
+        "placeholder": "Поиск по названию, услуге или ключевому слову…",
+        "submit": "Найти",
+        "country": "Страна",
+        "city": "Город",
+        "block": "Сфера",
+        "category": "Категория",
+        "subcategory": "Подкатегория",
+        "anyCountry": "Все страны",
+        "anyCity": "Все города",
+        "anyBlock": "Все сферы",
+        "anyCategory": "Все категории",
+        "anySubcategory": "Все подкатегории",
+        "subcategoryHint": "Сначала выберите категорию"
+      },
+      "community": {
+        "title": "Международное сообщество",
+        "subtitle": "Без границ"
+      }
     }
   },
   "Referral": {

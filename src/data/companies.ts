@@ -189,6 +189,52 @@ export type CategoryTreeRow = Awaited<
   ReturnType<typeof listLocalizedCategoryTree>
 >[number];
 
+/**
+ * The distinct category blocks, each with the label to show and the key to
+ * filter by.
+ *
+ * Two values rather than one because they are not interchangeable: the
+ * catalogue filters on `businessCategories.block`, which is English and stable,
+ * while the reader must see the block in their own language. A tile that
+ * printed the localised name into the `?block=` parameter would match nothing
+ * outside English.
+ */
+export async function listLocalizedCategoryBlocks(
+  db: DbClient,
+  locale: "en" | "ru" | "uk",
+) {
+  const rows = await db
+    .selectDistinct({
+      key: businessCategories.block,
+      label: sql<string>`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+    })
+    .from(businessCategories)
+    .leftJoin(
+      businessCategoryTranslations,
+      and(
+        eq(
+          businessCategoryTranslations.businessCategoryId,
+          businessCategories.id,
+        ),
+        eq(businessCategoryTranslations.locale, locale),
+      ),
+    )
+    .where(eq(businessCategories.status, "ACTIVE"));
+
+  // `selectDistinct` is over the pair, so a block whose rows disagree about the
+  // translation would appear twice. Collapse on the key and keep the first.
+  const seen = new Map<string, { key: string; label: string }>();
+  for (const row of rows) {
+    if (!seen.has(row.key)) seen.set(row.key, row);
+  }
+
+  return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export type CategoryBlockRow = Awaited<
+  ReturnType<typeof listLocalizedCategoryBlocks>
+>[number];
+
 export async function listCountries(db: DbClient) {
   return db.query.countries.findMany({
     orderBy: [asc(countries.name)],
@@ -642,6 +688,36 @@ export async function listShowcaseCompanies(
     limit,
     orderBy: [asc(companies.showcaseRank), asc(companies.name)],
   });
+}
+
+/**
+ * The registration countries of the published partners, as ISO-3166 alpha-2.
+ *
+ * This is what the landing page's "international community" band draws flags
+ * from, so the band grows with the club rather than asserting a reach it does
+ * not have. `companies.country` is free text and cannot be used for this - the
+ * code column is the only field with a shape a flag file can be named after.
+ */
+export async function listPartnerCountryCodes(db: DbClient, ids: string[]) {
+  if (ids.length === 0) return [];
+
+  const rows = await db
+    .selectDistinct({ code: companies.registrationCountryCode })
+    .from(companies)
+    .where(
+      and(
+        eq(companies.moderationStatus, "approved"),
+        inArray(companies.id, ids),
+      ),
+    )
+    .orderBy(asc(companies.registrationCountryCode));
+
+  return rows
+    .map((row) => row.code)
+    .filter(
+      (code): code is string => Boolean(code) && /^[A-Za-z]{2}$/.test(code!),
+    )
+    .map((code) => code.toUpperCase());
 }
 
 export async function findApprovedCompanyBySlug(
