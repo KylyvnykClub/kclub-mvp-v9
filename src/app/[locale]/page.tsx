@@ -5,13 +5,18 @@ import {
   getPartnerCountryCodesAction,
   getPartnerLocationsAction,
 } from "@/actions/company";
+import { getClubPresenceAction } from "@/actions/club-presence";
 import { getCurrentMember } from "@/actions/session";
 import { AboutSection } from "@/components/landing/about-section";
 import { CategoryTilesSection } from "@/components/landing/category-tiles-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { HomeHero } from "@/components/landing/home-hero";
-import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { JoinCtaSection } from "@/components/landing/join-cta-section";
 import { MembershipOfferSection } from "@/components/landing/membership-offer-section";
+import { MobileTabBar } from "@/components/landing/mobile-tab-bar";
+import { RecommendedPartnersSection } from "@/components/landing/recommended-partners-section";
+import { StatsBandSection } from "@/components/landing/stats-band-section";
+import { StepsSection } from "@/components/landing/steps-section";
 import { PartnerSearchSection } from "@/components/landing/partner-search-section";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
@@ -60,12 +65,16 @@ export default async function Page({ params }: Props) {
 
   const t = await getTranslations("home.landing.search");
 
-  const [categories, blocks, locations, countryCodes] = await Promise.all([
-    SKIP_DB_PRERENDER ? [] : listLocalizedCategoryTree(db, locale as Locale),
-    SKIP_DB_PRERENDER ? [] : listLocalizedCategoryBlocks(db, locale as Locale),
-    getPartnerLocationsAction(),
-    getPartnerCountryCodesAction(),
-  ]);
+  const [categories, blocks, locations, countryCodes, presence] =
+    await Promise.all([
+      SKIP_DB_PRERENDER ? [] : listLocalizedCategoryTree(db, locale as Locale),
+      SKIP_DB_PRERENDER
+        ? []
+        : listLocalizedCategoryBlocks(db, locale as Locale),
+      getPartnerLocationsAction(),
+      getPartnerCountryCodesAction(),
+      getClubPresenceAction(),
+    ]);
 
   return (
     // `dark` is scoped to the landing page rather than set on the document:
@@ -77,11 +86,15 @@ export default async function Page({ params }: Props) {
       <SiteHeader member={Boolean(current?.member)} admin={canAccessAdmin} />
       <main>
         <HomeHero />
+        <StatsBandSection presence={presence} countryCodes={countryCodes} />
         <TopPartnersSection />
         <MembershipOfferSection />
+        <JoinCtaSection />
+        <StepsSection />
         <PartnerSearchSection
           categories={categories}
           locations={locations}
+          countryCodes={countryCodes}
           labels={{
             title: t("title"),
             placeholder: t("placeholder"),
@@ -99,15 +112,19 @@ export default async function Page({ params }: Props) {
             subcategoryHint: t("subcategoryHint"),
           }}
         />
+        <RecommendedPartnersSection />
         <CategoryTilesSection blocks={blocks} />
         <WorldCommunitySection countryCodes={countryCodes} />
         {/* Kept below the fold because the header still links to them, and
-            because they are the page's only prose for a search engine. */}
+            because they are the page's only prose for a search engine. The
+            steps row above carries the `how-it-works` anchor, so this is About
+            and the FAQ only - the same section twice under the same heading was
+            what the first pass shipped. */}
         <AboutSection />
-        <HowItWorksSection />
         <FaqSection />
       </main>
-      <SiteFooter />
+      <SiteFooter className="pb-14 lg:pb-0" />
+      <MobileTabBar member={Boolean(current?.member)} />
     </div>
   );
 }

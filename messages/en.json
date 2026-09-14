@@ -737,6 +737,67 @@
       "community": {
         "title": "An international community",
         "subtitle": "Without borders"
+      },
+      "stats": {
+        "members": {
+          "label": "Members",
+          "note": "worldwide"
+        },
+        "partners": {
+          "label": "Partners",
+          "note": "worldwide"
+        },
+        "countries": {
+          "label": "Countries",
+          "note": "represented"
+        },
+        "more": "+{count}"
+      },
+      "join": {
+        "perMonth": " / month",
+        "member": {
+          "title": "Become a member",
+          "note": "Free with the club's join link."
+        },
+        "vip": {
+          "title": "Become a VIP member",
+          "note": "Priority access and VIP conditions."
+        },
+        "listing": {
+          "title": "List your business",
+          "note": "One published company in the catalogue."
+        }
+      },
+      "steps": {
+        "title": "How it works",
+        "items": [
+          {
+            "title": "Registration",
+            "description": "Create a member account."
+          },
+          {
+            "title": "Get your card",
+            "description": "Receive your digital club card."
+          },
+          {
+            "title": "Choose a partner",
+            "description": "Find a partner in the category you need."
+          },
+          {
+            "title": "Get the discount",
+            "description": "Use the club's conditions."
+          }
+        ]
+      },
+      "recommended": {
+        "title": "Recommended partners",
+        "seeAll": "See all"
+      },
+      "tabs": {
+        "label": "Main sections",
+        "home": "Home",
+        "card": "Card",
+        "catalogue": "Catalogue"
       }
     }
   },
