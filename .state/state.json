@@ -44,22 +44,25 @@
     }
   ],
   "lastSession": {
-    "date": "2026-09-12",
+    "date": "2026-09-14",
     "checklist": [
-      "Applied the client's three PDF edits: landing counter removed, catalogue card image cleaned to discount + country, partner catalogue opened to signed-out visitors",
-      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the catalogue was members-only",
-      "Rebuilt the landing page to the client's reference design: dark hero with the emblem, top partners, membership and price, catalogue search, category tiles, flags band",
-      "Hero background is a licensed Unsplash photograph, recorded in public/brand/backgrounds/CREDITS.md",
-      "Category tiles and the flags band read real data, so neither overstates the club",
-      "Refused the reference's 'free by invitation from club partners' copy and shipped 'free with the club's join link' instead (ADR 0033, ADR 0009)",
-      "Fixed a real WCAG AA failure the redesign exposed: white on gold in dark mode was 3.19:1, now near-black at 6.21:1; axe went 1 violation to 0",
-      "Eight landing sections the design does not have were deleted; About, How it works and the FAQ stay because the header links to them"
+      "Decoded the client's handwritten PDF (Notes_260914) — four reports, all fixed",
+      "Image upload no longer takes the whole page down: every upload call site now reports a failure instead of rejecting into the root error boundary",
+      "Server Action body limit raised from the 1MB default to 6mb, so a phone photo under the 5MB image cap can actually reach the server",
+      "The 5MB cap now lives in one module both the server validator and the new client-side guard read",
+      "Partner hero rebuilt to flow layout — the name no longer overlaps the badges on a phone",
+      "Country codes replaced by localized names in the landing filter and the partner hero: 'US' now reads 'Соединенные Штаты', 'KRAKÓW · US' reads 'Kraków · Польша'",
+      "countryName hardened — Intl.DisplayNames throws on free text, and companies.country is a varchar(100)",
+      "Language switcher shows autonyms (ENG/РУС/УКР), never the bare code that a translator rendered as 'Велика Британія'",
+      "New unit suites for the upload guard, the body-limit invariant and the country helpers; pnpm verify green at 592 tests",
+      "Upload crash verified end to end in a browser: a test member (+1 212 555 0147 / kclub-upload-test-2026) owning 'Upload Test Co' was created in the docker database"
     ],
-    "stoppedAt": "Two branches pushed and unmerged: feat/FR-030-public-catalogue (the PDF edits) and feat/home-redesign, which is stacked on it. pnpm verify green on both; the redesign was checked in a browser at 1440 and 400 px in ru and en.",
+    "stoppedAt": "All four fixes are in the working tree on feat/home-redesign, unstaged and uncommitted. pnpm verify green. Everything is now browser-verified against the docker stack: the three visual fixes at 390px, and the upload crash across four failure modes (oversized, unreadable, request aborted, and a 2.5MB body that reaches sharp server-side and so proves the raised body limit). The one path the local stack cannot exercise is a successful upload: every image write goes through R2, which docker-compose deliberately leaves unconfigured.",
     "nextSteps": [
-      "Open both PRs and merge feat/FR-030-public-catalogue first — feat/home-redesign is stacked on it",
-      "Deploy: tools/vercel-build.ts applies 20260912100000_public_catalogue on production automatically",
-      "Ask the client for real photography if the category tiles should be pictures rather than icons",
+      "Review the diff and commit — likely four commits, one per report",
+      "Confirm one successful image upload on a deployment where R2 is configured; the local stack cannot do it",
+      "Two branches are still pushed and unmerged: feat/FR-030-public-catalogue first, then feat/home-redesign",
+      "Worth backlog entries at /push: signing in against the docker stack only works through http://localhost (NODE_ENV=production makes the session cookie Secure, so any other host silently drops it), and the seeded fixture member +380000000002 cannot sign in at all",
       "Still open: 3 failing FR-083 member-plan-filter integration tests, the stalled production outbox, phase 8 integration tests"
     ]
   }
