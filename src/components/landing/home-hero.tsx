@@ -2,21 +2,25 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { Reveal } from "./reveal";
+import { HeroBackdrop } from "./hero-backdrop";
 
 /**
- * The landing hero, as the club asked for it: one dark panel with the emblem
- * at the centre and the mark under it.
+ * The landing hero, built to the client's reference: the emblem on the
+ * horizon, the name in wide-tracked display caps, then the lockup line between
+ * two rules, then the subtitle.
  *
- * There is no photograph here. The reference the client drew used a city
- * skyline; what this repository owns is the emblem and a dotted world map, so
- * the depth is built instead — a radial wash behind the emblem, the map at low
- * opacity, and a gold hairline under the wordmark. That keeps the section
- * shippable without buying stock imagery, and the photograph can replace the
- * background later without touching the type.
+ * The backdrop is `HeroBackdrop`: a drawn night sky, the licensed city
+ * photograph on the horizon, and the curve of the planet under it with the
+ * world's own coordinates as its city lights.
+ *
+ * The type is `font-display` (Playfair Display), not the `font-serif` alias
+ * that the rest of the app resolves to Oxanium: the reference sets the brand in
+ * Roman capitals with hairline serifs, which a squared techno sans cannot do.
  *
  * Always dark, in both themes: the page wraps itself in `dark`, and the copy
  * here sits on near-black regardless of what the reader chose elsewhere.
  */
+
 export function HomeHero() {
   const t = useTranslations("home.landing.hero");
 
@@ -24,34 +28,7 @@ export function HomeHero() {
 
   return (
     <section className="relative isolate overflow-hidden bg-[#07090f] text-white">
-      {/* Backdrop, in four layers. Decorative in full: a screen reader is told
-          nothing here that the heading below does not already say.
-
-          The photograph is anchored to the bottom because its sky is empty and
-          its skyline is not - the type sits over the sky, the lights stay under
-          the fold of the section. Everything above it exists to keep the gold
-          type legible: a dark scrim, then the gold wash behind the emblem, then
-          a fade into the section below. Contrast on this section is checked by
-          the axe pass in the e2e suite, and the scrim is what passes it. */}
-      <div className="absolute inset-0" aria-hidden="true">
-        <Image
-          src="/brand/backgrounds/hero-city.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-bottom"
-        />
-        <div className="absolute inset-0 bg-[#07090f]/72" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(120% 85% at 50% 12%, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.06) 38%, transparent 68%)",
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07090f] to-transparent" />
-      </div>
+      <HeroBackdrop />
 
       <div className="kclub-shell relative py-14 sm:py-20 lg:py-24">
         {/* The two script lines are ornament, and they are the first thing to
@@ -76,29 +53,44 @@ export function HomeHero() {
           </Reveal>
 
           <Reveal delay={90}>
-            <h1 className="mt-7 font-serif text-[clamp(2.5rem,10vw,4rem)] font-bold uppercase leading-[0.95] tracking-[0.02em] text-[#e8c66a] sm:text-[clamp(3.5rem,8vw,5.5rem)]">
+            {/* The tracking is the reference's, and it is why the name is
+                rendered on its own line: "Kylyvnyk Club" at this spacing does
+                not survive a 390px viewport. */}
+            <h1 className="mt-6 font-display text-[clamp(2rem,9vw,3.6rem)] font-medium uppercase leading-[1.05] tracking-[0.16em] text-[#e8c66a] sm:text-[clamp(2.8rem,7vw,4.6rem)] sm:tracking-[0.22em]">
               {t("wordmark")}
             </h1>
           </Reveal>
 
           <Reveal delay={140}>
-            <p className="mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.34em] text-white/70 sm:text-sm sm:tracking-[0.42em]">
+            <div className="mt-3 flex w-full items-center justify-center gap-3 sm:gap-5">
+              <span
+                className="h-px w-8 bg-gradient-to-r from-transparent to-[#d4af37]/70 sm:w-16"
+                aria-hidden="true"
+              />
+              <p className="font-display text-[0.7rem] font-medium uppercase tracking-[0.3em] text-[#e8c66a]/90 sm:text-base sm:tracking-[0.4em]">
+                {t("lockup")}
+              </p>
+              <span
+                className="h-px w-8 bg-gradient-to-l from-transparent to-[#d4af37]/70 sm:w-16"
+                aria-hidden="true"
+              />
+            </div>
+          </Reveal>
+
+          <Reveal delay={190}>
+            <p className="mt-4 font-display text-[0.68rem] uppercase tracking-[0.2em] text-white/70 sm:text-sm sm:tracking-[0.28em]">
               {t("kicker")}
             </p>
           </Reveal>
 
-          <Reveal delay={190}>
-            <hr className="kc-gold-rule mt-7 w-full max-w-xl" />
-          </Reveal>
-
-          <Reveal delay={240}>
-            <p className="mt-6 text-lg font-bold uppercase tracking-[0.08em] text-[#e8c66a] sm:text-2xl">
+          <Reveal delay={250}>
+            <p className="mt-8 font-display text-base font-semibold uppercase tracking-[0.1em] text-[#e8c66a] sm:text-2xl">
               {t("tagline")}
             </p>
           </Reveal>
 
           <Reveal delay={300}>
-            <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/75 sm:text-xs sm:tracking-[0.26em]">
+            <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-white/75 sm:text-xs sm:tracking-[0.26em]">
               {pillars.map((pillar, index) => (
                 <li key={pillar} className="flex items-center gap-3">
                   {index > 0 && (

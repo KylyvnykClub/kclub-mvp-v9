@@ -684,7 +684,7 @@
     },
     "landing": {
       "hero": {
-        "wordmark": "Kylyvnyk Club",
+        "wordmark": "Kylyvnyk",
         "kicker": "International Business Club",
         "tagline": "More than a business club",
         "scriptLeft": "People Business Opportunities Worldwide",
@@ -694,7 +694,8 @@
           "opportunity": "Opportunity",
           "growth": "Growth",
           "borderless": "No borders"
-        }
+        },
+        "lockup": "Business Club"
       },
       "topPartners": {
         "title": "Top partners",

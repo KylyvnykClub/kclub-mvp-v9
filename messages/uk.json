@@ -370,7 +370,7 @@
     },
     "landing": {
       "hero": {
-        "wordmark": "Kylyvnyk Club",
+        "wordmark": "Kylyvnyk",
         "kicker": "Міжнародний бізнес-клуб",
         "tagline": "Більше, ніж бізнес-клуб",
         "scriptLeft": "People Business Opportunities Worldwide",
@@ -380,7 +380,8 @@
           "opportunity": "Можливості",
           "growth": "Розвиток",
           "borderless": "Без кордонів"
-        }
+        },
+        "lockup": "Business Club"
       },
       "topPartners": {
         "title": "Топ-партнери",

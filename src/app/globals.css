@@ -35,6 +35,9 @@
 
   --font-sans: var(--font-body);
   --font-serif: var(--font-heading);
+  /* The landing page's display serif; see src/app/fonts.ts for why it is its
+     own face rather than a change to --font-heading. Generates `font-display`. */
+  --font-display: var(--font-display-serif);
 
   /*
    * One radius scale, in the tokens, so a corner is a decision made once.
