@@ -292,7 +292,10 @@ export default async function PartnerLandingPage({ params }: Props) {
             logoAlt={tc("logoAlt", { name: partner.name })}
             badges={heroBadges}
             location={
-              [partner.city, partner.country].filter(Boolean).join(" · ") ||
+              // `localizedCountry`, not `partner.country`: the raw column holds
+              // an ISO code, and the hero was reading "KRAKÓW · US" where the
+              // badge beside it already said the country's name.
+              [partner.city, localizedCountry].filter(Boolean).join(" · ") ||
               null
             }
             taxonomy={taxonomyLabel}

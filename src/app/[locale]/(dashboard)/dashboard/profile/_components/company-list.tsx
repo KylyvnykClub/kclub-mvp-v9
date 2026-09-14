@@ -13,6 +13,7 @@ import {
   uploadCompanyImageAction,
   uploadCompanyLogoAction,
 } from "@/actions/company-images";
+import { uploadImageSafely } from "@/lib/client-image-upload";
 import type { CompanyRow } from "@/data/companies";
 import type { SubscriptionRow } from "@/data/billing";
 import { Button } from "@/components/ui/button";
@@ -333,6 +334,7 @@ function LogoSection({
     unreadable: "avatarErrorUnreadable",
     unsupported_format: "avatarErrorUnsupportedFormat",
     processing_failed: "avatarErrorProcessingFailed",
+    upload_failed: "avatarErrorUploadFailed",
   };
 
   const report = (code: string | undefined) =>
@@ -342,9 +344,15 @@ function LogoSection({
     startTransition(async () => {
       const formData = new FormData();
       formData.set("logo", file);
-      const result = await uploadCompanyLogoAction(companyId, formData);
-      report(result.success ? undefined : result.error);
+      const guarded = await uploadImageSafely(file, () =>
+        uploadCompanyLogoAction(companyId, formData),
+      );
       if (fileRef.current) fileRef.current.value = "";
+      if (!guarded.ok) {
+        report(guarded.code);
+        return;
+      }
+      report(guarded.result.success ? undefined : guarded.result.error);
     });
   };
 
@@ -431,6 +439,7 @@ function GallerySection({
     unreadable: "avatarErrorUnreadable",
     unsupported_format: "avatarErrorUnsupportedFormat",
     processing_failed: "avatarErrorProcessingFailed",
+    upload_failed: "avatarErrorUploadFailed",
   };
 
   const report = (code: string | undefined) =>
@@ -440,9 +449,15 @@ function GallerySection({
     startTransition(async () => {
       const formData = new FormData();
       formData.set("image", file);
-      const result = await uploadCompanyImageAction(companyId, formData);
-      report(result.success ? undefined : result.error);
+      const guarded = await uploadImageSafely(file, () =>
+        uploadCompanyImageAction(companyId, formData),
+      );
       if (fileRef.current) fileRef.current.value = "";
+      if (!guarded.ok) {
+        report(guarded.code);
+        return;
+      }
+      report(guarded.result.success ? undefined : guarded.result.error);
     });
   };
 

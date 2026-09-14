@@ -6,8 +6,27 @@ const countryCodes =
     " ",
   );
 
+/**
+ * The localized name of an ISO 3166-1 alpha-2 code, or the input unchanged.
+ *
+ * `Intl.DisplayNames.of` throws RangeError for anything that is not a valid
+ * region code, and one caller reads `companies.country` - a free-text
+ * `varchar(100)` that may hold "Poland" rather than "PL". Thrown from a client
+ * component that is exactly the blank "Application error" page, so a value this
+ * function cannot name is returned as it was given.
+ */
 export function countryName(code: string, locale: Locale): string {
-  return new Intl.DisplayNames(locale, { type: "region" }).of(code) ?? code;
+  if (!/^[A-Za-z]{2}$/.test(code)) return code;
+
+  try {
+    return (
+      new Intl.DisplayNames(locale, { type: "region" }).of(
+        code.toUpperCase(),
+      ) ?? code
+    );
+  } catch {
+    return code;
+  }
 }
 
 export function countryOptions(locale: Locale) {

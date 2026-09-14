@@ -1,9 +1,12 @@
 "use client";
 
 import { Grid2x2, Globe, LayoutList, MapPin, Search, Tags } from "lucide-react";
+import { useLocale } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
 
 import { useRouter } from "@/i18n/navigation";
+import { countryName } from "@/lib/countries";
+import type { Locale } from "@/i18n/routing";
 import type { CategoryTreeRow, PartnerLocation } from "@/data/companies";
 
 /**
@@ -43,6 +46,7 @@ export function PartnerSearchSection({
   };
 }) {
   const router = useRouter();
+  const locale = useLocale() as Locale;
 
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("");
@@ -51,9 +55,19 @@ export function PartnerSearchSection({
   const [category, setCategory] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
+  /**
+   * `companies.country` is an ISO 3166-1 alpha-2 code, and the select used to
+   * render it raw: a member choosing the United States saw "US", which reads
+   * as a truncated "USA" and, next to "UA", as a typo rather than a country.
+   * The option carries the localized name and still submits the code, so the
+   * `/directory?country=` contract is unchanged.
+   */
   const countries = useMemo(
-    () => [...new Set(locations.map((l) => l.country))].sort(),
-    [locations],
+    () =>
+      [...new Set(locations.map((l) => l.country))]
+        .map((code) => ({ code, name: countryName(code, locale) }))
+        .sort((a, b) => a.name.localeCompare(b.name, locale)),
+    [locations, locale],
   );
 
   const cities = useMemo(
@@ -160,9 +174,9 @@ export function PartnerSearchSection({
                 className={selectClass}
               >
                 <option value="">{labels.anyCountry}</option>
-                {countries.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
+                {countries.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.name}
                   </option>
                 ))}
               </select>
