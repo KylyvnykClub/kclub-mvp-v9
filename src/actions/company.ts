@@ -428,9 +428,11 @@ export async function getPublicShowcasePartners() {
 
   if (activeCompanyIds.length === 0) return { top: [], featured: [] };
 
+  // Three "top" partners are the hero row; the "featured" block fills a 3x3
+  // grid further down, so it asks for nine.
   const [top, featured] = await Promise.all([
     listShowcaseCompanies(db, activeCompanyIds, "top", 3),
-    listShowcaseCompanies(db, activeCompanyIds, "featured", 3),
+    listShowcaseCompanies(db, activeCompanyIds, "featured", 9),
   ]);
 
   return { top, featured };

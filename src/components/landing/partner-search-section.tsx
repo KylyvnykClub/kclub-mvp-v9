@@ -1,6 +1,7 @@
 "use client";
 
 import { Grid2x2, Globe, LayoutList, MapPin, Search, Tags } from "lucide-react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
 
@@ -24,10 +25,13 @@ import type { CategoryTreeRow, PartnerLocation } from "@/data/companies";
 export function PartnerSearchSection({
   categories,
   locations,
+  countryCodes = [],
   labels,
 }: {
   categories: CategoryTreeRow[];
   locations: PartnerLocation[];
+  /** Registration countries of the published partners, as a flag shortcut row. */
+  countryCodes?: string[];
   labels: {
     title: string;
     placeholder: string;
@@ -162,7 +166,42 @@ export function PartnerSearchSection({
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {countryCodes.length > 0 && (
+            <ul className="mt-6 flex flex-wrap items-center gap-2">
+              {countryCodes.slice(0, MAX_FLAG_SHORTCUTS).map((code) => {
+                const selected = country === code;
+
+                return (
+                  <li key={code}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCountry(selected ? "" : code);
+                        setCity("");
+                      }}
+                      aria-pressed={selected}
+                      aria-label={countryName(code, locale)}
+                      className={`block overflow-hidden rounded border p-0.5 transition-colors ${
+                        selected
+                          ? "border-[#d4af37] bg-[#d4af37]/15"
+                          : "border-white/20 hover:border-[#d4af37]/60"
+                      }`}
+                    >
+                      <Image
+                        src={`/flags/${code.toLowerCase()}.png`}
+                        alt=""
+                        width={60}
+                        height={40}
+                        className="h-7 w-auto rounded-[2px]"
+                      />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Filter icon={<Globe className="size-4" />} label={labels.country}>
               <select
                 value={country}
@@ -267,6 +306,9 @@ export function PartnerSearchSection({
     </section>
   );
 }
+
+/** Beyond this the row wraps into a second line and stops being a shortcut. */
+const MAX_FLAG_SHORTCUTS = 8;
 
 const selectClass =
   "h-10 w-full rounded-md border border-white/15 bg-black/40 px-2 text-sm text-white focus-visible:border-[#d4af37] focus-visible:outline-none";

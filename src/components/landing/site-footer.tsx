@@ -16,11 +16,18 @@ const LEGAL_LINKS = [
   ["contactUs", "/legal/contact-us"],
 ] as const;
 
-export function SiteFooter() {
+/**
+ * `className` exists for one caller: the landing page pins a tab bar to the
+ * bottom of the viewport on a phone, and the footer is the element in flow that
+ * has to reserve the height it covers.
+ */
+export function SiteFooter({ className = "" }: { className?: string }) {
   const t = useTranslations("home");
 
   return (
-    <footer className="border-t border-border bg-zinc-100 text-zinc-950 dark:bg-[#18181a] dark:text-white">
+    <footer
+      className={`border-t border-border bg-zinc-100 text-zinc-950 dark:bg-[#18181a] dark:text-white ${className}`}
+    >
       <div className="kclub-shell grid gap-12 py-14 md:grid-cols-[1.4fr_0.8fr_1.6fr]">
         <div>
           <div className="flex items-center gap-3">

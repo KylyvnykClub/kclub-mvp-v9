@@ -70,7 +70,7 @@ export async function MembershipOfferSection() {
                   {t("perMonth")}
                 </span>
               </p>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
                 {CURRENCY}
               </p>
 
