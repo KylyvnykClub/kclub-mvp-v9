@@ -632,6 +632,7 @@
     "avatarErrorUnreadable": "Не вдалося прочитати цей файл як зображення.",
     "avatarErrorUnsupportedFormat": "Використайте зображення у форматі JPEG, PNG, WebP або GIF.",
     "avatarErrorProcessingFailed": "Не вдалося обробити зображення — спробуйте ще раз.",
+    "avatarErrorUploadFailed": "Не вдалося надіслати зображення — перевірте з’єднання та спробуйте ще раз.",
     "galleryLabel": "Фотогалерея",
     "galleryHint": "До {max} фото. JPEG, PNG, WebP або GIF, до 5МБ кожне.",
     "galleryAdd": "Додати фото",

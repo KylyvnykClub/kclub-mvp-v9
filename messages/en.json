@@ -200,6 +200,7 @@
     "avatarErrorUnreadable": "That file could not be read as an image.",
     "avatarErrorUnsupportedFormat": "Use a JPEG, PNG, WebP or GIF image.",
     "avatarErrorProcessingFailed": "Something went wrong processing that image — try again.",
+    "avatarErrorUploadFailed": "That image could not be sent — check your connection and try again.",
     "galleryLabel": "Photo gallery",
     "galleryHint": "Up to {max} photos. JPEG, PNG, WebP or GIF, 5MB each.",
     "galleryAdd": "Add photo",
