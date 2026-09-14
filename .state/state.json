@@ -33,29 +33,35 @@
     {
       "id": "member-plan-filter-integration-failing",
       "note": "tests/member-plan-filter.integration.test.ts fails 3 of 6 (FR-083): countMembersByPlan returns 0 where the test expects 1. Confirmed pre-existing on 2026-09-12 by stashing an unrelated change and re-running. Likely fallout from phase 8 adding subscriptions.plan, which the count query may not read. Not in `pnpm verify` — integration runs separately."
+    },
+    {
+      "id": "landing-category-tiles-have-no-photography",
+      "note": "The reference design showed eight photographic category tiles; shipped as icons over gradients because the repository owns no such imagery. Swapping them for photographs is one commit once the client supplies files."
+    },
+    {
+      "id": "dark-primary-foreground-may-share-the-contrast-bug",
+      "note": "--accent-foreground was fixed to near-black in dark mode (3.19:1 -> 6.21:1). --primary-foreground is still #ffffff over --primary #b18a44, the identical pair; axe did not flag it on the landing page, so it is unproven rather than fine. Worth an axe pass over a dark catalogue and dashboard."
     }
   ],
   "lastSession": {
-    "date": "2026-09-12",
+    "date": "2026-09-14",
     "checklist": [
-      "Read the client's PDF of three marked-up phone screenshots and applied all three edits",
-      "Removed the members/countries counter from the landing page, with its component and its i18n keys",
-      "Cleaned the catalogue card image: only the discount (gold, top left) and the country stay; the 'verified partner' and category strips are gone",
-      "Moved the discount off the card footer onto the card image, where the client asked for it",
-      "Opened the partner catalogue to signed-out visitors — migration turns public_catalogue on, and the discount is now public on the partner page too",
-      "Contacts, the referral action and gallery photos stay member-only; nothing about members changed",
-      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the opposite",
-      "Verified all three in a real browser against the docker stack: the guest redirect is gone and the card renders as asked",
-      "Ran the integration suite for the first time on this host: 305 of 308 pass; the 3 failures are a pre-existing FR-083 bug, proved by re-running on a stashed tree",
-      "Confirmed the deploy applies the migration itself — tools/vercel-build.ts runs drizzle-kit migrate on production before the version takes traffic"
+      "Fixed the four client reports from the handwritten PDF: upload crash, hero overlap, raw country codes, locale code read as a country",
+      "Rebuilt the landing to the client's two reference mockups — stats band, three join tiles, four-step row, flag shortcuts, featured grid, mobile tab bar",
+      "Every new block reads real data; figures under ten are left out rather than padded (src/lib/club-stats.ts, tested)",
+      "Rebuilt the hero: Playfair Display for the wordmark, name and lockup split, planet-limb backdrop",
+      "Chose the display face by rendering nine candidates against the reference at matched cap height — Cyrillic, not shape, decided it",
+      "The planet's city lights are the console's dotted world map, moved to src/lib and shared",
+      "Refused three things the mockups asked for: invented stats, 'free membership', and padlocks over public discounts",
+      "Found and fixed three axe violations; landing is now 0 at 1440 and 390"
     ],
-    "stoppedAt": "All three PDF edits are code-complete, pnpm verify is green (577 unit tests), and the screens were confirmed in a browser. Nothing is committed — waiting for /commit.",
+    "stoppedAt": "Five commits pushed to feat/home-redesign. pnpm verify green (598 tests), axe clean at both widths. The landing is browser-verified against the docker stack.",
     "nextSteps": [
-      "Run /commit, then deploy — tools/vercel-build.ts applies the migration on production automatically, no manual step",
-      "Look at the 3 failing FR-083 member-plan-filter integration tests — pre-existing, unrelated to this session",
-      "Decide whether the landing counter comes back at some member threshold, or stays gone for good",
-      "Bring docs/architecture.md §6's ADR index up to date — it stops at 0027",
-      "Still open from last session: phase 8 integration tests, the stalled production outbox, and the production $4.99 Stripe price"
+      "Open one PR: feat/home-redesign -> main (the two older branches are already merged via #138 and #139)",
+      "Offer the client the hero backdrop question: the reference is a rendered montage we do not own, so the current planet is rebuilt from owned assets — a real render would drop straight in",
+      "Decide whether --font-heading moves from Oxanium to Playfair site-wide: Oxanium ships no Cyrillic, so every Cyrillic heading outside the landing falls back to system-ui",
+      "Remove the local demo partners when done reviewing: delete from companies where slug like 'design-demo-%';",
+      "Still open: 3 failing FR-083 member-plan-filter integration tests, the stalled production outbox, phase 8 integration tests"
     ]
   }
 }

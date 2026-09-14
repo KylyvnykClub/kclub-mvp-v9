@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AVATAR_SERVE_PATH } from "@/lib/avatar-path";
+import { MAX_IMAGE_UPLOAD_BYTES } from "@/lib/image-limits";
 
 const AVATAR_ERROR_KEYS: Record<string, string> = {
   too_large: "avatarErrorTooLarge",
   unreadable: "avatarErrorUnreadable",
   unsupported_format: "avatarErrorUnsupportedFormat",
   processing_failed: "avatarErrorProcessingFailed",
+  upload_failed: "avatarErrorUploadFailed",
 };
 
 export function EditProfileForm({ profile }: { profile: ProfileView }) {
@@ -23,13 +25,16 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
   const [state, action, pending] = useActionState(updateProfileAction, null);
   const [preview, setPreview] = useState<string | null>(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  // An oversized file is rejected here rather than on submit: the form body
+  // would otherwise exceed the Server Action limit, and that request fails in
+  // transport - taking the page down instead of reporting anything.
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const avatarErrorKey = state?.error
     ? AVATAR_ERROR_KEYS[state.error]
     : undefined;
-  const errorMessage = avatarErrorKey
-    ? t(avatarErrorKey)
-    : (state?.error ?? null);
+  const errorMessage =
+    localError ?? (avatarErrorKey ? t(avatarErrorKey) : (state?.error ?? null));
 
   const currentAvatarSrc =
     preview ??
@@ -67,8 +72,16 @@ export function EditProfileForm({ profile }: { profile: ProfileView }) {
               const file = e.target.files?.[0];
               if (!file) {
                 setPreview(null);
+                setLocalError(null);
                 return;
               }
+              if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+                e.target.value = "";
+                setPreview(null);
+                setLocalError(t("avatarErrorTooLarge"));
+                return;
+              }
+              setLocalError(null);
               setRemoveAvatar(false);
               setPreview(URL.createObjectURL(file));
             }}

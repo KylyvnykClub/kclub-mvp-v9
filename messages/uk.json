@@ -367,6 +367,124 @@
       "fallbackCity": "Глобально",
       "fallbackCountry": "Онлайн",
       "fallbackDescription": "Перевірений партнер KCLUB"
+    },
+    "landing": {
+      "hero": {
+        "wordmark": "Kylyvnyk",
+        "kicker": "Міжнародний бізнес-клуб",
+        "tagline": "Більше, ніж бізнес-клуб",
+        "scriptLeft": "People Business Opportunities Worldwide",
+        "scriptRight": "Stronger Together",
+        "pillars": {
+          "people": "Люди",
+          "opportunity": "Можливості",
+          "growth": "Розвиток",
+          "borderless": "Без кордонів"
+        },
+        "lockup": "Business Club"
+      },
+      "topPartners": {
+        "title": "Топ-партнери",
+        "seeAll": "Дивитися всіх",
+        "details": "Детальніше"
+      },
+      "membership": {
+        "eyebrow": "Стань учасником",
+        "brand": "Kylyvnyk Club",
+        "cardCaption": "Перевірений доступ",
+        "cardTier": "VIP",
+        "benefits": {
+          "discounts": "Доступ до знижок партнерів",
+          "connections": "Нові ділові знайомства",
+          "opportunities": "Бізнес-можливості по всьому світу",
+          "events": "Перевірена цифрова клубна картка"
+        },
+        "priceLabel": "Членство",
+        "perMonth": "/ місяць",
+        "cta": "Вступити до клубу",
+        "note": "Безкоштовно — за посиланням клубу."
+      },
+      "search": {
+        "title": "Знайдіть партнера",
+        "placeholder": "Пошук за назвою, послугою або ключовим словом…",
+        "submit": "Знайти",
+        "country": "Країна",
+        "city": "Місто",
+        "block": "Сфера",
+        "category": "Категорія",
+        "subcategory": "Підкатегорія",
+        "anyCountry": "Усі країни",
+        "anyCity": "Усі міста",
+        "anyBlock": "Усі сфери",
+        "anyCategory": "Усі категорії",
+        "anySubcategory": "Усі підкатегорії",
+        "subcategoryHint": "Спершу оберіть категорію"
+      },
+      "community": {
+        "title": "Міжнародна спільнота",
+        "subtitle": "Без кордонів"
+      },
+      "stats": {
+        "members": {
+          "label": "Учасників",
+          "note": "по всьому світу"
+        },
+        "partners": {
+          "label": "Партнерів",
+          "note": "по всьому світу"
+        },
+        "countries": {
+          "label": "Країн",
+          "note": "присутності"
+        },
+        "more": "+{count}"
+      },
+      "join": {
+        "perMonth": " / місяць",
+        "member": {
+          "title": "Стати учасником",
+          "note": "Безкоштовно — за посиланням клубу."
+        },
+        "vip": {
+          "title": "Стати VIP-учасником",
+          "note": "Пріоритетний доступ та умови VIP."
+        },
+        "listing": {
+          "title": "Розмістити бізнес",
+          "note": "Одна опублікована компанія в каталозі."
+        }
+      },
+      "steps": {
+        "title": "Як це працює",
+        "items": [
+          {
+            "title": "Реєстрація",
+            "description": "Створіть обліковий запис учасника."
+          },
+          {
+            "title": "Отримання картки",
+            "description": "Отримайте цифрову клубну картку."
+          },
+          {
+            "title": "Вибір партнера",
+            "description": "Знайдіть партнера в потрібній категорії."
+          },
+          {
+            "title": "Отримання знижки",
+            "description": "Користуйтеся умовами клубу."
+          }
+        ]
+      },
+      "recommended": {
+        "title": "Рекомендовані партнери",
+        "seeAll": "Дивитись усі"
+      },
+      "tabs": {
+        "label": "Основні розділи",
+        "home": "Головна",
+        "card": "Картка",
+        "catalogue": "Каталог"
+      }
     }
   },
   "common": {
@@ -576,6 +694,7 @@
     "avatarErrorUnreadable": "Не вдалося прочитати цей файл як зображення.",
     "avatarErrorUnsupportedFormat": "Використайте зображення у форматі JPEG, PNG, WebP або GIF.",
     "avatarErrorProcessingFailed": "Не вдалося обробити зображення — спробуйте ще раз.",
+    "avatarErrorUploadFailed": "Не вдалося надіслати зображення — перевірте з’єднання та спробуйте ще раз.",
     "galleryLabel": "Фотогалерея",
     "galleryHint": "До {max} фото. JPEG, PNG, WebP або GIF, до 5МБ кожне.",
     "galleryAdd": "Додати фото",

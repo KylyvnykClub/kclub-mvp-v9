@@ -40,6 +40,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { countryOptions } from "@/lib/countries";
+import { uploadImageSafely } from "@/lib/client-image-upload";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 import {
   DRAFT_LOGO_SLOT,
@@ -99,6 +100,7 @@ const IMAGE_ERROR_KEYS: Record<string, string> = {
   unreadable: "avatarErrorUnreadable",
   unsupported_format: "avatarErrorUnsupportedFormat",
   processing_failed: "avatarErrorProcessingFailed",
+  upload_failed: "avatarErrorUploadFailed",
 };
 
 export function CompanyRegistrationForm() {
@@ -1096,13 +1098,20 @@ function DraftLogoField({
               startTransition(async () => {
                 const formData = new FormData();
                 formData.set("logo", file);
-                const result = await uploadDraftLogoAction(formData);
+                const guarded = await uploadImageSafely(file, () =>
+                  uploadDraftLogoAction(formData),
+                );
+                if (fileRef.current) fileRef.current.value = "";
+                if (!guarded.ok) {
+                  report(guarded.code);
+                  return;
+                }
+                const result = guarded.result;
                 report(result.success ? undefined : result.error);
                 if (result.success) {
                   onChange(true);
                   setVersion((v) => v + 1);
                 }
-                if (fileRef.current) fileRef.current.value = "";
               });
             }}
           />
@@ -1209,12 +1218,19 @@ function DraftGalleryField({
               startTransition(async () => {
                 const formData = new FormData();
                 formData.set("image", file);
-                const result = await uploadDraftImageAction(formData);
+                const guarded = await uploadImageSafely(file, () =>
+                  uploadDraftImageAction(formData),
+                );
+                if (fileRef.current) fileRef.current.value = "";
+                if (!guarded.ok) {
+                  report(guarded.code);
+                  return;
+                }
+                const result = guarded.result;
                 report(result.success ? undefined : result.error);
                 if (result.success && result.imageId) {
                   onChange([...imageIds, result.imageId]);
                 }
-                if (fileRef.current) fileRef.current.value = "";
               });
             }}
           />

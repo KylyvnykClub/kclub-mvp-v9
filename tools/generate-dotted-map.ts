@@ -1,5 +1,5 @@
 /**
- * Generates the dotted world map the finance dashboard draws.
+ * Generates the dotted world map the finance dashboard and the landing hero draw.
  *
  * Usage: pnpm map:generate
  *
@@ -14,6 +14,10 @@
  * visual, but that file stays: it is where the per-country anchor points come
  * from, and it is still the only place this repository knows where a country
  * is.
+ *
+ * It lands in src/lib rather than beside the dashboard component, because the
+ * landing hero draws the same dots as its backdrop and 18 KB of coordinates
+ * should exist once.
  */
 
 import DottedMap from "dotted-map";
@@ -32,7 +36,13 @@ const COMPONENTS = join(
   "_components",
 );
 const SOURCE = join(COMPONENTS, "world-map-paths.ts");
-const OUTPUT = join(COMPONENTS, "dotted-world-map.ts");
+const OUTPUT = join(
+  import.meta.dirname,
+  "..",
+  "src",
+  "lib",
+  "dotted-world-map.ts",
+);
 
 /**
  * Dot rows from pole to pole. Sized for the panel it renders in, which is 256px

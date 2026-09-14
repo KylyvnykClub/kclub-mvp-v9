@@ -200,6 +200,7 @@
     "avatarErrorUnreadable": "That file could not be read as an image.",
     "avatarErrorUnsupportedFormat": "Use a JPEG, PNG, WebP or GIF image.",
     "avatarErrorProcessingFailed": "Something went wrong processing that image — try again.",
+    "avatarErrorUploadFailed": "That image could not be sent — check your connection and try again.",
     "galleryLabel": "Photo gallery",
     "galleryHint": "Up to {max} photos. JPEG, PNG, WebP or GIF, 5MB each.",
     "galleryAdd": "Add photo",
@@ -680,6 +681,124 @@
       "fallbackCity": "Global",
       "fallbackCountry": "Online",
       "fallbackDescription": "Verified KCLUB Partner"
+    },
+    "landing": {
+      "hero": {
+        "wordmark": "Kylyvnyk",
+        "kicker": "International Business Club",
+        "tagline": "More than a business club",
+        "scriptLeft": "People Business Opportunities Worldwide",
+        "scriptRight": "Stronger Together",
+        "pillars": {
+          "people": "People",
+          "opportunity": "Opportunity",
+          "growth": "Growth",
+          "borderless": "No borders"
+        },
+        "lockup": "Business Club"
+      },
+      "topPartners": {
+        "title": "Top partners",
+        "seeAll": "See all",
+        "details": "Details"
+      },
+      "membership": {
+        "eyebrow": "Become a member of",
+        "brand": "Kylyvnyk Club",
+        "cardCaption": "Verified access",
+        "cardTier": "VIP",
+        "benefits": {
+          "discounts": "Access to partner discounts",
+          "connections": "New business acquaintances",
+          "opportunities": "Business opportunities worldwide",
+          "events": "A verified digital club card"
+        },
+        "priceLabel": "Membership",
+        "perMonth": "/ month",
+        "cta": "Join the club",
+        "note": "Free with the club's join link."
+      },
+      "search": {
+        "title": "Find a partner",
+        "placeholder": "Search by name, service or keyword…",
+        "submit": "Search",
+        "country": "Country",
+        "city": "City",
+        "block": "Scope",
+        "category": "Category",
+        "subcategory": "Subcategory",
+        "anyCountry": "All countries",
+        "anyCity": "All cities",
+        "anyBlock": "All scopes",
+        "anyCategory": "All categories",
+        "anySubcategory": "All subcategories",
+        "subcategoryHint": "Choose a category first"
+      },
+      "community": {
+        "title": "An international community",
+        "subtitle": "Without borders"
+      },
+      "stats": {
+        "members": {
+          "label": "Members",
+          "note": "worldwide"
+        },
+        "partners": {
+          "label": "Partners",
+          "note": "worldwide"
+        },
+        "countries": {
+          "label": "Countries",
+          "note": "represented"
+        },
+        "more": "+{count}"
+      },
+      "join": {
+        "perMonth": " / month",
+        "member": {
+          "title": "Become a member",
+          "note": "Free with the club's join link."
+        },
+        "vip": {
+          "title": "Become a VIP member",
+          "note": "Priority access and VIP conditions."
+        },
+        "listing": {
+          "title": "List your business",
+          "note": "One published company in the catalogue."
+        }
+      },
+      "steps": {
+        "title": "How it works",
+        "items": [
+          {
+            "title": "Registration",
+            "description": "Create a member account."
+          },
+          {
+            "title": "Get your card",
+            "description": "Receive your digital club card."
+          },
+          {
+            "title": "Choose a partner",
+            "description": "Find a partner in the category you need."
+          },
+          {
+            "title": "Get the discount",
+            "description": "Use the club's conditions."
+          }
+        ]
+      },
+      "recommended": {
+        "title": "Recommended partners",
+        "seeAll": "See all"
+      },
+      "tabs": {
+        "label": "Main sections",
+        "home": "Home",
+        "card": "Card",
+        "catalogue": "Catalogue"
+      }
     }
   },
   "Referral": {

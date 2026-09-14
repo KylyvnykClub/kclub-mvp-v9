@@ -1,6 +1,7 @@
 import sharp, { type Sharp } from "sharp";
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+import { MAX_IMAGE_UPLOAD_BYTES } from "@/lib/image-limits";
+
 const AVATAR_DIMENSION = 512;
 const GALLERY_MAX_DIMENSION = 1600;
 const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
@@ -23,7 +24,7 @@ export class InvalidImageError extends Error {
  * only pixel data survives a decode-resize-encode round trip.
  */
 async function decodeValidated(input: Buffer): Promise<Sharp> {
-  if (input.byteLength > MAX_UPLOAD_BYTES) {
+  if (input.byteLength > MAX_IMAGE_UPLOAD_BYTES) {
     throw new InvalidImageError("too_large");
   }
 
