@@ -232,3 +232,32 @@ the criteria it tracks are
 |Active handoffs|`.state/handoffs.json` and `.state/handoffs/`|
 |The plan, phase by phase|[delivery/](delivery/)|
 |Why anything is the way it is|[decisions/](decisions/)|
+
+## 9. What the landing page reads
+
+The public home page is the client's delivered design
+([ADR 0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)), and
+nothing on it is written into the markup. Every block reads the database, and a
+block with nothing to read renders nothing rather than a placeholder — which is
+the behaviour to expect on a database that has been migrated but not filled.
+
+|Block|What it reads|Empty when|Who fills it|
+|-|-|-|-|
+|The three figures under the hero|`getClubPresenceAction()` — members, partners with a live listing, distinct partner countries|A figure that is zero is left out; all three zero and the band does not render|Registrations and paid listings; nothing to do by hand|
+|Top Partners|The three companies staff marked `showcaseType = 'top'` (FR-035)|No company is marked, and the whole section disappears|**Staff**, at `/dashboard/admin/companies`|
+|Membership prices|`src/domain/pricing.ts`, and Stripe for what is actually charged|Never|Code, for what is shown; the `plan_prices` row, for what is billed|
+|Find Your Next Partner: the grid|The catalogue's own search, first nine rows, through `getPartnersListAction`|No approved company holds a live listing subscription — the empty state says so|**Partners**, by registering and paying; **staff**, by approving|
+|Its Country and City filters|The countries and cities of those same companies|Same|Same|
+|Its Category filter|The active taxonomy blocks, in the reader's language|`business_categories` is empty|**`pnpm db:seed:categories`**, once, from `data/*.csv`|
+|A partner card's photograph|`companies.logo_url`|No logo: the card falls back to its category's colour and icon, which is a designed state, not a broken one|**Partners**, during onboarding|
+|A partner card's category line|The first taxonomy entry the company is filed under, translated|The company predates the taxonomy — the card then shows only its country|**Staff**, by editing the company|
+|The footer's policy row|`/legal/{id}` from `content/legal`|Never|Already published|
+
+**To make production look like the design**, in order: seed the taxonomy, get at
+least nine approved companies with live listings, mark three of them `top`, and
+make sure each has a logo and a category. Nothing else on the page is data.
+
+**Locally**, `pnpm db:seed:landing` does all of that against the docker-compose
+database — the taxonomy and nine demo partners from the client's prototype. It
+refuses any database not marked `dev` and has no override, because the partners
+it writes are invented; `pnpm db:seed:landing --remove` takes them out again.
