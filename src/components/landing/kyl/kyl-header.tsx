@@ -202,9 +202,9 @@ export function KylHeader({
             {label}
           </a>
         ))}
-        <Link href="/pricing" onClick={() => setOpen(false)}>
+        <a href="#membership" onClick={() => setOpen(false)}>
           {t("pricing")}
-        </Link>
+        </a>
         <a href="#faq" onClick={() => setOpen(false)}>
           {t("faq")}
         </a>
