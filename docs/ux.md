@@ -50,7 +50,7 @@ plans for, and finding them now is cheaper than discovering them in week ten.
 
 |Screen|User goal|Access|Notes|
 |-|-|-|-|
-|Home|Decide whether this club is real and worth joining|public|Hero, how it works, curated showcase, testimonials, FAQ, join|
+|Home|Decide whether this club is real and worth joining|public|The client's delivered design, rendered from their own stylesheet ([ADR 0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)). Hero with three counted figures, the curated top partners (FR-035), membership and its three prices, how it works, a live catalogue search, about, FAQ, join. No testimonials: there are none to quote. Its header and footer are its own; every other public screen keeps `SiteHeader`|
 |How it works|Understand membership vs. partnership|public|Explicit "this is not MLM" statement|
 |For partners|Decide whether to apply|public|Pricing, what a listing gets, the application steps|
 |Pricing|Compare what membership, VIP and a listing cost before signing up|public|Reachable from the main navigation. Amounts come from `src/domain/pricing.ts` — one table for the whole product, never a price written into a translation string — in USD with an explicit `$` ([ADR 0033](decisions/0033-standard-membership-is-paid.md)). Stripe remains what actually charges: the `plan_prices` row is the price that is billed|

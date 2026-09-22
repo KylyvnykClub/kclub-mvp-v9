@@ -2,35 +2,35 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import {
-  getPartnerCountryCodesAction,
   getPartnerLocationsAction,
+  getPublicShowcasePartners,
 } from "@/actions/company";
 import { getClubPresenceAction } from "@/actions/club-presence";
+import { searchLandingPartnersAction } from "@/actions/landing-search";
 import { getCurrentMember } from "@/actions/session";
-import { AboutSection } from "@/components/landing/about-section";
-import { CategoryTilesSection } from "@/components/landing/category-tiles-section";
-import { FaqSection } from "@/components/landing/faq-section";
-import { HomeHero } from "@/components/landing/home-hero";
-import { JoinCtaSection } from "@/components/landing/join-cta-section";
-import { MembershipOfferSection } from "@/components/landing/membership-offer-section";
-import { MobileTabBar } from "@/components/landing/mobile-tab-bar";
-import { RecommendedPartnersSection } from "@/components/landing/recommended-partners-section";
-import { StatsBandSection } from "@/components/landing/stats-band-section";
-import { StepsSection } from "@/components/landing/steps-section";
-import { PartnerSearchSection } from "@/components/landing/partner-search-section";
-import { SiteFooter } from "@/components/landing/site-footer";
-import { SiteHeader } from "@/components/landing/site-header";
-import { TopPartnersSection } from "@/components/landing/top-partners-section";
-import { WorldCommunitySection } from "@/components/landing/world-community-section";
+import { KylAbout } from "@/components/landing/kyl/kyl-about";
+import { KylDirectory } from "@/components/landing/kyl/kyl-directory";
+import { KylFaq } from "@/components/landing/kyl/kyl-faq";
+import { KylFinalCta } from "@/components/landing/kyl/kyl-final-cta";
+import { KylFooter } from "@/components/landing/kyl/kyl-footer";
+import { KylHeader } from "@/components/landing/kyl/kyl-header";
+import { KylHero } from "@/components/landing/kyl/kyl-hero";
+import { KylMembership } from "@/components/landing/kyl/kyl-membership";
+import { KylProcess } from "@/components/landing/kyl/kyl-process";
+import { KylTopPartners } from "@/components/landing/kyl/kyl-top-partners";
+import { buildTaxonomyIndex } from "@/components/landing/kyl/partner-presentation";
+import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
 import { db } from "@/data/db";
 import {
   listLocalizedCategoryBlocks,
-  listLocalizedCategoryTree,
+  listLocalizedCategoryLabels,
 } from "@/data/companies";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import type { Locale } from "@/i18n/routing";
-import { JsonLd, organizationLd, websiteLd } from "@/components/seo/json-ld";
+import { countryName } from "@/lib/countries";
 import { localeAlternates } from "@/lib/seo";
+
+import "../kylyvnyk-landing.css";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -46,85 +46,116 @@ const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "home.hero" });
+  const t = await getTranslations({ locale, namespace: "home.kyl.meta" });
 
   return {
-    title: `Kylyvnyk Club — ${t("metaTitle")}`,
-    description: `${t("eyebrow")} — ${t("subline")}`,
+    title: t("title"),
+    description: t("description"),
     alternates: localeAlternates(locale, ""),
   };
 }
 
+/**
+ * The landing page, to the client's delivered design.
+ *
+ * The markup is the Kylyvnyk-Landing prototype's, section for section, and the
+ * stylesheet imported above is that prototype's `styles.css`. What changed is
+ * everything behind it: the figures under the hero are counted in the database,
+ * the three top cards are the partners staff curated, the directory is the
+ * catalogue's own search behind the catalogue's own gate, and every price comes
+ * from `@/domain/pricing`. Nothing on this page is written into the markup
+ * twice, and nothing is invented - a section with no data renders nothing.
+ */
 export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const current = await getCurrentMember();
   const actor = current?.member ? buildActor(current.member) : null;
-  const canAccessAdmin = actor ? staffAtLeast(actor, "staff_support") : false;
+  const member = Boolean(current?.member);
+  const admin = actor ? staffAtLeast(actor, "staff_support") : false;
 
-  const t = await getTranslations("home.landing.search");
+  const [presence, showcase, catalogue, locations, blocks] = await Promise.all([
+    getClubPresenceAction(),
+    getPublicShowcasePartners(),
+    searchLandingPartnersAction({ locale: locale as Locale }),
+    getPartnerLocationsAction(),
+    SKIP_DB_PRERENDER ? [] : listLocalizedCategoryBlocks(db, locale as Locale),
+  ]);
 
-  const [categories, blocks, locations, countryCodes, presence] =
-    await Promise.all([
-      SKIP_DB_PRERENDER ? [] : listLocalizedCategoryTree(db, locale as Locale),
-      SKIP_DB_PRERENDER
-        ? []
-        : listLocalizedCategoryBlocks(db, locale as Locale),
-      getPartnerLocationsAction(),
-      getPartnerCountryCodesAction(),
-      getClubPresenceAction(),
-    ]);
+  const showcaseCategoryIds = [
+    ...new Set(
+      showcase.top.flatMap((partner) =>
+        partner.categories.map((entry) => entry.businessCategoryId),
+      ),
+    ),
+  ];
+  const taxonomy = buildTaxonomyIndex(
+    SKIP_DB_PRERENDER
+      ? []
+      : await listLocalizedCategoryLabels(
+          db,
+          locale as Locale,
+          showcaseCategoryIds,
+        ),
+  );
+
+  const countries = [...new Set(locations.map((entry) => entry.country))]
+    .map((code) => ({
+      value: code,
+      label: countryName(code, locale as Locale),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale));
+
+  const cities = locations
+    .filter((entry): entry is { country: string; city: string } =>
+      Boolean(entry.city),
+    )
+    .map((entry) => ({
+      value: entry.city,
+      label: entry.city,
+      country: entry.country,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, locale));
+
+  const t = await getTranslations("home.kyl");
 
   return (
-    // `dark` is scoped to the landing page rather than set on the document:
-    // the catalogue, the dashboard and the console keep the reader's own theme
-    // choice, and only this page is always the dark one the club asked for.
-    <div className="dark min-h-screen bg-[#07090f] text-white selection:bg-[#d4af37]/30">
+    // The design is a dark page and always was. `dark` is scoped here rather
+    // than set on the document, so the catalogue, the dashboard and the console
+    // keep whichever theme the reader chose.
+    <div className="kyl dark">
       <JsonLd data={websiteLd()} />
       <JsonLd data={organizationLd()} />
-      <SiteHeader member={Boolean(current?.member)} admin={canAccessAdmin} />
-      <main>
-        <HomeHero />
-        <StatsBandSection presence={presence} countryCodes={countryCodes} />
-        <TopPartnersSection />
-        <MembershipOfferSection />
-        <JoinCtaSection />
-        <StepsSection />
-        <PartnerSearchSection
-          categories={categories}
-          locations={locations}
-          countryCodes={countryCodes}
-          labels={{
-            title: t("title"),
-            placeholder: t("placeholder"),
-            submit: t("submit"),
-            country: t("country"),
-            city: t("city"),
-            block: t("block"),
-            category: t("category"),
-            subcategory: t("subcategory"),
-            anyCountry: t("anyCountry"),
-            anyCity: t("anyCity"),
-            anyBlock: t("anyBlock"),
-            anyCategory: t("anyCategory"),
-            anySubcategory: t("anySubcategory"),
-            subcategoryHint: t("subcategoryHint"),
-          }}
+
+      <a className="skip-link" href="#main">
+        {t("skip")}
+      </a>
+
+      <KylHeader member={member} admin={admin} />
+
+      <main id="main">
+        <KylHero presence={presence} />
+        <KylTopPartners partners={showcase.top} taxonomy={taxonomy} />
+        <KylMembership member={member} />
+        <KylProcess />
+        <KylDirectory
+          initial={catalogue.rows}
+          total={catalogue.total}
+          locale={locale as Locale}
+          countries={countries}
+          cities={cities}
+          blocks={blocks.map((entry) => ({
+            value: entry.key,
+            label: entry.label,
+          }))}
         />
-        <RecommendedPartnersSection />
-        <CategoryTilesSection blocks={blocks} />
-        <WorldCommunitySection countryCodes={countryCodes} />
-        {/* Kept below the fold because the header still links to them, and
-            because they are the page's only prose for a search engine. The
-            steps row above carries the `how-it-works` anchor, so this is About
-            and the FAQ only - the same section twice under the same heading was
-            what the first pass shipped. */}
-        <AboutSection />
-        <FaqSection />
+        <KylAbout />
+        <KylFaq />
+        <KylFinalCta member={member} />
       </main>
-      <SiteFooter className="pb-14 lg:pb-0" />
-      <MobileTabBar member={Boolean(current?.member)} />
+
+      <KylFooter />
     </div>
   );
 }

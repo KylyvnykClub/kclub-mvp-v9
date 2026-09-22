@@ -16,17 +16,17 @@ export type ClubPresence = {
 export type StatKey = keyof ClubPresence;
 
 /**
- * Below this a figure is left out rather than rounded up or padded.
+ * The three figures the landing hero prints, and which of them are printable.
  *
- * The reference design filled this band with "10 245+ / 1 250+ / 35+", which is
- * not what the club is, and a landing counter was deleted once already for
- * exactly that overstatement. Ten is the point where a count reads as a club
- * rather than as a launch.
+ * An earlier reference design asked this band to say "10 245+ / 1 250+ / 35+"
+ * for a club that had none of that, and the answer then was a floor: a figure
+ * under ten was left out rather than padded. The delivered design asks for
+ * something different - three plain counts inside the hero rather than a claim
+ * of scale beside it - so this prints the count it is given, whatever its size,
+ * because a real number is not an overstatement. What it still refuses is zero:
+ * "0 partner businesses" advertises the absence of the product.
  */
-export const MIN_STAT_TO_SHOW = 10;
-
-/** The figures large enough to print, in the order the band shows them. */
-export function visibleStats(
+export function landingStats(
   presence: ClubPresence,
 ): { key: StatKey; value: number }[] {
   return (
@@ -36,6 +36,6 @@ export function visibleStats(
       { key: "countries", value: presence.countries },
     ] as const
   )
-    .filter((stat) => stat.value >= MIN_STAT_TO_SHOW)
+    .filter((stat) => stat.value > 0)
     .map((stat) => ({ key: stat.key, value: stat.value }));
 }

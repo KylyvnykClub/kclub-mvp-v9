@@ -28,6 +28,11 @@ const ALLOWLIST = new Set([
   // The docker-compose database: created by this stack, dropped with it, and
   // refused outright when it says production.
   "docker-bootstrap.ts",
+  // Demo partners for looking at the landing page. Reaches the same
+  // docker-compose database over plain TCP, reads the ADR 0026 marker itself
+  // on that connection, and refuses anything not marked `dev` - no override
+  // flag, because invented businesses never belong in a real catalogue.
+  "seed-landing-demo.ts",
   // The deployment pipeline itself: data-storage.md §3 names it as the one
   // thing that may migrate production, and it opens no connection of its own -
   // it runs drizzle-kit, which reads the environment Vercel injected.

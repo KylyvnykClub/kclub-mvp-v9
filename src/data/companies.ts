@@ -235,6 +235,55 @@ export type CategoryBlockRow = Awaited<
   ReturnType<typeof listLocalizedCategoryBlocks>
 >[number];
 
+/**
+ * One row per taxonomy entry: its id, its English block key, and the block and
+ * category as the reader sees them.
+ *
+ * The landing page needs all three at once. `listLocalizedCategoryTree` gives
+ * the reader's language but loses the English block, which is what an icon and
+ * a `?block=` parameter are keyed on; `listLocalizedCategoryBlocks` gives the
+ * key but not the category. A partner card wants "Law Firms & Attorneys" in
+ * Ukrainian over the artwork the legal block is drawn in, and that needs both.
+ */
+export async function listLocalizedCategoryLabels(
+  db: DbClient,
+  locale: "en" | "ru" | "uk",
+  ids?: number[],
+) {
+  if (ids && ids.length === 0) return [];
+
+  return db
+    .select({
+      id: businessCategories.id,
+      blockKey: businessCategories.block,
+      block: sql<string>`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
+      category: sql<string>`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+    })
+    .from(businessCategories)
+    .leftJoin(
+      businessCategoryTranslations,
+      and(
+        eq(
+          businessCategoryTranslations.businessCategoryId,
+          businessCategories.id,
+        ),
+        eq(businessCategoryTranslations.locale, locale),
+      ),
+    )
+    .where(
+      ids
+        ? and(
+            eq(businessCategories.status, "ACTIVE"),
+            inArray(businessCategories.id, ids),
+          )
+        : eq(businessCategories.status, "ACTIVE"),
+    );
+}
+
+export type CategoryLabelRow = Awaited<
+  ReturnType<typeof listLocalizedCategoryLabels>
+>[number];
+
 export async function listCountries(db: DbClient) {
   return db.query.countries.findMany({
     orderBy: [asc(countries.name)],

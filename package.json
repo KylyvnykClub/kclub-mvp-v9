@@ -26,6 +26,7 @@
     "db:seed": "tsx tools/seed.ts",
     "db:seed:beta": "tsx tools/seed.ts --beta",
     "db:seed:categories": "tsx --env-file=.env.local tools/seed-categories.ts",
+    "db:seed:landing": "tsx tools/seed-landing-demo.ts",
     "db:studio": "drizzle-kit studio",
     "db:updownup": "tsx tools/db-updownup.ts",
     "env:example": "tsx tools/gen-env-example.ts",
