@@ -6,7 +6,13 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { env } from "@/env";
 
-import { fontBody, fontHeading } from "@/app/fonts";
+import {
+  fontBody,
+  fontDisplay,
+  fontHeading,
+  fontLandingBody,
+  fontLandingDisplay,
+} from "@/app/fonts";
 import { PwaRegister } from "@/components/pwa-register";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -82,7 +88,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${fontHeading.variable} ${fontBody.variable} font-sans antialiased`}
+        className={`${fontHeading.variable} ${fontBody.variable} ${fontDisplay.variable} ${fontLandingDisplay.variable} ${fontLandingBody.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider>
           <ThemeProvider>

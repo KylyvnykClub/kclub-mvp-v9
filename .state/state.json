@@ -23,39 +23,50 @@
       "note": "Production /health/deep reported degraded on 2026-09-08: 2 outbox messages pending since 2026-08-29. Email delivery for company/billing notifications is not draining."
     },
     {
-      "id": "architecture-adr-index-stale",
-      "note": "docs/architecture.md §6 indexes ADRs 0001–0027 only; 0028–0034 are missing. decisions/README.md is current, so the two indexes disagree."
-    },
-    {
       "id": "public-catalogue-needs-production-migration",
       "note": "20260912100000_public_catalogue must run on production for 'Our partners' to stop redirecting to sign-in. It sets the flag rather than inserting it, so it also fixes a database where the row exists and reads false."
     },
     {
       "id": "member-plan-filter-integration-failing",
       "note": "tests/member-plan-filter.integration.test.ts fails 3 of 6 (FR-083): countMembersByPlan returns 0 where the test expects 1. Confirmed pre-existing on 2026-09-12 by stashing an unrelated change and re-running. Likely fallout from phase 8 adding subscriptions.plan, which the count query may not read. Not in `pnpm verify` — integration runs separately."
+    },
+    {
+      "id": "dark-primary-foreground-may-share-the-contrast-bug",
+      "note": "--accent-foreground was fixed to near-black in dark mode (3.19:1 -> 6.21:1). --primary-foreground is still #ffffff over --primary #b18a44, the identical pair; axe did not flag it on the landing page, so it is unproven rather than fine. Worth an axe pass over a dark catalogue and dashboard."
+    },
+    {
+      "id": "e2e-cannot-launch-chromium-on-this-host",
+      "note": "`pnpm test:e2e` fails before the first test: the host's Chromium is missing libnspr4.so, and the harness builds into `.next`, which the docker stack owns (EACCES) - `NEXT_BUILD_DIR=.next-e2e` works around the second. The landing's axe pass was run inside the app container instead: 0 serious/critical at 1440 and 390 in en, ru and uk."
+    },
+    {
+      "id": "landing-demo-partners-in-the-docker-database",
+      "note": "`pnpm db:seed:landing` wrote nine invented partners (slug `landing-demo-%`) plus the full taxonomy into the docker-compose database so the redesigned landing has something to read. `pnpm db:seed:landing --remove` takes the partners out; the taxonomy is real reference data and stays."
+    },
+    {
+      "id": "landing-has-no-component-tests",
+      "note": "The redesigned landing's behaviour - live catalogue search, the custom select, the reveal observer - is proved by hand in a browser, not in CI. Only the pure helpers are tested (landing-partner, partner-presentation, club-stats). A Playwright test for 'type dental, see one card' would be the cheapest real cover."
     }
   ],
   "lastSession": {
-    "date": "2026-09-12",
+    "date": "2026-09-22",
     "checklist": [
-      "Read the client's PDF of three marked-up phone screenshots and applied all three edits",
-      "Removed the members/countries counter from the landing page, with its component and its i18n keys",
-      "Cleaned the catalogue card image: only the discount (gold, top left) and the country stay; the 'verified partner' and category strips are gone",
-      "Moved the discount off the card footer onto the card image, where the client asked for it",
-      "Opened the partner catalogue to signed-out visitors — migration turns public_catalogue on, and the discount is now public on the partner page too",
-      "Contacts, the referral action and gallery photos stay member-only; nothing about members changed",
-      "Recorded ADR 0034 and amended FR-030, FR-033 and the guest role row, which said the opposite",
-      "Verified all three in a real browser against the docker stack: the guest redirect is gone and the card renders as asked",
-      "Ran the integration suite for the first time on this host: 305 of 308 pass; the 3 failures are a pre-existing FR-083 bug, proved by re-running on a stashed tree",
-      "Confirmed the deploy applies the migration itself — tools/vercel-build.ts runs drizzle-kit migrate on production before the version takes traffic"
+      "Ported the client's delivered landing (Kylyvnyk-Landing) into the app: their styles.css, scoped under `.kyl`, imported by the home route only",
+      "Rebuilt the page's markup section for section as React; every block reads real data, none of it is hard-coded",
+      "Prata + Geist added as landing-only faces; both ship Cyrillic, so ru and uk do not fall back",
+      "Replaced the native <select> popups with a styled combobox (KylSelect) - the closed control is unchanged, the open list is ours",
+      "Deleted the seventeen superseded landing components rather than leaving two landing pages in one directory",
+      "New: tools/seed-landing-demo.ts (taxonomy + nine demo partners, refuses any database not marked dev), src/actions/landing-search.ts, ADR 0035",
+      "Contact address set to kylyvnykclub@gmail.com, from one constant - the prototype's hello@kylyvnyk.club was a placeholder",
+      "Five marked deviations from the prototype's CSS, plus two fixes: AA contrast on the footer baseline, and a stacking context so the open filter list is not painted over",
+      "pnpm verify green (608 tests); axe 0 serious/critical at 1440 and 390 in all three locales; every link on the page walked in a browser"
     ],
-    "stoppedAt": "All three PDF edits are code-complete, pnpm verify is green (577 unit tests), and the screens were confirmed in a browser. Nothing is committed — waiting for /commit.",
+    "stoppedAt": "Working tree is uncommitted on feat/home-redesign. The page is browser-verified against the docker stack with the demo seed loaded; nothing is committed and no PR is open.",
     "nextSteps": [
-      "Run /commit, then deploy — tools/vercel-build.ts applies the migration on production automatically, no manual step",
-      "Look at the 3 failing FR-083 member-plan-filter integration tests — pre-existing, unrelated to this session",
-      "Decide whether the landing counter comes back at some member threshold, or stays gone for good",
-      "Bring docs/architecture.md §6's ADR index up to date — it stops at 0027",
-      "Still open from last session: phase 8 integration tests, the stalled production outbox, and the production $4.99 Stripe price"
+      "Commit and open the PR: feat/home-redesign -> main",
+      "Show the client the page at /en, /ru and /uk and get the design signed off before the demo partners come out",
+      "On production, in order: pnpm db:seed:categories, then nine approved companies with live listings, then mark three `top` - docs/operations.md §9 is the list",
+      "Remove the local demo partners when review is done: pnpm db:seed:landing --remove",
+      "Still open: 3 failing FR-083 member-plan-filter integration tests, the stalled production outbox, phase 8 integration tests"
     ]
   }
 }

@@ -53,6 +53,24 @@ const config: NextConfig = {
   eslint: { ignoreDuringBuilds: false },
 
   /**
+   * Server Actions carry image uploads, and Next.js caps their body at 1MB by
+   * default - well under the 5MB `MAX_IMAGE_UPLOAD_BYTES` the image pipeline
+   * validates against. A phone photo sits between the two, so the request was
+   * rejected in transport before the action ran, the rejection surfaced inside
+   * a `startTransition` callback, and the page died with "Application error: a
+   * client-side exception has occurred" instead of showing "that image is over
+   * 5MB".
+   *
+   * 6MB, not 5MB: the limit counts the whole multipart body, so the envelope
+   * around a file exactly at the cap must still fit. The real ceiling stays
+   * `MAX_IMAGE_UPLOAD_BYTES`, enforced server-side on the decoded bytes and
+   * checked client-side before anything is sent.
+   */
+  experimental: {
+    serverActions: { bodySizeLimit: "6mb" },
+  },
+
+  /**
    * No persistent webpack cache in `next dev`.
    *
    * On this Windows machine the filesystem cache under `.next/cache/webpack`

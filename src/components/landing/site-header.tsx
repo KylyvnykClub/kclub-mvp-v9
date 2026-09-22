@@ -30,12 +30,24 @@ const navigation = [
 /**
  * Language autonyms are deliberately not translated - every language names
  * itself, so the row a reader is looking for reads the same from any locale.
+ *
+ * `short` exists because the bare locale code must never reach the screen.
+ * "uk" is Ukrainian in ISO 639 and the United Kingdom in ISO 3166, and the
+ * switcher used to render the code in the compact slots: a member on a phone
+ * was shown a Ukrainian flag labelled "ВЕЛИКА БРИТАНІЯ", because a machine
+ * translator resolved the code the other way. An autonym, in the language's own
+ * script, cannot be read as a country by a reader or by a translator.
  */
 const LOCALES = [
-  { code: "en", flag: "/flags/gb.png", label: "English" },
-  { code: "ru", flag: "/flags/ru.png", label: "Русский" },
-  { code: "uk", flag: "/flags/ua.png", label: "Українська" },
-] as const satisfies readonly { code: Locale; flag: string; label: string }[];
+  { code: "en", flag: "/flags/gb.png", label: "English", short: "ENG" },
+  { code: "ru", flag: "/flags/ru.png", label: "Русский", short: "РУС" },
+  { code: "uk", flag: "/flags/ua.png", label: "Українська", short: "УКР" },
+] as const satisfies readonly {
+  code: Locale;
+  flag: string;
+  label: string;
+  short: string;
+}[];
 
 export function SiteHeader({
   member = false,
@@ -121,7 +133,7 @@ export function SiteHeader({
                   alt=""
                   className="h-3.5 w-5 rounded-[2px] object-cover"
                 />
-                {currentLocale.code}
+                {currentLocale.short}
                 <ChevronDown className="size-3" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
@@ -238,13 +250,14 @@ export function SiteHeader({
                 {t(`nav.${key}`)}
               </Link>
             ))}
-            <div className="mt-4 flex items-center gap-2 border-t border-border pt-4 lg:hidden">
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4 lg:hidden">
               {LOCALES.map((item) => (
                 <button
                   key={item.code}
                   type="button"
                   onClick={() => changeLocale(item.code)}
                   aria-pressed={locale === item.code}
+                  aria-label={item.label}
                   className={`inline-flex min-h-11 items-center gap-2 border px-4 text-xs font-bold uppercase ${
                     locale === item.code
                       ? "border-accent text-accent-ink"
@@ -258,7 +271,7 @@ export function SiteHeader({
                     alt=""
                     className="h-3.5 w-5 rounded-[2px] object-cover"
                   />
-                  {item.code}
+                  {item.short}
                 </button>
               ))}
             </div>

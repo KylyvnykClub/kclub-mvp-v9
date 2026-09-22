@@ -19,6 +19,7 @@ import {
   listActiveSubcategories,
   listLocalizedCategoryTree,
   countApprovedCompaniesByIds,
+  listPartnerCountryCodes,
   listPartnerLocations,
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
@@ -360,6 +361,20 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
 }
 
 /**
+ * The registration countries of the published partners, for the landing page's
+ * "international community" band (ADR 0034: the landing page is public, and so
+ * is this - it names countries, never partners or members).
+ */
+export async function getPartnerCountryCodesAction() {
+  if (SKIP_DB_PRERENDER) return [];
+
+  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  if (activeCompanyIds.length === 0) return [];
+
+  return listPartnerCountryCodes(db, activeCompanyIds);
+}
+
+/**
  * The country/city options for the catalogue filter, scoped to partners the
  * caller could actually see.
  */
@@ -413,9 +428,11 @@ export async function getPublicShowcasePartners() {
 
   if (activeCompanyIds.length === 0) return { top: [], featured: [] };
 
+  // Three "top" partners are the hero row; the "featured" block fills a 3x3
+  // grid further down, so it asks for nine.
   const [top, featured] = await Promise.all([
     listShowcaseCompanies(db, activeCompanyIds, "top", 3),
-    listShowcaseCompanies(db, activeCompanyIds, "featured", 3),
+    listShowcaseCompanies(db, activeCompanyIds, "featured", 9),
   ]);
 
   return { top, featured };

@@ -13,29 +13,14 @@ import {
 
 import {
   COUNTRY_POSITIONS,
-  MAP_DOTS,
   MAP_HEIGHT,
   MAP_STEP,
   MAP_WIDTH,
-} from "./dotted-world-map";
+} from "@/lib/dotted-world-map";
+import { landDotsPath } from "@/lib/world-map-path";
 
-/**
- * The land dots as a single <path>. 1365 separate <circle> elements would be
- * 1365 DOM nodes that never change; one path is one node. Built once at module
- * scope because the map is the same on every render and for every viewer.
- */
 const DOT_RADIUS = MAP_STEP * 0.36;
-const LAND_PATH = (() => {
-  const parts: string[] = [];
-  for (let i = 0; i < MAP_DOTS.length; i += 2) {
-    const x = MAP_DOTS[i]!;
-    const y = MAP_DOTS[i + 1]!;
-    parts.push(
-      `M${x - DOT_RADIUS} ${y}a${DOT_RADIUS} ${DOT_RADIUS} 0 1 0 ${DOT_RADIUS * 2} 0a${DOT_RADIUS} ${DOT_RADIUS} 0 1 0 ${-DOT_RADIUS * 2} 0`,
-    );
-  }
-  return parts.join("");
-})();
+const LAND_PATH = landDotsPath(DOT_RADIUS);
 
 type FinanceCountryChartProps = {
   revenueByCountry: Record<string, number>;

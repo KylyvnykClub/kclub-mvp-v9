@@ -35,6 +35,9 @@
 
   --font-sans: var(--font-body);
   --font-serif: var(--font-heading);
+  /* The landing page's display serif; see src/app/fonts.ts for why it is its
+     own face rather than a change to --font-heading. Generates `font-display`. */
+  --font-display: var(--font-display-serif);
 
   /*
    * One radius scale, in the tokens, so a corner is a decision made once.
@@ -165,7 +168,13 @@
   --muted: #111111;
   --muted-foreground: #888888;
   --accent: #b18a44;
-  --accent-foreground: #ffffff;
+  /*
+   * Near-black on the gold, not white. White on #b18a44 is 3.19:1 and fails
+   * WCAG AA for the button labels this pair renders; the same near-black the
+   * light theme uses is 6.21:1. Caught by axe on the landing page, which is
+   * always dark since the home redesign and so always renders this pair.
+   */
+  --accent-foreground: #0a0a0a;
   /* 8.91:1 on this background - the bright gold is legible on dark. */
   --accent-ink: #d4af37;
   --destructive: #ef4444;
@@ -301,23 +310,5 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-}
-
-/* Landing motion (components/landing): scroll reveal and floating orbs.
-   The hidden initial state exists only for users who accept motion, so
-   reduced-motion and no-JS render the finished layout. */
-@media (prefers-reduced-motion: no-preference) {
-  .kc-reveal {
-    opacity: 0;
-    translate: 0 26px;
-    transition:
-      opacity 0.7s var(--animate-ease-out),
-      translate 0.7s var(--animate-ease-out);
-  }
-
-  .kc-reveal[data-revealed="true"] {
-    opacity: 1;
-    translate: 0 0;
   }
 }

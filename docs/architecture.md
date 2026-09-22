@@ -68,7 +68,7 @@ becomes a monolith within one sprint.
 
 |Component|Responsibility|Owns|Depends on|
 |-|-|-|-|
-|`web/marketing`|Renders the public, indexable site and the curated partner showcase|Nothing|`catalogue` (read-only, published entries only)|
+|`web/marketing`|Renders the public, indexable site and the curated partner showcase. The landing page is the client's delivered design, styled by `src/app/kylyvnyk-landing.css` — their stylesheet, scoped under `.kyl` and imported by that one route ([ADR 0035](decisions/0035-landing-page-is-the-clients-stylesheet.md))|Nothing|`catalogue` (read-only, published entries only)|
 |`web/member`|Renders the authenticated member area and its interactions|Nothing|`identity`, `membership`, `catalogue`, `billing`, `referrals`|
 |`web/admin`|Renders the staff console|Nothing|Every module, through explicitly authorised use cases|
 |`web/verify`|Serves the public card verification page|Nothing|`membership` (one narrow read)|
@@ -400,6 +400,14 @@ shaped it without leaving the page.
 |[0025](decisions/0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|
 |[0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md)|The dev database is a Neon branch rebuilt from migrations, and the database says which environment it is|Accepted|
 |[0027](decisions/0027-e164-phone-normalisation.md)|One phone number format, normalised on the server, validated as reachable by SMS|Accepted|
+|[0028](decisions/0028-email-identifier-and-account-recovery.md)|A verified email address is a second identifier, and the channel account recovery runs on|Superseded by 0031|
+|[0029](decisions/0029-google-sign-in.md)|Google is an optional way in; identity stays self-hosted|Accepted|
+|[0030](decisions/0030-registration-says-a-number-is-taken.md)|Registration says a phone number is taken, rate limited, as a stated exception to the enumeration rule|Accepted|
+|[0031](decisions/0031-identity-returns-to-phone-only.md)|Identity returns to phone only; recovery is a request to staff; Google is hidden behind a flag|Superseded by 0032|
+|[0032](decisions/0032-phone-and-email-both-required.md)|A phone number and an email address are both required; recovery emails a link, with the staff queue as the fallback|Accepted|
+|[0033](decisions/0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|
+|[0034](decisions/0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|
+|[0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|
 
 ---
 
