@@ -19,11 +19,20 @@ import {
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
+/**
+ * `pricing` points at the landing's own prices rather than at `/pricing`.
+ *
+ * The landing carries all three amounts - membership, VIP and a listing - in a
+ * block beside the card they buy, and `/pricing` is a sparser page saying the
+ * same numbers. Sending a reader from the catalogue to the fuller answer is
+ * the better of the two; the page is still served, still canonical, and still
+ * in the sitemap, it is simply no longer where this link goes.
+ */
 const navigation = [
   ["about", "/#about"],
   ["how_it_works", "/#how-it-works"],
   ["partners", "/directory"],
-  ["pricing", "/pricing"],
+  ["pricing", "/#membership"],
   ["faq", "/#faq"],
 ] as const;
 

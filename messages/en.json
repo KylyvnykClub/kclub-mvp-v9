@@ -911,6 +911,7 @@
         "emptyText": "Try another search or clear the filters.",
         "emptyAction": "Show All Partners",
         "viewAll": "View All Partners",
+        "viewAllWithCount": "View All Partners ({count})",
         "more": "{count} more in the catalogue"
       },
       "about": {

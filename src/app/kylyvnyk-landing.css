@@ -3845,3 +3845,21 @@ body.kyl-menu-open {
 .kyl .footer-bottom {
   color: #8a8781;
 }
+
+/* The route out of the landing's nine cards and into the catalogue page.
+   Centred under the grid, in the design's secondary tier - an outlined
+   rectangle with the same gold gradient on its border. */
+.kyl .partners-all {
+  display: flex;
+  width: fit-content;
+  min-height: 54px;
+  margin: 36px auto 0;
+  padding-inline: 30px;
+}
+
+@media (max-width: 760px) {
+  .kyl .partners-all {
+    width: 100%;
+    margin-top: 26px;
+  }
+}
