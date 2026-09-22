@@ -799,6 +799,164 @@
         "card": "Card",
         "catalogue": "Catalogue"
       }
+    },
+    "kyl": {
+      "meta": {
+        "title": "Kylyvnyk Club — International Business Club",
+        "description": "Kylyvnyk Club — an international business club for people, businesses, and opportunities worldwide."
+      },
+      "skip": "Skip to content",
+      "nav": {
+        "about": "About Us",
+        "howItWorks": "How It Works",
+        "partners": "Our Partners",
+        "pricing": "Pricing",
+        "faq": "FAQ",
+        "signIn": "Sign In",
+        "join": "Join the Club",
+        "language": "Language",
+        "home": "Kylyvnyk Club home",
+        "primary": "Primary navigation",
+        "mobile": "Mobile navigation",
+        "open": "Open navigation",
+        "close": "Close navigation",
+        "account": "My Account",
+        "dashboard": "Dashboard",
+        "console": "Staff Console",
+        "signOut": "Sign Out"
+      },
+      "hero": {
+        "titleLine1": "Build connections.",
+        "titleLine2": "Unlock opportunities.",
+        "description": "Join an international community of ambitious people, trusted businesses, and exclusive member benefits — all in one club.",
+        "primaryCta": "Join the Club",
+        "secondaryCta": "Explore the Community",
+        "statsLabel": "Club at a glance",
+        "members": "Members worldwide",
+        "partners": "Partner businesses",
+        "countries": "Countries represented"
+      },
+      "top": {
+        "title": "Top Partners",
+        "viewAll": "View All Partners",
+        "offer": "Member benefit"
+      },
+      "membership": {
+        "title": "Become part of a network built on trust.",
+        "lede": "A single digital membership connects you to verified people, meaningful advantages, and businesses beyond borders.",
+        "benefit1": "Partner privileges across the network",
+        "benefit2": "Introductions to people and businesses",
+        "benefit3": "Opportunities beyond your home market",
+        "benefit4": "Your verified digital club card",
+        "cardLabel": "Kylyvnyk Club membership card",
+        "passLabel": "Kylyvnyk Club member pass",
+        "cardKind": "Member card",
+        "cardTitleLine1": "The world is",
+        "cardTitleLine2": "within reach.",
+        "cardFooter": "Private membership",
+        "perMonth": "/ month",
+        "member": {
+          "name": "Member",
+          "description": "Meet people across the club, carry your digital card, and access selected partner benefits.",
+          "action": "Join as a Member"
+        },
+        "vip": {
+          "name": "VIP Member",
+          "description": "Go further with priority introductions, enhanced partner terms, and more personal support.",
+          "action": "Explore VIP Membership"
+        },
+        "business": {
+          "name": "Business",
+          "description": "Introduce your company to the network, publish your offer, and build useful relationships.",
+          "action": "Add Your Business",
+          "photoAlt": "Contemporary private meeting rooms"
+        }
+      },
+      "process": {
+        "title": "How It Works",
+        "lede": "A clear path from joining the club to using your member benefits.",
+        "step1": {
+          "title": "Create an account",
+          "description": "Register and introduce yourself to the club community."
+        },
+        "step2": {
+          "title": "Activate your card",
+          "description": "Keep your digital membership ready wherever you go."
+        },
+        "step3": {
+          "title": "Find a partner",
+          "description": "Explore businesses by location and the service you need."
+        },
+        "step4": {
+          "title": "Use your benefit",
+          "description": "Show your card to access the available member offer."
+        }
+      },
+      "directory": {
+        "title": "Find Your Next Partner",
+        "lede": "Search verified businesses, services, and specialists across the club network.",
+        "searchLabel": "Search partners",
+        "placeholder": "Name, service, or keyword",
+        "country": "Country",
+        "allCountries": "All countries",
+        "city": "City",
+        "allCities": "All cities",
+        "category": "Category",
+        "allCategories": "All categories",
+        "submit": "Find partners",
+        "results": "{count, plural, one {partner} other {partners}}",
+        "reset": "Reset filters",
+        "memberBenefit": "Member benefit",
+        "emptyTitle": "No partners found",
+        "emptyText": "Try another search or clear the filters.",
+        "emptyAction": "Show All Partners",
+        "viewAll": "View All Partners",
+        "more": "{count} more in the catalogue"
+      },
+      "about": {
+        "title": "An international community built on trust.",
+        "lede": "Kylyvnyk Club brings together members, entrepreneurs, professionals, and companies from different countries.",
+        "body": "Members receive a digital club card and access to partners' special offers, while companies present their business, attract clients, and grow international relationships.",
+        "cta": "Our Membership",
+        "photoAlt": "Business leaders discussing a partnership around a boardroom table"
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "lede": "Find out how membership, partner offers, and the digital card work.",
+        "contact": "Get in Touch",
+        "q1": "What is Kylyvnyk Club?",
+        "a1": "An international business club for members, entrepreneurs, professionals, and companies who value trusted relationships.",
+        "q2": "What does a member receive?",
+        "a2": "A verified digital club card, partner privileges, new connections, and access to business opportunities worldwide.",
+        "q3": "How does the digital card work?",
+        "a3": "Show your active digital card to a participating partner to access the conditions available to your membership level.",
+        "q4": "Can I register my company?",
+        "a4": "Yes. Business membership lets you publish a company profile and present an offer to club members.",
+        "q5": "In which countries does the club operate?",
+        "a5": "The current directory includes businesses in Ukraine, the United States, Canada, and Switzerland."
+      },
+      "cta": {
+        "titleLine1": "Stronger together.",
+        "titleLine2": "Without borders.",
+        "button": "Become a member"
+      },
+      "footer": {
+        "about": "An international business club connecting people, companies, and opportunities worldwide.",
+        "explore": "Explore",
+        "aboutUs": "About us",
+        "howItWorks": "How it works",
+        "directory": "Directory",
+        "membership": "Membership",
+        "connect": "Connect",
+        "community": "Worldwide business community",
+        "legalLabel": "Legal information",
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "cookies": "Cookie Policy",
+        "disclaimer": "Disclaimer",
+        "allLegal": "All documents",
+        "backToTop": "Back to top ↑"
+      }
     }
   },
   "Referral": {

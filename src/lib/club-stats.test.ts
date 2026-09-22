@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  MIN_STAT_TO_SHOW,
-  visibleStats,
-  type ClubPresence,
-} from "@/lib/club-stats";
+import { landingStats, type ClubPresence } from "@/lib/club-stats";
 
 const presence = (over: Partial<ClubPresence> = {}): ClubPresence => ({
   members: 0,
@@ -13,10 +9,10 @@ const presence = (over: Partial<ClubPresence> = {}): ClubPresence => ({
   ...over,
 });
 
-describe("visibleStats", () => {
-  it("prints every figure once they are all large enough", () => {
+describe("landingStats", () => {
+  it("prints every figure the club actually has", () => {
     expect(
-      visibleStats(presence({ members: 120, partners: 40, countries: 12 })),
+      landingStats(presence({ members: 120, partners: 40, countries: 12 })),
     ).toEqual([
       { key: "members", value: 120 },
       { key: "partners", value: 40 },
@@ -24,38 +20,33 @@ describe("visibleStats", () => {
     ]);
   });
 
-  it("leaves out a figure below the threshold instead of rounding it up", () => {
-    // The whole point of the band's rule: the reference asked for "1 250+
-    // партнёров", and a club with three partners must not answer that with a
-    // padded number.
-    const stats = visibleStats(
-      presence({ members: 120, partners: 3, countries: 2 }),
-    );
-
-    expect(stats).toEqual([{ key: "members", value: 120 }]);
+  it("prints a small figure as it is rather than padding it", () => {
+    // The reference markup shipped "15+ / 9 / 4" as placeholders, and an
+    // earlier one asked for "1 250+ партнёров". Nine partners is nine.
+    expect(
+      landingStats(presence({ members: 15, partners: 9, countries: 4 })),
+    ).toEqual([
+      { key: "members", value: 15 },
+      { key: "partners", value: 9 },
+      { key: "countries", value: 4 },
+    ]);
   });
 
-  it("shows a figure exactly at the threshold", () => {
-    const stats = visibleStats(presence({ members: MIN_STAT_TO_SHOW }));
-
-    expect(stats).toEqual([{ key: "members", value: MIN_STAT_TO_SHOW }]);
+  it("leaves out a figure that is zero", () => {
+    expect(
+      landingStats(presence({ members: 15, partners: 0, countries: 0 })),
+    ).toEqual([{ key: "members", value: 15 }]);
   });
 
-  it("hides a figure one short of the threshold", () => {
-    expect(visibleStats(presence({ members: MIN_STAT_TO_SHOW - 1 }))).toEqual(
-      [],
-    );
-  });
-
-  it("returns nothing for an empty club, so the band can render nothing", () => {
-    expect(visibleStats(presence())).toEqual([]);
+  it("returns nothing for an empty club, so the band renders nothing", () => {
+    expect(landingStats(presence())).toEqual([]);
   });
 
   it("keeps the band's reading order regardless of which figures survive", () => {
-    const stats = visibleStats(
+    const stats = landingStats(
       presence({ members: 11, partners: 0, countries: 99 }),
     );
 
-    expect(stats.map((s) => s.key)).toEqual(["members", "countries"]);
+    expect(stats.map((stat) => stat.key)).toEqual(["members", "countries"]);
   });
 });
