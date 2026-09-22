@@ -225,14 +225,21 @@ export function KylDirectory({
           />
         )}
 
-        {count > rows.length && (
-          <Link
-            className="button-tertiary top-partners-all"
-            href={catalogueHref}
-          >
-            {t("viewAll")}
-          </Link>
-        )}
+        {/* The way out of the nine cards and into the catalogue.
+            Unconditional: it used to appear only when the catalogue held more
+            than the grid was showing, which meant a club with nine partners had
+            no route to its own catalogue page at all - and the section that
+            exists to send people there was the one place without a link. It
+            carries whatever filters are set, so pressing it continues the
+            search rather than restarting it. */}
+        <Link
+          className="button button-secondary partners-all"
+          href={catalogueHref}
+        >
+          {count > rows.length
+            ? t("viewAllWithCount", { count })
+            : t("viewAll")}
+        </Link>
       </div>
     </section>
   );
