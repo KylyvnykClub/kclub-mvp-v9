@@ -132,14 +132,24 @@ export class IdentityService {
     displayName: string;
     country: string;
     language: string;
-    /** Sponsored where the join link was opened in this session (ADR 0033). */
-    duesKind?: "paying" | "sponsored";
+    /**
+     * Sponsored where the join link was opened in this session (ADR 0033);
+     * `partner` where this is a business application (ADR 0036).
+     */
+    duesKind?: "paying" | "sponsored" | "partner";
     userAgent: string;
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
   }): Promise<{
     success: boolean;
     sessionToken?: string;
+    /**
+     * The account that was created. Returned so a caller that must do more in
+     * the same request - a partner application creating its company - can name
+     * the owner explicitly rather than reading back a cookie it has just
+     * written (ADR 0036).
+     */
+    memberId?: string;
     error?: RegisterErrorCode;
   }> {
     // ADR 0012: while phone verification is postponed the SMS code is not
@@ -204,7 +214,7 @@ export class IdentityService {
         });
       }
 
-      return { success: true, sessionToken };
+      return { success: true, sessionToken, memberId };
     } catch (error) {
       // Not error.message: drizzle puts the statement and its bound values
       // there, which for this statement are the phone number and the password

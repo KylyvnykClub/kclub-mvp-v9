@@ -15,8 +15,9 @@ import { findCompanyByOwner } from "@/data/companies";
  * The `company` query parameter selects which copy to show and nothing else.
  * It is verified against the session's own companies before it is used, so a
  * guessed id shows the generic wording rather than another owner's company
- * name. Since ADR 0019 a listing is paid for before moderation, so the message
- * here is "under review", not "published".
+ * name. Since ADR 0036 a listing is paid for only after it has been approved,
+ * so reaching this page means the listing is on its way live rather than under
+ * review.
  */
 export default async function CheckoutSuccessPage({
   params,

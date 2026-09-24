@@ -16,6 +16,7 @@ import {
   type CheckoutPlan,
 } from "@/modules/billing/checkout";
 import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
+import { listingIsPayable } from "@/domain/listing-checkout";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -161,13 +162,20 @@ export async function createVipCheckoutAction() {
 }
 
 /**
- * Open listing checkout for a company the caller owns (FR-051).
+ * Open listing checkout for a company the caller owns (FR-051, FR-111).
  *
- * Since ADR 0019 this runs immediately after submission, before moderation, so
- * a `pending` company is eligible. Only a company that has already been
- * rejected is refused - paying for a listing that will not be published buys
- * nothing. Publication still requires approved AND an active subscription
- * (FR-044); the two gates are ANDed at read time and neither is relaxed here.
+ * Approved or nothing. ADR 0019 briefly let a `pending` company pay on the
+ * grounds that intent peaks at the last field of the form, and paid for it
+ * with a refund obligation on every rejection; ADR 0036 reverses that. Nobody
+ * is charged for a listing a moderator has not yet agreed to publish, so a
+ * rejection costs the applicant nothing and costs us no refund.
+ *
+ * This is the only door to listing checkout, which is what makes the rule
+ * enforceable: the form no longer opens it, and the approval notification
+ * points here.
+ *
+ * Publication still requires approved AND an active subscription (FR-044); the
+ * two gates are ANDed at read time and neither is relaxed here.
  */
 export async function createCheckoutSessionAction(companyId: string) {
   const auth = await getCurrentMember();
@@ -176,7 +184,7 @@ export async function createCheckoutSessionAction(companyId: string) {
   }
 
   const company = await findCompanyByOwner(db, companyId, auth.member.id);
-  if (!company || company.moderationStatus === "rejected") {
+  if (!listingIsPayable(company)) {
     throw new Error("Company is not eligible for listing checkout");
   }
 

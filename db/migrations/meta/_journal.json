@@ -267,6 +267,13 @@
       "when": 1789207200000,
       "tag": "20260912100000_public_catalogue",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1790244000000,
+      "tag": "20260924100000_partner_dues_kind",
+      "breakpoints": true
     }
   ]
 }

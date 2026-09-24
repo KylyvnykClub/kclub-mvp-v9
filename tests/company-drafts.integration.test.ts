@@ -46,16 +46,15 @@ function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
-describe("FR-040: company application drafts", () => {
+describe("FR-040, FR-109: company application drafts", () => {
   it("stores a draft and reads it back for its owner", async () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 1, { name: "Acme Coffee" });
+    await upsertCompanyDraft(db, member.id, { name: "Acme Coffee" });
 
     const draft = await findCompanyDraftByOwner(db, member.id);
     expect(draft).not.toBeNull();
-    expect(draft?.step).toBe(1);
     expect(draft?.data).toEqual({ name: "Acme Coffee" });
   });
 
@@ -70,8 +69,8 @@ describe("FR-040: company application drafts", () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 1, { name: "Acme Coffee" });
-    await upsertCompanyDraft(db, member.id, 2, {
+    await upsertCompanyDraft(db, member.id, { name: "Acme Coffee" });
+    await upsertCompanyDraft(db, member.id, {
       name: "Acme Coffee",
       city: "Kyiv",
     });
@@ -85,15 +84,14 @@ describe("FR-040: company application drafts", () => {
     expect(rows[0]?.data).toEqual({ name: "Acme Coffee", city: "Kyiv" });
   });
 
-  it("does not move the resume point backwards when an earlier step is corrected", async () => {
+  it("keeps the last answer when a field is corrected", async () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 3, { name: "Acme Coffee" });
-    await upsertCompanyDraft(db, member.id, 1, { name: "Acme Coffee Ltd" });
+    await upsertCompanyDraft(db, member.id, { name: "Acme Coffee" });
+    await upsertCompanyDraft(db, member.id, { name: "Acme Coffee Ltd" });
 
     const draft = await findCompanyDraftByOwner(db, member.id);
-    expect(draft?.step).toBe(3);
     expect(draft?.data).toEqual({ name: "Acme Coffee Ltd" });
   });
 
@@ -102,7 +100,7 @@ describe("FR-040: company application drafts", () => {
     const mine = await seedMember(db);
     const theirs = await seedMember(db);
 
-    await upsertCompanyDraft(db, mine.id, 2, { name: "Mine" });
+    await upsertCompanyDraft(db, mine.id, { name: "Mine" });
 
     expect(await findCompanyDraftByOwner(db, theirs.id)).toBeNull();
   });
@@ -111,7 +109,7 @@ describe("FR-040: company application drafts", () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 4, { name: "Acme Coffee" });
+    await upsertCompanyDraft(db, member.id, { name: "Acme Coffee" });
     await deleteCompanyDraft(db, member.id);
 
     expect(await findCompanyDraftByOwner(db, member.id)).toBeNull();
@@ -121,7 +119,7 @@ describe("FR-040: company application drafts", () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 1, { name: "Abandoned" });
+    await upsertCompanyDraft(db, member.id, { name: "Abandoned" });
     await db
       .update(companyDrafts)
       .set({ updatedAt: daysAgo(COMPANY_DRAFT_RETENTION_DAYS + 1) })
@@ -137,7 +135,7 @@ describe("FR-040: company application drafts", () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 1, { name: "Still working" });
+    await upsertCompanyDraft(db, member.id, { name: "Still working" });
     await db
       .update(companyDrafts)
       .set({ updatedAt: daysAgo(COMPANY_DRAFT_RETENTION_DAYS - 1) })
@@ -152,7 +150,7 @@ describe("FR-040: company application drafts", () => {
     const db = testDbClient();
     const member = await seedMember(db);
 
-    await upsertCompanyDraft(db, member.id, 2, { name: "Leaving" });
+    await upsertCompanyDraft(db, member.id, { name: "Leaving" });
     await db.delete(members).where(eq(members.id, member.id));
 
     const rows = await db

@@ -260,8 +260,10 @@ async function handleEntry(
 
   if (entry.topic === BILLING_REFUND_RETRY_TOPIC) {
     // The rejection already committed; this is the money half retrying after
-    // Stripe was unreachable (ADR 0019). Throwing leaves processed_at null, so
-    // a still-unreachable Stripe simply gets tried again next drain.
+    // Stripe was unreachable. Only a company that paid under the old order
+    // (ADR 0019, superseded by ADR 0036) can have anything to give back.
+    // Throwing leaves processed_at null, so a still-unreachable Stripe simply
+    // gets tried again next drain.
     const { companyId } = entry.payload as { companyId?: string };
     if (!companyId) {
       console.error(`[listing-refund] outbox row ${entry.id} has no companyId`);

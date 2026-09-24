@@ -71,9 +71,13 @@ export default async function PricingPage({
       name: t("listingName"),
       description: t("listingDescription"),
       cta: t("listingCta"),
+      // The listing is a business's plan, so a signed-out reader goes to the
+      // partner application and not to member sign-up (FR-109). A member who
+      // is already in the club submits from the dashboard, which is where
+      // their draft lives.
       href: current?.member
-        ? `/${locale}/dashboard/company`
-        : `/${locale}/register`,
+        ? `/${locale}/dashboard/company/new`
+        : `/${locale}/partner`,
       featured: false,
     },
   ];
