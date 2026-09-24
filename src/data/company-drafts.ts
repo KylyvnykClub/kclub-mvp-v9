@@ -1,4 +1,4 @@
-import { eq, lt, sql } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { companyDrafts } from "./schema/company-drafts";
@@ -29,25 +29,21 @@ export async function findCompanyDraftByOwner(
  * Save the applicant's progress. One row per member, so a second save
  * overwrites the first rather than accumulating half-finished applications.
  *
- * `step` only ever moves forward: stepping back to correct an earlier answer
- * must not drag the resume point backwards with it.
+ * There is no resume point to keep any more: the form is one page (ADR 0036),
+ * so what is remembered is the answers and nothing about where the applicant
+ * had got to.
  */
 export async function upsertCompanyDraft(
   db: DbClient,
   ownerId: string,
-  step: number,
   data: unknown,
 ): Promise<void> {
   await db
     .insert(companyDrafts)
-    .values({ ownerId, step, data })
+    .values({ ownerId, data })
     .onConflictDoUpdate({
       target: companyDrafts.ownerId,
-      set: {
-        data,
-        step: sql`greatest(${companyDrafts.step}, ${step})`,
-        updatedAt: new Date(),
-      },
+      set: { data, updatedAt: new Date() },
     });
 }
 

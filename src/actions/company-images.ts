@@ -35,9 +35,11 @@ export type GalleryActionState = { success: boolean; error?: string };
 /**
  * Upload one photo into a company's gallery (ADR 0022).
  *
- * Any non-rejected company the caller owns may hold a gallery — same
- * eligibility shape as listing checkout (ADR 0019): what a member may see is
- * gated at read time by approved + paid, not by refusing the owner's writes.
+ * Any non-rejected company the caller owns may hold a gallery. Deliberately
+ * looser than listing checkout, which needs an approved company (ADR 0036):
+ * what a member may see is gated at read time by approved + paid, not by
+ * refusing the owner's writes, and an applicant adding photos while their
+ * application is read is doing exactly what the moderator needs.
  * The bytes go through the same decode-validate-re-encode pipeline as
  * avatars, bounded to 1600px, EXIF stripped.
  */

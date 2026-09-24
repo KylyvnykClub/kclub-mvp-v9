@@ -60,7 +60,9 @@ append-only at the database permission level — the application role holds
 |Profile, personal details, account deletion|`/dashboard/profile`|
 |Membership card with its QR|`/dashboard/profile`|
 |Referrals sent and their status|`/dashboard/referrals`|
-|Submit a company, four steps with a saved draft|`/dashboard/company/new`|
+|Submit a company, one page with a saved draft|`/dashboard/company/new`|
+|Apply as a business partner without an account|`/{locale}/partner`|
+|A partner's application standing and its payment|`/{locale}/membership`|
 |Public card verification|`/{locale}/card/{token}`|
 
 ## 3. Scheduled jobs

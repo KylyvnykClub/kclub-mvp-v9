@@ -99,6 +99,17 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // Partner registration (FR-109). Public for the same reason `/register`
+    // is: the business filling it in has no account yet, and creating one is
+    // part of what the form does.
+    method: "GET",
+    path: "/:locale/partner",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     method: "GET",
     path: "/:locale/legal",
     action: "read",
@@ -205,6 +216,18 @@ const staticRoutes: RouteEntry[] = [
   {
     method: "POST",
     path: "action:registerCompanyAction",
+    action: "create",
+    subject: "own_company",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    // The partner application (FR-109): creates the account and the company
+    // from one submit, so it is reachable by an anonymous caller. What bounds
+    // it is what bounds registration - the Turnstile gate and the per-address
+    // rate limit inside `registerMemberFromForm`.
+    method: "POST",
+    path: "action:registerPartnerAction",
     action: "create",
     subject: "own_company",
     mutating: true,

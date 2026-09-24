@@ -210,9 +210,11 @@ export default async function AdminCompaniesPage({
                       />
                     </TableCell>
                     {/*
-                      Payment now precedes moderation (ADR 0019), so an unpaid
-                      row is an abandoned checkout rather than an error. Paid
-                      rows sort first; this tells the moderator which is which.
+                      Since ADR 0036 nothing is charged before approval, so a
+                      pending row is unpaid by design and the indicator says
+                      only whether an already-approved listing has been paid
+                      for. Paid rows still sort first, which now means "live"
+                      rather than "ready to judge".
                     */}
                     <TableCell className="hidden sm:table-cell">
                       <StatusBadge

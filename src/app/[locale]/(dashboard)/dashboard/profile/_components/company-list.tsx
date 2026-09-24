@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/lib/countries";
+import { listingIsPayable } from "@/domain/listing-checkout";
 import {
   COMPANY_GALLERY_MAX_IMAGES,
   companyImageServePath,
@@ -92,6 +93,10 @@ export function CompanyList({
       {companies.map((company) => {
         const sub = subscriptions.find((s) => s.companyId === company.id);
         const isActive = sub?.status === "active";
+        // FR-111: there is nothing to pay until a moderator has approved the
+        // application, and offering a button that the action would refuse is
+        // worse than not offering one.
+        const payable = listingIsPayable(company);
 
         return (
           <Card
@@ -139,15 +144,21 @@ export function CompanyList({
               ) : (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    {t("listingRequired")}
+                    {payable
+                      ? t("listingRequired")
+                      : company.moderationStatus === "rejected"
+                        ? t("listingRejected")
+                        : t("listingAwaitingReview")}
                   </p>
-                  <Button
-                    onClick={() => handleCheckout(company.id)}
-                    disabled={isPending}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90"
-                  >
-                    {isPending ? t("loading") : t("subscribeListing")}
-                  </Button>
+                  {payable && (
+                    <Button
+                      onClick={() => handleCheckout(company.id)}
+                      disabled={isPending}
+                      className="bg-accent text-accent-foreground hover:bg-accent/90"
+                    >
+                      {isPending ? t("loading") : t("subscribeListing")}
+                    </Button>
+                  )}
                 </div>
               )}
 

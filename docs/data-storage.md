@@ -29,9 +29,12 @@ different authentication, and joining them would let a compromised member
 account inherit staff scope.
 
 A third shape arrived with [ADR 0033](decisions/0033-standard-membership-is-paid.md):
-`members.dues_kind` (`paying` | `sponsored` | `legacy_free`) records **who owes
-membership dues**, and never whether they are paid up — that answer is only ever
-read from the projected subscription rows. `join_links` holds the club's current
+`members.dues_kind` (`paying` | `sponsored` | `legacy_free` | `partner`) records
+**who owes membership dues**, and never whether they are paid up — that answer is
+only ever read from the projected subscription rows. `partner`
+([ADR 0036](decisions/0036-payment-after-moderation.md)) owes no dues at all:
+the account was created by a business application, and what opens the club for
+it is an active listing subscription. `join_links` holds the club's current
 private join URL, one active row at a time; it references no member, counts
 nobody and is not personal data.
 

@@ -75,7 +75,7 @@ export interface RegisterMemberInput {
    * through the club's join link, which the Server Action proves from a signed
    * cookie rather than from anything the form posted.
    */
-  duesKind?: "paying" | "sponsored";
+  duesKind?: "paying" | "sponsored" | "partner";
   userAgent: string;
   ipAddress: string;
   consents: Array<{ documentId: string; version: string }>;

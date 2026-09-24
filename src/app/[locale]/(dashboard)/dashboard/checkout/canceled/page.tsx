@@ -11,9 +11,9 @@ import { findCompanyByOwner } from "@/data/companies";
  * abandoning Stripe changes nothing, and nothing has been charged.
  *
  * When a company id is present and belongs to the caller, the copy says what
- * actually happened - the application itself was saved on submission (ADR 0019)
- * and stays payable from Profile > Companies, so an abandoned checkout is not a
- * lost application.
+ * actually happened - the application was saved and approved before any of
+ * this (ADR 0036) and stays payable from Profile > Companies, so an abandoned
+ * checkout is not a lost application.
  */
 export default async function CheckoutCanceledPage({
   params,
