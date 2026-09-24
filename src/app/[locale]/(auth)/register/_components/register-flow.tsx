@@ -11,6 +11,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
+import { nextChallengeNonce } from "@/components/auth/turnstile-nonce";
 import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 import type { RegisterErrorCode } from "@/domain/registration";
@@ -115,6 +116,13 @@ export function RegisterFlow({
   // not showing.
   const [pendingForm, setPendingForm] = useState<FormData | null>(null);
 
+  // A Turnstile token is single-use, and every submit spends one whether the
+  // server accepts the registration or refuses it. Bumped on each refusal so
+  // the widget below replaces the spent token: without it the second attempt
+  // is rejected for replaying the first one's, whatever the applicant fixed,
+  // and stays rejected until the page is reloaded.
+  const [challengeNonce, setChallengeNonce] = useState(0);
+
   // Only complain about what the applicant has actually typed: an empty field
   // is not yet wrong, it is unfinished.
   const passwordTooShort = password.length > 0 && password.length < 8;
@@ -187,10 +195,12 @@ export function RegisterFlow({
         const requested = await requestPhoneVerificationAction(formData);
 
         if (requested?.taken) {
+          setChallengeNonce((n) => nextChallengeNonce(n, { success: false }));
           return { success: false, error: "phone_taken", field: "phone" };
         }
 
         if (!requested?.success) {
+          setChallengeNonce((n) => nextChallengeNonce(n, { success: false }));
           return { success: false, error: requested?.error ?? "failed" };
         }
 
@@ -209,6 +219,8 @@ export function RegisterFlow({
             : `/${locale}/dashboard/profile`,
         );
       }
+
+      setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));
 
       return result;
     },
@@ -242,6 +254,8 @@ export function RegisterFlow({
             : `/${locale}/dashboard/profile`,
         );
       }
+
+      setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));
 
       return result;
     },
@@ -296,7 +310,11 @@ export function RegisterFlow({
               {/* This screen's own challenge, not the form's: the token the
                   form spent cannot be presented twice, and a wrong code is
                   precisely when a second attempt is made. */}
-              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+              <TurnstileWidget
+                siteKey={turnstileSiteKey}
+                locale={locale}
+                nonce={challengeNonce}
+              />
 
               {codeState?.error && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
@@ -513,7 +531,11 @@ export function RegisterFlow({
                 })}
               </p>
 
-              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+              <TurnstileWidget
+                siteKey={turnstileSiteKey}
+                locale={locale}
+                nonce={challengeNonce}
+              />
 
               {state?.error && !emailRefused && !phoneRefused && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
