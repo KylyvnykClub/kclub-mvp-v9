@@ -19,7 +19,6 @@ import {
 import {
   EMPTY_PARTNER_MEDIA,
   PartnerMediaField,
-  uploadPartnerMedia,
   type PartnerMedia,
 } from "./partner-media-field";
 import { Button } from "@/components/ui/button";
@@ -101,6 +100,11 @@ export function PartnerApplicationForm({
   const [media, setMedia] = useState<PartnerMedia>(EMPTY_PARTNER_MEDIA);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Controlled for the reason the registration form's are: React resets an
+  // uncontrolled field when the form's action resolves, and a refusal that
+  // silently empties two required boxes makes the next submit impossible.
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
   const [challengeNonce, setChallengeNonce] = useState(0);
 
   // Only complain about what the applicant has actually typed: an empty field
@@ -140,16 +144,15 @@ export function PartnerApplicationForm({
         }
       }
 
-      const result = await registerPartnerAction(previous, formData);
+      // The pictures ride along with the submit. They cannot be staged the
+      // way the dashboard form stages them - ADR 0024 stages under a member
+      // id, and until this request there is no member - and uploading them
+      // from here afterwards would race the navigation this action's response
+      // triggers.
+      if (media.logo) formData.set("logoFile", media.logo);
+      for (const image of media.images) formData.append("galleryFile", image);
 
-      // The company now exists and the applicant owns it, which is the first
-      // moment the pictures they picked can be sent anywhere (ADR 0024 stages
-      // media under a member id, and until a second ago there was no member).
-      // Best effort: a lost photo must not turn a filed application into a
-      // failure.
-      if (result?.success && result.companyId) {
-        await uploadPartnerMedia(result.companyId, media);
-      }
+      const result = await registerPartnerAction(previous, formData);
 
       // A single-use token was spent on that attempt whatever came back, so a
       // second try needs a new challenge or it fails for the challenge rather
@@ -176,6 +179,11 @@ export function PartnerApplicationForm({
       : reason;
   }
 
+  // Reached only if the page does not send them onward. A successful submit
+  // normally lands on the standing screen: this action's response re-renders
+  // `/partner`, and that page forwards an applicant who now has an
+  // application. This is the fallback for when it does not, because a form
+  // that just redisplays itself after a successful submit reads as a failure.
   if (state?.success) {
     return (
       <AuthShell
@@ -288,6 +296,8 @@ export function PartnerApplicationForm({
                     id="displayName"
                     name="displayName"
                     required
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
                     placeholder={t("contactNamePlaceholder")}
                     className="h-12 bg-background"
                   />
@@ -306,6 +316,8 @@ export function PartnerApplicationForm({
                     autoComplete="email"
                     required
                     maxLength={255}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder={tAuth("emailPlaceholder")}
                     aria-invalid={emailRefused || undefined}
                     className="h-12 bg-background"

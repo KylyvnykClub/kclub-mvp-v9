@@ -110,6 +110,14 @@ export function RegisterFlow({
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Controlled, and not because they need to be: React resets an uncontrolled
+  // field once the form's action resolves, so a refused registration used to
+  // wipe the name and the address while leaving the password - which is
+  // controlled - in place. Both are `required`, so the browser then refused
+  // every further submit with a validation bubble that is easy to miss, and
+  // correcting the number and pressing the button again did nothing at all.
+  const [displayName, setDisplayName] = useState(googleName ?? "");
+  const [email, setEmail] = useState(googleEmail ?? "");
 
   // Held between the form and the code screen, so nothing has to be typed
   // twice when Twilio is switched back on. Null whenever the code screen is
@@ -405,7 +413,8 @@ export function RegisterFlow({
                   id="displayName"
                   name="displayName"
                   required
-                  defaultValue={googleName ?? undefined}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={t("namePlaceholder")}
                   className="h-12 bg-background"
                 />
@@ -429,7 +438,8 @@ export function RegisterFlow({
                   autoComplete="email"
                   required
                   maxLength={255}
-                  defaultValue={googleEmail ?? undefined}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder={tAuth("emailPlaceholder")}
                   aria-invalid={emailRefused || undefined}
                   aria-describedby="email-help"
@@ -438,8 +448,9 @@ export function RegisterFlow({
                 <p id="email-help" className="text-xs text-muted-foreground">
                   {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
                 </p>
-                {/* Against the field, and the form keeps everything typed. It
-                    says nothing about who holds the address: ADR 0030's
+                {/* Against the field, and the form keeps everything typed -
+                    which is only true because every field on it is controlled.
+                    It says nothing about who holds the address: ADR 0030's
                     disclosure covers the number only (ADR 0032). */}
                 {emailRefused && (
                   <p className="text-sm font-medium text-destructive">

@@ -17,6 +17,8 @@ import {
   openPendingIdentity,
 } from "@/lib/pending-identity";
 import { PENDING_JOIN_COOKIE, openPendingJoin } from "@/lib/pending-join";
+import { logger } from "@/lib/logger";
+import { safeErrorFields } from "@/lib/safe-error";
 import { registerSchema } from "@/lib/registration-schema";
 import {
   registerErrorField,
@@ -274,6 +276,17 @@ export async function registerMemberFromForm(
     if (err instanceof z.ZodError) {
       return { success: false, error: "invalid_input", field: zodField(err) };
     }
+
+    // Anything else is an applicant told "the account could not be created"
+    // with no way to find out why - a Redis that did not answer the rate
+    // limiter, a legal document that failed to load. It used to leave no trace
+    // at all, which made "registration works every other time" impossible to
+    // diagnose from the logs. Never `err.message` on its own: a Drizzle
+    // failure carries the statement and its bound values, which for this one
+    // are the phone number and the password hash (security.md §3).
+    logger.error("Registration failed before an account was created", {
+      ...safeErrorFields(err),
+    });
     return { success: false, error: "failed" };
   }
 }

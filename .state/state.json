@@ -35,10 +35,6 @@
       "note": "--accent-foreground was fixed to near-black in dark mode (3.19:1 -> 6.21:1). --primary-foreground is still #ffffff over --primary #b18a44, the identical pair; axe did not flag it on the landing page, so it is unproven rather than fine. Worth an axe pass over a dark catalogue and dashboard."
     },
     {
-      "id": "e2e-cannot-launch-chromium-on-this-host",
-      "note": "`pnpm test:e2e` fails before the first test: the host's Chromium is missing libnspr4.so, and the harness builds into `.next`, which the docker stack owns (EACCES) - `NEXT_BUILD_DIR=.next-e2e` works around the second. The landing's axe pass was run inside the app container instead: 0 serious/critical at 1440 and 390 in en, ru and uk."
-    },
-    {
       "id": "landing-demo-partners-in-the-docker-database",
       "note": "`pnpm db:seed:landing` wrote nine invented partners (slug `landing-demo-%`) plus the full taxonomy into the docker-compose database so the redesigned landing has something to read. `pnpm db:seed:landing --remove` takes the partners out; the taxonomy is real reference data and stays."
     },
@@ -47,40 +43,49 @@
       "note": "The redesigned landing's behaviour - live catalogue search, the custom select, the reveal observer - is proved by hand in a browser, not in CI. Only the pure helpers are tested (landing-partner, partner-presentation, club-stats). A Playwright test for 'type dental, see one card' would be the cheapest real cover."
     },
     {
-      "id": "partner-account-half-untested",
-      "note": "registerPartnerAction (account + company in one submit) is covered by no test. It needs Next's request scope for cookies/headers, so neither the unit nor the integration suite can reach it; submitCompany has 10 integration tests, the account half has none. Needs the browser suite."
-    },
-    {
-      "id": "turnstile-reset-unproven-in-a-browser",
-      "note": "The fix for 'registration works every other time' (FR-112) is unit tested at the decision level only. That TurnstileWidget actually issues a fresh token after a refusal is a browser effect and was never observed - no Chromium on this host, no component-test harness in the repo."
-    },
-    {
       "id": "partner-cannot-edit-application-while-in-review",
       "note": "A partner account is held on /{locale}/membership until the listing is paid for, so a typo in a pending application waits for a moderator to reject it. No edit path, and photos cannot be added after submission either."
     },
     {
       "id": "approved-applications-never-paid-for-not-measured",
       "note": "ADR 0036 says to revisit the payment-after-moderation order if more than about a quarter of approved applications are never paid for. Nothing counts that today."
+    },
+    {
+      "id": "no-e2e-test-for-the-registration-retry",
+      "note": "The bug that made registration 'work every other time' (React resetting uncontrolled fields after a form action, emptying the required name and email) was found by hand in a browser and is fixed, but nothing in CI would catch it coming back. A Playwright test - refuse an attempt, check every field still holds its value, resubmit - is the cheapest real cover."
+    },
+    {
+      "id": "partner-account-half-untested",
+      "note": "registerPartnerAction (account + company in one submit) is covered by no automated test - it needs Next's request scope, which neither the unit nor the integration suite provides. It was walked by hand in a browser on 2026-09-24 and works; submitCompany has 10 integration tests."
+    },
+    {
+      "id": "chromium-needs-libs-unpacked-by-hand",
+      "note": "Playwright's Chromium needs libnspr4, libnss3 and libasound2, which this host lacks and cannot install without sudo. Workaround that works: `apt-get download libnspr4 libnss3 libasound2t64`, `dpkg -x` into a local prefix, then run with LD_LIBRARY_PATH pointing at it. Replaces the old 'e2e cannot launch chromium' item."
+    },
+    {
+      "id": "no-staff-password-in-this-environment",
+      "note": ".env.local has no ADMIN_BOOTSTRAP_OWNER_PHONE/PASSWORD, so the run-kclub driver cannot sign in as staff and no console screen can be driven here. The dev database does hold a staff_owner (+380900000001, TOTP enabled) - only the password is missing."
     }
   ],
   "lastSession": {
     "date": "2026-09-24",
     "checklist": [
-      "Found why registration 'works every other time': a Turnstile token is single-use, and every retry after a refusal replayed the spent one. The widget is now reset after each refusal, on registration and on password reset",
+      "Found and fixed TWO causes of 'registration works every other time'. First: a single-use Turnstile token was replayed by every retry after a refusal. Second, worse: React 19 resets uncontrolled fields when a form action resolves, so a refusal silently emptied the required name and email and every further click was blocked by the browser",
       "The landing page's Business card sent a signed-out visitor to member sign-up and a signed-in one to a 404; both now go to the partner application",
       "New public one-page partner registration at /{locale}/partner - account and company created by one submit, no club membership first",
-      "The company form is one page everywhere: block/category/activities are asked before the description, the four steps and the review panel are gone, and the draft autosaves a second after typing stops",
-      "New dues kind 'partner': owes no $4.99, and the club opens for it when the listing subscription is active",
+      "The company form is one page everywhere: block/category/activities before the description, no steps, no review panel, draft autosaves a second after typing stops",
+      "New dues kind 'partner': owes no $4.99, and the club opens when the listing subscription is active",
       "Payment moved back behind moderation - checkout requires an approved company, the form no longer opens Stripe, and the approval inbox row and email carry the payment link",
-      "ADR 0036 written, ADR 0019 superseded; FR-109 to FR-112 added, FR-040 and FR-103 amended; phase-9.md written; architecture, ux, data-storage, glossary, operations, brief and testing updated",
-      "pnpm verify green (626 unit tests, +20 new); integration 315 pass with only the 3 known FR-083 failures; migration proved up, down and up again against PostgreSQL 17"
+      "ADR 0036 written, ADR 0019 superseded; FR-109 to FR-112 added, FR-040 and FR-103 amended; phase-9.md written; seven docs updated",
+      "Got Chromium running without sudo and walked the whole funnel in a browser: Business card, guest submit, pending screen, approved screen with the pay button, and a refused registration corrected and resubmitted",
+      "pnpm verify green (626 unit tests, +20 new); integration 315 pass with only the 3 known FR-083 failures; migration proved up, down and up again on PostgreSQL 17"
     ],
-    "stoppedAt": "Working tree is uncommitted on fix/landing-catalogue-link, which is the wrong branch for this work. Nothing is committed and no PR is open. The funnel was checked by serving a production build and reading the HTML; no browser drove it, because this host cannot launch Chromium.",
+    "stoppedAt": "Pushed to feat/FR-109-partner-funnel, based on fix/landing-catalogue-link. No PR opened - gh is not installed and there is no GitHub token here, so the compare link was handed to the user instead.",
     "nextSteps": [
-      "Move the work onto feat/FR-109-partner-funnel and open the PR - the current branch is about the landing catalogue link and this is a different change",
-      "Get a browser: install libnspr4/libnss3 (needs sudo) and drive the real funnel - Business card -> /partner -> submit -> approve in the console -> pay",
-      "Write the missing account-half test: one guest submit makes exactly one member with dues_kind='partner' and one pending company",
-      "Show the client /ru/partner and the /ru/membership standing screen before deploying - the copy is new in all three locales",
+      "Open the PR from the compare link and get it reviewed",
+      "Turn the browser walk into a Playwright test, starting with the registration retry - that is the bug nothing in CI would catch coming back",
+      "Ask the client to confirm on production that registration stopped failing on the second attempt",
+      "Show the client /ru/partner and the /ru/membership standing screen - the copy is new in all three locales",
       "On production: the migration applies itself during the build; afterwards confirm in Stripe that nothing is charged before an approval"
     ]
   }

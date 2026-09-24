@@ -4,13 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
-import {
-  uploadCompanyImageAction,
-  uploadCompanyLogoAction,
-} from "@/actions/company-images";
 import { Label } from "@/components/ui/label";
 import { FILE_INPUT_CLASS } from "@/components/company/company-fields";
-import { uploadImageSafely } from "@/lib/client-image-upload";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 
 /**
@@ -18,14 +13,13 @@ import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
  *
  * The dashboard form stages media under the applicant's draft prefix, which is
  * their member id (ADR 0024). A business filling this page in has no member id
- * yet, so there is nowhere to stage to. The files are therefore held in the
- * browser and sent once the application has created the company — by which
- * point the applicant is signed in and owns it, so the ordinary company upload
- * actions apply, with the same re-encode pipeline and the same authorization.
+ * yet, so there is nowhere to stage to. The files are therefore held here
+ * until the form is submitted and ride along in its FormData;
+ * `attachApplicationMedia` processes them server-side through the same
+ * re-encode pipeline every other upload uses.
  *
- * `uploadPartnerMedia` is deliberately best-effort. The application is the
- * point; a photo that fails to upload must not turn a filed application into a
- * failure, and the owner can add it again later from Profile → Companies.
+ * This component only picks and previews. It uploads nothing, which is what
+ * keeps the pictures from racing the navigation the submit triggers.
  */
 
 export type PartnerMedia = {
@@ -34,27 +28,6 @@ export type PartnerMedia = {
 };
 
 export const EMPTY_PARTNER_MEDIA: PartnerMedia = { logo: null, images: [] };
-
-export async function uploadPartnerMedia(
-  companyId: string,
-  media: PartnerMedia,
-): Promise<void> {
-  if (media.logo) {
-    const form = new FormData();
-    form.set("logo", media.logo);
-    await uploadImageSafely(media.logo, () =>
-      uploadCompanyLogoAction(companyId, form),
-    );
-  }
-
-  for (const image of media.images) {
-    const form = new FormData();
-    form.set("image", image);
-    await uploadImageSafely(image, () =>
-      uploadCompanyImageAction(companyId, form),
-    );
-  }
-}
 
 export function PartnerMediaField({
   media,
