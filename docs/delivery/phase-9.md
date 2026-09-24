@@ -36,7 +36,8 @@ What already exists and is reused rather than rebuilt:
 |Task|Delivers|FR|Depends on|Est|Status|
 |-|-|-|-|-|-|
 |T-9.1|The record: ADR 0036, FR-109…FR-112, the amended FR-040 and FR-103, the reordered gates in architecture.md §3.3, the flow and the partner standing screen in ux.md, the `partner` value in data-storage.md, glossary rows in three languages|—|—|0.5d|done 2026-09-24|
-|T-9.2|A refused attempt presents a fresh challenge: `nextChallengeNonce`, the reset inside `TurnstileWidget`, wired into registration and password reset. This is the "registration works every other time" report — a single-use Turnstile token was replayed by every retry after the first refusal|FR-112|—|0.5d|done 2026-09-24 — 4 unit tests over the nonce rule; the widget reset itself is a browser effect and is **not** proved anywhere|
+|T-9.2|A refused attempt presents a fresh challenge: `nextChallengeNonce`, the reset inside `TurnstileWidget`, wired into registration and password reset. A single-use Turnstile token was replayed by every retry after the first refusal|FR-112|—|0.5d|done 2026-09-24 — 4 unit tests over the nonce rule; the widget reset itself is a browser effect and is not proved in CI|
+|T-9.6|The second half of "registration works every other time", found by walking the form in a browser: React resets an uncontrolled field once a form action resolves, so a refusal emptied the name and the address while leaving the password — which is controlled — in place. Both are `required`, so every further submit was blocked by native validation and the button did nothing. Both fields are now controlled, on registration and on the partner application|—|T-9.2|0.5d|done 2026-09-24 — walked in a browser: attempt 1 refused with every answer still in the form, attempt 2 with a corrected number reaches `/membership`. Not in CI|
 |T-9.3|One page, category first: `CompanyFields` shared by both forms, the four-step wizard and its review panel removed, whole-form draft autosave replacing per-step saves, and the `step` column dropped|FR-109|—|1d|done 2026-09-24 — the dashboard form and the public application render the same component; `company_drafts.step` dropped in `20260924100000_partner_dues_kind`|
 |T-9.4|The partner account: `dues_kind = 'partner'`, `membershipAccess` reading the listing instead of the dues, the public `/{locale}/partner` page and `registerPartnerAction` creating the account and the application in one submit, and the partner standing screen on `/{locale}/membership`|FR-110|T-9.3|1.5d|done 2026-09-24 — 11 unit tests over the partner branch of `membershipAccess`, 10 integration tests over `submitCompany`; `registerMemberFromForm` returns the new member id rather than reading back a cookie it has just written|
 |T-9.5|Payment after moderation: `createCheckoutSessionAction` requires an approved company, the form no longer opens checkout, the approval notice carries the payment link, and the landing and pricing "Business" cards point at the application instead of at member sign-up|FR-111|T-9.4|1d|done 2026-09-24 — the eligibility rule is `src/domain/listing-checkout.ts` with 5 unit tests; the same rule drives the Subscribe button in Profile → Companies and the partner standing screen, so there is one answer and not three|
@@ -67,17 +68,23 @@ What already exists and is reused rather than rebuilt:
   that one guest submit creates exactly one member with `dues_kind = 'partner'`
   and one company, and that a company-half failure leaves an account the
   signed-in branch can finish from. That needs the browser suite.
-- **Nothing was driven in a browser.** `libnspr4.so` is missing on this host and
-  there is no passwordless sudo to install it, so Playwright cannot launch
-  (backlog: `e2e-cannot-launch-chromium-on-this-host`). The funnel was checked
-  by serving a production build against the dev database and reading the HTML:
-  the Business card links to `/en/partner`, and that page renders one form with
-  the category selects above the description. Submitting it was not exercised.
-- **The Turnstile reset is not proved anywhere but in the unit test of the
-  decision.** That the widget actually issues a new token is browser behaviour,
-  and this repository has no component-test harness and, on this host, no
-  browser. This is the fix for the complaint the client is most likely to
-  re-report, and it is the one with the weakest evidence.
+- **The browser walk is not a test.** It was run by hand against a production
+  build and the dev database, and it found the bug T-9.6 fixes — which is the
+  argument for turning it into a Playwright test rather than leaving it as a
+  session's shell history. What was walked: the Business card to `/partner`, a
+  guest submit that creates the account and the application, the standing
+  screen while pending, the same screen with the pay button once approved, and
+  a refused registration corrected and resubmitted. Chromium needed `libnspr4`,
+  `libnss3` and `libasound2`, unpacked from .deb into a local prefix because
+  this host has no passwordless sudo.
+- **The moderator's own click was not exercised.** This dev database has no
+  staff password configured, so the approval was applied with SQL and only the
+  partner-facing half of it was walked.
+- **The Turnstile reset is proved only at the level of the decision.** Whether
+  the widget then issues a new token cannot be observed with Cloudflare's
+  always-pass test key, which returns the same dummy token every time, and this
+  repository has no component-test harness. The other half of the same
+  complaint (T-9.6) is now proved in a browser.
 - **A partner cannot edit their application while it is in review.** They are
   held on the standing screen, which is honest but means a typo waits for the
   moderator to reject it.

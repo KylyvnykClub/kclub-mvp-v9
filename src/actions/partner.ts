@@ -11,6 +11,7 @@ import {
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { registerMemberFromForm } from "@/modules/identity/registration-form";
+import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { getCurrentMember } from "./session";
 
@@ -56,7 +57,7 @@ export async function registerPartnerAction(
       return { success: false, issue: { code: "unauthorized" } };
     }
 
-    return submitCompany(db, auth.member.id, formData);
+    return fileApplication(auth.member.id, formData);
   }
 
   // Shape first, before an account exists. `submitCompany` would reject the
@@ -84,5 +85,26 @@ export async function registerPartnerAction(
     };
   }
 
-  return submitCompany(db, account.memberId, formData);
+  return fileApplication(account.memberId, formData);
+}
+
+/**
+ * The application and the pictures that came with it, in one request.
+ *
+ * Media is attached here rather than from the browser afterwards: this
+ * action's response re-renders `/partner`, which sends an applicant who now
+ * has an application to their standing screen, so anything left running in the
+ * client is racing a navigation.
+ */
+async function fileApplication(
+  ownerId: string,
+  formData: FormData,
+): Promise<PartnerApplicationState> {
+  const result = await submitCompany(db, ownerId, formData);
+
+  if (result.success && result.companyId) {
+    await attachApplicationMedia(db, result.companyId, formData);
+  }
+
+  return result;
 }
