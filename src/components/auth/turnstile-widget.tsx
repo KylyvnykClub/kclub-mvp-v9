@@ -111,12 +111,21 @@ function reportFailure(failure: TurnstileFailure): void {
 export function TurnstileWidget({
   siteKey,
   locale,
+  nonce = 0,
 }: {
   siteKey: string | null;
   locale?: string;
+  /**
+   * Bumped by the form when the token this widget issued has been spent on an
+   * attempt the server refused (`nextChallengeNonce`). A Turnstile token is
+   * single-use, so without this the second submit is rejected for replaying
+   * the first one's token whatever the applicant corrected.
+   */
+  nonce?: number;
 }) {
   const t = useTranslations("register");
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | undefined>(undefined);
   const [failure, setFailure] = useState<TurnstileFailure | null>(null);
 
   useEffect(() => {
@@ -158,11 +167,13 @@ export function TurnstileWidget({
             if (widgetId) window.turnstile?.reset(widgetId);
           },
         });
+        widgetIdRef.current = widgetId;
       })
       .catch(() => fail(null));
 
     return () => {
       cancelled = true;
+      widgetIdRef.current = undefined;
       if (widgetId && window.turnstile) {
         // An explicit widget outlives its container unless it is removed, and a
         // leaked one leaves a stale token in the form it was rendered into.
@@ -174,6 +185,23 @@ export function TurnstileWidget({
       }
     };
   }, [siteKey, locale]);
+
+  // A refused attempt spent the token, and the widget will not replace it on
+  // its own - `expired-callback` fires on the five-minute clock, not on a
+  // submit. Resetting here is what makes a second attempt possible without
+  // reloading the page.
+  useEffect(() => {
+    if (nonce === 0) return;
+    const widgetId = widgetIdRef.current;
+    if (!widgetId || !window.turnstile) return;
+
+    try {
+      window.turnstile.reset(widgetId);
+      setFailure(null);
+    } catch {
+      // The widget is already gone; the next mount renders a fresh one.
+    }
+  }, [nonce]);
 
   if (!siteKey) return null;
 

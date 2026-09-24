@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, uuid } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, uuid } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
 import { members } from "./members";
 
@@ -27,9 +27,6 @@ export const companyDrafts = pgTable("company_drafts", {
     .unique()
     .references(() => members.id, { onDelete: "cascade" }),
 
-  /** The furthest step the applicant has completed, 1..4. */
-  step: integer("step").notNull().default(1),
-
-  /** Partial form values. Validated per step, never trusted on read. */
+  /** Partial form values. Never trusted on read; parsed as partial. */
   data: jsonb("data").notNull(),
 });

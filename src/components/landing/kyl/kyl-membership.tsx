@@ -19,6 +19,13 @@ import { monthlyPrice, type PricedPlan } from "@/domain/pricing";
  * The three destinations mirror the pricing page's, so a visitor who lands on
  * either is sent to the same place: a signed-out reader registers first, and a
  * member goes straight to the screen that sells the thing.
+ *
+ * The business card is the exception, and it is the whole reason this comment
+ * exists. It used to send a signed-out visitor to `/register`, the member
+ * sign-up — so somebody who clicked "Business" was asked to join a club, pay
+ * dues and find the application afterwards. It now goes to the partner
+ * application (FR-109), which asks the business its own questions and creates
+ * the account as part of the same submit.
  */
 const PLANS = [
   {
@@ -27,6 +34,7 @@ const PLANS = [
     Icon: UsersRound,
     className: "plan-card",
     signedIn: "/membership",
+    signedOut: "/register",
   },
   {
     key: "vip",
@@ -34,13 +42,15 @@ const PLANS = [
     Icon: Gem,
     className: "plan-card plan-featured",
     signedIn: "/dashboard/profile",
+    signedOut: "/register",
   },
   {
     key: "business",
     plan: "listing" as PricedPlan,
     Icon: BriefcaseBusiness,
     className: "plan-card plan-business",
-    signedIn: "/dashboard/company",
+    signedIn: "/dashboard/company/new",
+    signedOut: "/partner",
   },
 ] as const;
 
@@ -107,7 +117,7 @@ export async function KylMembership({ member }: { member: boolean }) {
       </div>
 
       <KylReveal className="shell plan-grid">
-        {PLANS.map(({ key, plan, Icon, className, signedIn }) => {
+        {PLANS.map(({ key, plan, Icon, className, signedIn, signedOut }) => {
           const body = (
             <>
               <div className="plan-icon">
@@ -127,7 +137,7 @@ export async function KylMembership({ member }: { member: boolean }) {
             <Link
               key={key}
               className={className}
-              href={member ? signedIn : "/register"}
+              href={member ? signedIn : signedOut}
               aria-label={t(`${key}.action`)}
             >
               {key === "business" ? (

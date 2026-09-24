@@ -47,15 +47,11 @@ export type DraftMediaState = {
   imageId?: string;
 };
 
-async function loadDraft(memberId: string): Promise<{
-  step: number;
-  data: CompanyDraftData;
-}> {
+async function loadDraft(memberId: string): Promise<CompanyDraftData> {
   const existing = await findCompanyDraftByOwner(db, memberId);
-  const data = existing
+  return existing
     ? (companyDraftDataSchema.safeParse(existing.data).data ?? {})
     : {};
-  return { step: existing?.step ?? 1, data };
 }
 
 async function requireApplicant() {
@@ -91,8 +87,8 @@ export async function uploadDraftLogoAction(
 
     await putDraftLogo(member.id, webp);
     const draft = await loadDraft(member.id);
-    await upsertCompanyDraft(db, member.id, draft.step, {
-      ...draft.data,
+    await upsertCompanyDraft(db, member.id, {
+      ...draft,
       logoStaged: "true",
     });
 
@@ -108,8 +104,8 @@ export async function removeDraftLogoAction(): Promise<DraftMediaState> {
     if (!member) return { success: false, error: "Unauthorized" };
 
     const draft = await loadDraft(member.id);
-    await upsertCompanyDraft(db, member.id, draft.step, {
-      ...draft.data,
+    await upsertCompanyDraft(db, member.id, {
+      ...draft,
       logoStaged: "",
     });
     try {
@@ -134,7 +130,7 @@ export async function uploadDraftImageAction(
     if (!member) return { success: false, error: "Unauthorized" };
 
     const draft = await loadDraft(member.id);
-    const existing = parseDraftImageIds(draft.data.galleryImageIds);
+    const existing = parseDraftImageIds(draft.galleryImageIds);
     if (existing.length >= COMPANY_GALLERY_MAX_IMAGES) {
       return { success: false, error: "gallery_full" };
     }
@@ -153,8 +149,8 @@ export async function uploadDraftImageAction(
 
     const imageId = randomUUID();
     await putDraftImage(member.id, imageId, webp);
-    await upsertCompanyDraft(db, member.id, draft.step, {
-      ...draft.data,
+    await upsertCompanyDraft(db, member.id, {
+      ...draft,
       galleryImageIds: [...existing, imageId].join(","),
     });
 
@@ -173,13 +169,13 @@ export async function deleteDraftImageAction(
 
     z.string().uuid().parse(imageId);
     const draft = await loadDraft(member.id);
-    const existing = parseDraftImageIds(draft.data.galleryImageIds);
+    const existing = parseDraftImageIds(draft.galleryImageIds);
     if (!existing.includes(imageId)) {
       return { success: false, error: "Not found" };
     }
 
-    await upsertCompanyDraft(db, member.id, draft.step, {
-      ...draft.data,
+    await upsertCompanyDraft(db, member.id, {
+      ...draft,
       galleryImageIds: existing.filter((id) => id !== imageId).join(","),
     });
     try {

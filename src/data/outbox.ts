@@ -20,7 +20,8 @@ export const PAYMENT_FAILED_NOTIFICATION = "payment_failed";
 export const GRACE_EXPIRY_WARNING_NOTIFICATION = "grace_expiry_warning";
 
 /**
- * Retry for the cancel-and-refund a rejection owes a paid company (ADR 0019).
+ * Retry for the cancel-and-refund a rejection owes a company that paid before
+ * it was judged (ADR 0019, superseded by ADR 0036).
  *
  * A moderator's decision must never be blocked by Stripe being unreachable, so
  * the rejection commits first and the money is undone afterwards. When that

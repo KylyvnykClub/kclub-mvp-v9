@@ -1,8 +1,14 @@
 # 0019. Take payment for a listing before moderation, not after
 
-> **Status:** Accepted
+> **Status:** Superseded by [ADR 0036](0036-payment-after-moderation.md)
 > **Date:** 2026-08-26
 > **Deciders:** Launch owner
+
+> **Superseded 2026-09-24.** The owner priced the refund obligation from the
+> other side and reversed the order: a listing is paid for after approval, and
+> a rejected application is never charged. This record's own "revisit if" names
+> the condition that was met. Everything below is kept as written, because the
+> funnel argument in it is still true and is the cost ADR 0036 accepts.
 
 ## Context
 

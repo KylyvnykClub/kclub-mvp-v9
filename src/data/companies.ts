@@ -30,8 +30,8 @@ import {
 /**
  * A listing is publishable exactly while its subscription grants access. This is
  * the same rule the entitlement projection uses, imported rather than copied:
- * money and access must never disagree (ADR 0004), and since ADR 0019 payment
- * precedes moderation, two drifting copies would decide publication differently.
+ * money and access must never disagree (ADR 0004), and two drifting copies
+ * would decide publication differently.
  */
 const PUBLISHABLE_LISTING_STATUSES = ACCESS_GRANTING_SUBSCRIPTION_STATUSES;
 
@@ -444,7 +444,7 @@ export async function companySlugExists(
   return existing !== undefined;
 }
 
-/** Returns the new company's id, which the caller needs to open checkout (ADR 0019). */
+/** Returns the new company's id, which the caller needs to attach media to it. */
 export async function insertCompany(
   db: DbClient,
   values: typeof companies.$inferInsert,
@@ -1010,8 +1010,9 @@ export async function countCompaniesByStatus(
  * Move a company to a moderation outcome, once.
  *
  * Returns false when the company was already in that status, so the caller can
- * stop rather than repeat the decision's side effects. Since ADR 0019 a
- * rejection cancels a subscription and refunds an invoice, and a double-clicked
+ * stop rather than repeat the decision's side effects. A rejection may still
+ * cancel a subscription and refund an invoice - for a company that paid under
+ * the old order (ADR 0019, superseded by ADR 0036) - and a double-clicked
  * reject must not do either of those twice. The guard is in the WHERE clause
  * rather than in a prior read, so two concurrent requests cannot both pass it.
  */
@@ -1176,11 +1177,11 @@ export type CompanyRow = Awaited<
 /**
  * One company the caller owns, whatever its moderation status.
  *
- * Deliberately unfiltered by status (ADR 0019): listing checkout now happens
- * before moderation, so the eligibility rule lives in the action - which
- * refuses only a company already rejected - and the checkout result pages use
- * the same lookup to name what was paid for. Publication still requires
- * approved AND an active subscription (FR-044); nothing here changes that.
+ * Deliberately unfiltered by status: the eligibility rule lives in the action
+ * - which since ADR 0036 requires an approved company - and the checkout
+ * result pages use the same lookup to name what was paid for. Publication
+ * still requires approved AND an active subscription (FR-044); nothing here
+ * changes that.
  */
 export async function findCompanyByOwner(
   db: DbClient,

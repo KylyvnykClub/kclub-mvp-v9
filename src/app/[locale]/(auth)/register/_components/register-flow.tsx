@@ -11,6 +11,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
+import { nextChallengeNonce } from "@/components/auth/turnstile-nonce";
 import { CountrySelect } from "@/components/ui/country-select";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 import type { RegisterErrorCode } from "@/domain/registration";
@@ -109,11 +110,26 @@ export function RegisterFlow({
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Controlled, and not because they need to be: React resets an uncontrolled
+  // field once the form's action resolves, so a refused registration used to
+  // wipe the name and the address while leaving the password - which is
+  // controlled - in place. Both are `required`, so the browser then refused
+  // every further submit with a validation bubble that is easy to miss, and
+  // correcting the number and pressing the button again did nothing at all.
+  const [displayName, setDisplayName] = useState(googleName ?? "");
+  const [email, setEmail] = useState(googleEmail ?? "");
 
   // Held between the form and the code screen, so nothing has to be typed
   // twice when Twilio is switched back on. Null whenever the code screen is
   // not showing.
   const [pendingForm, setPendingForm] = useState<FormData | null>(null);
+
+  // A Turnstile token is single-use, and every submit spends one whether the
+  // server accepts the registration or refuses it. Bumped on each refusal so
+  // the widget below replaces the spent token: without it the second attempt
+  // is rejected for replaying the first one's, whatever the applicant fixed,
+  // and stays rejected until the page is reloaded.
+  const [challengeNonce, setChallengeNonce] = useState(0);
 
   // Only complain about what the applicant has actually typed: an empty field
   // is not yet wrong, it is unfinished.
@@ -187,10 +203,12 @@ export function RegisterFlow({
         const requested = await requestPhoneVerificationAction(formData);
 
         if (requested?.taken) {
+          setChallengeNonce((n) => nextChallengeNonce(n, { success: false }));
           return { success: false, error: "phone_taken", field: "phone" };
         }
 
         if (!requested?.success) {
+          setChallengeNonce((n) => nextChallengeNonce(n, { success: false }));
           return { success: false, error: requested?.error ?? "failed" };
         }
 
@@ -209,6 +227,8 @@ export function RegisterFlow({
             : `/${locale}/dashboard/profile`,
         );
       }
+
+      setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));
 
       return result;
     },
@@ -242,6 +262,8 @@ export function RegisterFlow({
             : `/${locale}/dashboard/profile`,
         );
       }
+
+      setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));
 
       return result;
     },
@@ -296,7 +318,11 @@ export function RegisterFlow({
               {/* This screen's own challenge, not the form's: the token the
                   form spent cannot be presented twice, and a wrong code is
                   precisely when a second attempt is made. */}
-              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+              <TurnstileWidget
+                siteKey={turnstileSiteKey}
+                locale={locale}
+                nonce={challengeNonce}
+              />
 
               {codeState?.error && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
@@ -387,7 +413,8 @@ export function RegisterFlow({
                   id="displayName"
                   name="displayName"
                   required
-                  defaultValue={googleName ?? undefined}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={t("namePlaceholder")}
                   className="h-12 bg-background"
                 />
@@ -411,7 +438,8 @@ export function RegisterFlow({
                   autoComplete="email"
                   required
                   maxLength={255}
-                  defaultValue={googleEmail ?? undefined}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder={tAuth("emailPlaceholder")}
                   aria-invalid={emailRefused || undefined}
                   aria-describedby="email-help"
@@ -420,8 +448,9 @@ export function RegisterFlow({
                 <p id="email-help" className="text-xs text-muted-foreground">
                   {googleEmail ? t("emailFromGoogle") : t("emailHelp")}
                 </p>
-                {/* Against the field, and the form keeps everything typed. It
-                    says nothing about who holds the address: ADR 0030's
+                {/* Against the field, and the form keeps everything typed -
+                    which is only true because every field on it is controlled.
+                    It says nothing about who holds the address: ADR 0030's
                     disclosure covers the number only (ADR 0032). */}
                 {emailRefused && (
                   <p className="text-sm font-medium text-destructive">
@@ -513,7 +542,11 @@ export function RegisterFlow({
                 })}
               </p>
 
-              <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+              <TurnstileWidget
+                siteKey={turnstileSiteKey}
+                locale={locale}
+                nonce={challengeNonce}
+              />
 
               {state?.error && !emailRefused && !phoneRefused && (
                 <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">

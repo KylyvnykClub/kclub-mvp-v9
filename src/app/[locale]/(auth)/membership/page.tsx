@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/card";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
 import { listMemberSubscriptionPlans } from "@/data/billing";
+import { listCompaniesByOwner } from "@/data/companies";
 import { SignOutButton } from "./_components/sign-out-button";
+import { PartnerStanding } from "./_components/partner-standing";
 import { db } from "@/data/db";
 import { membershipAccess } from "@/domain/membership";
 import { monthlyPrice } from "@/domain/pricing";
@@ -42,6 +44,12 @@ export async function generateMetadata({
  *
  * A member who *has* access is sent away again, so the screen cannot be used to
  * pay twice.
+ *
+ * A business partner reaches the same URL and a different screen (FR-110). They
+ * owe no dues; what holds them outside is the listing, and the listing is only
+ * payable once the application has been approved (ADR 0036). So the gate is
+ * one gate, and what it shows depends on which kind of member is standing at
+ * it.
  */
 export default async function MembershipDuesPage({
   params,
@@ -65,6 +73,52 @@ export default async function MembershipDuesPage({
   }
 
   const t = await getTranslations({ locale, namespace: "membership" });
+
+  if (current.member.duesKind === "partner") {
+    const tPartner = await getTranslations({
+      locale,
+      namespace: "partnerStanding",
+    });
+    const listingPrice = monthlyPrice("listing", locale);
+    const [application] = await listCompaniesByOwner(db, current.member.id);
+
+    return (
+      <AuthShell
+        eyebrow="KCLUB PARTNERS"
+        title={tPartner("title")}
+        subtitle={tPartner("subtitle")}
+      >
+        <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
+          <CardContent className="space-y-5 p-6 sm:p-8">
+            <PartnerStanding
+              application={
+                application
+                  ? {
+                      id: application.id,
+                      name: application.name,
+                      moderationStatus: application.moderationStatus,
+                      rejectionReason: application.rejectionReason,
+                    }
+                  : null
+              }
+              price={listingPrice}
+              sellable={await checkoutPriceIsConfigured(db, "listing")}
+            />
+          </CardContent>
+          <CardFooter className="justify-between border-t border-border p-6 sm:p-8">
+            <Link
+              href={`/${locale}/pricing`}
+              className="text-sm font-bold uppercase tracking-[0.12em] text-foreground hover:text-accent-ink"
+            >
+              {t("pricingLink")}
+            </Link>
+            <SignOutButton />
+          </CardFooter>
+        </Card>
+      </AuthShell>
+    );
+  }
+
   const price = monthlyPrice("membership", locale);
 
   // No price configured means Stripe cannot be opened at all. The member is

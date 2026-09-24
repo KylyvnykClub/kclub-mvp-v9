@@ -3,12 +3,15 @@ import { listSubscriptionsByCompanyId } from "@/data/billing";
 import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "@/data/billing-access";
 
 /**
- * Undo the money gate when the judgement gate fails (ADR 0019).
+ * Undo the money gate when the judgement gate fails (ADR 0019, ADR 0036).
  *
- * Since payment now precedes moderation, a rejected company may already have
- * been charged for a listing that will never be published. Holding that payment
- * is indefensible, so a rejection cancels the subscription and refunds the last
- * invoice paid for it.
+ * A rejected company may already have been charged for a listing that will
+ * never be published - because it paid while ADR 0019 let a pending company
+ * pay, or because an approved and paid listing was rejected afterwards.
+ * Holding that payment is indefensible, so a rejection cancels the
+ * subscription and refunds the last invoice paid for it. Under ADR 0036 the
+ * ordinary case is that there is nothing to undo, and the answer is
+ * `nothing_to_refund`.
  *
  * Stripe access is injected rather than imported at module scope, so the policy
  * here - which subscription counts, what happens when nothing was paid, how the

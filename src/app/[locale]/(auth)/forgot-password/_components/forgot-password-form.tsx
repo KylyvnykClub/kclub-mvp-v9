@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useFormStatus } from "react-dom";
 
@@ -13,6 +13,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { IdentifierField } from "@/components/auth/identifier-field";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
+import { nextChallengeNonce } from "@/components/auth/turnstile-nonce";
 import { Button } from "@/components/ui/button";
 
 const initialState: ResetRequestState = { status: "idle" };
@@ -34,13 +35,24 @@ export function ForgotPasswordForm({
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
+  // The token this form posts is single-use, so a refusal leaves a spent one
+  // in the hidden input and every retry after it fails for the challenge
+  // rather than for the identifier. Bumped on refusal to replace it.
+  const [challengeNonce, setChallengeNonce] = useState(0);
+
   const [state, formAction] = useActionState(
     async (_prev: ResetRequestState | null, formData: FormData) => {
       // Cloudflare injects this input next to the widget inside the form.
       const token = formData.get("cf-turnstile-response");
       if (typeof token === "string") formData.append("turnstileToken", token);
 
-      return requestPasswordResetAction(_prev, formData);
+      const result = await requestPasswordResetAction(_prev, formData);
+
+      setChallengeNonce((n) =>
+        nextChallengeNonce(n, { success: result.status === "sent" }),
+      );
+
+      return result;
     },
     initialState,
   );
@@ -67,7 +79,11 @@ export function ForgotPasswordForm({
 
             <p className="text-xs text-muted-foreground">{t("forgotHelp")}</p>
 
-            <TurnstileWidget siteKey={turnstileSiteKey} locale={locale} />
+            <TurnstileWidget
+              siteKey={turnstileSiteKey}
+              locale={locale}
+              nonce={challengeNonce}
+            />
 
             {state.status !== "idle" && (
               <p className="text-sm text-destructive" role="status">

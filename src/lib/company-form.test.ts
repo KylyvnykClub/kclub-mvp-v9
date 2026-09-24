@@ -1,24 +1,21 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  COMPANY_FORM_STEPS,
-  COMPANY_STEP_SCHEMAS,
   companyDraftDataSchema,
-  companyDetailsStepSchema,
-  companyLocationStepSchema,
-  companyMediaStepSchema,
-  isCompanyStep,
+  companyDetailsSchema,
+  companyLocationSchema,
+  companyMediaSchema,
   registerCompanySchema,
 } from "./company-form";
 
 /**
- * FR-040: the company application is a four-step form that saves a draft
- * between steps.
+ * FR-040, FR-109: the company application is one page that keeps a draft of
+ * what has been typed so far.
  *
- * These are the schema-level guarantees the wizard rests on: a step can be
- * validated on its own without the answers from later steps, the four steps
- * together are exactly the submission schema, and a draft read back from the
- * database cannot smuggle in fields the form does not own.
+ * These are the schema-level guarantees the form rests on: a group of fields
+ * can be validated on its own, the three groups together are exactly the
+ * submission schema, and a draft read back from the database cannot smuggle
+ * in fields the form does not own.
  */
 
 const DETAILS = {
@@ -36,38 +33,29 @@ const LOCATION = {
 };
 const OFFER = { discount: "15% for members" };
 
-describe("FR-040: four-step company submission form", () => {
-  it("declares exactly four steps", () => {
-    expect(COMPANY_FORM_STEPS).toBe(4);
-    expect(isCompanyStep(1)).toBe(true);
-    expect(isCompanyStep(4)).toBe(true);
-    expect(isCompanyStep(0)).toBe(false);
-    expect(isCompanyStep(5)).toBe(false);
-    expect(isCompanyStep(1.5)).toBe(false);
+describe("FR-040, FR-109: one-page company submission form", () => {
+  it("validates the business details without the answers below them", () => {
+    expect(companyDetailsSchema.safeParse(DETAILS).success).toBe(true);
   });
 
-  it("validates step 1 without the answers from steps 2 and 3", () => {
-    expect(companyDetailsStepSchema.safeParse(DETAILS).success).toBe(true);
-  });
-
-  it("rejects a too-short company name on step 1", () => {
-    const result = companyDetailsStepSchema.safeParse({ name: "A" });
+  it("rejects a too-short company name", () => {
+    const result = companyDetailsSchema.safeParse({ name: "A" });
     expect(result.success).toBe(false);
   });
 
-  it("requires a category, registration country, service coverage and local address on step 2", () => {
-    expect(companyLocationStepSchema.safeParse(LOCATION).success).toBe(true);
-    expect(companyLocationStepSchema.safeParse({}).success).toBe(false);
+  it("requires a category, registration country, service coverage and local address", () => {
+    expect(companyLocationSchema.safeParse(LOCATION).success).toBe(true);
+    expect(companyLocationSchema.safeParse({}).success).toBe(false);
   });
 
   it("coerces category ids from the comma-separated string a multi-select submits", () => {
-    const parsed = companyLocationStepSchema.parse(LOCATION);
+    const parsed = companyLocationSchema.parse(LOCATION);
     expect(parsed.businessCategoryIds).toEqual([7, 12]);
   });
 
   it("allows an online company to omit city and administrative levels", () => {
     expect(
-      companyLocationStepSchema.safeParse({
+      companyLocationSchema.safeParse({
         ...LOCATION,
         businessFormat: "online_only",
         administrativeLevel1: "",
@@ -78,13 +66,13 @@ describe("FR-040: four-step company submission form", () => {
 
   it("requires service countries unless the company serves worldwide", () => {
     expect(
-      companyLocationStepSchema.safeParse({
+      companyLocationSchema.safeParse({
         ...LOCATION,
         serviceCountryCodes: "",
       }).success,
     ).toBe(false);
     expect(
-      companyLocationStepSchema.safeParse({
+      companyLocationSchema.safeParse({
         ...LOCATION,
         serviceCountryCodes: "",
         servesWorldwide: "true",
@@ -92,10 +80,10 @@ describe("FR-040: four-step company submission form", () => {
     ).toBe(true);
   });
 
-  it("treats every field on step 3 as optional - a company without photos is still a company", () => {
-    expect(companyMediaStepSchema.safeParse({}).success).toBe(true);
+  it("treats every media field as optional - a company without photos is still a company", () => {
+    expect(companyMediaSchema.safeParse({}).success).toBe(true);
     expect(
-      companyMediaStepSchema.safeParse({
+      companyMediaSchema.safeParse({
         logoStaged: "true",
         galleryImageIds:
           "a64d7c85-26bf-4d9b-a460-356d86080dd1,0f0e4a3e-3d8e-4c8e-9a1c-9b2f7d6e5c4b",
@@ -105,14 +93,14 @@ describe("FR-040: four-step company submission form", () => {
 
   it("rejects a staged image list that is not a list of ids", () => {
     expect(
-      companyMediaStepSchema.safeParse({ galleryImageIds: "../etc/passwd" })
+      companyMediaSchema.safeParse({ galleryImageIds: "../etc/passwd" })
         .success,
     ).toBe(false);
   });
 
-  it("rejects a malformed contact email on step 1, where contacts live since ADR 0024", () => {
+  it("rejects a malformed contact email, where contacts live since ADR 0024", () => {
     expect(
-      companyDetailsStepSchema.safeParse({
+      companyDetailsSchema.safeParse({
         ...DETAILS,
         contactEmail: "not-an-email",
       }).success,
@@ -127,7 +115,7 @@ describe("FR-040: four-step company submission form", () => {
         String.fromCharCode(65 + ((i * 7) % 26)),
     ).join(",");
     expect(
-      companyLocationStepSchema.safeParse({
+      companyLocationSchema.safeParse({
         ...LOCATION,
         administrativeLevel1: undefined,
         serviceCountryCodes: many,
@@ -135,11 +123,7 @@ describe("FR-040: four-step company submission form", () => {
     ).toBe(true);
   });
 
-  it("has a schema for the three steps that collect fields, and none for review", () => {
-    expect(Object.keys(COMPANY_STEP_SCHEMAS)).toEqual(["1", "2", "3"]);
-  });
-
-  it("accepts the three steps together as a complete submission", () => {
+  it("accepts the three groups together as a complete submission", () => {
     const result = registerCompanySchema.safeParse({
       ...DETAILS,
       ...LOCATION,
@@ -148,11 +132,11 @@ describe("FR-040: four-step company submission form", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects a submission that is missing a later step, so a draft cannot be submitted early", () => {
+  it("rejects a submission that is missing a whole group, so a draft cannot be submitted early", () => {
     expect(registerCompanySchema.safeParse(DETAILS).success).toBe(false);
   });
 
-  it("accepts a partially filled draft that no completed step would accept yet", () => {
+  it("accepts a partially filled draft that no complete group would accept yet", () => {
     const result = companyDraftDataSchema.safeParse({ name: "Acme Coffee" });
     expect(result.success).toBe(true);
   });
@@ -182,9 +166,9 @@ describe("FR-040: four-step company submission form", () => {
   /**
    * A browser serialising a form rewrites every line break as CRLF, so a value
    * the textarea counted as 500 characters reaches the Server Action as 503.
-   * Steps 1-3 are saved through a Server Action call that carries the string
-   * unchanged, and only step 4 is a real form post - so without normalisation
-   * the last step rejects text every earlier step accepted.
+   * The draft is saved through a Server Action call that carries the string
+   * unchanged, while submission is a real form post - so without normalisation
+   * the submission rejects text the draft accepted.
    */
   const atLimit = (limit: number) => {
     const paragraph = "a".repeat(Math.floor(limit / 3) - 1);
@@ -198,7 +182,7 @@ describe("FR-040: four-step company submission form", () => {
     expect(text).toHaveLength(500);
     expect(asBrowserSends(text).length).toBeGreaterThan(500);
 
-    const result = companyDetailsStepSchema.safeParse({
+    const result = companyDetailsSchema.safeParse({
       ...DETAILS,
       specializationDescription: asBrowserSends(text),
     });
@@ -207,7 +191,7 @@ describe("FR-040: four-step company submission form", () => {
   });
 
   it("stores the normalised text, so a value at the limit still fits its column", () => {
-    const parsed = companyDetailsStepSchema.parse({
+    const parsed = companyDetailsSchema.parse({
       ...DETAILS,
       description: asBrowserSends(atLimit(1000)),
       specializationDescription: asBrowserSends(atLimit(500)),
@@ -220,7 +204,7 @@ describe("FR-040: four-step company submission form", () => {
   });
 
   it("still rejects text that is over the limit once the breaks are normalised", () => {
-    const result = companyDetailsStepSchema.safeParse({
+    const result = companyDetailsSchema.safeParse({
       ...DETAILS,
       specializationDescription: "a".repeat(501),
     });
@@ -228,7 +212,7 @@ describe("FR-040: four-step company submission form", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts on step 4 what step 1 accepted, for the same typed text", () => {
+  it("accepts on submission what the draft accepted, for the same typed text", () => {
     const typed = atLimit(500);
     const submission = {
       ...DETAILS,
@@ -238,7 +222,7 @@ describe("FR-040: four-step company submission form", () => {
     };
 
     expect(
-      companyDetailsStepSchema.safeParse({
+      companyDetailsSchema.safeParse({
         ...DETAILS,
         specializationDescription: typed,
       }).success,

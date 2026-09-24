@@ -216,24 +216,37 @@ member to nominate a business, which is also how the catalogue grows.
 
 ### 3.3 Partner applies, is approved, pays and is published
 
-1. **Submit a company**, four steps: business details, contacts and the
-   discount offered → location and category → logo and photos → review and
-   confirm. Progress is shown as "Step 2 of 4", and each step is saved on
-   completion. Location is country → city picked from a list for that country
+0. **Arrives from the landing page** with no account, on `/{locale}/partner`
+   ([ADR 0036](decisions/0036-payment-after-moderation.md)). One page, and the
+   account details are the last thing it asks — a business here is applying to
+   be listed, not joining a club, and being asked to register first is what
+   used to lose them.
+1. **Submit a company**, one page, in this order: category block → category →
+   activities, then the business and what it says about itself, then the
+   discount offered and contacts, then location. Category first on purpose: an
+   applicant who chooses it before writing the description writes a description
+   that fits it. Location is country → city picked from a list for that country
    ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); service
    countries are added one at a time from a type-ahead, with "worldwide" and
-   "same as the country of registration" as shortcuts. Photos uploaded on
-   step 3 are staged with the draft and become the company's on submission
+   "same as the country of registration" as shortcuts. For a signed-in
+   applicant the whole form is drafted a second after typing stops, and photos
+   are staged with the draft and become the company's on submission
    ([ADR 0024](decisions/0024-onboarding-media-staging.md)).
-2. Submits. The screen states plainly: reviewed within 1–3 business days, and
-   nothing is charged yet.
+2. Submits. The screen states plainly: reviewed within 1–3 business days,
+   nothing is charged, and it will cost $19.99 a month if approved.
 3. Notification of the outcome, in their language. If rejected, the reason is
-   shown in full and the form reopens with their data intact — a rejection is
-   never a dead end.
-4. If approved, a single call to action: pay for the listing. Stripe Checkout,
-   then back to a status screen.
+   shown in full and the screen says that nothing was charged at any point — a
+   rejection is never a bill.
+4. If approved, a single call to action: pay for the listing. This is the first
+   moment anything may be charged (FR-111). Stripe Checkout, then back to a
+   status screen.
 5. Published within seconds of the webhook landing. The company card in **My
    companies** shows "Live" with a link to the public entry.
+
+**Where the applicant sees all this.** A partner account owes no membership
+dues, so `/{locale}/membership` shows them their application's standing instead
+of the dues ask: no application yet, under review, approved with the payment
+button, or refused with the moderator's note (FR-110).
 
 **Success:** the applicant always knows which of the four states they are in —
 draft, in review, approved and unpaid, live.
@@ -290,9 +303,9 @@ view is shareable and bookmarkable and survives a refresh. Identifiers in URLs
 are UUIDv7 and never sequential.
 
 **Back-button behaviour:** the browser back button always does the obvious
-thing. Modals push a history entry and close on back. The four-step submission
-uses real routed steps (`/app/companies/new/2`), so back means "previous step"
-and a refresh does not lose the draft. Filters replace rather than push history,
+thing. Modals push a history entry and close on back. The company application is
+one page with no steps to go back through, and a refresh does not lose it — the
+draft is written a second after typing stops. Filters replace rather than push history,
 so back leaves the catalogue rather than undoing seven filter changes one at a
 time.
 
@@ -385,7 +398,7 @@ Target: **WCAG 2.1 Level AA**, treated as a launch requirement per
 
 |Requirement|Approach|Verified by|
 |-|-|-|
-|Keyboard navigation|Every flow in §3 completable with the keyboard alone, including the four-step submission, the moderation queue and the QR screen. Radix primitives supply correct roving focus and escape handling|Playwright keyboard-only run of the four flows in §3, on every pull request|
+|Keyboard navigation|Every flow in §3 completable with the keyboard alone, including the company application, the moderation queue and the QR screen. Radix primitives supply correct roving focus and escape handling|Playwright keyboard-only run of the four flows in §3, on every pull request|
 |Focus visibility and order|A 2 px accent outline with a 2 px offset on every interactive element, visible in both themes. DOM order matches visual order; focus is trapped in modals and restored to the trigger on close|Manual audit per release; axe rules in CI|
 |Colour contrast|4.5:1 for body text, 3:1 for large text and interface borders, in **both** themes. The gold accent fails on light surfaces at small sizes and is therefore never used for small text — a constraint recorded in the tokens themselves|Automated contrast check over the token matrix in CI; the check is on tokens, not screenshots|
 |Screen reader support|Semantic HTML first, ARIA only where semantics run out. Live regions announce moderation outcomes, quota changes and payment status. The QR image carries a text alternative giving the card serial, so a blind member can read their serial aloud|Manual pass with VoiceOver (iOS/macOS) and NVDA (Windows) before each release|

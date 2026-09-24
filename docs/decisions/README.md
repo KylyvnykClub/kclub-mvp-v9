@@ -74,7 +74,7 @@ that the folder cannot be trusted.
 |[0016](0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|2026-08-22|
 |[0017](0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|2026-08-23|
 |[0018](0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|2026-08-23|
-|[0019](0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Accepted|2026-08-26|
+|[0019](0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Superseded by 0036|2026-08-26|
 |[0020](0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|2026-08-27|
 |[0021](0021-member-avatar-upload.md)|Member avatars are uploaded through a server-side re-encode pipeline into R2|Accepted|2026-08-28|
 |[0022](0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Accepted|2026-08-29|
@@ -91,6 +91,7 @@ that the folder cannot be trusted.
 |[0033](0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|2026-09-09|
 |[0034](0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|2026-09-12|
 |[0035](0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|2026-09-22|
+|[0036](0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted|2026-09-24|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

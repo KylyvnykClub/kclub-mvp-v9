@@ -25,6 +25,8 @@ export const memberDuesKindEnum = pgEnum("member_dues_kind", [
   "paying",
   "sponsored",
   "legacy_free",
+  /** Registered through the partner application; pays for a listing (ADR 0036). */
+  "partner",
 ]);
 
 export const memberRoleEnum = pgEnum("member_role", [

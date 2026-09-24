@@ -68,6 +68,8 @@ variation.
 |Membership dues|What standard membership costs: $4.99 a month, sold as the `member_monthly` plan ([ADR 0033](decisions/0033-standard-membership-is-paid.md)). A member owes them, is sponsored, or predates them|`membershipAccess`|`members.dues_kind`|The VIP subscription, which buys referrals and priority support on top and is not a substitute for dues|
 |Sponsored membership|Membership whose dues the club waives, because the member joined through the join link or an owner said so. Free for as long as the club says|`dues_kind = "sponsored"`|`members.dues_kind`|An "invited member" — there is no invitation mechanic here, and nobody is credited for a sponsored member ([ADR 0009](decisions/0009-referral-data-minimisation.md))|
 |Join link|The club's current private URL that admits a person with dues waived. One at a time, rotated and revoked by the owner|`JoinLink`|`join_links`|An "invite link" or a "referral link". It carries no identity, credits nobody, has no quota and rewards no one for sharing it|
+|Partner account|An account created by the business application: it owes no membership dues, and the club opens for it when its listing subscription is active ([ADR 0036](decisions/0036-payment-after-moderation.md))|`dues_kind = "partner"`|`members.dues_kind`|A `Company`, which is the business itself, and a partner owner, which is an ordinary member who happens to own one|
+|Partner application|The single-page form a business fills in to be listed, which creates the account and the company in one submit|`submitCompany`, `/partner`|`companies`, `company_drafts`|Registration, which is how a person joins the club. A business applying is not joining|
 |Plan|What can be sold: `vip_monthly`, `listing_monthly`, `business`|`Plan`|`plan`|"Tier", which is what a member gets from a plan|
 |Price|An amount for a plan, valid from a date. Multiple prices per plan over time|`Price`|`price`|The plan. Changing a price never changes the plan|
 |Entitlement|What an active subscription unlocks inside the product|`Entitlement`|`entitlement`|The subscription. Stripe owns subscriptions; we own entitlements|
@@ -99,6 +101,8 @@ variation.
 |Membership dues|Членский взнос|Членський внесок|Never "абонплата" — the club has members, not subscribers|
 |Sponsored membership|Спонсируемое членство|Спонсоване членство|Never "приглашение" — nobody is invited, the dues are waived|
 |Join link|Ссылка для вступления|Посилання для вступу|Never "инвайт" or "реферальная ссылка"|
+|Partner account|Аккаунт партнёра|Акаунт партнера|Never "бизнес-членство" — a partner is not a club member and owes no dues|
+|Partner application|Заявка партнёра|Заявка партнера|Never "регистрация бизнеса" in member-facing text — the business applies, we decide|
 |Moderation|Проверка|Перевірка|"Модерация" only in staff-facing text|
 |Staff|Команда клуба|Команда клубу||
 
