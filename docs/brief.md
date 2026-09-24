@@ -83,7 +83,7 @@ looks empty rather than exclusive.
 **What we will do about it:** Treat the first 100 partners as a manual,
 founder-led sales effort, not a product problem, and launch the catalogue only
 once ~50 partners across the top five categories are published. The product
-supports this by making partner onboarding a four-step form that a founder can
+supports this by making partner onboarding a single-page form that a founder can
 complete on a partner's behalf in under five minutes, and by making basic
 membership free so member supply is never gated on partner supply. Commercially:
 partner listing revenue is not counted on before month three.

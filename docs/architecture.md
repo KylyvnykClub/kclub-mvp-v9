@@ -250,27 +250,36 @@ ends, and then the entitlement expiry sweep removes it.
 
 ### 3.3 Partner onboarding to publication
 
-Three gates, in a fixed order: validity, money, human judgement
-([ADR 0019](decisions/0019-payment-before-moderation.md)).
+Three gates, in a fixed order: validity, human judgement, money
+([ADR 0036](decisions/0036-payment-after-moderation.md), which reversed the
+order [ADR 0019](decisions/0019-payment-before-moderation.md) had set).
 
-1. The member completes the four-step form. Each step is validated against the
-   same Zod schema the server uses; drafts are persisted per step so a lost
-   connection does not cost the applicant their work.
+0. A business arriving from the landing page has no account. `/{locale}/partner`
+   is one page that asks the business its own questions and creates the account
+   with the application in a single submit (FR-109). The account is
+   `dues_kind = 'partner'`: it owes no membership dues, and what opens the club
+   for it is the listing subscription (FR-110). A member who is already in the
+   club submits the same fields from the dashboard instead, with a draft behind
+   them.
+1. The form is one page, validated against the same Zod schema the server uses.
+   It asks what the business _is_ — block, category, activities — before what it
+   says about itself. For a signed-in applicant the answers are drafted a second
+   after typing stops, so a lost connection costs nothing at any point.
 2. On submission, the company is created with status `pending_review` and a
-   moderation item is queued. It is not visible to any member.
-3. Submission hands straight off to listing checkout, because that is the moment
-   the applicant's intent is highest. Abandoning it costs nothing: the
-   application is already saved and stays payable from Profile → Companies.
-4. A moderator approves or rejects with a reason. Both outcomes are written to
+   moderation item is queued. It is not visible to any member. **Nothing is
+   charged** (FR-111).
+3. A moderator approves or rejects with a reason. Both outcomes are written to
    the audit log and to the immutable decision record; the applicant is notified
-   in their own language. **A rejection cancels the listing subscription and
-   refunds the last invoice** — the gate that money passed first must be undone
-   when judgement fails, or we are holding payment for a listing that will never
-   appear.
-5. Approval sets status `approved` — **not** `published`. Publication requires
-   an active listing subscription, and that check lives in one place
-   (`catalogue.canBePublished`) rather than being repeated at each call site.
-6. On the listing subscription becoming active, the projection worker publishes
+   in their own language. A rejection is an ordinary database write: no money
+   was taken, so none has to be returned. The cancel-and-refund path survives
+   for a company that paid under ADR 0019 and for an approved-and-paid listing
+   rejected afterwards.
+4. Approval sets status `approved` — **not** `published` — and is the first
+   moment a listing may be paid for. The approval notice, in the inbox and by
+   email, carries the link that pays. Publication requires an active listing
+   subscription, and that check lives in one place (`catalogue.canBePublished`)
+   rather than being repeated at each call site.
+5. On the listing subscription becoming active, the projection worker publishes
    the company. If it later lapses, the entitlement sweep unpublishes it. If
    payment is recovered inside the grace period, it republishes — the same code
    path, driven by the same state.
@@ -391,7 +400,7 @@ shaped it without leaving the page.
 |[0016](decisions/0016-totp-seeds-encrypted-and-reissued.md)|Staff TOTP seeds are encrypted at rest, bound to their member, and the existing ones are discarded|Accepted|
 |[0017](decisions/0017-project-entitlements-after-the-webhook-response.md)|Project the entitlement in the webhook's own invocation, after the response has been sent|Accepted|
 |[0018](decisions/0018-staff-assisted-password-reset.md)|Recover accounts through a staff-performed reset, as a stopgap|Accepted|
-|[0019](decisions/0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Accepted|
+|[0019](decisions/0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Superseded by 0036|
 |[0020](decisions/0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|
 |[0021](decisions/0021-member-avatar-upload.md)|Member avatars are uploaded through a server-side re-encode pipeline into R2|Accepted|
 |[0022](decisions/0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Accepted|
@@ -408,6 +417,7 @@ shaped it without leaving the page.
 |[0033](decisions/0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|
 |[0034](decisions/0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|
 |[0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|
+|[0036](decisions/0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted|
 
 ---
 

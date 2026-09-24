@@ -38,8 +38,10 @@ plus partner listings combined, ~$8,000 MRR). Leading indicators are in
   verification page that discloses the minimum needed to confirm validity.
 - Member-only partner catalogue with search and filtering by category, country
   and city.
-- Partner onboarding as a four-step application, followed by staff moderation
-  and a paid listing subscription before publication.
+- Partner onboarding as a single-page application that also creates the
+  applicant's account, followed by staff moderation and — only then — a paid
+  listing subscription before publication
+  ([ADR 0036](decisions/0036-payment-after-moderation.md)).
 - Three Stripe subscription products: **standard membership** at $4.99/month
   (member), **VIP membership** at $19.99/month (member) and **Partner listing**
   at $19.99/month (per company). Membership dues are waived permanently for
@@ -113,6 +115,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-006|The system must let a member ask for their password to be reset by naming either identifier, must send a single-use link valid for 30 minutes to the verified address on that account, must record a request for staff instead where the account holds no verified address, must answer the caller identically in both cases, and must revoke all other sessions when the password changes. The staff-performed reset remains available for accounts with no address ([ADR 0018](decisions/0018-staff-assisted-password-reset.md), [ADR 0032](decisions/0032-phone-and-email-both-required.md))|member|M|
 |FR-007|The system must let a member list their active sessions and revoke any or all of them|member|S|
 |FR-008|The system must collect at registration nothing beyond the identifiers FR-001 names plus display name, preferred language and country, and must let the member change all four — including replacing their email address, which is then unproved again until the new one is verified|member|M|
+|FR-112|A registration or password-reset attempt the system refuses must present a fresh bot challenge with it, so that correcting the refusal and submitting again is not refused for the challenge. A challenge token is single-use|guest|M|
 |FR-009|The system must let a member request deletion of their account and must complete it within 30 days, per [data-storage.md §4](data-storage.md#4-retention-and-deletion)|member|M|
 |FR-010|The system must terminate every session of a member within 60 seconds of that member being blocked by staff|staff_admin|M|
 |FR-011|The system must let a member change their phone number, proven by a code sent to both the old and the new number|member|C|
@@ -146,7 +149,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 
 |ID|Requirement|Role|Priority|
 |-|-|-|-|
-|FR-040|A member must be able to submit their own company through a four-step form, saving a draft between steps|member|M|
+|FR-040|A member must be able to submit their own company through a single-page form that keeps a draft of what has been typed, and that asks for the category block, category and activities before the business description ([ADR 0036](decisions/0036-payment-after-moderation.md))|member|M|
 |FR-041|The system must reject a submission whose city does not belong to the selected country, or whose category is on the prohibited list|member|M|
 |FR-042|A submitted company must enter a moderation queue and must not be visible to any member before approval|system|M|
 |FR-043|Staff must be able to approve a submission, or reject it with a reason chosen from a fixed list plus free text; the applicant must be notified of the outcome|staff_moderator|M|
@@ -155,6 +158,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-046|Staff must be able to hide, unhide, edit and unpublish any company, and to set its discount terms and showcase rank|staff_admin|M|
 |FR-047|The system must record every moderation decision with the deciding staff member, timestamp and reason, and must keep that record after the company is deleted|system|M|
 |FR-048|Moderation of a new submission should be completed within 3 business days at the 90th percentile; the queue must show the age of each item|staff_moderator|S|
+|FR-109|A guest must be able to apply as a business partner from a single page that creates their account and files the application in one submit, without joining the club first ([ADR 0036](decisions/0036-payment-after-moderation.md))|guest|M|
 
 ### 4.5 Subscriptions and payments
 
@@ -172,12 +176,14 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-059|The `staff_owner` role must be able to change a plan's price; a change must apply to new subscriptions only and must never silently reprice an existing one|staff_owner|M|
 |FR-060|The system must never store a card number, CVC or full PAN; all card data entry must happen on Stripe-hosted surfaces|system|M|
 |FR-102|The system must sell standard membership as a monthly subscription at the price configured for the `member_monthly` plan (launch price $4.99/month) through Stripe Checkout|member|M|
-|FR-103|A member whose membership dues are neither paid nor waived must reach no member surface other than the screen that asks for payment|member|M|
+|FR-103|A member whose membership dues are neither paid nor waived must reach no member surface other than the screen that asks for payment. A partner account owes no dues and sees the standing of its application there instead (FR-110)|member|M|
 |FR-104|Membership access must be projected from Stripe subscription state; a return from the Stripe redirect must never itself grant it|system|M|
 |FR-105|Registration through an active join link must create a sponsored member, who is never asked to pay and is never shown the payment screen|member|M|
 |FR-106|The `staff_owner` role must be able to read, rotate and revoke the join link in the console, and every such change must write an audit entry|staff_owner|M|
 |FR-107|A member who registered before membership dues were introduced must keep access permanently without paying|member|M|
 |FR-108|Membership access must follow the subscription state within 60 seconds of it changing, in both directions|system|M|
+|FR-110|An account created through the partner application must never be asked for membership dues; its access to the club must follow its listing subscription, in both directions and on the same statuses as every other entitlement ([ADR 0036](decisions/0036-payment-after-moderation.md))|partner_owner|M|
+|FR-111|The system must not ask for or take payment for a listing before staff have approved the application, and the approval notice must carry the way to pay|partner_owner|M|
 
 ### 4.6 Client referrals
 
@@ -353,6 +359,7 @@ before the largest surface (the staff console) is built.
 |6 — Referrals|11–14|FR-070…FR-078, FR-095, FR-099|End-to-end referral with consent, quotas and moderation|
 |7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
 |8 — Membership dues|15–16|FR-102…FR-108|Standard membership sells and lapses against a Stripe test clock; a join link admits a member free; nobody who was already here is ever billed|
+|9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

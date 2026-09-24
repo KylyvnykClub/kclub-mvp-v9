@@ -45,28 +45,43 @@
     {
       "id": "landing-has-no-component-tests",
       "note": "The redesigned landing's behaviour - live catalogue search, the custom select, the reveal observer - is proved by hand in a browser, not in CI. Only the pure helpers are tested (landing-partner, partner-presentation, club-stats). A Playwright test for 'type dental, see one card' would be the cheapest real cover."
+    },
+    {
+      "id": "partner-account-half-untested",
+      "note": "registerPartnerAction (account + company in one submit) is covered by no test. It needs Next's request scope for cookies/headers, so neither the unit nor the integration suite can reach it; submitCompany has 10 integration tests, the account half has none. Needs the browser suite."
+    },
+    {
+      "id": "turnstile-reset-unproven-in-a-browser",
+      "note": "The fix for 'registration works every other time' (FR-112) is unit tested at the decision level only. That TurnstileWidget actually issues a fresh token after a refusal is a browser effect and was never observed - no Chromium on this host, no component-test harness in the repo."
+    },
+    {
+      "id": "partner-cannot-edit-application-while-in-review",
+      "note": "A partner account is held on /{locale}/membership until the listing is paid for, so a typo in a pending application waits for a moderator to reject it. No edit path, and photos cannot be added after submission either."
+    },
+    {
+      "id": "approved-applications-never-paid-for-not-measured",
+      "note": "ADR 0036 says to revisit the payment-after-moderation order if more than about a quarter of approved applications are never paid for. Nothing counts that today."
     }
   ],
   "lastSession": {
-    "date": "2026-09-22",
+    "date": "2026-09-24",
     "checklist": [
-      "Ported the client's delivered landing (Kylyvnyk-Landing) into the app: their styles.css, scoped under `.kyl`, imported by the home route only",
-      "Rebuilt the page's markup section for section as React; every block reads real data, none of it is hard-coded",
-      "Prata + Geist added as landing-only faces; both ship Cyrillic, so ru and uk do not fall back",
-      "Replaced the native <select> popups with a styled combobox (KylSelect) - the closed control is unchanged, the open list is ours",
-      "Deleted the seventeen superseded landing components rather than leaving two landing pages in one directory",
-      "New: tools/seed-landing-demo.ts (taxonomy + nine demo partners, refuses any database not marked dev), src/actions/landing-search.ts, ADR 0035",
-      "Contact address set to kylyvnykclub@gmail.com, from one constant - the prototype's hello@kylyvnyk.club was a placeholder",
-      "Five marked deviations from the prototype's CSS, plus two fixes: AA contrast on the footer baseline, and a stacking context so the open filter list is not painted over",
-      "pnpm verify green (608 tests); axe 0 serious/critical at 1440 and 390 in all three locales; every link on the page walked in a browser"
+      "Found why registration 'works every other time': a Turnstile token is single-use, and every retry after a refusal replayed the spent one. The widget is now reset after each refusal, on registration and on password reset",
+      "The landing page's Business card sent a signed-out visitor to member sign-up and a signed-in one to a 404; both now go to the partner application",
+      "New public one-page partner registration at /{locale}/partner - account and company created by one submit, no club membership first",
+      "The company form is one page everywhere: block/category/activities are asked before the description, the four steps and the review panel are gone, and the draft autosaves a second after typing stops",
+      "New dues kind 'partner': owes no $4.99, and the club opens for it when the listing subscription is active",
+      "Payment moved back behind moderation - checkout requires an approved company, the form no longer opens Stripe, and the approval inbox row and email carry the payment link",
+      "ADR 0036 written, ADR 0019 superseded; FR-109 to FR-112 added, FR-040 and FR-103 amended; phase-9.md written; architecture, ux, data-storage, glossary, operations, brief and testing updated",
+      "pnpm verify green (626 unit tests, +20 new); integration 315 pass with only the 3 known FR-083 failures; migration proved up, down and up again against PostgreSQL 17"
     ],
-    "stoppedAt": "Working tree is uncommitted on feat/home-redesign. The page is browser-verified against the docker stack with the demo seed loaded; nothing is committed and no PR is open.",
+    "stoppedAt": "Working tree is uncommitted on fix/landing-catalogue-link, which is the wrong branch for this work. Nothing is committed and no PR is open. The funnel was checked by serving a production build and reading the HTML; no browser drove it, because this host cannot launch Chromium.",
     "nextSteps": [
-      "Commit and open the PR: feat/home-redesign -> main",
-      "Show the client the page at /en, /ru and /uk and get the design signed off before the demo partners come out",
-      "On production, in order: pnpm db:seed:categories, then nine approved companies with live listings, then mark three `top` - docs/operations.md §9 is the list",
-      "Remove the local demo partners when review is done: pnpm db:seed:landing --remove",
-      "Still open: 3 failing FR-083 member-plan-filter integration tests, the stalled production outbox, phase 8 integration tests"
+      "Move the work onto feat/FR-109-partner-funnel and open the PR - the current branch is about the landing catalogue link and this is a different change",
+      "Get a browser: install libnspr4/libnss3 (needs sudo) and drive the real funnel - Business card -> /partner -> submit -> approve in the console -> pay",
+      "Write the missing account-half test: one guest submit makes exactly one member with dues_kind='partner' and one pending company",
+      "Show the client /ru/partner and the /ru/membership standing screen before deploying - the copy is new in all three locales",
+      "On production: the migration applies itself during the build; afterwards confirm in Stripe that nothing is charged before an approval"
     ]
   }
 }
