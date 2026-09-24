@@ -2459,46 +2459,24 @@
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  .kyl .partner-card {
-    display: grid;
-    grid-template-columns: 118px 1fr;
-    min-height: 148px;
-  }
+  /* One column, photo above the copy. A side-by-side card at phone width gave
+     the art 118px and the text the rest, which read as a broken row rather
+     than a card, so the card keeps the shape it has everywhere else. */
   .kyl .partner-art {
-    height: 100%;
-    min-height: 148px;
-    border-bottom: 0;
-    border-right: 1px solid var(--line-soft);
-  }
-  .kyl .partner-art::before {
-    width: 130px;
-    height: 130px;
-  }
-  .kyl .partner-art::after {
-    width: 72px;
-    height: 72px;
-  }
-  .kyl .partner-art > span:first-child {
-    font-size: 38px;
-  }
-  .kyl .partner-art > span:last-child {
-    left: 9px;
-    bottom: 8px;
-    font-size: 6px;
+    height: 200px;
   }
   .kyl .partner-body {
-    padding: 14px 15px;
+    padding: 18px;
   }
   .kyl .partner-body h3 {
-    font-size: 20px;
+    font-size: 22px;
   }
   .kyl .partner-body > p:not(.card-meta) {
     min-height: 0;
-    margin-bottom: 10px;
-    font-size: 9px;
+    margin-bottom: 14px;
   }
   .kyl .partner-benefit {
-    padding-top: 8px;
+    padding-top: 12px;
   }
   .kyl .about-visual {
     min-height: 450px;
@@ -3168,13 +3146,8 @@
   .kyl .process-card h3 {
     font-size: 18px;
   }
-  .kyl .partner-card {
-    min-height: 195px;
-  }
   .kyl .partner-art > span:last-child {
-    left: 9px;
-    bottom: 10px;
-    max-width: calc(100% - 18px);
+    max-width: calc(100% - 32px);
     line-height: 1.25;
   }
   .kyl .partner-body > p:not(.card-meta) {
@@ -3195,6 +3168,9 @@
   }
 }
 @media (max-width: 420px) {
+  .kyl .partner-art {
+    height: 175px;
+  }
   .kyl .hero {
     min-height: 850px;
   }
@@ -3667,14 +3643,6 @@ body.kyl-menu-open {
 @media (max-width: 760px) {
   .kyl .footer-legal a + a::before {
     display: none;
-  }
-}
-
-@media (max-width: 760px) {
-  .kyl .partner-card > .partner-card-link {
-    display: grid;
-    grid-template-columns: 118px 1fr;
-    min-height: 195px;
   }
 }
 
