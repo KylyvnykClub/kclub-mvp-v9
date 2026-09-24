@@ -94,10 +94,11 @@ export function NotificationList({
                   </blockquote>
                 )}
                 {row.kind === "company_rejected" && (
-                  // Worded conditionally on purpose: the inbox row is written
-                  // before the refund runs and the refund may still be
-                  // retrying via the outbox (ADR 0019), so this promises the
-                  // policy rather than reporting a completed transfer.
+                  // Worded conditionally on purpose, and since ADR 0036
+                  // usually vacuous: nothing is charged before approval, so a
+                  // rejection normally has nothing to refund. It still covers
+                  // the companies that paid under the old order, whose refund
+                  // may be retrying through the outbox.
                   <p className="text-sm text-muted-foreground">
                     {t("company_rejected_refund")}
                   </p>

@@ -69,6 +69,69 @@ describe("FR-108: access follows the subscription in both directions", () => {
   });
 });
 
+/**
+ * FR-110: a business partner pays for a listing, never for membership dues.
+ *
+ * The client's words were "the business pays no $4.99, only the $19.99, and
+ * then everything is open". Both halves are rules: the dues screen is not
+ * theirs, and the listing is what opens the club - so an unpaid partner is
+ * held outside it rather than let in free on the strength of an application
+ * nobody has read yet.
+ */
+describe("FR-110: a partner's access follows the listing, not the dues", () => {
+  it("lets a partner in once the listing subscription is active", () => {
+    expect(membershipAccess({ duesKind: "partner" }, [LISTING])).toBe("active");
+  });
+
+  it("keeps a partner in through the dunning window, like every other member", () => {
+    expect(
+      membershipAccess({ duesKind: "partner" }, [
+        { plan: "listing", status: "past_due" },
+      ]),
+    ).toBe("active");
+  });
+
+  it("holds a partner outside the club before the listing is paid for", () => {
+    expect(membershipAccess({ duesKind: "partner" }, [])).toBe(
+      "awaiting_payment",
+    );
+  });
+
+  it.each([
+    "unpaid",
+    "canceled",
+    "incomplete",
+    "incomplete_expired",
+    "deleted",
+  ])("holds a partner outside the club when the listing is %s", (status) => {
+    expect(
+      membershipAccess({ duesKind: "partner" }, [{ plan: "listing", status }]),
+    ).toBe("awaiting_payment");
+  });
+
+  it("never asks a partner for membership dues - a dues subscription is not what opens it", () => {
+    // Nothing should ever create this row for a partner. If something did, it
+    // must not be the thing that lets them in: the listing is.
+    expect(membershipAccess({ duesKind: "partner" }, [DUES])).toBe(
+      "awaiting_payment",
+    );
+  });
+
+  it("does not let VIP stand in for the listing", () => {
+    expect(membershipAccess({ duesKind: "partner" }, [VIP])).toBe(
+      "awaiting_payment",
+    );
+  });
+
+  it("does not let a listing pay a paying member's dues either", () => {
+    // The two are not interchangeable in either direction: what a member owes
+    // is decided by their dues kind, not by whichever subscription they hold.
+    expect(membershipAccess({ duesKind: "paying" }, [LISTING])).toBe(
+      "awaiting_payment",
+    );
+  });
+});
+
 describe("FR-105, FR-107: sponsored and legacy members are never asked to pay", () => {
   it("admits a sponsored member with no subscription", () => {
     expect(membershipAccess({ duesKind: "sponsored" }, [])).toBe("active");

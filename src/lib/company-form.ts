@@ -1,14 +1,18 @@
 import { z } from "zod";
 
 /**
- * The four steps of the company submission form (FR-040, ux.md §3.3):
- * business details -> location and category -> the discount offered ->
- * review and confirm.
+ * What a company application must contain (FR-040, FR-109, ux.md §3.3).
  *
- * These schemas live outside the Server Action file on purpose: the client
- * validates a step with the same object the server validates it with, so a
- * step cannot pass in the browser and fail on the wire (architecture.md §3.3,
- * CLAUDE.md "the same schema validates on the client").
+ * Three groups rather than one object, because they are three different
+ * questions - what the business says about itself, where and under what
+ * category it operates, and what it staged as media - and an error that names
+ * its group is easier to act on than one that names a field in a wall of
+ * eighteen.
+ *
+ * They live outside the Server Action file on purpose: the form validates with
+ * the same objects the server validates with, so a submission cannot pass in
+ * the browser and fail on the wire (architecture.md §3.3, CLAUDE.md "the same
+ * schema validates on the client").
  */
 
 /**
@@ -17,10 +21,10 @@ import { z } from "zod";
  *
  * A browser serialising a form rewrites every line break as CRLF, so a value a
  * `maxLength={500}` textarea accepted arrives at the Server Action as 503
- * characters. Steps 1-3 are saved through a Server Action call that carries the
- * string unchanged, and only step 4 is a real form post - so without this the
- * last step rejects text every earlier step accepted, and the message names no
- * field the applicant could go back and shorten.
+ * characters. The draft is saved through a Server Action call that carries the
+ * string unchanged, while submission is a real form post - so without this the
+ * submission rejects text the draft accepted, and the message names no field
+ * the applicant could go back and shorten.
  *
  * Normalising before the length check also keeps the stored value inside the
  * column the limit is derived from (`specialization_description varchar(500)`).
@@ -33,7 +37,7 @@ function multiline<T extends z.ZodType>(schema: T) {
   );
 }
 
-export const companyDetailsStepSchema = z.object({
+export const companyDetailsSchema = z.object({
   name: z
     .string()
     .min(2, "Company name must be at least 2 characters")
@@ -46,8 +50,8 @@ export const companyDetailsStepSchema = z.object({
     z.string().min(2, "Specialization description is required").max(500),
   ),
   logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  // Since the onboarding rework (ADR 0024) the offer and contacts sit on
-  // step 1 with the rest of the business details.
+  // Since the onboarding rework (ADR 0024) the offer and contacts sit with the
+  // rest of the business details.
   discount: z.string().max(255).optional(),
   contactEmail: z
     .string()
@@ -57,7 +61,7 @@ export const companyDetailsStepSchema = z.object({
   contactPhone: z.string().max(50).optional(),
 });
 
-export const companyLocationStepSchema = z
+export const companyLocationSchema = z
   .object({
     businessCategoryIds: z.preprocess(
       (val): unknown[] => {
@@ -110,11 +114,11 @@ export const companyLocationStepSchema = z
   });
 
 /**
- * Step 3 (ADR 0024): what the applicant staged under their draft prefix.
- * Both optional - a company without photos is still a company. The ids are
- * checked against staging at submission; a stale one is simply skipped.
+ * ADR 0024: what the applicant staged under their draft prefix. Both optional
+ * - a company without photos is still a company. The ids are checked against
+ * staging at submission; a stale one is simply skipped.
  */
-export const companyMediaStepSchema = z.object({
+export const companyMediaSchema = z.object({
   logoStaged: z.enum(["true", ""]).optional(),
   galleryImageIds: z
     .string()
@@ -122,16 +126,6 @@ export const companyMediaStepSchema = z.object({
     .regex(/^([0-9a-f-]{36}(,[0-9a-f-]{36})*)?$/, "Invalid image list")
     .optional(),
 });
-
-/** Step 4 is review and confirm; it introduces no fields of its own. */
-export const COMPANY_FORM_STEPS = 4;
-
-/** Indexed by step number - step 4 has no schema because it adds no fields. */
-export const COMPANY_STEP_SCHEMAS = {
-  1: companyDetailsStepSchema,
-  2: companyLocationStepSchema,
-  3: companyMediaStepSchema,
-} as const;
 
 /**
  * The message key that labels each field, so a failure can name what to fix
@@ -191,7 +185,6 @@ export type CompanyErrorCode =
   | "categoryUnknown"
   | "categoryProhibited"
   | "cityCountryMismatch"
-  | "unknownStep"
   | "unexpected";
 
 /**
@@ -228,15 +221,9 @@ export function describeCompanyIssue(error: z.ZodError): CompanyFormIssue {
   }
 }
 
-export type CompanyStepNumber = 1 | 2 | 3 | 4;
-
-export function isCompanyStep(value: number): value is CompanyStepNumber {
-  return Number.isInteger(value) && value >= 1 && value <= COMPANY_FORM_STEPS;
-}
-
-export const registerCompanySchema = companyDetailsStepSchema
-  .extend(companyLocationStepSchema.shape)
-  .extend(companyMediaStepSchema.shape);
+export const registerCompanySchema = companyDetailsSchema
+  .extend(companyLocationSchema.shape)
+  .extend(companyMediaSchema.shape);
 
 /**
  * A draft read back from the database is input, not state we control: it was

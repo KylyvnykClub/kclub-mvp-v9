@@ -43,15 +43,23 @@ const COMPANY_APPROVED_SUBJECTS: Record<Locale, string> = {
   uk: "Вашу компанію схвалено на KYLYVNYK CLUB",
 };
 
-const COMPANY_APPROVED_BODIES: Record<Locale, (companyName: string) => string> =
-  {
-    en: (companyName) =>
-      `Congratulations!\n\nYour company "${companyName}" has been approved and is now live in the KYLYVNYK CLUB Partner Catalogue.\n\nMembers can now discover your business and access your offers.\n\nBest,\nKYLYVNYK CLUB`,
-    ru: (companyName) =>
-      `Поздравляем!\n\nВаша компания «${companyName}» одобрена и теперь доступна в Каталоге партнёров KYLYVNYK CLUB.\n\nУчастники клуба теперь могут найти ваш бизнес и воспользоваться вашими предложениями.\n\nС уважением,\nKYLYVNYK CLUB`,
-    uk: (companyName) =>
-      `Вітаємо!\n\nВашу компанію «${companyName}» схвалено, і тепер вона доступна в Каталозі партнерів KYLYVNYK CLUB.\n\nУчасники клубу тепер можуть знайти ваш бізнес та скористатися вашими пропозиціями.\n\nЗ повагою,\nKYLYVNYK CLUB`,
-  };
+/**
+ * Approval is not publication (FR-044), and since ADR 0036 it is also the
+ * first moment anything may be charged (FR-111). The email therefore says
+ * what is true and what is left to do, and carries the link that does it.
+ * The old wording announced a listing that was live, which it was not.
+ */
+const COMPANY_APPROVED_BODIES: Record<
+  Locale,
+  (companyName: string, link: string) => string
+> = {
+  en: (companyName, link) =>
+    `Congratulations!\n\nYour company "${companyName}" has passed review for the KYLYVNYK CLUB Partner Catalogue.\n\nOne step is left: pay for the listing and it goes live. Nothing has been charged until you do.\n\n${link}\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (companyName, link) =>
+    `Поздравляем!\n\nВаша компания «${companyName}» прошла проверку для Каталога партнёров KYLYVNYK CLUB.\n\nОстался один шаг: оплатите размещение, и оно будет опубликовано. До этого с вас ничего не списывается.\n\n${link}\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (companyName, link) =>
+    `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nЗалишився один крок: оплатіть розміщення, і воно буде опубліковане. До цього з вас нічого не списується.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
 
 const COMPANY_REJECTED_SUBJECTS: Record<Locale, string> = {
   en: "Your company submission was not approved",
@@ -63,8 +71,11 @@ const COMPANY_REJECTED_BODIES: Record<
   Locale,
   (companyName: string, reason: string) => string
 > = {
-  // The refund sentence is conditional on purpose: the email is sent by the
-  // daily outbox drain and the refund itself may still be retrying (ADR 0019).
+  // The refund sentence is conditional on purpose, and since ADR 0036 it is
+  // usually false: nothing is charged before approval, so a rejection normally
+  // has nothing to give back. It stays for the companies that paid under the
+  // old order and for whom the refund may still be retrying through the
+  // outbox.
   en: (companyName, reason) =>
     `Hello,\n\nYour company "${companyName}" was not approved for the KYLYVNYK CLUB Partner Catalogue.\n\nReason: ${reason}\n\nIf you had already paid for the listing, the subscription has been cancelled and the payment is being refunded to your card. Banks usually take 5–10 business days to show it.\n\nYou may update your listing and resubmit.\n\nBest,\nKYLYVNYK CLUB`,
   ru: (companyName, reason) =>
@@ -171,10 +182,15 @@ export async function sendCompanyApprovedEmail(params: {
   companyName: string;
   locale: Locale;
 }): Promise<boolean> {
+  // Straight to the owner's own screen. A partner with no active listing is
+  // forwarded from there to the standing screen that carries the button, so
+  // one link serves both kinds of owner (FR-110).
+  const link = `${env.server.NEXT_PUBLIC_APP_URL}/${params.locale}/dashboard/profile`;
+
   return sendEmail(
     params.to,
     COMPANY_APPROVED_SUBJECTS[params.locale],
-    COMPANY_APPROVED_BODIES[params.locale](params.companyName),
+    COMPANY_APPROVED_BODIES[params.locale](params.companyName, link),
   );
 }
 

@@ -6,14 +6,11 @@ import { appendAuditEntry } from "@/data/audit-log";
 import { BILLING_REFUND_RETRY_TOPIC, enqueueOutbox } from "@/data/outbox";
 import { createNotification } from "@/data/notifications";
 import {
-  companySlugExists,
   COMPANY_ADMIN_STATUSES,
   countCompaniesByStatus,
   countCompaniesForAdmin,
   findApprovedCompanyBySlug,
   findCompanyForAdmin,
-  findCategoryById,
-  insertCompany,
   listActiveCategoriesByBlock,
   listActiveCategoryBlocks,
   listActiveSubcategories,
@@ -36,7 +33,6 @@ import {
   setCompanyPendingChanges,
   setCompanyShowcase,
   updateCompanyFields,
-  validateCityBelongsToCountry,
   type PartnerFilters,
 } from "@/data/companies";
 import {
@@ -64,29 +60,16 @@ import {
   refundListingForCompany,
 } from "@/modules/billing/refund";
 import {
-  COMPANY_STEP_SCHEMAS,
   companyDraftDataSchema,
-  describeCompanyIssue,
-  isCompanyStep,
-  registerCompanySchema,
   type CompanyDraftData,
   type CompanyFormIssue,
-  type CompanyStepNumber,
 } from "@/lib/company-form";
-import { companySlug } from "@/lib/slug";
+import { submitCompany } from "@/modules/catalogue/submit-company";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
-import { isProhibitedCategory } from "@/lib/prohibited-categories";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { insertCompanyImageWithId } from "@/data/company-images";
-import { companyLogoServePath } from "@/lib/company-image-path";
-import { parseDraftImageIds } from "@/lib/draft-media-path";
-import {
-  deleteDraftMedia,
-  promoteDraftMedia,
-} from "@/modules/platform/draft-media-storage";
-import { setCompanyLogoUrl } from "@/data/companies";
+import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
 
 const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
 
@@ -121,9 +104,10 @@ export type CompanyFormState = {
    */
   issue?: CompanyFormIssue;
   /**
-   * Set only by `registerCompanyAction`. The form uses it to open listing
-   * checkout in a second call (ADR 0019) - this action cannot `redirect()`
-   * itself, because its own try/catch would swallow the NEXT_REDIRECT throw.
+   * The application that was filed. The dashboard form does not use it; the
+   * partner application does, to attach the photos it holds in the browser
+   * once the company exists (FR-109). Nothing opens checkout with it - since
+   * ADR 0036 there is nothing to pay for until a moderator has approved it.
    */
   companyId?: string;
 };
@@ -132,140 +116,39 @@ export async function registerCompanyAction(
   _prevState: CompanyFormState | null,
   formData: FormData,
 ): Promise<CompanyFormState> {
-  try {
-    const auth = await getCurrentMember();
-    if (!auth || !auth.member) {
-      return { success: false, issue: { code: "unauthorized" } };
-    }
-
-    const actor = buildActor(auth.member);
-    assertCan(actor, "create", "own_company");
-
-    const data = Object.fromEntries(formData.entries());
-    const parsed = registerCompanySchema.safeParse(data);
-
-    if (!parsed.success) {
-      return { success: false, issue: describeCompanyIssue(parsed.error) };
-    }
-
-    for (const catId of parsed.data.businessCategoryIds) {
-      const category = await findCategoryById(db, catId);
-      if (!category) {
-        return {
-          success: false,
-          issue: { code: "categoryUnknown", field: "businessCategoryIds" },
-        };
-      }
-      if (isProhibitedCategory(category)) {
-        return {
-          success: false,
-          issue: { code: "categoryProhibited", field: "businessCategoryIds" },
-        };
-      }
-    }
-
-    const cityValid = await validateCityBelongsToCountry(
-      db,
-      parsed.data.city ?? "",
-      parsed.data.registrationCountryCode,
-    );
-    if (!cityValid) {
-      return {
-        success: false,
-        issue: { code: "cityCountryMismatch", field: "city" },
-      };
-    }
-
-    const baseSlug = companySlug(parsed.data.name);
-    let finalSlug = baseSlug;
-
-    let isUnique = false;
-    let counter = 1;
-    while (!isUnique) {
-      const exists = await companySlugExists(db, finalSlug);
-      if (!exists) {
-        isUnique = true;
-      } else {
-        finalSlug = `${baseSlug}-${counter}`;
-        counter++;
-      }
-    }
-
-    const companyId = await insertCompany(
-      db,
-      {
-        ownerId: auth.member.id,
-        name: parsed.data.name,
-        slug: finalSlug,
-        legalName: parsed.data.legalName,
-        taxId: parsed.data.taxId,
-        website: parsed.data.website,
-        description: parsed.data.description,
-        businessCategoryId: parsed.data.businessCategoryIds[0] ?? null,
-        discount: parsed.data.discount,
-        logoUrl: null,
-        contactEmail: parsed.data.contactEmail,
-        contactPhone: parsed.data.contactPhone,
-        country: parsed.data.registrationCountryCode,
-        city: parsed.data.city || null,
-        registrationCountryCode: parsed.data.registrationCountryCode,
-        businessFormat: parsed.data.businessFormat,
-        administrativeLevel1: parsed.data.administrativeLevel1 || null,
-        administrativeLevel2: parsed.data.administrativeLevel2 || null,
-        specializationDescription: parsed.data.specializationDescription,
-        servesWorldwide: parsed.data.servesWorldwide === "true" ? 1 : 0,
-        moderationStatus: "pending",
-      },
-      parsed.data.serviceCountryCodes.split(",").filter(Boolean),
-      parsed.data.businessCategoryIds,
-    );
-
-    // The application is now a company; the draft has served its purpose.
-    // ADR 0024: media staged during onboarding becomes the company's. Best
-    // effort - the application is the point, a lost photo is not. Rows are
-    // written only for objects the copy confirmed, and the staging prefix is
-    // deleted only after those rows exist.
-    try {
-      const promoted = await promoteDraftMedia(auth.member.id, companyId, {
-        logo: parsed.data.logoStaged === "true",
-        imageIds: parseDraftImageIds(parsed.data.galleryImageIds),
-      });
-      for (const imageId of promoted.imageIds) {
-        await insertCompanyImageWithId(db, companyId, imageId);
-      }
-      if (promoted.logo) {
-        await setCompanyLogoUrl(db, companyId, companyLogoServePath(companyId));
-      }
-      await deleteDraftMedia(auth.member.id);
-    } catch (error) {
-      logger.error("Draft media promotion failed", safeErrorFields(error));
-    }
-
-    await deleteCompanyDraft(db, auth.member.id);
-
-    return { success: true, companyId };
-  } catch (error) {
-    logger.error("Company registration failed", safeErrorFields(error));
-    return { success: false, issue: { code: "unexpected" } };
+  const auth = await getCurrentMember();
+  if (!auth || !auth.member) {
+    return { success: false, issue: { code: "unauthorized" } };
   }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "create", "own_company");
+
+  // The work is in `submitCompany`, shared with the partner application
+  // (FR-109). What belongs here is the one thing that form does differently:
+  // the owner is whoever is signed in.
+  return submitCompany(db, auth.member.id, formData);
 }
 
 export type CompanyDraftState = { success: boolean; issue?: CompanyFormIssue };
 
 export type CompanyDraftSnapshot = {
-  step: CompanyStepNumber;
   data: CompanyDraftData;
 };
 
 /**
- * Save one completed step of the submission form (FR-040).
+ * Keep what the applicant has typed so far (FR-040).
  *
- * Only the fields belonging to `step` are validated here - the applicant has
- * not filled the later ones in yet, and rejecting a draft for that would defeat
- * the point of saving it. The full schema is enforced on submission.
+ * Nothing is validated here beyond "these are fields this form has": the
+ * applicant is mid-sentence, and refusing to remember a half-typed answer is
+ * exactly the moment a draft exists to survive. `companyDraftDataSchema` is
+ * the whole submission made partial, so an unknown key is dropped rather than
+ * stored, and the full schema is enforced on submission.
+ *
+ * Merged over what is already stored, so a save that carries only the fields
+ * on screen cannot wipe the ones that are not.
  */
 export async function saveCompanyDraftAction(
-  step: number,
   values: Record<string, string>,
 ): Promise<CompanyDraftState> {
   try {
@@ -277,24 +160,6 @@ export async function saveCompanyDraftAction(
     const actor = buildActor(auth.member);
     assertCan(actor, "create", "own_company");
 
-    if (!isCompanyStep(step)) {
-      return { success: false, issue: { code: "unknownStep" } };
-    }
-
-    const stepSchema =
-      COMPANY_STEP_SCHEMAS[step as keyof typeof COMPANY_STEP_SCHEMAS];
-    if (stepSchema) {
-      const parsedStep = stepSchema.safeParse(values);
-      if (!parsedStep.success) {
-        return {
-          success: false,
-          issue: describeCompanyIssue(parsedStep.error),
-        };
-      }
-    }
-
-    // Merge over what is already stored so a save of step 2 does not wipe the
-    // answers given in step 1.
     const existing = await findCompanyDraftByOwner(db, auth.member.id);
     const previous = existing
       ? (companyDraftDataSchema.safeParse(existing.data).data ?? {})
@@ -304,7 +169,6 @@ export async function saveCompanyDraftAction(
     await upsertCompanyDraft(
       db,
       auth.member.id,
-      step,
       merged.success ? merged.data : previous,
     );
 
@@ -315,7 +179,7 @@ export async function saveCompanyDraftAction(
   }
 }
 
-/** Resume point for the submission form, or null when there is no draft. */
+/** What the applicant last typed, or null when there is no draft. */
 export async function getCompanyDraftAction(): Promise<CompanyDraftSnapshot | null> {
   const auth = await getCurrentMember();
   if (!auth?.member) {
@@ -334,10 +198,7 @@ export async function getCompanyDraftAction(): Promise<CompanyDraftSnapshot | nu
 
   const parsed = companyDraftDataSchema.safeParse(draft.data);
 
-  return {
-    step: isCompanyStep(draft.step) ? draft.step : 1,
-    data: parsed.success ? parsed.data : {},
-  };
+  return { data: parsed.success ? parsed.data : {} };
 }
 
 /** Abandon an application deliberately, rather than waiting for retention. */
@@ -551,11 +412,11 @@ export async function getCompaniesForAdminAction(
     pageParamsFromSearchParam(currentPage, DEFAULT_PAGE_SIZE),
   );
 
-  // Since ADR 0019 a company can reach the queue unpaid, because checkout may
-  // have been abandoned. The queue still shows it - FR-042 says a submitted
-  // company enters the queue, and filtering here would also hide one whose
-  // webhook has merely not landed yet - so moderators get an indicator and
-  // paid-first ordering instead, and triage rather than guess.
+  // Since ADR 0036 every company reaches the queue unpaid: there is nothing
+  // to charge for until a moderator has approved it. The indicator therefore
+  // marks approved listings that have been paid for and gone live, and the
+  // queue is never filtered by it - FR-042 says a submitted company enters the
+  // queue, and filtering would hide the very rows waiting to be judged.
   const paidIds = new Set(await listCompanyIdsWithActiveSubscription(db));
   const rows = page_
     .map((company) => ({ ...company, paid: paidIds.has(company.id) }))
@@ -619,7 +480,13 @@ export async function getCompanyAdminDetailAction(companyId: string) {
 }
 
 /**
- * Cancel and refund a rejected company's listing subscription (ADR 0019).
+ * Cancel and refund a rejected company's listing subscription.
+ *
+ * Since ADR 0036 nothing is charged before approval, so on the ordinary path
+ * this finds nothing to refund and returns. It is kept, and still runs, for
+ * the companies that paid while ADR 0019 was in force and for an approved
+ * listing that is later rejected - both are cases where money was taken for a
+ * listing that will not be published.
  *
  * Deliberately never throws. The moderation decision, its audit entry and the
  * applicant's notification have already committed by the time this runs, and a
@@ -693,7 +560,7 @@ export async function moderateCompanyAction(
 
   // Idempotency for the whole decision, enforced in the UPDATE's own WHERE so
   // two concurrent requests cannot both pass it. A repeat must not re-audit,
-  // re-notify, or - since ADR 0019 - refund a second time.
+  // re-notify, or refund a second time.
   const changed = await setCompanyModerationStatus(
     db,
     id,
