@@ -3852,12 +3852,13 @@ body.kyl-menu-open {
   padding: 26px;
   filter: none;
 }
-/* A light plate under a contained logo: most logos are drawn for a light page
-   and would vanish on the dark panel. Only the content box is painted, so the
-   plate sits inside the padding and the place label keeps the dark below it. */
+/* A dark plate under a contained logo, one step lighter than the panel, in the
+   page's own palette - the owner's call over a light one. Only the content box
+   is painted, so the plate sits inside the padding and the place label keeps
+   the dark below it. */
 .kyl .partner-art .partner-logo,
 .kyl .top-partner-image img {
-  background: #f6f1e8;
+  background: var(--panel-2);
   background-clip: content-box;
 }
 /* FR-117: "special privileges" sits under the discount in the same benefit

@@ -86,7 +86,7 @@ The smaller three:
 
 9. **Logos are never cropped.** Uploads are bounded to 512 px on the longest
    side instead of cover-cropped to a square, and every surface contains them
-   on a light plate. Logos uploaded before this change were cropped at upload
+   on a dark plate in the site's palette. Logos uploaded before this change were cropped at upload
    and must be uploaded again; the originals were never kept.
 10. **Special privileges** (FR-117) are a switch and an optional note on the
     company, public like the discount (ADR 0034).

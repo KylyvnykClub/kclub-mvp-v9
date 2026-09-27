@@ -58,10 +58,9 @@ export function PartnerCard({
       }
     >
       {partner.logoUrl ? (
-        // A light plate with the logo contained on it, never cropped (ADR
-        // 0037). Most logos are drawn for a light page; on the card's black
-        // they would vanish, and cropped they are not the partner's logo.
-        <div className="absolute inset-3 bottom-4 top-12 rounded-md bg-white">
+        // A dark plate in the site's palette with the logo contained on it,
+        // never cropped (ADR 0037).
+        <div className="absolute inset-3 bottom-4 top-12 rounded-md border border-white/10 bg-zinc-900">
           <Image
             src={partner.logoUrl}
             alt=""

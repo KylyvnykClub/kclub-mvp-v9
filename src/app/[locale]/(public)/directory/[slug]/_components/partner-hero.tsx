@@ -75,9 +75,9 @@ export function PartnerHero({
         <div className="mt-auto flex flex-wrap items-end justify-between gap-x-7 gap-y-5">
           <div className="min-w-0">
             {logoUrl && (
-              // A light plate, so a logo drawn for a light page stays
-              // visible on the dark hero; contained, never cropped (ADR 0037).
-              <div className="relative mb-4 h-20 w-40 rounded-md bg-white">
+              // A dark glass plate in the hero's palette; the logo is
+              // contained, never cropped (ADR 0037).
+              <div className="relative mb-4 h-20 w-40 rounded-md border border-white/15 bg-black/40 backdrop-blur">
                 <Image
                   src={logoUrl}
                   alt={logoAlt}
