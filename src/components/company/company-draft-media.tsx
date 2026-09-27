@@ -65,7 +65,7 @@ export function DraftLogoField({
           <img
             src={`${draftMediaServePath(DRAFT_LOGO_SLOT)}?v=${version}`}
             alt=""
-            className="size-16 border border-border bg-white object-contain p-1"
+            className="size-16 border border-border bg-muted object-contain p-1"
           />
         ) : (
           <div

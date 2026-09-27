@@ -46,7 +46,7 @@ export function PartnerMediaField({
           {media.logo ? (
             <LocalPreview
               file={media.logo}
-              className="size-16 bg-white object-contain p-1"
+              className="size-16 bg-muted object-contain p-1"
             />
           ) : (
             <div
