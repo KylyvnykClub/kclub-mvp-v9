@@ -210,19 +210,22 @@ export default async function AdminCompaniesPage({
                       />
                     </TableCell>
                     {/*
-                      Since ADR 0036 nothing is charged before approval, so a
-                      pending row is unpaid by design and the indicator says
-                      only whether an already-approved listing has been paid
-                      for. Paid rows still sort first, which now means "live"
-                      rather than "ready to judge".
+                      ADR 0037: a pending row says whether the price is
+                      reserved on the card - approving it captures that
+                      reservation. Any other row says whether the listing is
+                      paid for, which is what makes it live.
                     */}
                     <TableCell className="hidden sm:table-cell">
-                      <StatusBadge
-                        tone={company.paid ? "positive" : "warning"}
-                        label={
-                          company.paid ? t("listingPaid") : t("listingUnpaid")
-                        }
-                      />
+                      {company.paid ? (
+                        <StatusBadge tone="positive" label={t("listingPaid")} />
+                      ) : company.cardHeld ? (
+                        <StatusBadge tone="warning" label={t("holdReserved")} />
+                      ) : (
+                        <StatusBadge
+                          tone="neutral"
+                          label={t("listingUnpaid")}
+                        />
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {/* Approve/reject live inside the sheet's moderation

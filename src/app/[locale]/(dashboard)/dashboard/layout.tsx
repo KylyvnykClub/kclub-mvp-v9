@@ -3,11 +3,10 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
-import { listMemberSubscriptionPlans } from "@/data/billing";
+import { loadMembershipAccess } from "@/data/membership-access";
 import { db } from "@/data/db";
 import { countUnreadForMember } from "@/data/notifications";
 import { buildActor, staffAtLeast } from "@/domain/actor";
-import { membershipAccess } from "@/domain/membership";
 import { DashboardChrome } from "./_components/dashboard-chrome";
 
 type Props = {
@@ -48,11 +47,10 @@ export default async function DashboardLayout({ children, params }: Props) {
   // gating the console behind a member's dues would lock the owner out of the
   // screen where dues are managed.
   if (!canAccessAdmin) {
-    const subscriptions = await listMemberSubscriptionPlans(
-      db,
-      result.member.id,
-    );
-    if (membershipAccess(result.member, subscriptions) === "awaiting_payment") {
+    if (
+      (await loadMembershipAccess(db, result.member, new Date())) ===
+      "awaiting_payment"
+    ) {
       redirect(`/${locale}/membership`);
     }
   }

@@ -279,7 +279,10 @@ export default async function AdminDashboardPage({
                     </p>
                   </div>
                   <div className="shrink-0">
-                    <ModerateActions companyId={company.id} />
+                    <ModerateActions
+                      companyId={company.id}
+                      cardHeld={company.cardHeld}
+                    />
                   </div>
                 </li>
               ))}

@@ -46,6 +46,35 @@ const STATUS_TONES: Record<keyof typeof STATUS_LABEL_KEYS, StatusTone> = {
   rejected: "negative",
 };
 
+/**
+ * ADR 0037: a partner's held listing payment, in the moderator's words. The
+ * PaymentIntent status is Stripe's; this is what it means for the decision.
+ */
+function holdLabelKey(hold: CompanyDetail["holds"][number]) {
+  if (hold.refundedAt) return "holdRefunded" as const;
+  if (hold.status === "succeeded") return "holdCaptured" as const;
+  if (hold.status === "canceled") return "holdReleased" as const;
+  if (hold.status === "processing") return "holdProcessing" as const;
+  if (hold.capturable) {
+    return hold.captureRequestedAt
+      ? ("holdCapturing" as const)
+      : ("holdReserved" as const);
+  }
+  if (hold.status === "requires_capture") return "holdExpired" as const;
+  return "holdAwaitingCard" as const;
+}
+
+const HOLD_TONES: Record<ReturnType<typeof holdLabelKey>, StatusTone> = {
+  holdReserved: "warning",
+  holdCapturing: "warning",
+  holdProcessing: "warning",
+  holdCaptured: "positive",
+  holdReleased: "neutral",
+  holdRefunded: "neutral",
+  holdExpired: "negative",
+  holdAwaitingCard: "neutral",
+};
+
 const REFERRAL_STATUS_KEYS = {
   pending_review: "refStatusPendingReview",
   rejected: "refStatusRejected",
@@ -227,6 +256,14 @@ export function CompanyDetailSheet({
           <Field label={t("websiteLabel")} value={company.website} />
           <Field label={t("discountLabel")} value={company.discount} />
           <Field
+            label={t("specialPrivilegesLabel")}
+            value={
+              company.specialPrivileges
+                ? company.specialPrivilegesNote || t("specialPrivilegesOn")
+                : "—"
+            }
+          />
+          <Field
             label={t("createdLabel")}
             value={new Date(company.createdAt).toLocaleDateString()}
           />
@@ -329,6 +366,7 @@ export function CompanyDetailSheet({
           {canModerate && company.moderationStatus === "pending" && (
             <ModerateActions
               companyId={companyId}
+              cardHeld={detail.holds.some((hold) => hold.capturable)}
               onModerated={() => handleOpenChange(false)}
             />
           )}
@@ -356,6 +394,39 @@ export function CompanyDetailSheet({
             </Button>
           )}
         </div>
+      </Section>
+
+      <Section title={t("paymentTitle")}>
+        {detail.holds.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("holdNone")}</p>
+        ) : (
+          <ul className="space-y-2">
+            {detail.holds.map((hold) => {
+              const key = holdLabelKey(hold);
+              const amount = new Intl.NumberFormat(undefined, {
+                style: "currency",
+                currency: hold.currency.toUpperCase(),
+              }).format(hold.amountMinor / 100);
+
+              return (
+                <li
+                  key={hold.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm"
+                >
+                  <span className="font-mono">{amount}</span>
+                  <StatusBadge tone={HOLD_TONES[key]} label={t(key)} />
+                  {hold.capturable && hold.captureBefore && (
+                    <span className="w-full text-xs text-muted-foreground">
+                      {t("holdExpiresOn", {
+                        date: new Date(hold.captureBefore).toLocaleString(),
+                      })}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </Section>
 
       <Section title={t("pendingChangesTitle")}>

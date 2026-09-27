@@ -19,6 +19,10 @@
  *   5. the scroll-reveal's hidden state is behind `scripting: enabled`, so a
  *      page whose JavaScript never arrives is readable rather than blank.
  *
+ * Later fixes are marked the same way at the bottom of the file: the footer
+ * contrast, the search form's stacking context, and partner logos contained
+ * rather than cropped (ADR 0037).
+ *
  * Everything else is the prototype's, including the numbers. Change it here
  * only when the design changes; do not "tidy" a value into a Tailwind class.
  */
@@ -3830,4 +3834,38 @@ body.kyl-menu-open {
     width: 100%;
     margin-top: 26px;
   }
+}
+
+/* A partner's logo is shown whole (ADR 0037). The prototype filled the panel
+   with it (`object-fit: cover`), which is right for a photograph and wrong for
+   a logo: a wide wordmark lost both its ends. Contained, with room left at the
+   bottom for the place label the scrim sits under. */
+.kyl .partner-art .partner-logo {
+  object-fit: contain;
+  padding: 22px 22px 48px;
+  opacity: 1;
+}
+.kyl .top-partner-image img {
+  position: relative;
+  z-index: 1;
+  object-fit: contain;
+  padding: 26px;
+  filter: none;
+}
+/* A light plate under a contained logo: most logos are drawn for a light page
+   and would vanish on the dark panel. Only the content box is painted, so the
+   plate sits inside the padding and the place label keeps the dark below it. */
+.kyl .partner-art .partner-logo,
+.kyl .top-partner-image img {
+  background: #f6f1e8;
+  background-clip: content-box;
+}
+/* FR-117: "special privileges" sits under the discount in the same benefit
+   block, a step quieter so the discount stays the headline. */
+.kyl .partner-privileges {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

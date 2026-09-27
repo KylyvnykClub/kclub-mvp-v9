@@ -13,6 +13,8 @@ export type LandingPartner = {
   name: string;
   description: string | null;
   discount: string | null;
+  /** FR-117: the partner offers members special privileges. */
+  specialPrivileges: boolean;
   logoUrl: string | null;
   city: string | null;
   countryCode: string | null;
@@ -30,6 +32,7 @@ type CatalogueRow = {
   name: string;
   description: string | null;
   discount: string | null;
+  specialPrivileges: boolean;
   logoUrl: string | null;
   city: string | null;
   registrationCountryCode: string | null;
@@ -50,6 +53,7 @@ export function toLandingPartner(
     name: row.name,
     description: row.description,
     discount: row.discount,
+    specialPrivileges: row.specialPrivileges,
     logoUrl: row.logoUrl,
     city: row.city,
     countryCode: row.registrationCountryCode,

@@ -21,7 +21,7 @@ import {
   listApprovedCompaniesByIds,
   listCompaniesForAdmin,
   type CompanyAdminView,
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
   listPendingCompanies,
   listShowcaseCompanies,
   listSimilarApprovedCompanies,
@@ -59,6 +59,21 @@ import {
   productionRefundDeps,
   refundListingForCompany,
 } from "@/modules/billing/refund";
+import {
+  LISTING_HOLD_SETTLE_TOPIC,
+  productionListingHoldDeps,
+  refundCapturedListingHolds,
+  settleListingHolds,
+} from "@/modules/billing/listing-hold";
+import {
+  listCompanyIdsWithCapturableHold,
+  listListingHoldsByCompany,
+} from "@/data/listing-holds";
+import {
+  holdIsCapturable,
+  holdIsOpen,
+  type ListingHoldAction,
+} from "@/domain/listing-hold";
 import {
   companyDraftDataSchema,
   type CompanyDraftData,
@@ -229,7 +244,7 @@ export async function discardCompanyDraftAction(): Promise<CompanyDraftState> {
 export async function getPartnerCountryCodesAction() {
   if (SKIP_DB_PRERENDER) return [];
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
   if (activeCompanyIds.length === 0) return [];
 
   return listPartnerCountryCodes(db, activeCompanyIds);
@@ -242,7 +257,7 @@ export async function getPartnerCountryCodesAction() {
 export async function getPartnerLocationsAction() {
   if (SKIP_DB_PRERENDER) return [];
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
   if (activeCompanyIds.length === 0) return [];
 
   return listPartnerLocations(db, activeCompanyIds);
@@ -268,7 +283,7 @@ export async function getPartnersListAction(
     if (!isPublic) throw new Error("Unauthorized");
   }
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
 
   if (activeCompanyIds.length === 0) return { rows: [], total: 0 };
 
@@ -285,7 +300,7 @@ export async function getPublicShowcasePartners() {
     return { top: [], featured: [] };
   }
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
 
   if (activeCompanyIds.length === 0) return { top: [], featured: [] };
 
@@ -310,7 +325,7 @@ export async function getPartnerBySlugAction(slug: string) {
     if (!isPublic) throw new Error("Unauthorized");
   }
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
 
   if (activeCompanyIds.length === 0) return null;
 
@@ -336,7 +351,7 @@ export async function getSimilarPartnersAction(
     if (!isPublic) throw new Error("Unauthorized");
   }
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
   if (activeCompanyIds.length === 0) return [];
 
   return listSimilarApprovedCompanies(
@@ -358,9 +373,19 @@ export async function getPendingCompaniesAction() {
     return { success: false, error: "Unauthorized", data: [] };
   }
 
-  const pending = await listPendingCompanies(db);
+  const [pending, heldIds] = await Promise.all([
+    listPendingCompanies(db),
+    listCompanyIdsWithCapturableHold(db, new Date()),
+  ]);
+  const held = new Set(heldIds);
 
-  return { success: true, data: pending };
+  return {
+    success: true,
+    data: pending.map((company) => ({
+      ...company,
+      cardHeld: held.has(company.id),
+    })),
+  };
 }
 
 /**
@@ -374,7 +399,7 @@ const companiesListParamsSchema = z.object({
 });
 
 const EMPTY_COMPANY_PAGE = {
-  rows: [] as (CompanyAdminView & { paid: boolean })[],
+  rows: [] as (CompanyAdminView & { paid: boolean; cardHeld: boolean })[],
   total: 0,
   page: 1,
   pageSize: DEFAULT_PAGE_SIZE,
@@ -417,9 +442,22 @@ export async function getCompaniesForAdminAction(
   // marks approved listings that have been paid for and gone live, and the
   // queue is never filtered by it - FR-042 says a submitted company enters the
   // queue, and filtering would hide the very rows waiting to be judged.
-  const paidIds = new Set(await listCompanyIdsWithActiveSubscription(db));
+  const now = new Date();
+  const [paidList, heldList] = await Promise.all([
+    listCompanyIdsWithPaidListing(db, now),
+    listCompanyIdsWithCapturableHold(db, now),
+  ]);
+  const paidIds = new Set(paidList);
+  const heldIds = new Set(heldList);
   const rows = page_
-    .map((company) => ({ ...company, paid: paidIds.has(company.id) }))
+    .map((company) => ({
+      ...company,
+      paid: paidIds.has(company.id),
+      // ADR 0037: the price is reserved on the card, ready to be captured
+      // by an approval. What the moderator most needs to know about a
+      // pending row before approving it.
+      cardHeld: heldIds.has(company.id),
+    }))
     .sort((a, b) => Number(b.paid) - Number(a.paid));
 
   return {
@@ -464,18 +502,40 @@ export async function getCompanyAdminDetailAction(companyId: string) {
     return { success: false, error: "Not found", data: null };
   }
 
-  const [subscriptions, referralCounts, referrals, history] = await Promise.all(
-    [
+  const [subscriptions, referralCounts, referrals, history, holds] =
+    await Promise.all([
       listSubscriptionsByCompanyId(db, parsed.data),
       countReferralsByRecipientCompany(db, parsed.data),
       listReferralsByRecipientCompany(db, parsed.data, 10),
       searchAuditLogs(db, { target: parsed.data }),
-    ],
-  );
+      listListingHoldsByCompany(db, parsed.data),
+    ]);
+
+  const now = new Date();
 
   return {
     success: true,
-    data: { company, subscriptions, referralCounts, referrals, history },
+    data: {
+      company,
+      subscriptions,
+      referralCounts,
+      referrals,
+      history,
+      // ADR 0037: what is on the partner's card, newest first. Stripe ids stay
+      // server-side; the drawer needs amounts, states and deadlines.
+      holds: holds.map((hold) => ({
+        id: hold.id,
+        status: hold.status,
+        amountMinor: hold.amountMinor,
+        currency: hold.currency,
+        captureBefore: hold.captureBefore,
+        captureRequestedAt: hold.captureRequestedAt,
+        capturedAt: hold.capturedAt,
+        refundedAt: hold.refundedAt,
+        createdAt: hold.createdAt,
+        capturable: holdIsCapturable(hold, now),
+      })),
+    },
   };
 }
 
@@ -500,6 +560,29 @@ async function undoListingPaymentForRejection(
   staffId: string,
 ): Promise<void> {
   try {
+    // A listing rejected after it went live on a captured hold: that first
+    // month's payment comes back too (ADR 0037).
+    const refundedHolds = await refundCapturedListingHolds(
+      db,
+      await productionListingHoldDeps(),
+      companyId,
+      new Date(),
+    );
+    for (const hold of refundedHolds) {
+      await appendAuditEntry(db, {
+        actorType: "staff",
+        actorId: staffId,
+        action: "company.listing_refunded",
+        subjectType: "company",
+        subjectId: companyId,
+        meta: {
+          outcome: "refunded",
+          paymentIntentId: hold.paymentIntentId,
+          amountMinor: hold.amountMinor,
+        },
+      });
+    }
+
     const result = await refundListingForCompany(
       db,
       await productionRefundDeps(),
@@ -543,6 +626,73 @@ async function undoListingPaymentForRejection(
   }
 }
 
+/**
+ * The money half of a moderation decision, for a partner whose card is held
+ * (ADR 0037, FR-114, FR-115).
+ *
+ * Approve asks Stripe to capture and reject asks it to release - and nothing
+ * more. Neither publishes, unpublishes or marks anything paid: the listing
+ * goes live when Stripe's own `payment_intent.succeeded` has been projected,
+ * never on the strength of this call returning.
+ *
+ * Deliberately never throws, for the reason the refund beside it does not: the
+ * decision has committed, and a moderator must not be shown a failure because
+ * Stripe is unreachable. A failure is audited and queued; the retry settles
+ * from whatever the moderation status is by then, so it cannot capture for a
+ * company that was rejected in the meantime.
+ */
+type DecisionPayment = {
+  outcome: "capture_requested" | "released" | "none" | "retrying";
+  actions: ListingHoldAction[];
+};
+
+async function settleListingHoldsForDecision(
+  companyId: string,
+  staffId: string,
+): Promise<DecisionPayment> {
+  try {
+    const report = await settleListingHolds(
+      db,
+      await productionListingHoldDeps(),
+      companyId,
+      new Date(),
+    );
+
+    if (report.actions.length === 0) return { outcome: "none", actions: [] };
+
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: staffId,
+      action: "company.listing_hold_settled",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { actions: report.actions },
+    });
+
+    return {
+      outcome: report.captureRequested ? "capture_requested" : "released",
+      actions: report.actions,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      `[listing-hold] settlement failed for company ${companyId}: ${message}`,
+    );
+
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: staffId,
+      action: "company.listing_hold_settle_failed",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { error: message },
+    });
+
+    await enqueueOutbox(db, LISTING_HOLD_SETTLE_TOPIC, { companyId });
+    return { outcome: "retrying", actions: [] };
+  }
+}
+
 export async function moderateCompanyAction(
   id: string,
   status: "approved" | "rejected",
@@ -558,9 +708,13 @@ export async function moderateCompanyAction(
     return { success: false, error: "Unauthorized" };
   }
 
+  if (!companyIdSchema.safeParse(id).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
   // Idempotency for the whole decision, enforced in the UPDATE's own WHERE so
   // two concurrent requests cannot both pass it. A repeat must not re-audit,
-  // re-notify, or refund a second time.
+  // re-notify, capture or refund a second time.
   const changed = await setCompanyModerationStatus(
     db,
     id,
@@ -580,6 +734,28 @@ export async function moderateCompanyAction(
     meta: { status, reason: reason ?? null },
   });
 
+  // Read before settling: when Stripe is down, the retry will do what the
+  // rule decides now, and the notice has to say so.
+  const now = new Date();
+  const holdsBefore = await listListingHoldsByCompany(db, id);
+
+  // APPROVE → capture, REJECT → release. Publication waits for the webhook.
+  const payment = await settleListingHoldsForDecision(id, auth.member.id);
+
+  // What the notice says is what was done - or, on a retry, what will be.
+  const asked = (kind: ListingHoldAction["kind"]) =>
+    payment.actions.some((action) => action.kind === kind);
+  const paymentHeld =
+    payment.outcome === "retrying"
+      ? holdsBefore.some((hold) => holdIsCapturable(hold, now))
+      : // Not merely asked for: a capture Stripe refused (the hold lapsed)
+        // charged nothing, and the partner must be asked to pay instead.
+        payment.outcome === "capture_requested";
+  const holdOpen =
+    payment.outcome === "retrying"
+      ? holdsBefore.some(holdIsOpen)
+      : asked("cancel");
+
   // The inbox is written here rather than in the outbox worker, because the
   // worker drains once a day and in-product state is authoritative
   // (reliability.md, ADR 0020). The outbox below still carries the email.
@@ -594,6 +770,8 @@ export async function moderateCompanyAction(
         // Free text a human wrote; no translation reaches it, so the UI renders
         // it as a quoted moderator note beside the localised shell (FR-090).
         ...(status === "rejected" && reason ? { reason } : {}),
+        ...(status === "approved" && paymentHeld ? { paymentHeld: "yes" } : {}),
+        ...(status === "rejected" && holdOpen ? { holdReleased: "yes" } : {}),
       },
     });
   }
@@ -606,11 +784,12 @@ export async function moderateCompanyAction(
     companyId: id,
     status,
     reason: reason ?? null,
+    paymentHeld: status === "approved" && paymentHeld,
   });
 
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
-  return { success: true };
+  return { success: true, payment: payment.outcome };
 }
 
 const showcaseSchema = z.object({
@@ -687,6 +866,11 @@ export async function hideCompanyAction(companyId: string) {
     meta: {},
   });
 
+  // A hidden company is a rejected one as far as money goes: an uncaptured
+  // hold is released. A captured one is not refunded - hiding is a visibility
+  // switch, and the paid month is the partner's (ADR 0037).
+  await settleListingHoldsForDecision(companyId, auth.member.id);
+
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
   return { success: true };
@@ -711,6 +895,10 @@ export async function unhideCompanyAction(companyId: string) {
     subjectId: companyId,
     meta: {},
   });
+
+  // Restoring is an approval, so a hold still on the card is captured -
+  // and, as with approve, the listing waits for Stripe to confirm it.
+  await settleListingHoldsForDecision(companyId, auth.member.id);
 
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");

@@ -243,3 +243,53 @@ describe("FR-040, FR-109: one-page company submission form", () => {
     expect(parsed).not.toHaveProperty("category");
   });
 });
+
+describe("FR-117: special privileges on the application", () => {
+  it("FR-117: accepts the switch on, with or without a note", () => {
+    expect(
+      companyDetailsSchema.safeParse({ ...DETAILS, specialPrivileges: "true" })
+        .success,
+    ).toBe(true);
+    expect(
+      companyDetailsSchema.safeParse({
+        ...DETAILS,
+        specialPrivileges: "true",
+        specialPrivilegesNote: "Priority booking",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("FR-117: refuses anything but on or off", () => {
+    expect(
+      companyDetailsSchema.safeParse({ ...DETAILS, specialPrivileges: "yes" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("FR-117: bounds the note to the column's 500 characters, counting line breaks as typed", () => {
+    const note = "a\r\n".repeat(166) + "ab"; // 500 characters once CRLF → LF
+    expect(
+      companyDetailsSchema.safeParse({
+        ...DETAILS,
+        specialPrivileges: "true",
+        specialPrivilegesNote: note,
+      }).success,
+    ).toBe(true);
+    expect(
+      companyDetailsSchema.safeParse({
+        ...DETAILS,
+        specialPrivileges: "true",
+        specialPrivilegesNote: "x".repeat(501),
+      }).success,
+    ).toBe(false);
+  });
+
+  it("FR-117: a draft keeps the switch and the note", () => {
+    const draft = companyDraftDataSchema.parse({
+      specialPrivileges: "true",
+      specialPrivilegesNote: "Gift",
+    });
+    expect(draft.specialPrivileges).toBe("true");
+    expect(draft.specialPrivilegesNote).toBe("Gift");
+  });
+});

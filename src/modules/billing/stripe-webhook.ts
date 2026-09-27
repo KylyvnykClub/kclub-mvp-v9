@@ -3,6 +3,11 @@ import type { Db } from "@/data/db";
 import { processWebhookOnce } from "@/data/billing";
 import { enqueueOutbox } from "@/data/outbox";
 import { BILLING_OUTBOX_TOPIC, BILLING_NOTIFICATION_TOPIC } from "./projection";
+import {
+  LISTING_HOLD_EVENTS,
+  LISTING_HOLD_KIND,
+  LISTING_HOLD_SYNC_TOPIC,
+} from "./listing-hold";
 
 /**
  * How the handler defers the projection. In production this is Next's
@@ -72,6 +77,37 @@ export async function handleStripeWebhook(
           eventCreated: event.created,
           subscriptionId: event.data.object.id,
         });
+      }
+
+      // A partner's held listing payment (ADR 0037). The metadata only routes
+      // the event; the worker re-reads the PaymentIntent from Stripe and
+      // trusts nothing else in this payload.
+      if (
+        LISTING_HOLD_EVENTS.includes(event.type) &&
+        event.data.object.object === "payment_intent" &&
+        event.data.object.metadata?.kind === LISTING_HOLD_KIND
+      ) {
+        await enqueueOutbox(tx, LISTING_HOLD_SYNC_TOPIC, {
+          eventId: event.id,
+          eventCreated: event.created,
+          paymentIntentId: event.data.object.id,
+        });
+      }
+
+      // A charge carries no copy of its PaymentIntent's metadata, so a refund
+      // is routed by the PaymentIntent it belongs to; the worker re-reads it
+      // and ignores anything that is not a listing hold.
+      if (event.type === "charge.refunded") {
+        const intent = event.data.object.payment_intent;
+        const paymentIntentId =
+          typeof intent === "string" ? intent : (intent?.id ?? null);
+        if (paymentIntentId) {
+          await enqueueOutbox(tx, LISTING_HOLD_SYNC_TOPIC, {
+            eventId: event.id,
+            eventCreated: event.created,
+            paymentIntentId,
+          });
+        }
       }
 
       if (event.type === "invoice.payment_failed") {

@@ -839,7 +839,8 @@
       "top": {
         "title": "Top Partners",
         "viewAll": "View All Partners",
-        "offer": "Member benefit"
+        "offer": "Member benefit",
+        "specialPrivileges": "Special privileges"
       },
       "membership": {
         "title": "Become part of a network built on trust.",
@@ -912,7 +913,8 @@
         "emptyAction": "Show All Partners",
         "viewAll": "View All Partners",
         "viewAllWithCount": "View All Partners ({count})",
-        "more": "{count} more in the catalogue"
+        "more": "{count} more in the catalogue",
+        "specialPrivileges": "Special privileges"
       },
       "about": {
         "title": "An international community built on trust.",
@@ -1115,14 +1117,17 @@
     "howToStep3Note": "The partner confirms your membership by scanning your KCLUB card.",
     "similarEyebrow": "Same subcategory",
     "similarTitle": "Similar partners",
-    "openCatalogue": "Open the catalogue"
+    "openCatalogue": "Open the catalogue",
+    "specialPrivilegesBadge": "Special privileges",
+    "specialPrivilegesSection": "Special privileges for members",
+    "specialPrivilegesDefault": "This partner offers club members special privileges. Ask about them when you get in touch."
   },
   "company": {
     "registerTitle": "Register Company",
     "registerSubtitle": "Add your business to the KCLUB ecosystem to network and find partners.",
     "infoSection": "Company Information",
     "successTitle": "Company registered successfully!",
-    "returnToProfile": "Return to Profile",
+    "returnToProfile": "Reserve the listing fee",
     "categorySection": "Business Category",
     "blockLabel": "Business Block",
     "blockPlaceholder": "Select a block...",
@@ -1199,8 +1204,14 @@
     },
     "categoryNote": "Start here. What your business does decides where members find it, and the questions below are easier to answer once it is set.",
     "locationSection": "Where you operate",
-    "reviewHandoff": "Your application is with our moderators. Nothing has been charged — the listing is paid for once it is approved.",
-    "draftKept": "Saved. You can close this page and finish it later."
+    "reviewHandoff": "One step left: in Profile → Companies, reserve the listing fee on your card. It is charged only if we approve the application (1–3 business days) and released if we do not.",
+    "draftKept": "Saved. You can close this page and finish it later.",
+    "specialPrivilegesButton": "Special privileges",
+    "specialPrivilegesHint": "Switch this on if you offer club members something beyond a discount — priority service, a gift, a private offer.",
+    "specialPrivilegesLabel": "Special privileges",
+    "specialPrivilegesNoteLabel": "Which privileges (optional)",
+    "specialPrivilegesNotePlaceholder": "e.g. Priority booking and a welcome gift for KCLUB members",
+    "specialPrivilegesOn": "Offered"
   },
   "admin": {
     "nav": {
@@ -1405,7 +1416,27 @@
       "showcaseSaved": "Showcase updated",
       "noHistory": "Nothing recorded for this company yet.",
       "review": "Review",
-      "pendingBadge": "{count, plural, one {# pending review} other {# pending review}}"
+      "pendingBadge": "{count, plural, one {# pending review} other {# pending review}}",
+      "paymentTitle": "Payment",
+      "holdNone": "No card payment on record. Approving asks the partner to pay.",
+      "holdReserved": "Card reserved",
+      "holdCapturing": "Charging…",
+      "holdProcessing": "Processing",
+      "holdCaptured": "Charged",
+      "holdReleased": "Released",
+      "holdRefunded": "Refunded",
+      "holdExpired": "Reservation expired",
+      "holdAwaitingCard": "Awaiting card",
+      "holdExpiresOn": "Reservation valid until {date}",
+      "approveCapturesHold": "The listing fee reserved on the partner's card will be charged. The listing goes live once Stripe confirms the payment.",
+      "approveNoHold": "No card reservation is active. The partner will be asked to pay; the listing goes live once the payment is confirmed.",
+      "rejectReleasesHold": "The reservation on the partner's card will be cancelled; nothing is charged.",
+      "paymentCaptureRequested": "Charge requested. The listing goes live once Stripe confirms the payment.",
+      "paymentNotHeld": "No card was reserved. The partner has been asked to pay.",
+      "paymentReleased": "The card reservation was cancelled.",
+      "paymentRetrying": "Stripe did not respond; the payment step will be retried automatically.",
+      "specialPrivilegesLabel": "Special privileges",
+      "specialPrivilegesOn": "Yes (no details given)"
     },
     "referrals": {
       "title": "Client Introductions",
@@ -1678,7 +1709,9 @@
     "company_rejected_refund": "If you had already paid for the listing, the subscription has been cancelled and the payment is being refunded to your card. Banks usually take 5–10 business days to show it.",
     "referral_received": "{companyName} received a new client introduction. Open Referrals to accept or decline it.",
     "payment_failed": "A payment failed. You keep access while we retry — update your payment method to avoid losing it.",
-    "grace_expiry_warning": "Your payment is still failing. Access ends soon unless the payment method is updated."
+    "grace_expiry_warning": "Your payment is still failing. Access ends soon unless the payment method is updated.",
+    "company_approved_held": "{companyName} was approved. The listing fee reserved on your card is being charged — the listing goes live as soon as the payment is confirmed.",
+    "company_rejected_hold_released": "The amount reserved on your card has been released. Nothing was charged."
   },
   "membership": {
     "duesTitle": "Membership dues",
@@ -1721,7 +1754,7 @@
     "eyebrow": "KCLUB PARTNERS",
     "title": "List your business",
     "subtitle": "One page. Tell us what you do and what you offer club members — we reply within 1–3 business days.",
-    "priceNote": "A listing costs {price} a month, charged only after we approve your application. Nothing is charged today.",
+    "priceNote": "A listing costs {price} a month. After you submit, you reserve {price} on your card: it is charged only if we approve the application and released if we do not.",
     "accountSection": "Your account",
     "accountNote": "This is how you sign in and how we tell you the outcome. It is not published in the catalogue.",
     "contactNameLabel": "Your name",
@@ -1729,26 +1762,47 @@
     "submit": "Send application",
     "submitting": "Sending…",
     "receivedTitle": "Application received",
-    "receivedSubtitle": "We have it, and nothing has been charged.",
+    "receivedSubtitle": "We have it. One step left: reserve the listing fee.",
     "receivedBody": "A moderator reads every application by hand. You will hear from us within 1–3 business days, in your inbox and by email.",
-    "receivedPayment": "If we approve it, you pay {price} a month and the listing goes live. If we do not, you pay nothing.",
-    "receivedCta": "See where my application stands"
+    "receivedPayment": "Reserve {price} on your card to send it to review. It is charged only if we approve it; otherwise the reservation is cancelled.",
+    "receivedCta": "Reserve the listing fee"
   },
   "partnerStanding": {
     "title": "Your partner listing",
     "subtitle": "Where your application stands, and what is left to do.",
     "noApplication": "Your account is ready, but there is no application against it yet.",
     "startApplication": "Fill in the application",
-    "pendingTitle": "Under review",
-    "pendingBody": "{name} is with our moderators. We read every application by hand and reply within 1–3 business days.",
-    "pendingNoCharge": "Nothing has been charged. The listing costs {price} a month and is paid for only after we approve it.",
-    "approvedTitle": "Approved",
-    "approvedBody": "{name} passed review. Pay for the listing and it goes live in the catalogue.",
-    "payButton": "Pay {price} a month",
+    "payButton": "Pay {price}",
     "payOpening": "Opening payment…",
     "unavailable": "Payments are temporarily unavailable. Nothing has been charged — please try again shortly.",
     "rejectedTitle": "Not approved",
     "rejectedBody": "{name} was not approved for the catalogue.",
-    "rejectedNoCharge": "Nothing was charged at any point."
+    "authoriseTitle": "Reserve the listing fee",
+    "authoriseBody": "{name} is ready for review. To send it, reserve {price} on your card — card, Apple Pay or Google Pay.",
+    "authoriseOutcomes": "Reserved, not charged. If we approve the application, {price} is charged automatically and your listing goes live. If we don't, the reservation is cancelled and nothing is charged.",
+    "authoriseButton": "Reserve {price}",
+    "heldTitle": "Under review",
+    "heldBody": "{name} is with our moderators, and {price} is reserved on your card — not charged. We read every application by hand and reply within 1–3 business days.",
+    "heldOutcomes": "Approved: {price} is charged automatically, the listing goes live and the receipt comes to your email. Not approved: the reservation is cancelled and nothing is charged.",
+    "heldExpires": "Your bank holds the reservation until {date}. If review takes longer, we will ask you to reserve again.",
+    "confirmingTitle": "Approved — confirming payment",
+    "confirmingBody": "{name} passed review and the {price} reserved on your card is being charged. Your listing goes live as soon as Stripe confirms it — usually within a minute.",
+    "refresh": "Refresh",
+    "payTitle": "Approved — payment needed",
+    "payBody": "{name} passed review, but there is no active reservation on your card — it may have expired. Pay {price} to put the listing live.",
+    "returnedPending": "If you have just completed the payment step, Stripe's confirmation can take a moment.",
+    "renewalNote": "After the first payment the listing renews at {price} a month from the same card, with a receipt each time. You can cancel at any time.",
+    "rejectedHoldReleased": "Nothing was charged. If an amount was reserved on your card, the reservation has been cancelled."
+  },
+  "partnerQr": {
+    "title": "QR code for your page",
+    "note": "Print it on your counter, menu or business card. Scanning it opens your KCLUB partner page.",
+    "alt": "QR code for the KCLUB page of {name}",
+    "languageLabel": "Page language",
+    "download": "Download PNG",
+    "copy": "Copy link",
+    "copied": "Copied",
+    "open": "Open page",
+    "notLive": "Your QR code appears here once the listing is live in the catalogue."
   }
 }

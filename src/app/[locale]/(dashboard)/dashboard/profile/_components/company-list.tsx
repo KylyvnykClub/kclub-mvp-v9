@@ -3,10 +3,9 @@
 import { useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { X } from "lucide-react";
-import {
-  createCheckoutSessionAction,
-  createPortalSessionAction,
-} from "@/actions/stripe";
+import { createPortalSessionAction } from "@/actions/stripe";
+import { PartnerStanding } from "@/app/[locale]/(auth)/membership/_components/partner-standing";
+import type { PartnerPaymentStanding } from "@/domain/listing-hold";
 import {
   deleteCompanyImageAction,
   removeCompanyLogoAction,
@@ -26,22 +25,46 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/lib/countries";
-import { listingIsPayable } from "@/domain/listing-checkout";
 import {
   COMPANY_GALLERY_MAX_IMAGES,
   companyImageServePath,
 } from "@/lib/company-image-path";
 import type { Locale } from "@/i18n/routing";
+import { PartnerQr } from "./partner-qr";
 
 export function CompanyList({
   companies,
   subscriptions,
+  liveCompanyIds,
+  appUrl,
+  payments,
+  listingPrice,
+  sellable,
+  returnedFromCheckout,
 }: {
   companies: CompanyRow[];
   subscriptions: SubscriptionRow[];
+  /**
+   * Approved and paid for - by an active subscription or, in the first month,
+   * by a captured hold (ADR 0037). Exactly the listings the catalogue shows.
+   */
+  liveCompanyIds: string[];
+  /** Where the partner's QR code points (FR-118). */
+  appUrl: string;
+  /** Where each company's listing payment stands (ADR 0037). */
+  payments: Record<
+    string,
+    { standing: PartnerPaymentStanding; holdExpiresAt: string | null }
+  >;
+  listingPrice: string;
+  /** False when no Stripe price is configured. */
+  sellable: boolean;
+  /** Back from Stripe Checkout; its event may not have arrived yet. */
+  returnedFromCheckout: boolean;
 }) {
   const t = useTranslations("billing");
   const tCompany = useTranslations("company");
+  const tQr = useTranslations("partnerQr");
   const locale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
 
@@ -51,16 +74,6 @@ export function CompanyList({
     online_offline: tCompany("businessFormatHybrid"),
     on_site_service: tCompany("businessFormatOnSite"),
   } as const;
-
-  const handleCheckout = (companyId: string) => {
-    startTransition(async () => {
-      try {
-        await createCheckoutSessionAction(companyId);
-      } catch {
-        alert(t("checkoutFailed"));
-      }
-    });
-  };
 
   const handlePortal = () => {
     startTransition(async () => {
@@ -92,11 +105,10 @@ export function CompanyList({
     <div className="space-y-4">
       {companies.map((company) => {
         const sub = subscriptions.find((s) => s.companyId === company.id);
-        const isActive = sub?.status === "active";
-        // FR-111: there is nothing to pay until a moderator has approved the
-        // application, and offering a button that the action would refuse is
-        // worse than not offering one.
-        const payable = listingIsPayable(company);
+        const isLive = liveCompanyIds.includes(company.id);
+        // Paid, whether by the subscription or by the first month's capture.
+        const isActive = isLive || sub?.status === "active";
+        const payment = payments[company.id];
 
         return (
           <Card
@@ -142,24 +154,20 @@ export function CompanyList({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    {payable
-                      ? t("listingRequired")
-                      : company.moderationStatus === "rejected"
-                        ? t("listingRejected")
-                        : t("listingAwaitingReview")}
-                  </p>
-                  {payable && (
-                    <Button
-                      onClick={() => handleCheckout(company.id)}
-                      disabled={isPending}
-                      className="bg-accent text-accent-foreground hover:bg-accent/90"
-                    >
-                      {isPending ? t("loading") : t("subscribeListing")}
-                    </Button>
-                  )}
-                </div>
+                // ADR 0037: the same reserve → approve → capture as a partner
+                // application, and the same screen to watch it on.
+                <PartnerStanding
+                  application={{
+                    id: company.id,
+                    name: company.name,
+                    rejectionReason: company.rejectionReason,
+                  }}
+                  standing={payment?.standing ?? "authorise"}
+                  holdExpiresAt={payment?.holdExpiresAt ?? null}
+                  price={listingPrice}
+                  sellable={sellable}
+                  returnedFromCheckout={returnedFromCheckout}
+                />
               )}
 
               {company.moderationStatus === "approved" && (
@@ -296,7 +304,33 @@ export function CompanyList({
                       <dd className="mt-1 font-medium">{company.discount}</dd>
                     </div>
                   )}
+                  {company.specialPrivileges && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-muted-foreground">
+                        {tCompany("specialPrivilegesLabel")}
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap font-medium">
+                        {company.specialPrivilegesNote ||
+                          tCompany("specialPrivilegesOn")}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
+              )}
+
+              {isLive ? (
+                <PartnerQr
+                  appUrl={appUrl}
+                  slug={company.slug}
+                  companyName={company.name}
+                  defaultLocale={locale}
+                />
+              ) : (
+                company.moderationStatus === "approved" && (
+                  <p className="mt-6 border-t border-border/50 pt-6 text-xs text-muted-foreground">
+                    {tQr("notLive")}
+                  </p>
+                )
               )}
 
               {company.moderationStatus !== "rejected" && (
@@ -390,7 +424,7 @@ function LogoSection({
           <img
             src={logoUrl}
             alt=""
-            className="size-16 border border-border object-cover"
+            className="size-16 border border-border bg-white object-contain p-1"
           />
         ) : (
           <div

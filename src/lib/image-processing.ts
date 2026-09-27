@@ -62,8 +62,32 @@ async function processSquareImage(input: Buffer): Promise<Buffer> {
 /** Member avatar (ADR 0021). */
 export const processAvatarImage = processSquareImage;
 
-/** Company logo (ADR 0023): same square slot shape as the avatar. */
-export const processLogoImage = processSquareImage;
+/**
+ * Company logo (ADR 0023, ADR 0037): bounded to 512px on its longest side and
+ * never cropped.
+ *
+ * It used to share the avatar's square cover-crop, which cut the ends off
+ * every wide wordmark - a logo that is mostly letters lost half of them at
+ * upload, before any page could show it whole. A logo is shown whole or not at
+ * all; each surface decides how to frame it. Transparency survives: WebP
+ * carries the alpha channel, so a logo on a transparent background stays one.
+ */
+export async function processLogoImage(input: Buffer): Promise<Buffer> {
+  const image = await decodeValidated(input);
+
+  try {
+    return await image
+      .rotate()
+      .resize(AVATAR_DIMENSION, AVATAR_DIMENSION, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 90, alphaQuality: 100 })
+      .toBuffer();
+  } catch {
+    throw new InvalidImageError("processing_failed");
+  }
+}
 
 /**
  * A gallery photo keeps its aspect ratio: bounded to 1600px on the longest

@@ -297,3 +297,61 @@ describe("FR-111: a filed application is unpaid and carries no subscription", ()
     );
   });
 });
+
+describe("FR-117: special privileges are stored with the application", () => {
+  it("FR-117: stores the switch and the note", async () => {
+    const db = testDbClient();
+    await seedReferenceData(db);
+    const applicant = await seedApplicant(db, "partner");
+    const category = await seedCategory(db);
+
+    const result = await submitCompany(
+      db,
+      applicant.id,
+      application([category.id], {
+        specialPrivileges: "true",
+        specialPrivilegesNote: "  Priority booking  ",
+      }),
+    );
+
+    const company = await findCompanyById(db, result.companyId!);
+    expect(company?.specialPrivileges).toBe(true);
+    expect(company?.specialPrivilegesNote).toBe("Priority booking");
+  });
+
+  it("FR-117: drops a note left behind when the switch is off", async () => {
+    const db = testDbClient();
+    await seedReferenceData(db);
+    const applicant = await seedApplicant(db, "partner");
+    const category = await seedCategory(db);
+
+    const result = await submitCompany(
+      db,
+      applicant.id,
+      application([category.id], {
+        specialPrivileges: "false",
+        specialPrivilegesNote: "typed, then switched off",
+      }),
+    );
+
+    const company = await findCompanyById(db, result.companyId!);
+    expect(company?.specialPrivileges).toBe(false);
+    expect(company?.specialPrivilegesNote).toBeNull();
+  });
+
+  it("FR-117: an application that never mentions them offers none", async () => {
+    const db = testDbClient();
+    await seedReferenceData(db);
+    const applicant = await seedApplicant(db, "partner");
+    const category = await seedCategory(db);
+
+    const result = await submitCompany(
+      db,
+      applicant.id,
+      application([category.id]),
+    );
+
+    const company = await findCompanyById(db, result.companyId!);
+    expect(company?.specialPrivileges).toBe(false);
+  });
+});

@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { isFeatureEnabled } from "@/actions/feature-flags";
 import { db } from "@/data/db";
 import {
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
   listPublicPartnerSlugs,
 } from "@/data/companies";
 import { absoluteUrl, localeAlternates } from "@/lib/seo";
@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!SKIP_DB_PRERENDER) {
     try {
       if (await isFeatureEnabled("public_catalogue")) {
-        const ids = await listCompanyIdsWithActiveSubscription(db);
+        const ids = await listCompanyIdsWithPaidListing(db, new Date());
         const slugs = await listPublicPartnerSlugs(db, ids);
         for (const slug of slugs) {
           entries.push(...entriesFor(`/directory/${slug}`, 0.7, "weekly"));

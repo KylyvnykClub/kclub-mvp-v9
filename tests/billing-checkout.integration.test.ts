@@ -102,7 +102,7 @@ describe("FR-100: listing checkout is gated by ownership, not by moderation", ()
   });
 
   /**
-   * The rejected case is refused in `createCheckoutSessionAction` rather than
+   * The rejected case is refused in `openListingHoldCheckout` rather than
    * in the query, because the query is also what the result pages use to name
    * the company. This proves the row is still readable, so the guard has
    * something to refuse - see the action's own status check.

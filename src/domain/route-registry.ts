@@ -566,9 +566,9 @@ const staticRoutes: RouteEntry[] = [
   },
   {
     method: "POST",
-    path: "action:createCheckoutSessionAction",
-    action: "create",
-    subject: "own_subscription",
+    path: "action:createListingHoldCheckoutAction",
+    action: "update",
+    subject: "own_company",
     mutating: true,
     staffOnly: false,
   },

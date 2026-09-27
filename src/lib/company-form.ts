@@ -53,6 +53,10 @@ export const companyDetailsSchema = z.object({
   // Since the onboarding rework (ADR 0024) the offer and contacts sit with the
   // rest of the business details.
   discount: z.string().max(255).optional(),
+  // FR-117: "special privileges" for club members, beyond or instead of a
+  // discount. A switch, and optionally what the privileges are.
+  specialPrivileges: z.enum(["true", "false"]).optional(),
+  specialPrivilegesNote: multiline(z.string().max(500).optional()),
   contactEmail: z
     .string()
     .email("Must be a valid email")
@@ -149,6 +153,8 @@ export const COMPANY_FIELD_LABEL_KEYS: Record<string, string> = {
   administrativeLevel2: "administrativeLevel2Label",
   city: "cityLabel",
   discount: "discountLabel",
+  specialPrivileges: "specialPrivilegesLabel",
+  specialPrivilegesNote: "specialPrivilegesNoteLabel",
   contactEmail: "contactEmailLabel",
   contactPhone: "contactPhoneLabel",
   logoStaged: "logoSectionLabel",

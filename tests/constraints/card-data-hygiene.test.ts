@@ -31,7 +31,7 @@ const FORBIDDEN_COLUMN_PATTERNS = [
 
 const CHECKOUT_ACTION_PATHS = [
   "action:createVipCheckoutAction",
-  "action:createCheckoutSessionAction",
+  "action:createListingHoldCheckoutAction",
   "action:createPortalSessionAction",
 ];
 

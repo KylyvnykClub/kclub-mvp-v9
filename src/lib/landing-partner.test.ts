@@ -20,6 +20,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   name: "Swiss Legal Group",
   description: "Cross-border contracts.",
   discount: "−20%",
+  specialPrivileges: false,
   logoUrl: null,
   city: "Zürich",
   registrationCountryCode: "CH",
@@ -28,7 +29,7 @@ const row = (over: Record<string, unknown> = {}) => ({
 });
 
 describe("toLandingPartner (FR-035: the landing card's fields)", () => {
-  it("carries the nine fields a card draws and nothing else", () => {
+  it("FR-117: carries the ten fields a card draws, special privileges included, and nothing else", () => {
     const partner = toLandingPartner(
       row({ ownerId: "member-1", moderationStatus: "approved" }),
       labels,
@@ -45,6 +46,7 @@ describe("toLandingPartner (FR-035: the landing card's fields)", () => {
       "logoUrl",
       "name",
       "slug",
+      "specialPrivileges",
     ]);
   });
 

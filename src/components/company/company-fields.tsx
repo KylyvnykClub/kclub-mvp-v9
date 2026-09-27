@@ -62,6 +62,8 @@ export const COMPANY_FIELD_ORDER = [
   "description",
   "specializationDescription",
   "discount",
+  "specialPrivileges",
+  "specialPrivilegesNote",
   "contactEmail",
   "contactPhone",
   "businessFormat",
@@ -334,6 +336,8 @@ export function CompanyFields({
             onChange={(e) => set("discount", e.target.value)}
           />
         </Field>
+
+        <SpecialPrivilegesField values={values} set={set} />
 
         <div className="grid grid-cols-2 gap-4">
           <Field id="contactEmail" label={t("contactEmailLabel")}>
@@ -651,5 +655,64 @@ function ServiceCountriesPicker({
         {t("serviceSameAsRegistration")}
       </label>
     </Field>
+  );
+}
+
+/**
+ * FR-117: "special privileges" for club members - a switch, and a box for
+ * saying which ones that appears once the switch is on. The box is optional:
+ * a partner who has not decided the details yet can still say they offer
+ * something beyond the discount.
+ *
+ * A button with `aria-pressed` rather than a checkbox, because it is asked for
+ * as a button and reads as an offer being switched on - and because a toggle
+ * button is announced as exactly that.
+ */
+function SpecialPrivilegesField({
+  values,
+  set,
+}: {
+  values: CompanyFormValues;
+  set: (field: string, value: string) => void;
+}) {
+  const t = useTranslations("company");
+  const on = values.specialPrivileges === "true";
+
+  return (
+    <div className="space-y-3">
+      <button
+        type="button"
+        aria-pressed={on}
+        aria-controls="specialPrivilegesNote"
+        onClick={() => set("specialPrivileges", on ? "false" : "true")}
+        className={`inline-flex h-11 items-center gap-2 border px-4 text-xs font-black uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          on
+            ? "border-accent bg-accent text-accent-foreground"
+            : "border-input bg-background text-foreground hover:border-accent"
+        }`}
+      >
+        <span aria-hidden="true">{on ? "✓" : "+"}</span>
+        {t("specialPrivilegesButton")}
+      </button>
+      <p className="text-xs text-muted-foreground">
+        {t("specialPrivilegesHint")}
+      </p>
+
+      {on && (
+        <Field
+          id="specialPrivilegesNote"
+          label={t("specialPrivilegesNoteLabel")}
+        >
+          <Textarea
+            id="specialPrivilegesNote"
+            value={values.specialPrivilegesNote ?? ""}
+            placeholder={t("specialPrivilegesNotePlaceholder")}
+            rows={3}
+            maxLength={500}
+            onChange={(e) => set("specialPrivilegesNote", e.target.value)}
+          />
+        </Field>
+      )}
+    </div>
   );
 }

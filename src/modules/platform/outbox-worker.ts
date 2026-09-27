@@ -30,6 +30,15 @@ import {
   COMPANY_MODERATION_TOPIC,
   type CompanyModerationPayload,
 } from "@/modules/moderation/outbox";
+import {
+  LISTING_HOLD_SETTLE_TOPIC,
+  LISTING_HOLD_SYNC_TOPIC,
+  productionListingHoldDeps,
+  projectListingHold,
+  refundCapturedListingHolds,
+  settleListingHolds,
+  type ListingHoldDeps,
+} from "@/modules/billing/listing-hold";
 
 /**
  * The Stripe client, the connection and the email sender are all reached
@@ -83,6 +92,12 @@ interface NotificationPayload {
 export interface DrainDeps {
   db: Db;
   fetchSubscription: SubscriptionFetcher;
+  /**
+   * Stripe for the partner's held listing payment (ADR 0037). Optional so the
+   * drains that never meet a hold need not build one; resolved to the real
+   * client on first use when absent.
+   */
+  listingHold?: ListingHoldDeps;
 }
 
 /** The real connection and the real Stripe reader, resolved on first use. */
@@ -271,11 +286,36 @@ async function handleEntry(
       return "malformed";
     }
 
+    // Re-read the decision: if the company was restored or re-approved while
+    // this waited, its listing is live and paid for, and refunding it now
+    // would take away access the partner has.
+    const current = await findCompanyById(tx, companyId);
+    if (current?.moderationStatus !== "rejected") {
+      await markProcessed(tx, entry.id);
+      return "ignored";
+    }
+
     const { refundListingForCompany, productionRefundDeps } =
       await import("@/modules/billing/refund");
+    // The first month paid through a captured hold (ADR 0037), then the
+    // subscription. Both are keyed by what they refund, so a retry after a
+    // partial success refunds nothing twice.
+    await refundCapturedListingHolds(
+      tx,
+      deps.listingHold ?? (await productionListingHoldDeps()),
+      companyId,
+      new Date(),
+    );
     await refundListingForCompany(tx, await productionRefundDeps(), companyId);
     await markProcessed(tx, entry.id);
     return "notified";
+  }
+
+  if (
+    entry.topic === LISTING_HOLD_SYNC_TOPIC ||
+    entry.topic === LISTING_HOLD_SETTLE_TOPIC
+  ) {
+    return handleListingHold(tx, entry, deps);
   }
 
   if (entry.topic !== BILLING_OUTBOX_TOPIC) {
@@ -306,6 +346,57 @@ async function handleEntry(
   );
   await markProcessed(tx, entry.id);
   return outcome;
+}
+
+/**
+ * A partner's held listing payment (ADR 0037). The sync row comes from a
+ * `payment_intent.*` webhook and re-reads that PaymentIntent; the settle row
+ * is an approve or reject whose Stripe half failed, retried. Both end in the
+ * same idempotent settlement, and both throw to be retried while Stripe is
+ * unreachable.
+ */
+async function handleListingHold(
+  tx: DbClient,
+  entry: OutboxEntry,
+  deps: DrainDeps,
+): Promise<EntryOutcome> {
+  const payload = entry.payload as {
+    paymentIntentId?: string;
+    eventCreated?: number;
+    companyId?: string;
+  };
+  const stripe = deps.listingHold ?? (await productionListingHoldDeps());
+  const now = new Date();
+
+  if (entry.topic === LISTING_HOLD_SYNC_TOPIC) {
+    if (!payload.paymentIntentId || !payload.eventCreated) {
+      console.error(
+        `[listing-hold] outbox row ${entry.id} has no paymentIntentId or eventCreated`,
+      );
+      await markProcessed(tx, entry.id);
+      return "malformed";
+    }
+
+    const outcome = await projectListingHold(
+      tx,
+      stripe,
+      payload.paymentIntentId,
+      payload.eventCreated,
+      now,
+    );
+    await markProcessed(tx, entry.id);
+    return outcome === "ignored" ? "ignored" : outcome;
+  }
+
+  if (!payload.companyId) {
+    console.error(`[listing-hold] outbox row ${entry.id} has no companyId`);
+    await markProcessed(tx, entry.id);
+    return "malformed";
+  }
+
+  await settleListingHolds(tx, stripe, payload.companyId, now);
+  await markProcessed(tx, entry.id);
+  return "applied";
 }
 
 function processReconciliationAlert(payload: ReconciliationAlertPayload): void {
@@ -474,6 +565,7 @@ async function processCompanyModeration(
       to: company.contactEmail,
       companyName: company.name,
       locale,
+      paymentHeld: payload.paymentHeld === true,
     });
   } else if (payload.status === "rejected") {
     await sendCompanyRejectedEmail({

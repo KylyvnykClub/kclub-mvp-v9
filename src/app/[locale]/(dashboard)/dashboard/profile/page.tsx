@@ -5,7 +5,12 @@ import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
 import { maskEmail } from "@/lib/email";
-import { listCompaniesByOwner } from "@/data/companies";
+import { env } from "@/env";
+import { holdIsCapturable } from "@/domain/listing-hold";
+import { monthlyPrice } from "@/domain/pricing";
+import { partnerStandingFor } from "@/modules/billing/listing-hold";
+import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
+import { companyListingIsPaid, listCompaniesByOwner } from "@/data/companies";
 import { listNotificationsForMember } from "@/data/notifications";
 import {
   listActiveSubscriptionsForDeletion,
@@ -29,14 +34,18 @@ import { ActiveSessions } from "@/components/profile/active-sessions";
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tab?: string; hold?: string }>;
 };
+
+const TABS = ["overview", "billing", "companies", "inbox", "settings", "edit"];
 
 function maskPhone(phone: string) {
   if (!phone) return "";
   return phone.slice(0, -4).replace(/./g, "*") + phone.slice(-4);
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function ProfilePage({ params, searchParams }: Props) {
+  const { tab, hold } = await searchParams;
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -54,6 +63,37 @@ export default async function ProfilePage({ params }: Props) {
   const profile = await findProfileByMemberId(db, member.id);
 
   const myCompanies = await listCompaniesByOwner(db, member.id);
+  // Live exactly when the catalogue would show it: approved AND paid.
+  const now = new Date();
+  const liveCompanyIds = (
+    await Promise.all(
+      myCompanies.map(async (company) =>
+        company.moderationStatus === "approved" &&
+        (await companyListingIsPaid(db, company.id, now))
+          ? company.id
+          : null,
+      ),
+    )
+  ).filter((id): id is string => id !== null);
+
+  // Where each listing's payment stands: reserve, held, confirming, pay,
+  // rejected (ADR 0037). The same rule the partner's standing screen reads.
+  const payments = Object.fromEntries(
+    await Promise.all(
+      myCompanies.map(async (company) => {
+        const { standing, holds } = await partnerStandingFor(db, company, now);
+        const held = holds.find((h) => holdIsCapturable(h, now));
+        return [
+          company.id,
+          {
+            standing,
+            holdExpiresAt: held?.captureBefore?.toISOString() ?? null,
+          },
+        ] as const;
+      }),
+    ),
+  );
+  const listingSellable = await checkoutPriceIsConfigured(db, "listing");
 
   const myNotifications = await listNotificationsForMember(db, member.id);
 
@@ -98,7 +138,10 @@ export default async function ProfilePage({ params }: Props) {
         </h1>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs
+        defaultValue={tab && TABS.includes(tab) ? tab : "overview"}
+        className="w-full"
+      >
         <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 border border-border bg-muted/30 p-1 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="overview">
             {tDashboard("tabOverview")}
@@ -267,6 +310,12 @@ export default async function ProfilePage({ params }: Props) {
           <CompanyList
             companies={myCompanies}
             subscriptions={mySubscriptions}
+            liveCompanyIds={liveCompanyIds}
+            appUrl={env.client.NEXT_PUBLIC_APP_URL}
+            payments={payments}
+            listingPrice={monthlyPrice("listing", locale)}
+            sellable={listingSellable}
+            returnedFromCheckout={hold === "returned"}
           />
         </TabsContent>
 

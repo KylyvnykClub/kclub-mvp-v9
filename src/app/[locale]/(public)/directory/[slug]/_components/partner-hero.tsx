@@ -75,13 +75,15 @@ export function PartnerHero({
         <div className="mt-auto flex flex-wrap items-end justify-between gap-x-7 gap-y-5">
           <div className="min-w-0">
             {logoUrl && (
-              <div className="relative mb-4 size-16 border border-white/15 bg-white/5">
+              // A light plate, so a logo drawn for a light page stays
+              // visible on the dark hero; contained, never cropped (ADR 0037).
+              <div className="relative mb-4 h-20 w-40 rounded-md bg-white">
                 <Image
                   src={logoUrl}
                   alt={logoAlt}
                   fill
                   unoptimized
-                  sizes="64px"
+                  sizes="160px"
                   className="object-contain p-2"
                 />
               </div>

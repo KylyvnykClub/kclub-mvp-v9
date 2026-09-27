@@ -159,6 +159,7 @@ export default async function PartnerLandingPage({ params }: Props) {
 
   const heroBadges = [
     tc("verifiedPartner"),
+    partner.specialPrivileges ? tc("specialPrivilegesBadge") : null,
     localizedCountry
       ? `${partner.registrationCountryCode ? `${countryFlag(partner.registrationCountryCode)} ` : ""}${localizedCountry}`
       : null,
@@ -328,6 +329,23 @@ export default async function PartnerLandingPage({ params }: Props) {
                 </p>
               </section>
 
+              {partner.specialPrivileges && (
+                // FR-117. Public, like the discount (ADR 0034): it is the
+                // reason to come, and the partner chose to offer it.
+                <section className="rounded-xl border border-accent-ink/60 bg-card p-5">
+                  <SectionHeader label={tc("specialPrivilegesSection")} />
+                  <p className="mt-4 whitespace-pre-wrap text-base leading-7 text-foreground">
+                    {partner.specialPrivilegesNote ||
+                      tc("specialPrivilegesDefault")}
+                  </p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {isResident
+                      ? tc("conditionsNote")
+                      : tc("conditionsLockedNote")}
+                  </p>
+                </section>
+              )}
+
               {partner.specializationDescription && (
                 <section>
                   <SectionHeader label={tCompany("specializationLabel")} />
@@ -422,47 +440,42 @@ export default async function PartnerLandingPage({ params }: Props) {
                     </li>
                   )}
 
-                  {isResident ? (
-                    <>
-                      {partner.contactEmail && (
-                        <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
-                          <a
-                            href={`mailto:${partner.contactEmail}`}
-                            className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent-ink"
-                          >
-                            <Mail
-                              className="size-4 shrink-0 text-muted-foreground"
-                              aria-hidden="true"
-                            />
-                            <span className="truncate">
-                              {partner.contactEmail}
-                            </span>
-                          </a>
-                        </li>
-                      )}
-                      {partner.contactPhone && (
-                        <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
-                          <a
-                            href={`tel:${partner.contactPhone}`}
-                            className="flex items-center gap-3 transition-colors hover:text-accent-ink"
-                          >
-                            <Phone
-                              className="size-4 text-muted-foreground"
-                              aria-hidden="true"
-                            />
-                            {partner.contactPhone}
-                          </a>
-                        </li>
-                      )}
-                    </>
-                  ) : (
-                    <li className="rounded-md border border-border bg-background p-4 text-sm leading-6 text-muted-foreground">
-                      {tc("contactsMembersOnly")}
+                  {/* Public since ADR 0037: the page is the partner's
+                      advertising, and the people a QR code on their counter
+                      brings here are not members yet. These are the
+                      business's own contact details, given for the catalogue -
+                      never a member's. */}
+                  {partner.contactEmail && (
+                    <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
+                      <a
+                        href={`mailto:${partner.contactEmail}`}
+                        className="flex min-w-0 items-center gap-3 transition-colors hover:text-accent-ink"
+                      >
+                        <Mail
+                          className="size-4 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">{partner.contactEmail}</span>
+                      </a>
+                    </li>
+                  )}
+                  {partner.contactPhone && (
+                    <li className="rounded-md border border-border bg-background px-4 py-3 text-sm">
+                      <a
+                        href={`tel:${partner.contactPhone}`}
+                        className="flex items-center gap-3 transition-colors hover:text-accent-ink"
+                      >
+                        <Phone
+                          className="size-4 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        {partner.contactPhone}
+                      </a>
                     </li>
                   )}
                 </ul>
 
-                {isResident && partner.contactEmail && (
+                {partner.contactEmail && (
                   <Button
                     asChild
                     className="mt-4 h-10 w-full rounded-md bg-accent text-xs font-bold uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b17944]"
@@ -563,6 +576,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                     view="grid"
                     noDescription={tc("noDescription")}
                     detailsLabel={tc("details")}
+                    specialPrivilegesLabel={tc("specialPrivilegesBadge")}
                   />
                 ))}
               </div>

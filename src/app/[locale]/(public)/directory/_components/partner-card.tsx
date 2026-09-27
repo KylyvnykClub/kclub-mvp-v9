@@ -1,4 +1,4 @@
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -35,12 +35,15 @@ export function PartnerCard({
   view,
   noDescription,
   detailsLabel,
+  specialPrivilegesLabel,
 }: {
   partner: PartnerCompanyView;
   href: string;
   view: "grid" | "list";
   noDescription: string;
   detailsLabel: string;
+  /** FR-117. Omitted by a caller that has no room for it. */
+  specialPrivilegesLabel?: string;
 }) {
   const location = locationLabel(partner);
   const description = partner.description || noDescription;
@@ -55,23 +58,29 @@ export function PartnerCard({
       }
     >
       {partner.logoUrl ? (
-        <Image
-          src={partner.logoUrl}
-          alt=""
-          fill
-          unoptimized
-          sizes={view === "list" ? "288px" : "420px"}
-          className="object-cover opacity-85 transition-transform duration-300 group-hover:scale-[1.03]"
-        />
-      ) : (
-        <div className="absolute inset-0 kc-fintech-grid flex items-center justify-center bg-card">
-          <span className="font-serif text-6xl font-bold text-accent-ink">
-            {initial}
-          </span>
+        // A light plate with the logo contained on it, never cropped (ADR
+        // 0037). Most logos are drawn for a light page; on the card's black
+        // they would vanish, and cropped they are not the partner's logo.
+        <div className="absolute inset-3 bottom-4 top-12 rounded-md bg-white">
+          <Image
+            src={partner.logoUrl}
+            alt=""
+            fill
+            unoptimized
+            sizes={view === "list" ? "288px" : "420px"}
+            className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]"
+          />
         </div>
+      ) : (
+        <>
+          <div className="absolute inset-0 kc-fintech-grid flex items-center justify-center bg-card">
+            <span className="font-serif text-6xl font-bold text-accent-ink">
+              {initial}
+            </span>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+        </>
       )}
-
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
       {partner.discount && (
         <div className="absolute left-3 top-3 max-w-[60%]">
@@ -113,6 +122,13 @@ export function PartnerCard({
         <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
           {description}
         </p>
+
+        {partner.specialPrivileges && specialPrivilegesLabel && (
+          <p className="mt-3 inline-flex w-fit items-center gap-2 rounded border border-accent-ink px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-accent-ink">
+            <Sparkles className="size-3.5" aria-hidden />
+            {specialPrivilegesLabel}
+          </p>
+        )}
 
         <div className="mt-auto flex items-center justify-end gap-4 border-t border-border pt-4">
           <span className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors group-hover:text-accent-ink">

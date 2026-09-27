@@ -23,9 +23,12 @@ import type { LandingPartner } from "@/lib/landing-partner";
 export function KylPartnerCard({
   partner,
   benefitLabel,
+  privilegesLabel,
 }: {
   partner: LandingPartner;
   benefitLabel: string;
+  /** FR-117: shown when the partner offers special privileges. */
+  privilegesLabel: string;
 }) {
   const { art, Icon } = blockPresentation(partner.blockKey);
   const flag = flagSrc(partner.countryCode);
@@ -68,10 +71,15 @@ export function KylPartnerCard({
           {partner.category && <p className="card-meta">{partner.category}</p>}
           <h3>{partner.name}</h3>
           {partner.description && <p>{partner.description}</p>}
-          {partner.discount && (
+          {(partner.discount || partner.specialPrivileges) && (
             <div className="partner-benefit">
               <span>{benefitLabel}</span>
-              <strong>{partner.discount}</strong>
+              {partner.discount && <strong>{partner.discount}</strong>}
+              {partner.specialPrivileges && (
+                <strong className="partner-privileges">
+                  {privilegesLabel}
+                </strong>
+              )}
             </div>
           )}
         </div>

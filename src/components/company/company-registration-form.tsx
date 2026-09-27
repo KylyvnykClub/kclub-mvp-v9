@@ -60,6 +60,8 @@ const SUBMITTED_FIELDS = [
   "businessFormat",
   "city",
   "discount",
+  "specialPrivileges",
+  "specialPrivilegesNote",
   "contactEmail",
   "contactPhone",
   "logoStaged",
@@ -154,10 +156,11 @@ export function CompanyRegistrationForm() {
     return (
       <div className="space-y-4 border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-500">
         <p className="font-bold">{t("successTitle")}</p>
-        {/* ADR 0036: nothing to pay yet, and saying so is the point. */}
+        {/* ADR 0037: one step left - reserve the listing fee on the card.
+            Reserved, not charged, until a moderator approves. */}
         <p className="text-muted-foreground">{t("reviewHandoff")}</p>
         <Link
-          href="/dashboard/profile"
+          href="/dashboard/profile?tab=companies"
           className="inline-block underline hover:text-green-400"
         >
           {t("returnToProfile")}

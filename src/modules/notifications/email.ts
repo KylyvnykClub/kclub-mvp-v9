@@ -61,6 +61,24 @@ const COMPANY_APPROVED_BODIES: Record<
     `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nЗалишився один крок: оплатіть розміщення, і воно буде опубліковане. До цього з вас нічого не списується.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+/**
+ * ADR 0037: the approval of a partner whose card was held at application. The
+ * approval asked Stripe to capture; the listing goes live when Stripe confirms
+ * it, and Stripe sends its own receipt. So this says the payment is being
+ * taken - not that it has been, and not that the listing is live.
+ */
+const COMPANY_APPROVED_HELD_BODIES: Record<
+  Locale,
+  (companyName: string, link: string) => string
+> = {
+  en: (companyName, link) =>
+    `Congratulations!\n\nYour company "${companyName}" has passed review for the KYLYVNYK CLUB Partner Catalogue.\n\nThe listing fee held on your card is now being charged. As soon as the payment is confirmed your listing goes live in the catalogue, and the payment receipt is emailed to you separately. From then on the listing renews monthly from the same card.\n\n${link}\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (companyName, link) =>
+    `Поздравляем!\n\nВаша компания «${companyName}» прошла проверку для Каталога партнёров KYLYVNYK CLUB.\n\nСумма, зарезервированная на вашей карте, сейчас списывается. Как только платёж будет подтверждён, размещение появится в каталоге, а чек об оплате придёт вам отдельным письмом. Далее размещение продлевается ежемесячно с этой же карты.\n\n${link}\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (companyName, link) =>
+    `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nСума, зарезервована на вашій картці, зараз списується. Щойно платіж буде підтверджено, розміщення з'явиться в каталозі, а чек про оплату надійде вам окремим листом. Далі розміщення подовжується щомісяця з цієї ж картки.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 const COMPANY_REJECTED_SUBJECTS: Record<Locale, string> = {
   en: "Your company submission was not approved",
   ru: "Ваша заявка на компанию не одобрена",
@@ -77,11 +95,11 @@ const COMPANY_REJECTED_BODIES: Record<
   // old order and for whom the refund may still be retrying through the
   // outbox.
   en: (companyName, reason) =>
-    `Hello,\n\nYour company "${companyName}" was not approved for the KYLYVNYK CLUB Partner Catalogue.\n\nReason: ${reason}\n\nIf you had already paid for the listing, the subscription has been cancelled and the payment is being refunded to your card. Banks usually take 5–10 business days to show it.\n\nYou may update your listing and resubmit.\n\nBest,\nKYLYVNYK CLUB`,
+    `Hello,\n\nYour company "${companyName}" was not approved for the KYLYVNYK CLUB Partner Catalogue.\n\nReason: ${reason}\n\nIf an amount was reserved on your card, the reservation has been cancelled without any charge, and your bank releases it, usually within a few days. If you had already paid for the listing, the payment is being refunded to your card; banks usually take 5–10 business days to show it.\n\nYou may update your listing and resubmit.\n\nBest,\nKYLYVNYK CLUB`,
   ru: (companyName, reason) =>
-    `Здравствуйте!\n\nВаша компания «${companyName}» не была одобрена для Каталога партнёров KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nЕсли вы уже оплатили размещение, подписка отменена, а платёж возвращается на вашу карту. Обычно банк зачисляет возврат в течение 5–10 рабочих дней.\n\nВы можете обновить данные и подать заявку повторно.\n\nС уважением,\nKYLYVNYK CLUB`,
+    `Здравствуйте!\n\nВаша компания «${companyName}» не была одобрена для Каталога партнёров KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nЕсли на вашей карте была зарезервирована сумма, резерв отменён без списания, и банк освободит её — обычно в течение нескольких дней. Если вы уже оплатили размещение, платёж возвращается на вашу карту; обычно банк зачисляет возврат в течение 5–10 рабочих дней.\n\nВы можете обновить данные и подать заявку повторно.\n\nС уважением,\nKYLYVNYK CLUB`,
   uk: (companyName, reason) =>
-    `Доброго дня!\n\nВашу компанію «${companyName}» не було схвалено для Каталогу партнерів KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nЯкщо ви вже оплатили розміщення, підписку скасовано, а платіж повертається на вашу картку. Зазвичай банк зараховує повернення протягом 5–10 робочих днів.\n\nВи можете оновити дані та подати заявку повторно.\n\nЗ повагою,\nKYLYVNYK CLUB`,
+    `Доброго дня!\n\nВашу компанію «${companyName}» не було схвалено для Каталогу партнерів KYLYVNYK CLUB.\n\nПричина: ${reason}\n\nЯкщо на вашій картці було зарезервовано суму, резерв скасовано без списання, і банк звільнить її — зазвичай протягом кількох днів. Якщо ви вже оплатили розміщення, платіж повертається на вашу картку; зазвичай банк зараховує повернення протягом 5–10 робочих днів.\n\nВи можете оновити дані та подати заявку повторно.\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
 const EMAIL_VERIFICATION_SUBJECTS: Record<Locale, string> = {
@@ -181,6 +199,8 @@ export async function sendCompanyApprovedEmail(params: {
   to: string;
   companyName: string;
   locale: Locale;
+  /** The price was held on the card and approval asked Stripe to capture it. */
+  paymentHeld?: boolean;
 }): Promise<boolean> {
   // Straight to the owner's own screen. A partner with no active listing is
   // forwarded from there to the standing screen that carries the button, so
@@ -190,7 +210,9 @@ export async function sendCompanyApprovedEmail(params: {
   return sendEmail(
     params.to,
     COMPANY_APPROVED_SUBJECTS[params.locale],
-    COMPANY_APPROVED_BODIES[params.locale](params.companyName, link),
+    (params.paymentHeld
+      ? COMPANY_APPROVED_HELD_BODIES
+      : COMPANY_APPROVED_BODIES)[params.locale](params.companyName, link),
   );
 }
 
