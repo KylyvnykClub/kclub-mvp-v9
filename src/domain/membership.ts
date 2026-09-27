@@ -46,6 +46,12 @@ export interface MembershipSubscription {
 export function membershipAccess(
   member: { duesKind: MemberDuesKind },
   subscriptions: readonly MembershipSubscription[],
+  /**
+   * A captured listing hold Stripe has confirmed, still inside the month it
+   * paid for (ADR 0037). It pays for the listing before the subscription
+   * first bills, so for a partner it is as good as an active listing.
+   */
+  listingPaidByHold = false,
 ): MembershipAccess {
   // A partner's money relationship with the club is the listing, not the dues
   // (ADR 0036, FR-110). They are never shown the $4.99 screen, and the listing
@@ -53,6 +59,8 @@ export function membershipAccess(
   // held outside it rather than let in free. Read from the same projected rows
   // as every other answer here, so it cannot disagree with what Stripe says.
   if (member.duesKind === "partner") {
+    if (listingPaidByHold) return "active";
+
     return subscriptions.some(
       (subscription) =>
         subscription.plan === "listing" &&

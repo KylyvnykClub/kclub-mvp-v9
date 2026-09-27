@@ -6,6 +6,7 @@ import {
   integer,
   uuid,
   pgEnum,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
 import { members } from "./members";
@@ -65,6 +66,10 @@ export const companies = pgTable("companies", {
 
   // Partner / B2B specific fields
   discount: varchar("discount", { length: 255 }), // e.g. "15% off for members"
+  // FR-117: the partner offers members something beyond a discount. The note
+  // saying what is optional - the flag alone is an offer worth showing.
+  specialPrivileges: boolean("special_privileges").notNull().default(false),
+  specialPrivilegesNote: varchar("special_privileges_note", { length: 500 }),
   logoUrl: varchar("logo_url", { length: 1000 }),
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),

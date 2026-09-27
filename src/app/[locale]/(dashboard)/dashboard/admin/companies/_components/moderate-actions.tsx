@@ -28,9 +28,16 @@ type Mode = "idle" | "confirmApprove" | "reject";
 
 export function ModerateActions({
   companyId,
+  cardHeld,
   onModerated,
 }: {
   companyId: string;
+  /**
+   * The listing price is reserved on the partner's card (ADR 0037). Approving
+   * captures it; rejecting releases it. Without a reservation, approval sends
+   * the partner a request to pay instead.
+   */
+  cardHeld: boolean;
   /** Called after a decision lands - the sheet uses it to close itself. */
   onModerated?: () => void;
 }) {
@@ -56,7 +63,20 @@ export function ModerateActions({
       const res = await moderateCompanyAction(companyId, status, reason);
 
       if (res.success) {
-        toast.success(successMessage);
+        // What happened to the money, so the moderator is never left to
+        // guess. Capture is only asked for here; the listing goes live when
+        // Stripe confirms it.
+        const paymentNote =
+          "payment" in res && res.payment === "retrying"
+            ? t("paymentRetrying")
+            : status === "approved"
+              ? "payment" in res && res.payment === "capture_requested"
+                ? t("paymentCaptureRequested")
+                : t("paymentNotHeld")
+              : "payment" in res && res.payment === "released"
+                ? t("paymentReleased")
+                : undefined;
+        toast.success(successMessage, { description: paymentNote });
         reset();
         router.refresh();
         onModerated?.();
@@ -85,6 +105,9 @@ export function ModerateActions({
     return (
       <div className="min-w-[240px] space-y-3">
         <p className="text-sm">{t("approveConfirm")}</p>
+        <p className="text-xs text-muted-foreground">
+          {cardHeld ? t("approveCapturesHold") : t("approveNoHold")}
+        </p>
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -110,6 +133,11 @@ export function ModerateActions({
     return (
       <div className="min-w-[280px] space-y-3">
         <p className="text-sm font-medium">{t("rejectReasonLabel")}</p>
+        {cardHeld && (
+          <p className="text-xs text-muted-foreground">
+            {t("rejectReleasesHold")}
+          </p>
+        )}
         <Select value={selectedReason} onValueChange={setSelectedReason}>
           <SelectTrigger>
             <SelectValue placeholder={t("rejectReasonSelect")} />

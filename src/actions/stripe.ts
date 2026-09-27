@@ -1,6 +1,7 @@
 "use server";
 
 import Stripe from "stripe";
+import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
 import {
@@ -8,6 +9,12 @@ import {
   upsertStripeCustomerMapping,
 } from "@/data/billing";
 import { findCompanyByOwner } from "@/data/companies";
+import { buildActor } from "@/domain/actor";
+import { assertCan } from "@/domain/authorization";
+import {
+  openListingHoldCheckout,
+  productionListingHoldDeps,
+} from "@/modules/billing/listing-hold";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/env";
@@ -16,7 +23,6 @@ import {
   type CheckoutPlan,
 } from "@/modules/billing/checkout";
 import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
-import { listingIsPayable } from "@/domain/listing-checkout";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -40,7 +46,12 @@ async function stripeCustomerIsUsable(stripeCustomerId: string) {
   }
 }
 
-export async function getOrCreateStripeCustomer(
+/**
+ * Not exported. Every export of a "use server" file is a callable endpoint,
+ * and this one takes a member id from its caller: exported, it answered any
+ * visitor with that member's Stripe customer id.
+ */
+async function getOrCreateStripeCustomer(
   memberId: string,
   email?: string,
   name?: string,
@@ -162,37 +173,78 @@ export async function createVipCheckoutAction() {
 }
 
 /**
- * Open listing checkout for a company the caller owns (FR-051, FR-111).
+ * Reserve the listing price on the card of whoever owns the company
+ * (ADR 0037, FR-113) - a partner from their standing screen, or a member from
+ * Profile → Companies. The one way a listing is paid for.
  *
- * Approved or nothing. ADR 0019 briefly let a `pending` company pay on the
- * grounds that intent peaks at the last field of the form, and paid for it
- * with a refund obligation on every rejection; ADR 0036 reverses that. Nobody
- * is charged for a listing a moderator has not yet agreed to publish, so a
- * rejection costs the applicant nothing and costs us no refund.
+ * Opens Stripe Checkout in `payment` mode with a manually captured
+ * PaymentIntent, so the price is authorised and not charged. It is captured
+ * when a moderator approves the application - or at once, if the application
+ * is already approved - and released when one rejects it. The card is saved for
+ * the monthly subscription that follows the first capture, and the receipt goes
+ * to the owner's own address.
  *
- * This is the only door to listing checkout, which is what makes the rule
- * enforceable: the form no longer opens it, and the approval notification
- * points here.
- *
- * Publication still requires approved AND an active subscription (FR-044); the
- * two gates are ANDed at read time and neither is relaxed here.
+ * The company id comes from the browser, so it is parsed and ownership is
+ * checked inside `openListingHoldCheckout`. Like every checkout here, the
+ * return grants nothing: the hold is recorded when Stripe's own
+ * `payment_intent.*` event is projected (ADR 0004). An owner with nothing to
+ * reserve - already held, already paid, rejected - is sent back to the screen
+ * that says so.
  */
-export async function createCheckoutSessionAction(companyId: string) {
+export async function createListingHoldCheckoutAction(companyId: string) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
     throw new Error("Unauthorized");
   }
 
-  const company = await findCompanyByOwner(db, companyId, auth.member.id);
-  if (!listingIsPayable(company)) {
-    throw new Error("Company is not eligible for listing checkout");
+  const actor = buildActor(auth.member);
+  assertCan(actor, "update", "own_company");
+
+  const parsed = z.string().uuid().safeParse(companyId);
+  if (!parsed.success) {
+    throw new Error("Invalid company id");
   }
 
-  await createSubscriptionCheckout({
-    plan: "listing",
-    priceId: await checkoutPriceIdForPlan(db, "listing"),
-    companyId,
-  });
+  const locale = auth.member.language || "en";
+  const company = await findCompanyByOwner(db, parsed.data, auth.member.id);
+  if (!company) {
+    throw new Error("Company not found");
+  }
+
+  // Back to wherever this owner watches the application: a partner is held
+  // on the standing screen, a member sees it in Profile → Companies.
+  const back =
+    auth.member.duesKind === "partner"
+      ? `/${locale}/membership`
+      : `/${locale}/dashboard/profile?tab=companies`;
+
+  const [stripeCustomerId, priceId, origin] = await Promise.all([
+    getOrCreateStripeCustomer(
+      auth.member.id,
+      auth.member.email ?? undefined,
+      auth.member.displayName,
+    ),
+    checkoutPriceIdForPlan(db, "listing"),
+    appOrigin(),
+  ]);
+
+  const separator = back.includes("?") ? "&" : "?";
+  const result = await openListingHoldCheckout(
+    db,
+    await productionListingHoldDeps(),
+    {
+      memberId: auth.member.id,
+      companyId: company.id,
+      stripeCustomerId,
+      receiptEmail: auth.member.email || company.contactEmail || null,
+      priceId,
+      successUrl: `${origin}${back}${separator}hold=returned`,
+      cancelUrl: `${origin}${back}`,
+      now: new Date(),
+    },
+  );
+
+  redirect(result.outcome === "opened" ? result.url : back);
 }
 
 export async function createPortalSessionAction() {

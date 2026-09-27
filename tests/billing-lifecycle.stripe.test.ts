@@ -11,7 +11,7 @@ import {
 } from "@/data/billing.js";
 import {
   listApprovedCompaniesByIds,
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
 } from "@/data/companies.js";
 import {
   businessCategories,
@@ -404,7 +404,7 @@ describeWithStripe(
       });
       await foldSubscription(db, created, new Date());
 
-      const publishedIds = await listCompanyIdsWithActiveSubscription(db);
+      const publishedIds = await listCompanyIdsWithPaidListing(db, new Date());
       expect(publishedIds).toContain(companyId);
       const published = await listApprovedCompaniesByIds(db, [companyId]);
       expect(published).toHaveLength(1);
@@ -417,7 +417,7 @@ describeWithStripe(
       expect(cancelled.status).toBe("canceled");
 
       await expect(
-        listCompanyIdsWithActiveSubscription(db),
+        listCompanyIdsWithPaidListing(db, new Date()),
       ).resolves.not.toContain(companyId);
     });
   },

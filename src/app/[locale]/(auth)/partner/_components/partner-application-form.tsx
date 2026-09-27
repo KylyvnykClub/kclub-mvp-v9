@@ -69,6 +69,8 @@ const COMPANY_FIELDS = [
   "businessFormat",
   "city",
   "discount",
+  "specialPrivileges",
+  "specialPrivilegesNote",
   "contactEmail",
   "contactPhone",
 ] as const;

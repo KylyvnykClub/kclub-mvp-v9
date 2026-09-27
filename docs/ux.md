@@ -232,27 +232,33 @@ member to nominate a business, which is also how the catalogue grows.
    applicant the whole form is drafted a second after typing stops, and photos
    are staged with the draft and become the company's on submission
    ([ADR 0024](decisions/0024-onboarding-media-staging.md)).
-2. Submits. The screen states plainly: reviewed within 1–3 business days,
-   nothing is charged, and it will cost $19.99 a month if approved.
-3. Notification of the outcome, in their language. If rejected, the reason is
-   shown in full and the screen says that nothing was charged at any point — a
-   rejection is never a bill.
-4. If approved, a single call to action: pay for the listing. This is the first
-   moment anything may be charged (FR-111). Stripe Checkout, then back to a
-   status screen.
-5. Published within seconds of the webhook landing. The company card in **My
-   companies** shows "Live" with a link to the public entry.
+2. Submits, and is taken to the standing screen, which asks for one thing:
+   **reserve $19.99 on the card** — card, Apple Pay or Google Pay, on Stripe
+   Checkout ([ADR 0037](decisions/0037-card-held-at-application.md)). The
+   screen states plainly that the amount is reserved, not charged: charged
+   automatically if approved, released if not, the receipt by email, then
+   monthly from the same card.
+3. **Under review.** The screen says the price is held and until when the bank
+   holds it. The moderation queue marks the row "card reserved".
+4. **Approved.** The moderator presses Approve and nothing else: the held
+   amount is captured, and the listing is published the moment Stripe's
+   confirmation is projected — "confirming payment" on the screen until then.
+   If the reservation had lapsed, the screen asks for the card again and the
+   payment is captured as soon as it is authorised.
+5. **Refused.** The reservation is cancelled, nothing is charged, the reason
+   is shown in full.
+6. Once live, the company card in **My companies** shows "Paid", and the
+   page's **QR code** to print, in a chosen language (FR-118).
 
 **Where the applicant sees all this.** A partner account owes no membership
 dues, so `/{locale}/membership` shows them their application's standing instead
-of the dues ask: no application yet, under review, approved with the payment
-button, or refused with the moderator's note (FR-110).
+of the dues ask: reserve, held, confirming, pay again, or refused with the
+moderator's note (FR-110, FR-113).
 
-**Success:** the applicant always knows which of the four states they are in —
-draft, in review, approved and unpaid, live.
-**Failure:** payment abandoned at Stripe — the company stays in "approved,
-awaiting payment" with a reminder after 24 hours and again after 3 days, and
-nothing is lost. Listing lapses later — the company is unpublished, the owner is
+**Success:** the applicant always knows whether their money is reserved,
+charged or released, and why.
+**Failure:** reservation abandoned at Stripe — the application waits with the
+reserve button on the standing screen, and nothing is lost. Listing lapses later — the company is unpublished, the owner is
 told before it happens and told again after, and republication is one payment
 away with no re-moderation.
 

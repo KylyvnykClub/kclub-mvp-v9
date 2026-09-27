@@ -15,7 +15,7 @@ import {
 } from "@/modules/billing/reconciliation.js";
 import {
   listApprovedCompaniesByIds,
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
   listShowcaseCompanies,
   type PartnerCompanyView,
 } from "@/data/companies.js";
@@ -119,7 +119,7 @@ async function cardTierOf(db: DbClient, memberId: string) {
 }
 
 async function visibleCompanyIds(db: DbClient): Promise<string[]> {
-  const ids = await listCompanyIdsWithActiveSubscription(db);
+  const ids = await listCompanyIdsWithPaidListing(db, new Date());
   if (ids.length === 0) return [];
 
   const companies = await listApprovedCompaniesByIds(db, ids);
@@ -1003,7 +1003,7 @@ describe("listing lifecycle projection (FR-055)", () => {
       EPOCH + 60,
     );
 
-    const ids = await listCompanyIdsWithActiveSubscription(db);
+    const ids = await listCompanyIdsWithPaidListing(db, new Date());
     const showcasedTop =
       ids.length > 0 ? await listShowcaseCompanies(db, ids, "top", 3) : [];
     const showcasedFeatured =

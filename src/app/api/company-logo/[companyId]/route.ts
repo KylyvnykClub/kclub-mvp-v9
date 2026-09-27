@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentMember } from "@/actions/session";
-import {
-  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
-  listSubscriptionsByCompanyId,
-} from "@/data/billing";
-import { findCompanyById } from "@/data/companies";
+import { companyListingIsPaid, findCompanyById } from "@/data/companies";
 import { db } from "@/data/db";
 import {
   COMPANY_IMAGE_CONTENT_TYPE,
@@ -19,8 +15,7 @@ import {
  * Unlike the gallery, a logo is public brand imagery: the marketing landing's
  * showcase and the page's OpenGraph card both render it to anonymous
  * visitors. So there is no session requirement — visibility is the
- * publishable test alone (approved AND an access-granting subscription,
- * FR-044), with the owner allowed through when a session says it is them, so
+ * publishable test alone (approved AND a paid listing, FR-044), with the owner allowed through when a session says it is them, so
  * they can see the logo they just uploaded before approval. Missing and
  * not-visible are the same 404.
  */
@@ -47,11 +42,7 @@ export async function GET(
     if (company.moderationStatus !== "approved") {
       return new NextResponse(null, { status: 404 });
     }
-    const subscriptions = await listSubscriptionsByCompanyId(db, companyId);
-    const publishable = subscriptions.some((s) =>
-      ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(s.status),
-    );
-    if (!publishable) {
+    if (!(await companyListingIsPaid(db, companyId, new Date()))) {
       return new NextResponse(null, { status: 404 });
     }
   }

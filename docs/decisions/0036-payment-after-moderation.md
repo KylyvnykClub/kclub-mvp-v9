@@ -1,6 +1,6 @@
 # 0036. A business partner registers on one page, and pays after moderation
 
-> **Status:** Accepted
+> **Status:** Accepted; decision 4 superseded by [ADR 0037](0037-card-held-at-application.md)
 > **Date:** 2026-09-24
 > **Deciders:** Launch owner
 > **Supersedes:** [ADR 0019](0019-payment-before-moderation.md)

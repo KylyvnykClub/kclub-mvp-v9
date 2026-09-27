@@ -3,7 +3,7 @@
 import { db } from "@/data/db";
 import {
   countApprovedCompaniesByIds,
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
   listPartnerCountryCodes,
 } from "@/data/companies";
 import { countMemberPresence } from "@/data/members";
@@ -34,7 +34,7 @@ export async function getClubPresenceAction(): Promise<ClubPresence> {
     return { members: 0, countries: 0, partners: 0 };
   }
 
-  const activeCompanyIds = await listCompanyIdsWithActiveSubscription(db);
+  const activeCompanyIds = await listCompanyIdsWithPaidListing(db, new Date());
 
   const [presence, partners, countryCodes] = await Promise.all([
     countMemberPresence(db),

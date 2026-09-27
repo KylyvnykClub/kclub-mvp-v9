@@ -108,6 +108,11 @@ export async function KylTopPartners({
                     <h3>{partner.name}</h3>
                     {partner.description && <p>{partner.description}</p>}
                     {partner.discount && <strong>{partner.discount}</strong>}
+                    {partner.specialPrivileges && (
+                      <strong className="partner-privileges">
+                        {t("specialPrivileges")}
+                      </strong>
+                    )}
                   </div>
                 </Link>
               </KylReveal>

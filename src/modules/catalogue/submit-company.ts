@@ -115,6 +115,13 @@ export async function submitCompany(
         description: parsed.data.description,
         businessCategoryId: parsed.data.businessCategoryIds[0] ?? null,
         discount: parsed.data.discount,
+        specialPrivileges: parsed.data.specialPrivileges === "true",
+        // The note belongs to the switch: without privileges there is nothing
+        // for it to describe, so it is not kept.
+        specialPrivilegesNote:
+          parsed.data.specialPrivileges === "true"
+            ? parsed.data.specialPrivilegesNote?.trim() || null
+            : null,
         logoUrl: null,
         contactEmail: parsed.data.contactEmail,
         contactPhone: parsed.data.contactPhone,

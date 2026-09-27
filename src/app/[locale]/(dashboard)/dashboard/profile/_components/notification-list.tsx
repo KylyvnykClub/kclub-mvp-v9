@@ -86,13 +86,27 @@ export function NotificationList({
                       className="mr-2 inline-block size-2 rounded-full bg-accent align-middle"
                     />
                   )}
-                  {t(row.kind, { ...params })}
+                  {t(
+                    // ADR 0037: an approval that captured the held price
+                    // says so, rather than asking for a payment.
+                    row.kind === "company_approved" &&
+                      params.paymentHeld === "yes"
+                      ? "company_approved_held"
+                      : row.kind,
+                    { ...params },
+                  )}
                 </p>
                 {moderatorNote && (
                   <blockquote className="border-l-2 border-border pl-3 text-sm italic text-muted-foreground">
                     {moderatorNote}
                   </blockquote>
                 )}
+                {row.kind === "company_rejected" &&
+                  params.holdReleased === "yes" && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("company_rejected_hold_released")}
+                    </p>
+                  )}
                 {row.kind === "company_rejected" && (
                   // Worded conditionally on purpose, and since ADR 0036
                   // usually vacuous: nothing is charged before approval, so a

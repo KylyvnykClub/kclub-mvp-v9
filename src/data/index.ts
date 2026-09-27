@@ -80,7 +80,7 @@ export {
   listApprovedCompaniesWithSubscriptionsByOwner,
   listCompaniesByOwner,
   listCompaniesForAdmin,
-  listCompanyIdsWithActiveSubscription,
+  listCompanyIdsWithPaidListing,
   listActiveCategoryTree,
   listCountries,
   listPartnerLocations,

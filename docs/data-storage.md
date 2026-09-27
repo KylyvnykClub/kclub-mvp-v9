@@ -34,7 +34,7 @@ A third shape arrived with [ADR 0033](decisions/0033-standard-membership-is-paid
 only ever read from the projected subscription rows. `partner`
 ([ADR 0036](decisions/0036-payment-after-moderation.md)) owes no dues at all:
 the account was created by a business application, and what opens the club for
-it is an active listing subscription. `join_links` holds the club's current
+it is a paid listing — an active listing subscription, or in its first month a listing hold whose capture Stripe has confirmed ([ADR 0037](decisions/0037-card-held-at-application.md)). `companies` also carries `special_privileges` and an optional `special_privileges_note` (FR-117), public like the discount. `join_links` holds the club's current
 private join URL, one active row at a time; it references no member, counts
 nobody and is not personal data.
 
@@ -114,6 +114,7 @@ nobody and is not personal data.
 |`moderation_decision`|One approve/reject, permanently|N:1 company or referral|100 → 5,000|
 |`plan`, `price`|What we sell and for how much, with history|1:N|3 plans, ~10 prices|
 |`subscription`|A Stripe subscription, projected|N:1 plan; subject = member or company|100 → 3,000|
+|`listing_holds`|A partner's listing price authorised on the card at application — a manually captured Stripe PaymentIntent, projected from `payment_intent.*` events; once Stripe confirms the capture it pays for the listing's first month ([ADR 0037](decisions/0037-card-held-at-application.md))|N:1 company, N:1 member|50 → 2,000|
 |`entitlement`|What a subscription unlocks in the product|N:1 subscription|100 → 3,000|
 |`payment`|A settled Stripe invoice|N:1 subscription|300 → 30,000/year|
 |`stripe_event`|Every webhook received, by id|—|2,000 → 120,000/year|
@@ -210,6 +211,7 @@ security control first and a cost control second.
 |Company, unpublished by owner|12 months|Anonymise owner link, retain the moderation history|Moderation integrity|
 |Referral **client contact details**|Until accepted, declined, expired (14 days), or rejected — then 24 hours|Hard delete of the encrypted contact column; the referral shell is retained|Minimisation; the client is not our user ([decisions/0009](decisions/0009-referral-data-minimisation.md))|
 |Referral shell (who referred whom, when, outcome)|24 months|Hard delete|Abuse and dispute handling|
+|`listing_holds` rows|Life of the company|`ON DELETE CASCADE` with the company or the member. Holds only Stripe ids, a status, an amount and timestamps — no card data; the payment itself is recorded in Stripe, which is the system of record ([ADR 0037](decisions/0037-card-held-at-application.md))|Whether a listing's first month is paid; nothing else reads it|
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
 |`join_links`|Life of the club; a revoked link is retained|Never swept — one row per rotation, holding no personal data. The secret is stored in clear on purpose ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Knowing which link admitted which cohort|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|

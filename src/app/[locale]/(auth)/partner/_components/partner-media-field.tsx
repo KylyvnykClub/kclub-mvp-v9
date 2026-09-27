@@ -44,7 +44,10 @@ export function PartnerMediaField({
         <Label htmlFor="partnerLogo">{t("logoSectionLabel")}</Label>
         <div className="flex items-center gap-4">
           {media.logo ? (
-            <LocalPreview file={media.logo} className="size-16" />
+            <LocalPreview
+              file={media.logo}
+              className="size-16 bg-white object-contain p-1"
+            />
           ) : (
             <div
               className="flex size-16 items-center justify-center border border-border bg-muted text-[10px] uppercase tracking-wider text-muted-foreground"
@@ -86,7 +89,7 @@ export function PartnerMediaField({
                 key={`${file.name}-${index}`}
                 className="group relative aspect-square"
               >
-                <LocalPreview file={file} className="size-full" />
+                <LocalPreview file={file} className="size-full object-cover" />
                 <button
                   type="button"
                   aria-label={t("galleryDelete")}
@@ -147,10 +150,6 @@ function LocalPreview({ file, className }: { file: File; className: string }) {
 
   return (
     // eslint-disable-next-line @next/next/no-img-element -- a blob: preview of a file that has not been uploaded
-    <img
-      src={url}
-      alt=""
-      className={`${className} border border-border object-cover`}
-    />
+    <img src={url} alt="" className={`${className} border border-border`} />
   );
 }

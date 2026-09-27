@@ -153,12 +153,15 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-041|The system must reject a submission whose city does not belong to the selected country, or whose category is on the prohibited list|member|M|
 |FR-042|A submitted company must enter a moderation queue and must not be visible to any member before approval|system|M|
 |FR-043|Staff must be able to approve a submission, or reject it with a reason chosen from a fixed list plus free text; the applicant must be notified of the outcome|staff_moderator|M|
-|FR-044|An approved company must be published only after its listing subscription is active; approval alone must not publish it|system|M|
+|FR-044|An approved company must be published only while its listing is paid for — an active listing subscription, or a listing hold whose capture Stripe has confirmed, within the month it paid for ([ADR 0037](decisions/0037-card-held-at-application.md)); approval alone must not publish it|system|M|
 |FR-045|A company owner must be able to edit their published listing; edits to name, category, description or discount must return it to moderation, and the previously approved version must stay live meanwhile|partner_owner|M|
 |FR-046|Staff must be able to hide, unhide, edit and unpublish any company, and to set its discount terms and showcase rank|staff_admin|M|
 |FR-047|The system must record every moderation decision with the deciding staff member, timestamp and reason, and must keep that record after the company is deleted|system|M|
 |FR-048|Moderation of a new submission should be completed within 3 business days at the 90th percentile; the queue must show the age of each item|staff_moderator|S|
 |FR-109|A guest must be able to apply as a business partner from a single page that creates their account and files the application in one submit, without joining the club first ([ADR 0036](decisions/0036-payment-after-moderation.md))|guest|M|
+|FR-117|An application must offer a "special privileges" switch with an optional note saying which privileges; when switched on, the catalogue card and the partner's page must show it to every visitor ([ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
+|FR-118|A published partner's page must be reachable by anyone, photos included, and its owner must be able to download a QR code that opens it in a chosen language; partner logos must be shown whole, never cropped ([ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
+|FR-119|A company added by a club member from the dashboard must be paid for the same way as a partner application — reserved on the card, captured on approval, released on rejection — and a published company's page must show its website, email and phone to every visitor ([ADR 0037](decisions/0037-card-held-at-application.md))|member|M|
 
 ### 4.5 Subscriptions and payments
 
@@ -166,7 +169,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |-|-|-|-|
 |FR-050|The system must sell a VIP membership subscription at the price configured for the `vip_monthly` plan (launch price $19.99/month) through Stripe Checkout|member|M|
 |FR-051|The system must sell a listing subscription per company at the price configured for the `listing_monthly` plan (launch price $19.99/month)|partner_owner|M|
-|FR-052|Entitlements must be derived exclusively from Stripe subscription state received over webhooks; a return from the Stripe redirect must never itself grant access|system|M|
+|FR-052|Entitlements must be derived exclusively from Stripe state received over webhooks — subscriptions, and for a partner's first month a listing hold's PaymentIntent — re-read from the Stripe API; a return from the Stripe redirect, and a moderator's approval, must never itself grant access|system|M|
 |FR-053|The system must process each Stripe event exactly once, and must remain correct when the same event is delivered more than once or out of order|system|M|
 |FR-054|A cancelled subscription must retain full access until the end of the paid period, and must lose it within 5 minutes of that period ending|system|M|
 |FR-055|A company whose listing subscription lapses must be unpublished automatically, and republished automatically if payment is recovered within the grace period|system|M|
@@ -182,8 +185,12 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-106|The `staff_owner` role must be able to read, rotate and revoke the join link in the console, and every such change must write an audit entry|staff_owner|M|
 |FR-107|A member who registered before membership dues were introduced must keep access permanently without paying|member|M|
 |FR-108|Membership access must follow the subscription state within 60 seconds of it changing, in both directions|system|M|
-|FR-110|An account created through the partner application must never be asked for membership dues; its access to the club must follow its listing subscription, in both directions and on the same statuses as every other entitlement ([ADR 0036](decisions/0036-payment-after-moderation.md))|partner_owner|M|
-|FR-111|The system must not ask for or take payment for a listing before staff have approved the application, and the approval notice must carry the way to pay|partner_owner|M|
+|FR-110|An account created through the partner application must never be asked for membership dues; its access to the club must follow its paid listing (FR-044), in both directions and on the same statuses as every other entitlement ([ADR 0036](decisions/0036-payment-after-moderation.md), [ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
+|FR-111|The system must not take payment for a listing before staff have approved the application; before approval it may only hold the price on the card (FR-113). An approval that finds no capturable hold must carry the way to pay|partner_owner|M|
+|FR-113|After filing the application, a partner must be able to authorise the listing price on their card — card, Apple Pay or Google Pay — as a manually captured Stripe PaymentIntent that saves the card and sends the receipt to their address; the application is pending review and nothing is charged. At most one authorisation per application is kept|partner_owner|M|
+|FR-114|Approving an application with a capturable hold must capture it with no further staff action; the partner must be activated and published only after Stripe's webhook confirms the capture. A hold past its capture deadline, or no longer awaiting capture, must never be captured, and a failed capture must leave the partner inactive and unpublished|system|M|
+|FR-115|Rejecting an application must cancel its hold, so that nothing is charged and the bank releases the amount; a hold authorised after the rejection must be cancelled as soon as Stripe reports it|system|M|
+|FR-116|After the first confirmed capture the system must start a monthly listing subscription on the saved card with automatic collection, first billed when the captured month ends; later payments and failures follow FR-054…FR-056|system|M|
 
 ### 4.6 Client referrals
 
@@ -360,6 +367,7 @@ before the largest surface (the staff console) is built.
 |7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
 |8 — Membership dues|15–16|FR-102…FR-108|Standard membership sells and lapses against a Stripe test clock; a join link admits a member free; nobody who was already here is ever billed|
 |9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
+|10 — Card hold and partner page|18|FR-113…FR-119|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

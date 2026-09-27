@@ -15,6 +15,7 @@ import {
 import type { DbClient } from "./db";
 import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
 import type { PageParams } from "./pagination";
+import { companyIsPaidByHold, listCompanyIdsPaidByHold } from "./listing-holds";
 import {
   businessCategories,
   businessCategoryTranslations,
@@ -475,15 +476,53 @@ export async function insertCompany(
   });
 }
 
-export async function listCompanyIdsWithActiveSubscription(
+/**
+ * Every company whose listing is paid for right now: an access-granting
+ * listing subscription, or - in the month before that subscription first bills
+ * - a captured hold Stripe has confirmed (ADR 0037). This is the money half of
+ * publication (FR-044); the other half, approval, is checked by each reader.
+ *
+ * One function for both sources, so the catalogue, the partner page, the
+ * sitemap, the image routes and the admin "paid" badge cannot disagree about
+ * which listings are live.
+ */
+export async function listCompanyIdsWithPaidListing(
   db: DbClient,
+  now: Date,
 ): Promise<string[]> {
-  const rows = await db
-    .select({ companyId: subscriptions.companyId })
-    .from(subscriptions)
-    .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES));
+  const [rows, heldIds] = await Promise.all([
+    db
+      .select({ companyId: subscriptions.companyId })
+      .from(subscriptions)
+      .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES)),
+    listCompanyIdsPaidByHold(db, now),
+  ]);
 
-  return rows.map((s) => s.companyId).filter((id): id is string => id !== null);
+  const ids = new Set(heldIds);
+  for (const row of rows) {
+    if (row.companyId !== null) ids.add(row.companyId);
+  }
+  return [...ids];
+}
+
+/** The same rule as `listCompanyIdsWithPaidListing`, for one company. */
+export async function companyListingIsPaid(
+  db: DbClient,
+  companyId: string,
+  now: Date,
+): Promise<boolean> {
+  const [subscription] = await db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.companyId, companyId),
+        inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES),
+      ),
+    )
+    .limit(1);
+
+  return subscription !== undefined || companyIsPaidByHold(db, companyId, now);
 }
 
 export interface PartnerFilters {
@@ -1162,6 +1201,8 @@ export async function updateCompanyFields(
 export async function listCompaniesByOwner(db: DbClient, ownerId: string) {
   return db.query.companies.findMany({
     where: eq(companies.ownerId, ownerId),
+    // Oldest first, so "the partner's company" is the same row on every read.
+    orderBy: [asc(companies.createdAt), asc(companies.id)],
     with: {
       categories: { with: { businessCategory: true } },
       serviceCountries: true,

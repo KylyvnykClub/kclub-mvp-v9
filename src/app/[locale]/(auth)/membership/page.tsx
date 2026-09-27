@@ -15,12 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import { listMemberSubscriptionPlans } from "@/data/billing";
+import { loadMembershipAccess } from "@/data/membership-access";
 import { listCompaniesByOwner } from "@/data/companies";
 import { SignOutButton } from "./_components/sign-out-button";
 import { PartnerStanding } from "./_components/partner-standing";
 import { db } from "@/data/db";
-import { membershipAccess } from "@/domain/membership";
+import { holdIsCapturable } from "@/domain/listing-hold";
+import { partnerStandingFor } from "@/modules/billing/listing-hold";
 import { monthlyPrice } from "@/domain/pricing";
 
 export async function generateMetadata({
@@ -46,17 +47,20 @@ export async function generateMetadata({
  * pay twice.
  *
  * A business partner reaches the same URL and a different screen (FR-110). They
- * owe no dues; what holds them outside is the listing, and the listing is only
- * payable once the application has been approved (ADR 0036). So the gate is
- * one gate, and what it shows depends on which kind of member is standing at
- * it.
+ * owe no dues; what holds them outside is the listing, whose price is reserved
+ * on their card while the application is reviewed and charged on approval
+ * (ADR 0037). So the gate is one gate, and what it shows depends on which kind
+ * of member is standing at it.
  */
 export default async function MembershipDuesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ hold?: string }>;
 }) {
   const { locale } = await params;
+  const { hold } = await searchParams;
   setRequestLocale(locale);
 
   const current = await getCurrentMember();
@@ -64,11 +68,8 @@ export default async function MembershipDuesPage({
     redirect(`/${locale}/login`);
   }
 
-  const subscriptions = await listMemberSubscriptionPlans(
-    db,
-    current.member.id,
-  );
-  if (membershipAccess(current.member, subscriptions) === "active") {
+  const now = new Date();
+  if ((await loadMembershipAccess(db, current.member, now)) === "active") {
     redirect(`/${locale}/dashboard/profile`);
   }
 
@@ -81,6 +82,11 @@ export default async function MembershipDuesPage({
     });
     const listingPrice = monthlyPrice("listing", locale);
     const [application] = await listCompaniesByOwner(db, current.member.id);
+    const { standing, holds } = application
+      ? await partnerStandingFor(db, application, now)
+      : { standing: null, holds: [] };
+    const heldUntil =
+      holds.find((h) => holdIsCapturable(h, now))?.captureBefore ?? null;
 
     return (
       <AuthShell
@@ -96,13 +102,15 @@ export default async function MembershipDuesPage({
                   ? {
                       id: application.id,
                       name: application.name,
-                      moderationStatus: application.moderationStatus,
                       rejectionReason: application.rejectionReason,
                     }
                   : null
               }
+              standing={standing}
+              holdExpiresAt={heldUntil ? heldUntil.toISOString() : null}
               price={listingPrice}
               sellable={await checkoutPriceIsConfigured(db, "listing")}
+              returnedFromCheckout={hold === "returned"}
             />
           </CardContent>
           <CardFooter className="justify-between border-t border-border p-6 sm:p-8">

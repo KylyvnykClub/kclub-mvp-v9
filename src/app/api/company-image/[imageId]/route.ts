@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentMember } from "@/actions/session";
-import {
-  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
-  listSubscriptionsByCompanyId,
-} from "@/data/billing";
+import { companyListingIsPaid } from "@/data/companies";
 import { findImageWithCompany } from "@/data/company-images";
 import { db } from "@/data/db";
 import {
@@ -16,12 +13,17 @@ import {
 /**
  * GET /api/company-image/[imageId] — one gallery photo (ADR 0022).
  *
- * Authenticated only, like the catalogue itself. The owner always sees their
- * own gallery (they need to manage it before approval); everyone else sees an
- * image only when its company is publishable — approved AND holding an
- * access-granting subscription, the same two read-time gates as FR-044.
- * Not-found and not-allowed are the same 404, so the route is not an oracle
- * for which image ids exist.
+ * The owner always sees their own gallery (they need to manage it before
+ * approval); everyone else - signed in or not - sees an image only when its
+ * company is publishable: approved AND a paid listing, the same two read-time
+ * gates as FR-044. Not-found and not-allowed are the same 404, so the route is
+ * not an oracle for which image ids exist.
+ *
+ * Open to guests since ADR 0037. A partner's page is their advertising: the
+ * QR code on their counter sends people who have never heard of the club to
+ * it, and a page whose cover and photos answer 401 to exactly those people is
+ * a broken page. The photos are the partner's own marketing material, chosen
+ * to be shown; contact details stay behind sign-in (ADR 0034).
  */
 export const dynamic = "force-dynamic";
 
@@ -29,11 +31,6 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ imageId: string }> },
 ): Promise<NextResponse> {
-  const auth = await getCurrentMember();
-  if (!auth?.member) {
-    return new NextResponse(null, { status: 401 });
-  }
-
   const { imageId } = await params;
   if (!z.string().uuid().safeParse(imageId).success) {
     return new NextResponse(null, { status: 404 });
@@ -44,19 +41,13 @@ export async function GET(
     return new NextResponse(null, { status: 404 });
   }
 
-  const isOwner = image.ownerId === auth.member.id;
+  const auth = await getCurrentMember();
+  const isOwner = auth?.member?.id === image.ownerId;
   if (!isOwner) {
     if (image.moderationStatus !== "approved") {
       return new NextResponse(null, { status: 404 });
     }
-    const subscriptions = await listSubscriptionsByCompanyId(
-      db,
-      image.companyId,
-    );
-    const publishable = subscriptions.some((s) =>
-      ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(s.status),
-    );
-    if (!publishable) {
+    if (!(await companyListingIsPaid(db, image.companyId, new Date()))) {
       return new NextResponse(null, { status: 404 });
     }
   }
