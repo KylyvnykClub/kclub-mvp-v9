@@ -91,7 +91,8 @@ that the folder cannot be trusted.
 |[0033](0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|2026-09-09|
 |[0034](0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|2026-09-12|
 |[0035](0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|2026-09-22|
-|[0036](0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted|2026-09-24|
+|[0036](0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted; decision 4 superseded by 0037|2026-09-24|
+|[0037](0037-card-held-at-application.md)|A partner's card is held at application, captured on approval and released on rejection; whole logos, special privileges, a public partner page with a QR code|Accepted|2026-09-26|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

@@ -239,6 +239,7 @@ internal identifier, a stack trace or a vendor's raw error string.
 |`checkout.session.completed`|Stripe|HMAC signature with `STRIPE_WEBHOOK_SECRET`, 5-minute tolerance, verified **before** the body is parsed|`stripe_event.id` is the primary key; a duplicate insert conflicts and returns 200|Stripe retries for up to 3 days with backoff|
 |`customer.subscription.created` / `.updated` / `.deleted`|Stripe|As above|As above|As above|
 |`invoice.paid` / `invoice.payment_failed`|Stripe|As above|As above|As above|
+|`payment_intent.amount_capturable_updated` / `.succeeded` / `.payment_failed` / `.canceled` / `.processing`|Stripe|As above, and routed only when the PaymentIntent's metadata says `kind = listing_hold`; the worker re-reads the PaymentIntent from the API|As above|As above. A partner's listing hold ([ADR 0037](decisions/0037-card-held-at-application.md)): recorded, captured on approval, cancelled on rejection, published only on `succeeded`|
 |`charge.dispute.created`|Stripe|As above|As above|Flags the account for staff review; access is not withdrawn automatically|
 |SMS delivery status|Twilio|Signature validation with the auth token, plus an allowlist check|Message SID as the key|Ignored on failure — delivery status is telemetry, not state|
 |Job invocation|Inngest|Signature verification|The job's own step ids|Inngest retries per its policy|

@@ -122,7 +122,7 @@ What the application does not own.
 |-|-|
 |Vercel|Deployments, environment variables, cron invocations, logs|
 |Neon|Database, branches, point-in-time recovery|
-|Stripe|Products, prices, webhook endpoint, customers, test clocks|
+|Stripe|Products, prices, webhook endpoint, customers, test clocks. The endpoint must be subscribed to `customer.subscription.*`, `invoice.payment_failed` and the five `payment_intent.*` events of [ADR 0037](decisions/0037-card-held-at-application.md) — without the latter no listing hold is recorded and no approval captures. Receipts: "Email customers about successful payments" on, so monthly listing renewals send one; the first payment's receipt goes to `receipt_email` (live mode only)|
 |Cloudflare|DNS, R2 bucket (backups and `media/`), Turnstile site and its allowed hostnames|
 |CountryStateCity|API key for the onboarding city picker ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); optional — the form degrades to free text without it|
 |Upstash|Redis, rate-limit keys, plan limits|
@@ -151,7 +151,7 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm smoke:deployment <url> --expect-database-environment production`|Smoke a deployment and assert which database it reports|
 |`pnpm env:check:production`|Check a production-shaped environment before promoting|
 |`pnpm smoke:deployment <url>`|Smoke a preview or production deployment|
-|`pnpm stripe:listen`|Forward Stripe test webhooks to the local dev server, pinned to the account in `.env.local`; run it in a second terminal beside `pnpm dev`, every session — without it a local checkout stays UNPAID because no `customer.subscription.*` event ever arrives|
+|`pnpm stripe:listen`|Forward Stripe test webhooks to the local dev server, pinned to the account in `.env.local`; run it in a second terminal beside `pnpm dev`, every session — without it a local checkout stays UNPAID because no `customer.subscription.*` or `payment_intent.*` event ever arrives|
 |`pnpm stripe:check`|Diagnose Stripe webhook delivery|
 |`python tools/check-plan.py --strict`|Every FR claimed by one task, and named by a test title|
 |`python tools/check-docs.py --strict`|Broken links, missing owners, stale dates|
