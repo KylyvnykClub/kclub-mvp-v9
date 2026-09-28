@@ -154,6 +154,12 @@ function CountryPicker({
         align="start"
         container={container}
         className="w-[19rem] p-0"
+        // Focus leaving the panel does not close it; a click outside, Escape
+        // or a choice does. On a sign-in form the number box is the username
+        // field, and Safari's password AutoFill hands focus back to it the
+        // moment the trigger is clicked - which dismissed the list before it
+        // finished opening, so the country could not be changed at all.
+        onFocusOutside={(event) => event.preventDefault()}
       >
         <Command
           // Match on the country's own name and on its dialling code, so both
