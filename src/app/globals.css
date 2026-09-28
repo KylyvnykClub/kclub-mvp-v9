@@ -284,6 +284,32 @@
     background-size: var(--bg-fintech-grid-size);
   }
 
+  /* FilledImage (ADR 0038): the whole image, over a blurred copy of itself
+     that fills the rest of the box. Sizing comes from the caller. */
+  .kc-fill {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: #0a0a0a;
+  }
+
+  .kc-fill > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .kc-fill > .kc-fill-backdrop {
+    object-fit: cover;
+    filter: blur(28px) saturate(1.15) brightness(0.8);
+    transform: scale(1.2);
+  }
+
+  .kc-fill > .kc-fill-image {
+    object-fit: contain;
+  }
+
   .kc-gold-rule {
     height: 1px;
     border: 0;

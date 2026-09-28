@@ -73,6 +73,7 @@ variation.
 |Special privileges|A partner's offer to members beyond a discount, with an optional note saying what. "Особые привилегии" (ru), "Особливі привілеї" (uk)|`specialPrivileges`|`companies.special_privileges`, `special_privileges_note`|The discount, which is a separate field|
 |Partner QR code|A QR code of a published partner's own page, for the partner to print. "QR-код партнёра" (ru), "QR-код партнера" (uk)|`PartnerQr`|—|The membership card's QR code, which verifies a member|
 |Partner application|The single-page form a business fills in to be listed, which creates the account and the company in one submit|`submitCompany`, `/partner`|`companies`, `company_drafts`|Registration, which is how a person joins the club. A business applying is not joining|
+|Page banner|The first photo of a company's gallery, shown whole across the top of its catalogue page in a 3:1 panel and framed to that shape at upload ([ADR 0038](decisions/0038-partner-images-whole-and-filling.md), [ADR 0039](decisions/0039-framing-images-at-upload.md))|`coverImage` (page), `"banner"` (`CropKind`)|the first `company_images` row|"Cover" in the interface; a gallery photo, which is framed 4:3|
 |Plan|What can be sold: `vip_monthly`, `listing_monthly`, `business`|`Plan`|`plan`|"Tier", which is what a member gets from a plan|
 |Price|An amount for a plan, valid from a date. Multiple prices per plan over time|`Price`|`price`|The plan. Changing a price never changes the plan|
 |Entitlement|What an active subscription unlocks inside the product|`Entitlement`|`entitlement`|The subscription. Stripe owns subscriptions; we own entitlements|
@@ -106,6 +107,7 @@ variation.
 |Join link|Ссылка для вступления|Посилання для вступу|Never "инвайт" or "реферальная ссылка"|
 |Partner account|Аккаунт партнёра|Акаунт партнера|Never "бизнес-членство" — a partner is not a club member and owes no dues|
 |Partner application|Заявка партнёра|Заявка партнера|Never "регистрация бизнеса" in member-facing text — the business applies, we decide|
+|Page banner|Баннер страницы|Банер сторінки|Never "обложка" in partner-facing text|
 |Moderation|Проверка|Перевірка|"Модерация" only in staff-facing text|
 |Staff|Команда клуба|Команда клубу||
 

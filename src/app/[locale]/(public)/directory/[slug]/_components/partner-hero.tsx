@@ -1,5 +1,4 @@
-import Image from "next/image";
-import type { ReactNode } from "react";
+import { FilledImage } from "@/components/media/filled-image";
 
 /**
  * The hero always renders as a dark panel, in both themes, because the copy
@@ -7,21 +6,23 @@ import type { ReactNode } from "react";
  * guaranteed to stay legible over it. `dark` is scoped to this element so the
  * tokens inside resolve to the dark set without affecting the rest of the page.
  *
- * The cover is the background and the copy is in normal flow, rather than the
- * copy being absolutely positioned over a fixed-height cover. The fixed-height
- * version collapsed on a phone: a long partner name wraps to three lines, and
- * a block pinned to `bottom-0` grows upward, straight through the badges
- * pinned to `top-4`. The panel now takes its height from whatever the content
- * needs, with `min-h` only setting the floor, so nothing can overlap at any
- * width.
+ * The cover is the partner's banner and the page gives it the room (ADR 0038):
+ * shown whole, never cropped, filling the panel. The panel is 3:1 from `sm`
+ * up - the shape the upload hint asks for, so a banner made to it fills the
+ * panel edge to edge - and any other shape is filled by `FilledImage`. The
+ * copy is in normal flow over it, with `min-h` as the floor, so nothing
+ * overlaps at any width.
+ *
+ * Only the country's flag sits on the banner, and neither the logo nor the
+ * name is printed over it: the owner asked for the banner to carry the
+ * partner's own image, not ours on top of it. The name stays the page's `h1`
+ * for screen readers and search engines, visually hidden.
  */
 export function PartnerHero({
   name,
   coverSrc,
   coverAlt,
-  logoUrl,
-  logoAlt,
-  badges,
+  country,
   location,
   taxonomy,
   since,
@@ -30,9 +31,7 @@ export function PartnerHero({
   name: string;
   coverSrc: string | null;
   coverAlt: string;
-  logoUrl: string | null;
-  logoAlt: string;
-  badges: ReactNode[];
+  country: { flagSrc: string; name: string } | null;
   location: string | null;
   taxonomy: string | null;
   since: string;
@@ -42,65 +41,46 @@ export function PartnerHero({
     <div className="dark relative mt-8 overflow-hidden rounded-xl border border-border bg-zinc-950 text-white">
       <div className="absolute inset-0">
         {coverSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes (ADR 0022)
-          <img
-            src={coverSrc}
-            alt={coverAlt}
-            className="size-full object-cover"
-          />
+          <FilledImage src={coverSrc} alt={coverAlt} className="size-full" />
         ) : (
           <div className="kc-fintech-grid size-full bg-zinc-900" />
         )}
       </div>
 
       <div
-        className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] from-[8%] via-[#0a0a0a]/55 via-[55%] to-[#0a0a0a]/10"
+        className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/85 via-[#0a0a0a]/15 via-[45%] to-transparent"
         aria-hidden="true"
       />
 
-      <div className="relative flex min-h-56 flex-col gap-6 p-4 sm:min-h-72 sm:p-8 lg:min-h-[300px]">
-        {badges.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {badges.map((badge, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center rounded border border-white/20 bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/85 backdrop-blur"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
+      <div className="relative flex min-h-56 flex-col gap-6 p-4 sm:aspect-[3/1] sm:min-h-72 sm:p-8">
+        <h1 className="sr-only">{name}</h1>
+
+        {country && (
+          <span
+            className="inline-flex w-fit items-center rounded border border-white/20 bg-black/60 p-1.5 backdrop-blur"
+            title={country.name}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- a static 20x14 flag from /public */}
+            <img
+              src={country.flagSrc}
+              alt={country.name}
+              width={20}
+              height={14}
+              className="h-3.5 w-5 rounded-[1px] object-cover"
+            />
+          </span>
         )}
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-x-7 gap-y-5">
           <div className="min-w-0">
-            {logoUrl && (
-              // A dark glass plate in the hero's palette; the logo is
-              // contained, never cropped (ADR 0037).
-              <div className="relative mb-4 h-20 w-40 rounded-md border border-white/15 bg-black/40 backdrop-blur">
-                <Image
-                  src={logoUrl}
-                  alt={logoAlt}
-                  fill
-                  unoptimized
-                  sizes="160px"
-                  className="object-contain p-2"
-                />
-              </div>
-            )}
-
             {location && (
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/55">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">
                 {location}
               </p>
             )}
 
-            <h1 className="mt-2 font-serif text-2xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-[38px]">
-              {name}
-            </h1>
-
             {[taxonomy, since].filter(Boolean).length > 0 && (
-              <p className="mt-2 text-sm text-white/55">
+              <p className="mt-2 text-sm text-white/70">
                 {[taxonomy, since].filter(Boolean).join(" · ")}
               </p>
             )}

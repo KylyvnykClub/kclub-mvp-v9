@@ -6,6 +6,13 @@ import { Link } from "@/i18n/navigation";
 import { landingStats, type ClubPresence } from "@/lib/club-stats";
 
 /**
+ * Off for now, on the owner's instruction (2026-09-28): while the club is
+ * small the counts undersell it. Flip back to `true` once the figures are
+ * worth printing; nothing else about the band has changed.
+ */
+const SHOW_CLUB_STATS: boolean = false;
+
+/**
  * The hero, and the three figures the design puts at the bottom of it.
  *
  * Every number is read from the database (`getClubPresenceAction`). The
@@ -43,7 +50,7 @@ export async function KylHero({ presence }: { presence: ClubPresence }) {
         </div>
       </div>
 
-      {stats.length > 0 && (
+      {SHOW_CLUB_STATS && stats.length > 0 && (
         <KylReveal
           className="hero-stats shell"
           aria-label={t("statsLabel")}

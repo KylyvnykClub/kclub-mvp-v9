@@ -160,8 +160,9 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-048|Moderation of a new submission should be completed within 3 business days at the 90th percentile; the queue must show the age of each item|staff_moderator|S|
 |FR-109|A guest must be able to apply as a business partner from a single page that creates their account and files the application in one submit, without joining the club first ([ADR 0036](decisions/0036-payment-after-moderation.md))|guest|M|
 |FR-117|An application must offer a "special privileges" switch with an optional note saying which privileges; when switched on, the catalogue card and the partner's page must show it to every visitor ([ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
-|FR-118|A published partner's page must be reachable by anyone, photos included, and its owner must be able to download a QR code that opens it in a chosen language; partner logos must be shown whole, never cropped ([ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
+|FR-118|A published partner's page must be reachable by anyone, photos included, and its owner must be able to download a QR code that opens it in a chosen language; partner logos must be shown whole, never cropped by the platform ([ADR 0037](decisions/0037-card-held-at-application.md), [ADR 0038](decisions/0038-partner-images-whole-and-filling.md))|partner_owner|M|
 |FR-119|A company added by a club member from the dashboard must be paid for the same way as a partner application — reserved on the card, captured on approval, released on rejection — and a published company's page must show its website, email and phone to every visitor ([ADR 0037](decisions/0037-card-held-at-application.md))|member|M|
+|FR-120|Before a logo or photo is uploaded, its owner must be able to frame it to the shape it is shown in — 3:1 for the page banner, 4:3 for a gallery photo, their own choice of shape for a logo — or use it without framing; a logo must start whole in the frame, so nothing is cut unless the owner cuts it ([ADR 0039](decisions/0039-framing-images-at-upload.md))|partner_owner|S|
 
 ### 4.5 Subscriptions and payments
 
@@ -367,7 +368,7 @@ before the largest surface (the staff console) is built.
 |7 — Hardening and launch|13–15|FR-096, Three locales, WCAG audit, load test, penetration test, legal pages, runbooks|[§8](#8-acceptance-criteria) satisfied|
 |8 — Membership dues|15–16|FR-102…FR-108|Standard membership sells and lapses against a Stripe test clock; a join link admits a member free; nobody who was already here is ever billed|
 |9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
-|10 — Card hold and partner page|18|FR-113…FR-119|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
+|10 — Card hold and partner page|18|FR-113…FR-120|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.
