@@ -3836,30 +3836,41 @@ body.kyl-menu-open {
   }
 }
 
-/* A partner's logo is shown whole (ADR 0037). The prototype filled the panel
-   with it (`object-fit: cover`), which is right for a photograph and wrong for
-   a logo: a wide wordmark lost both its ends. Contained, with room left at the
-   bottom for the place label the scrim sits under. */
-.kyl .partner-art .partner-logo {
-  object-fit: contain;
-  padding: 22px 22px 48px;
+/* A partner's logo is shown whole and fills its panel (ADR 0037, ADR 0038):
+   `FilledImage` contains it over a blurred copy of itself, so no wordmark loses
+   its ends and no panel is left with empty bands or a plate. The rules below
+   take the panel's earlier `img` rules - cover, padding, a plate, a filter -
+   off both layers, and put the wrapper where the image used to be. */
+.kyl .partner-art .partner-logo,
+.kyl .top-partner-image .top-partner-logo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
   opacity: 1;
 }
-.kyl .top-partner-image img {
-  position: relative;
-  z-index: 1;
+.kyl .partner-art .kc-fill > img,
+.kyl .top-partner-image .kc-fill > img {
+  padding: 0;
+  background: none;
+  opacity: 1;
+}
+.kyl .partner-art .kc-fill > .kc-fill-image,
+.kyl .top-partner-image .kc-fill > .kc-fill-image {
   object-fit: contain;
-  padding: 26px;
   filter: none;
 }
-/* A dark plate under a contained logo, one step lighter than the panel, in the
-   page's own palette - the owner's call over a light one. Only the content box
-   is painted, so the plate sits inside the padding and the place label keeps
-   the dark below it. */
-.kyl .partner-art .partner-logo,
-.kyl .top-partner-image img {
-  background: var(--panel-2);
-  background-clip: content-box;
+.kyl .partner-art .kc-fill > .kc-fill-backdrop,
+.kyl .top-partner-image .kc-fill > .kc-fill-backdrop {
+  object-fit: cover;
+  filter: blur(28px) saturate(1.15) brightness(0.8);
+}
+/* The logo is the partner's face; the panel's decorative rings and city
+   photograph belong to the empty state only. */
+.kyl .partner-art:has(.partner-logo)::before,
+.kyl .top-partner-image:has(.top-partner-logo)::before {
+  display: none;
 }
 /* FR-117: "special privileges" sits under the discount in the same benefit
    block, a step quieter so the discount stays the headline. */

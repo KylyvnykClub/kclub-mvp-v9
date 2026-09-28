@@ -1,8 +1,8 @@
 import { ArrowRight, MapPin, Sparkles } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { FilledImage } from "@/components/media/filled-image";
 import type { PartnerCompanyView } from "@/data/companies";
 
 function locationLabel(partner: PartnerCompanyView) {
@@ -58,18 +58,14 @@ export function PartnerCard({
       }
     >
       {partner.logoUrl ? (
-        // A dark plate in the site's palette with the logo contained on it,
-        // never cropped (ADR 0037).
-        <div className="absolute inset-3 bottom-4 top-12 rounded-md border border-white/10 bg-zinc-900">
-          <Image
-            src={partner.logoUrl}
-            alt=""
-            fill
-            unoptimized
-            sizes={view === "list" ? "288px" : "420px"}
-            className="object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]"
-          />
-        </div>
+        // The whole logo, filling the panel with a blurred copy of itself
+        // rather than a plate (ADR 0038).
+        <FilledImage
+          src={partner.logoUrl}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.03]"
+        />
       ) : (
         <>
           <div className="absolute inset-0 kc-fintech-grid flex items-center justify-center bg-card">

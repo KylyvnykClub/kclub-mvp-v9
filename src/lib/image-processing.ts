@@ -3,7 +3,12 @@ import sharp, { type Sharp } from "sharp";
 import { MAX_IMAGE_UPLOAD_BYTES } from "@/lib/image-limits";
 
 const AVATAR_DIMENSION = 512;
-const GALLERY_MAX_DIMENSION = 1600;
+/**
+ * Sharp at the largest size a surface draws it, on a 2x screen (ADR 0038): the
+ * catalogue card is about 420px wide, the partner banner up to 1280px.
+ */
+const LOGO_MAX_DIMENSION = 1024;
+const GALLERY_MAX_DIMENSION = 2560;
 const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
 
 /** Machine-readable so callers can translate it; see messages/*.json "dashboard.avatarError*". */
@@ -63,8 +68,8 @@ async function processSquareImage(input: Buffer): Promise<Buffer> {
 export const processAvatarImage = processSquareImage;
 
 /**
- * Company logo (ADR 0023, ADR 0037): bounded to 512px on its longest side and
- * never cropped.
+ * Company logo (ADR 0023, ADR 0037, ADR 0038): bounded to 1024px on its longest
+ * side and never cropped.
  *
  * It used to share the avatar's square cover-crop, which cut the ends off
  * every wide wordmark - a logo that is mostly letters lost half of them at
@@ -78,7 +83,7 @@ export async function processLogoImage(input: Buffer): Promise<Buffer> {
   try {
     return await image
       .rotate()
-      .resize(AVATAR_DIMENSION, AVATAR_DIMENSION, {
+      .resize(LOGO_MAX_DIMENSION, LOGO_MAX_DIMENSION, {
         fit: "inside",
         withoutEnlargement: true,
       })
@@ -90,8 +95,8 @@ export async function processLogoImage(input: Buffer): Promise<Buffer> {
 }
 
 /**
- * A gallery photo keeps its aspect ratio: bounded to 1600px on the longest
- * side, never enlarged. Same decode-as-validation and EXIF stripping as the
+ * A gallery photo keeps its aspect ratio: bounded to 2560px on the longest
+ * side, never enlarged (ADR 0038 - the first one is the partner's banner). Same decode-as-validation and EXIF stripping as the
  * avatar path (ADR 0022).
  */
 export async function processGalleryImage(input: Buffer): Promise<Buffer> {
@@ -104,7 +109,7 @@ export async function processGalleryImage(input: Buffer): Promise<Buffer> {
         fit: "inside",
         withoutEnlargement: true,
       })
-      .webp({ quality: 80 })
+      .webp({ quality: 85 })
       .toBuffer();
   } catch {
     throw new InvalidImageError("processing_failed");

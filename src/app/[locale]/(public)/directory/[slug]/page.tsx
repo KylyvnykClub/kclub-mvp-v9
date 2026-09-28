@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { PartnerHero } from "./_components/partner-hero";
+import { FilledImage } from "@/components/media/filled-image";
 import {
   PartnerBusinessData,
   type BusinessDataRow,
@@ -31,6 +32,7 @@ import { findActiveSubscriptionByPrice } from "@/data/billing";
 import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { countryFlag, countryName } from "@/lib/countries";
+import { flagSrc } from "@/components/landing/kyl/partner-presentation";
 import { localeAlternates } from "@/lib/seo";
 import { JsonLd, partnerLd } from "@/components/seo/json-ld";
 import type { Locale } from "@/i18n/routing";
@@ -157,14 +159,12 @@ export default async function PartnerLandingPage({ params }: Props) {
   }));
   const worldwide = partner.servesWorldwide === 1;
 
-  const heroBadges = [
-    tc("verifiedPartner"),
-    partner.specialPrivileges ? tc("specialPrivilegesBadge") : null,
-    localizedCountry
-      ? `${partner.registrationCountryCode ? `${countryFlag(partner.registrationCountryCode)} ` : ""}${localizedCountry}`
-      : null,
-    partner.businessFormat ? formatLabels[partner.businessFormat] : null,
-  ].filter((b): b is string => Boolean(b));
+  // The banner carries the country as a flag and nothing else (ADR 0038).
+  const heroFlag = flagSrc(partner.registrationCountryCode);
+  const heroCountry =
+    heroFlag && localizedCountry
+      ? { flagSrc: heroFlag, name: localizedCountry }
+      : null;
 
   const businessDataRows: BusinessDataRow[] = [
     localizedCountry
@@ -289,9 +289,7 @@ export default async function PartnerLandingPage({ params }: Props) {
             name={partner.name}
             coverSrc={coverImage ? `/api/company-image/${coverImage.id}` : null}
             coverAlt={tc("coverAlt", { name: partner.name })}
-            logoUrl={partner.logoUrl}
-            logoAlt={tc("logoAlt", { name: partner.name })}
-            badges={heroBadges}
+            country={heroCountry}
             location={
               // `localizedCountry`, not `partner.country`: the raw column holds
               // an ISO code, and the hero was reading "KRAKÓW · US" where the
@@ -387,13 +385,12 @@ export default async function PartnerLandingPage({ params }: Props) {
                   <SectionHeader label={tc("gallerySection")} />
                   <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-3">
                     {galleryImages.map((image) => (
-                      // eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes (ADR 0022)
-                      <img
+                      <FilledImage
                         key={image.id}
                         src={`/api/company-image/${image.id}`}
                         alt=""
                         loading="lazy"
-                        className="aspect-[4/3] w-full rounded-md border border-border object-cover"
+                        className="aspect-[4/3] w-full rounded-md border border-border"
                       />
                     ))}
                   </div>

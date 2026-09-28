@@ -8,6 +8,7 @@ import {
   type TaxonomyIndex,
 } from "./partner-presentation";
 
+import { FilledImage } from "@/components/media/filled-image";
 import type { PartnerCompanyView } from "@/data/companies";
 import { Link } from "@/i18n/navigation";
 import { countryName } from "@/lib/countries";
@@ -79,13 +80,10 @@ export async function KylTopPartners({
                     className={`top-partner-image${partner.logoUrl ? "" : " top-partner-image--empty"}`}
                   >
                     {partner.logoUrl ? (
-                      <Image
+                      <FilledImage
+                        className="top-partner-logo"
                         src={partner.logoUrl}
                         alt=""
-                        width={640}
-                        height={440}
-                        unoptimized
-                        sizes="(max-width: 760px) 100vw, 400px"
                       />
                     ) : (
                       <span className="top-partner-initial" aria-hidden="true">

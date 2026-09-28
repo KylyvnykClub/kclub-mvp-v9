@@ -92,7 +92,8 @@ that the folder cannot be trusted.
 |[0034](0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|2026-09-12|
 |[0035](0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|2026-09-22|
 |[0036](0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted; decision 4 superseded by 0037|2026-09-24|
-|[0037](0037-card-held-at-application.md)|A partner's card is held at application, captured on approval and released on rejection; whole logos, special privileges, a public partner page with a QR code|Accepted|2026-09-26|
+|[0037](0037-card-held-at-application.md)|A partner's card is held at application, captured on approval and released on rejection; whole logos, special privileges, a public partner page with a QR code|Accepted; the logo plate of decision 9 superseded by 0038|2026-09-26|
+|[0038](0038-partner-images-whole-and-filling.md)|A partner's logos and photos are shown whole over a blurred copy of themselves that fills the box; the partner banner carries only the country flag; larger stored images|Accepted|2026-09-28|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

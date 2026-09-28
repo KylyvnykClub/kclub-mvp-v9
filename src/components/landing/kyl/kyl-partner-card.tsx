@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { KylReveal } from "./kyl-reveal";
 import { blockPresentation, flagSrc } from "./partner-presentation";
 
+import { FilledImage } from "@/components/media/filled-image";
 import { Link } from "@/i18n/navigation";
 import type { LandingPartner } from "@/lib/landing-partner";
 
@@ -41,13 +42,11 @@ export function KylPartnerCard({
       <Link className="partner-card-link" href={`/directory/${partner.slug}`}>
         <div className={`partner-art ${art}`}>
           {partner.logoUrl ? (
-            <Image
+            <FilledImage
               className="partner-logo"
               src={partner.logoUrl}
               alt=""
-              width={360}
-              height={280}
-              unoptimized
+              loading="lazy"
             />
           ) : (
             <Icon aria-hidden="true" />

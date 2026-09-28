@@ -68,15 +68,15 @@ describe("processAvatarImage", () => {
 });
 
 describe("processGalleryImage", () => {
-  it("bounds the longest side to 1600px and keeps the aspect ratio", async () => {
-    const input = await pngFixture(3200, 1600);
+  it("bounds the longest side to 2560px and keeps the aspect ratio (ADR 0038)", async () => {
+    const input = await pngFixture(5120, 1706);
 
     const output = await processGalleryImage(input);
     const outputMeta = await sharp(output).metadata();
 
     expect(outputMeta.format).toBe("webp");
-    expect(outputMeta.width).toBe(1600);
-    expect(outputMeta.height).toBe(800);
+    expect(outputMeta.width).toBe(2560);
+    expect(outputMeta.height).toBe(853);
   });
 
   it("never enlarges a small image", async () => {
@@ -97,22 +97,22 @@ describe("processGalleryImage", () => {
 });
 
 describe("FR-118: processLogoImage never crops a logo (ADR 0037)", () => {
-  it("keeps the whole of a wide wordmark, bounded to 512px", async () => {
-    const output = await processLogoImage(await pngFixture(1600, 400));
+  it("keeps the whole of a wide wordmark, bounded to 1024px (ADR 0038)", async () => {
+    const output = await processLogoImage(await pngFixture(3200, 800));
     const meta = await sharp(output).metadata();
 
     expect(meta.format).toBe("webp");
-    expect(meta.width).toBe(512);
-    expect(meta.height).toBe(128);
+    expect(meta.width).toBe(1024);
+    expect(meta.height).toBe(256);
   });
 
   it("keeps the whole of a tall logo", async () => {
     const meta = await sharp(
-      await processLogoImage(await pngFixture(300, 900)),
+      await processLogoImage(await pngFixture(600, 1800)),
     ).metadata();
 
-    expect(meta.height).toBe(512);
-    expect(meta.width).toBe(171);
+    expect(meta.height).toBe(1024);
+    expect(meta.width).toBe(341);
   });
 
   it("does not blow a small logo up", async () => {
