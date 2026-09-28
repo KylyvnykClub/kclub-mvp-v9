@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { FILE_INPUT_CLASS } from "@/components/company/company-fields";
+import { useImageCrop } from "@/components/media/image-crop-dialog";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 
 /**
@@ -37,9 +38,11 @@ export function PartnerMediaField({
   onChange: (media: PartnerMedia) => void;
 }) {
   const t = useTranslations("dashboard");
+  const { frame, cropDialog } = useImageCrop();
 
   return (
     <div className="space-y-6">
+      {cropDialog}
       <div className="space-y-2">
         <Label htmlFor="partnerLogo">{t("logoSectionLabel")}</Label>
         <div className="flex items-center gap-4">
@@ -62,9 +65,16 @@ export function PartnerMediaField({
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               className={FILE_INPUT_CLASS}
-              onChange={(e) =>
-                onChange({ ...media, logo: e.target.files?.[0] ?? null })
-              }
+              onChange={(e) => {
+                void (async () => {
+                  const input = e.currentTarget;
+                  const file = input.files?.[0];
+                  if (!file) return;
+                  const framed = await frame(file, "logo");
+                  input.value = "";
+                  if (framed) onChange({ ...media, logo: framed });
+                })();
+              }}
             />
             <p className="text-xs text-muted-foreground">{t("logoHint")}</p>
           </div>
@@ -89,7 +99,10 @@ export function PartnerMediaField({
                 key={`${file.name}-${index}`}
                 className="group relative aspect-square"
               >
-                <LocalPreview file={file} className="size-full object-cover" />
+                <LocalPreview
+                  file={file}
+                  className="size-full bg-muted object-contain"
+                />
                 <button
                   type="button"
                   aria-label={t("galleryDelete")}
@@ -116,10 +129,19 @@ export function PartnerMediaField({
               accept="image/jpeg,image/png,image/webp,image/gif"
               className={FILE_INPUT_CLASS}
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                onChange({ ...media, images: [...media.images, file] });
-                e.target.value = "";
+                void (async () => {
+                  const input = e.currentTarget;
+                  const file = input.files?.[0];
+                  if (!file) return;
+                  // The first photo is the page's banner (ADR 0038).
+                  const framed = await frame(
+                    file,
+                    media.images.length === 0 ? "banner" : "photo",
+                  );
+                  input.value = "";
+                  if (framed)
+                    onChange({ ...media, images: [...media.images, framed] });
+                })();
               }}
             />
             <p className="text-xs text-muted-foreground">

@@ -15,6 +15,8 @@ import { uploadImageSafely } from "@/lib/client-image-upload";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 import { DRAFT_LOGO_SLOT, draftMediaServePath } from "@/lib/draft-media-path";
 import { FILE_INPUT_CLASS } from "./company-fields";
+import { FilledImage } from "@/components/media/filled-image";
+import { useImageCrop } from "@/components/media/image-crop-dialog";
 
 /**
  * Logo and photos staged under the applicant's draft prefix (ADR 0024).
@@ -45,6 +47,7 @@ export function DraftLogoField({
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { frame, cropDialog } = useImageCrop();
 
   const report = (code: string | undefined) =>
     setError(
@@ -53,6 +56,7 @@ export function DraftLogoField({
 
   return (
     <div className="space-y-2">
+      {cropDialog}
       <Label htmlFor="draftLogo">{t("logoSectionLabel")}</Label>
       {error && (
         <p role="alert" className="text-sm text-red-500">
@@ -84,26 +88,33 @@ export function DraftLogoField({
             disabled={busy}
             className={FILE_INPUT_CLASS}
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              startTransition(async () => {
-                const formData = new FormData();
-                formData.set("logo", file);
-                const guarded = await uploadImageSafely(file, () =>
-                  uploadDraftLogoAction(formData),
-                );
-                if (fileRef.current) fileRef.current.value = "";
-                if (!guarded.ok) {
-                  report(guarded.code);
+              void (async () => {
+                const picked = e.currentTarget.files?.[0];
+                if (!picked) return;
+                const file = await frame(picked, "logo");
+                if (!file) {
+                  if (fileRef.current) fileRef.current.value = "";
                   return;
                 }
-                const result = guarded.result;
-                report(result.success ? undefined : result.error);
-                if (result.success) {
-                  onChange(true);
-                  setVersion((v) => v + 1);
-                }
-              });
+                startTransition(async () => {
+                  const formData = new FormData();
+                  formData.set("logo", file);
+                  const guarded = await uploadImageSafely(file, () =>
+                    uploadDraftLogoAction(formData),
+                  );
+                  if (fileRef.current) fileRef.current.value = "";
+                  if (!guarded.ok) {
+                    report(guarded.code);
+                    return;
+                  }
+                  const result = guarded.result;
+                  report(result.success ? undefined : result.error);
+                  if (result.success) {
+                    onChange(true);
+                    setVersion((v) => v + 1);
+                  }
+                });
+              })();
             }}
           />
           <p className="text-xs text-muted-foreground">
@@ -142,6 +153,7 @@ export function DraftGalleryField({
   const [busy, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { frame, cropDialog } = useImageCrop();
 
   const report = (code: string | undefined) =>
     setError(
@@ -150,6 +162,7 @@ export function DraftGalleryField({
 
   return (
     <div className="space-y-3">
+      {cropDialog}
       <div className="flex items-baseline justify-between">
         <Label htmlFor="draftImage">{t("galleryLabel")}</Label>
         <p className="text-xs text-muted-foreground">
@@ -168,11 +181,10 @@ export function DraftGalleryField({
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {imageIds.map((id) => (
             <li key={id} className="group relative aspect-square">
-              {/* eslint-disable-next-line @next/next/no-img-element -- own-origin staged preview (ADR 0024) */}
-              <img
+              <FilledImage
                 src={draftMediaServePath(id)}
                 alt=""
-                className="size-full rounded-sm object-cover"
+                className="size-full rounded-sm"
               />
               <button
                 type="button"
@@ -204,25 +216,36 @@ export function DraftGalleryField({
             disabled={busy}
             className={FILE_INPUT_CLASS}
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              startTransition(async () => {
-                const formData = new FormData();
-                formData.set("image", file);
-                const guarded = await uploadImageSafely(file, () =>
-                  uploadDraftImageAction(formData),
+              void (async () => {
+                const picked = e.currentTarget.files?.[0];
+                if (!picked) return;
+                // The first photo is the page's banner (ADR 0038).
+                const file = await frame(
+                  picked,
+                  imageIds.length === 0 ? "banner" : "photo",
                 );
-                if (fileRef.current) fileRef.current.value = "";
-                if (!guarded.ok) {
-                  report(guarded.code);
+                if (!file) {
+                  if (fileRef.current) fileRef.current.value = "";
                   return;
                 }
-                const result = guarded.result;
-                report(result.success ? undefined : result.error);
-                if (result.success && result.imageId) {
-                  onChange([...imageIds, result.imageId]);
-                }
-              });
+                startTransition(async () => {
+                  const formData = new FormData();
+                  formData.set("image", file);
+                  const guarded = await uploadImageSafely(file, () =>
+                    uploadDraftImageAction(formData),
+                  );
+                  if (fileRef.current) fileRef.current.value = "";
+                  if (!guarded.ok) {
+                    report(guarded.code);
+                    return;
+                  }
+                  const result = guarded.result;
+                  report(result.success ? undefined : result.error);
+                  if (result.success && result.imageId) {
+                    onChange([...imageIds, result.imageId]);
+                  }
+                });
+              })();
             }}
           />
           <p className="text-xs text-muted-foreground">

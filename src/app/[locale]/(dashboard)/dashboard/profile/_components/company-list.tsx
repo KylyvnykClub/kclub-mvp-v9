@@ -31,6 +31,8 @@ import {
 } from "@/lib/company-image-path";
 import type { Locale } from "@/i18n/routing";
 import { PartnerQr } from "./partner-qr";
+import { FilledImage } from "@/components/media/filled-image";
+import { useImageCrop } from "@/components/media/image-crop-dialog";
 
 export function CompanyList({
   companies,
@@ -373,6 +375,7 @@ function LogoSection({
   const [busy, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { frame, cropDialog } = useImageCrop();
 
   const errorKeys: Record<string, string> = {
     too_large: "avatarErrorTooLarge",
@@ -410,6 +413,7 @@ function LogoSection({
 
   return (
     <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
+      {cropDialog}
       <p className="text-sm font-medium">{t("logoSectionLabel")}</p>
 
       {error && (
@@ -442,8 +446,13 @@ function LogoSection({
             disabled={busy}
             aria-label={t("logoAdd")}
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) upload(file);
+              void (async () => {
+                const picked = e.currentTarget.files?.[0];
+                if (!picked) return;
+                const file = await frame(picked, "logo");
+                if (file) upload(file);
+                else if (fileRef.current) fileRef.current.value = "";
+              })();
             }}
             className="block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]"
           />
@@ -477,6 +486,7 @@ function GallerySection({
   const [busy, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { frame, cropDialog } = useImageCrop();
 
   const errorKeys: Record<string, string> = {
     gallery_full: "galleryErrorFull",
@@ -515,6 +525,7 @@ function GallerySection({
 
   return (
     <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
+      {cropDialog}
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-medium">{t("galleryLabel")}</p>
         <p className="text-xs text-muted-foreground">
@@ -535,11 +546,10 @@ function GallerySection({
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {images.map((image) => (
             <li key={image.id} className="group relative aspect-square">
-              {/* eslint-disable-next-line @next/next/no-img-element -- own-origin, already re-encoded bytes */}
-              <img
+              <FilledImage
                 src={companyImageServePath(image.id)}
                 alt=""
-                className="size-full rounded-sm object-cover"
+                className="size-full rounded-sm"
               />
               <button
                 type="button"
@@ -564,8 +574,17 @@ function GallerySection({
             disabled={busy}
             aria-label={t("galleryAdd")}
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) upload(file);
+              void (async () => {
+                const picked = e.currentTarget.files?.[0];
+                if (!picked) return;
+                // The first photo is the page's banner (ADR 0038).
+                const file = await frame(
+                  picked,
+                  images.length === 0 ? "banner" : "photo",
+                );
+                if (file) upload(file);
+                else if (fileRef.current) fileRef.current.value = "";
+              })();
             }}
             className="block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]"
           />
