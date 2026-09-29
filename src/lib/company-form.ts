@@ -55,7 +55,13 @@ export const companyDetailsSchema = z.object({
   discount: z.string().max(255).optional(),
   // FR-117: "special privileges" for club members, beyond or instead of a
   // discount. A switch, and optionally what the privileges are.
-  specialPrivileges: z.enum(["true", "false"]).optional(),
+  // The switch is untouched on most applications, and the form posts every
+  // field as a hidden input - so "" means "off", not a bad value. Refusing it
+  // blocked every dashboard submission that never pressed the switch.
+  specialPrivileges: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(["true", "false"]).optional(),
+  ),
   specialPrivilegesNote: multiline(z.string().max(500).optional()),
   contactEmail: z
     .string()

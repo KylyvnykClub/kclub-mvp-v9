@@ -259,6 +259,17 @@ describe("FR-117: special privileges on the application", () => {
     ).toBe(true);
   });
 
+  it("FR-117: treats the untouched switch - posted as an empty hidden input - as off", () => {
+    const parsed = registerCompanySchema.safeParse({
+      ...DETAILS,
+      ...LOCATION,
+      ...OFFER,
+      specialPrivileges: "",
+    });
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.specialPrivileges).toBeUndefined();
+  });
+
   it("FR-117: refuses anything but on or off", () => {
     expect(
       companyDetailsSchema.safeParse({ ...DETAILS, specialPrivileges: "yes" })
