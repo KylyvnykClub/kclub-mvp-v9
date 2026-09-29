@@ -25,3 +25,6 @@ src/admin/
 playwright-report/
 test-results/
 blob-report/
+
+# Google Search Console checks this file byte for byte.
+public/google*.html
