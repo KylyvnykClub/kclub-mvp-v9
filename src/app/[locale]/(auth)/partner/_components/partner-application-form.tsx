@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -132,7 +131,7 @@ export function PartnerApplicationForm({
   const legalReady =
     signedIn || (termsVersion !== null && privacyVersion !== null);
 
-  const [state, submit] = useActionState(
+  const [state, submit, submitting] = useActionState(
     async (previous: State, formData: FormData): Promise<State> => {
       if (!signedIn) {
         // Every acknowledgement, not a filtered subset: submitting the form is
@@ -232,7 +231,19 @@ export function PartnerApplicationForm({
         </CardHeader>
 
         <CardContent className="p-6 sm:p-8">
-          <form action={submit} className="space-y-8">
+          // Submitted by hand rather than through `action`: React 19 resets a
+          // form after its action returns, and the reset event makes each //
+          Radix checkbox drop back to unchecked - which silently cleared // the
+          chosen subcategory after any refusal, so the next attempt // failed on
+          a field the applicant had already filled.
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              startTransition(() => submit(formData));
+            }}
+            className="space-y-8"
+          >
             {state?.issue && (
               <p
                 role="alert"
@@ -441,6 +452,7 @@ export function PartnerApplicationForm({
             <Submit
               label={t("submit")}
               pendingLabel={t("submitting")}
+              pending={submitting}
               disabled={!legalReady || (!signedIn && !passwordsUsable)}
             />
           </form>
@@ -467,14 +479,14 @@ type State = Awaited<ReturnType<typeof registerPartnerAction>>;
 function Submit({
   label,
   pendingLabel,
+  pending,
   disabled,
 }: {
   label: string;
   pendingLabel: string;
+  pending: boolean;
   disabled?: boolean;
 }) {
-  const { pending } = useFormStatus();
-
   return (
     <Button
       type="submit"
