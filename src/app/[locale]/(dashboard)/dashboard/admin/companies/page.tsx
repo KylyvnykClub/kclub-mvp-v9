@@ -28,12 +28,14 @@ import { CompanyDetailSheet } from "./_components/company-detail-sheet";
 
 const STATUS_LABEL_KEYS = {
   pending: "statusPending",
+  awaiting_payment: "statusAwaitingPayment",
   approved: "statusApproved",
   rejected: "statusRejected",
 } as const;
 
 const STATUS_TONES: Record<keyof typeof STATUS_LABEL_KEYS, StatusTone> = {
   pending: "warning",
+  awaiting_payment: "neutral",
   approved: "positive",
   rejected: "negative",
 };
@@ -171,7 +173,14 @@ export default async function AdminCompaniesPage({
               <DataTableEmpty colSpan={COLUMN_COUNT} message={t("empty")} />
             ) : (
               data.rows.map((company) => {
-                const isPending = company.moderationStatus === "pending";
+                // FR-113: a pending row without a hold is not in the queue
+                // yet - it is shown as awaiting payment and cannot be judged.
+                const isPending =
+                  company.moderationStatus === "pending" && company.cardHeld;
+                const rowStatus =
+                  company.moderationStatus === "pending" && !company.cardHeld
+                    ? "awaiting_payment"
+                    : company.moderationStatus;
                 return (
                   <TableRow key={company.id}>
                     <TableCell>
@@ -205,8 +214,8 @@ export default async function AdminCompaniesPage({
                     </TableCell>
                     <TableCell>
                       <StatusBadge
-                        tone={STATUS_TONES[company.moderationStatus]}
-                        label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
+                        tone={STATUS_TONES[rowStatus]}
+                        label={t(STATUS_LABEL_KEYS[rowStatus])}
                       />
                     </TableCell>
                     {/*

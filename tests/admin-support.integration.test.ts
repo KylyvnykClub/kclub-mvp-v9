@@ -7,6 +7,7 @@ import {
   members,
   referrals,
 } from "@/data/schema/index.js";
+import { seedCapturableHold } from "./factories/listing-holds.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 function testDbClient(): DbClient {
@@ -80,6 +81,19 @@ describe("admin support dashboard metrics (FR-081)", () => {
         moderationStatus: "pending",
       })
       .returning();
+    await seedCapturableHold(db, {
+      companyId: pendingCompany!.id,
+      memberId: activeMember.id,
+    });
+
+    // FR-113: submitted but never reserved on the card - not in the queue.
+    await db.insert(companies).values({
+      ownerId: activeMember.id,
+      businessCategoryId: categoryId,
+      name: "Unpaid Support Company",
+      slug: `unpaid-support-${crypto.randomUUID()}`,
+      moderationStatus: "pending",
+    });
 
     await db.insert(companies).values({
       ownerId: activeMember.id,

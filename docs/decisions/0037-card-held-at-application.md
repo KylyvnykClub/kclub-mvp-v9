@@ -170,6 +170,11 @@ review that overruns asks the partner to reserve again.
 - A business's contact details are public on its page, for anyone who opens
   it - including scrapers. They are details the business gave for the
   catalogue; a partner who does not want one shown leaves it empty.
+- The review queue is the held applications, not every `pending` row
+  (amended 2026-09-29, after two unpaid companies reached production
+  moderation). A company submitted without a hold is shown to staff as
+  "awaiting payment", is not counted, and cannot be approved; the server
+  refuses the approval. A hold that lapses takes it back out of the queue.
 
 ## Revisit if
 

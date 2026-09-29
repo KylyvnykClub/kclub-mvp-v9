@@ -30,6 +30,7 @@ import {
 } from "@/data/referrals.js";
 import { listSubscriptionsByCompanyId } from "@/data/billing.js";
 import { companies, members, subscriptions } from "@/data/schema/index.js";
+import { seedCapturableHold } from "./factories/listing-holds.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 /**
@@ -154,12 +155,45 @@ describe("FR-041: a submission is rejected when its city does not belong to its 
 });
 
 describe("FR-042: a submitted company enters moderation and is invisible until approved", () => {
-  it("puts a new submission in the pending queue", async () => {
+  it("FR-113: puts a submission in the queue once its price is held on the card", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "pending",
+    });
+    await seedCapturableHold(db, { companyId: company.id, memberId: owner.id });
+
+    const queue = await listPendingCompanies(db, new Date());
+    expect(queue.map((row) => row.id)).toContain(company.id);
+  });
+
+  it("FR-113: keeps a submission out of the queue while nothing is held on the card", async () => {
     const db = testDbClient();
     const { company } = await seedCompany(db, { moderationStatus: "pending" });
 
-    const queue = await listPendingCompanies(db);
-    expect(queue.map((row) => row.id)).toContain(company.id);
+    const queue = await listPendingCompanies(db, new Date());
+    expect(queue.map((row) => row.id)).not.toContain(company.id);
+  });
+
+  it("FR-113: drops a submission from the queue when its hold lapses or is cancelled", async () => {
+    const db = testDbClient();
+    const lapsed = await seedCompany(db, { moderationStatus: "pending" });
+    await seedCapturableHold(db, {
+      companyId: lapsed.company.id,
+      memberId: lapsed.owner.id,
+      captureBefore: new Date(Date.now() - 60_000),
+    });
+    const cancelled = await seedCompany(db, { moderationStatus: "pending" });
+    await seedCapturableHold(db, {
+      companyId: cancelled.company.id,
+      memberId: cancelled.owner.id,
+      status: "canceled",
+    });
+
+    const queue = (await listPendingCompanies(db, new Date())).map(
+      (row) => row.id,
+    );
+    expect(queue).not.toContain(lapsed.company.id);
+    expect(queue).not.toContain(cancelled.company.id);
   });
 
   it("does not return a pending company to the catalogue, even by direct id", async () => {
@@ -244,7 +278,7 @@ describe("FR-043: staff approve, or reject with a reason", () => {
     expect(moderated?.moderationStatus).toBe("approved");
     expect(moderated?.rejectionReason).toBeNull();
 
-    const queue = await listPendingCompanies(db);
+    const queue = await listPendingCompanies(db, new Date());
     expect(queue.map((row) => row.id)).not.toContain(company.id);
   });
 
@@ -397,9 +431,12 @@ describe("FR-047: a moderation decision outlives the company it was about", () =
 describe("FR-048: the moderation queue shows the age of each item", () => {
   it("returns the submission time, so the queue can show how long an item has waited", async () => {
     const db = testDbClient();
-    const { company } = await seedCompany(db, { moderationStatus: "pending" });
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "pending",
+    });
+    await seedCapturableHold(db, { companyId: company.id, memberId: owner.id });
 
-    const queue = await listPendingCompanies(db);
+    const queue = await listPendingCompanies(db, new Date());
     const entry = queue.find((row) => row.id === company.id);
 
     expect(entry?.createdAt).toBeInstanceOf(Date);
@@ -422,20 +459,29 @@ describe("admin company directory: filters, paging and counts", () => {
       "approved",
       "rejected",
     ] as const) {
-      await seedCompany(db, {
+      const { company, owner } = await seedCompany(db, {
         moderationStatus,
         name: `${marker} ${moderationStatus}`,
       });
+      if (moderationStatus === "pending") {
+        await seedCapturableHold(db, {
+          companyId: company.id,
+          memberId: owner.id,
+        });
+      }
     }
 
-    const rows = await listCompaniesForAdmin(db, { query: marker });
+    const rows = await listCompaniesForAdmin(db, {
+      query: marker,
+      now: new Date(),
+    });
     expect(rows.map((row) => row.moderationStatus).sort()).toEqual([
       "approved",
       "pending",
       "rejected",
     ]);
 
-    const queue = await listPendingCompanies(db);
+    const queue = await listPendingCompanies(db, new Date());
     expect(queue.filter((row) => row.name.startsWith(marker))).toHaveLength(1);
   });
 
@@ -443,26 +489,52 @@ describe("admin company directory: filters, paging and counts", () => {
     const db = testDbClient();
     const marker = `Counted${crypto.randomUUID().slice(0, 8)}`;
 
-    await seedCompany(db, { moderationStatus: "pending", name: `${marker} a` });
+    const held = await seedCompany(db, {
+      moderationStatus: "pending",
+      name: `${marker} a`,
+    });
+    await seedCapturableHold(db, {
+      companyId: held.company.id,
+      memberId: held.owner.id,
+    });
     await seedCompany(db, { moderationStatus: "pending", name: `${marker} b` });
     await seedCompany(db, {
       moderationStatus: "approved",
       name: `${marker} c`,
     });
 
-    await expect(countCompaniesForAdmin(db, { query: marker })).resolves.toBe(
-      3,
-    );
     await expect(
-      countCompaniesForAdmin(db, { query: marker, status: "pending" }),
-    ).resolves.toBe(2);
+      countCompaniesForAdmin(db, { query: marker, now: new Date() }),
+    ).resolves.toBe(3);
     await expect(
-      countCompaniesByStatus(db, { query: marker }),
-    ).resolves.toEqual({ pending: 2, approved: 1, rejected: 0 });
+      countCompaniesForAdmin(db, {
+        query: marker,
+        status: "pending",
+        now: new Date(),
+      }),
+    ).resolves.toBe(1);
+    await expect(
+      countCompaniesForAdmin(db, {
+        query: marker,
+        status: "awaiting_payment",
+        now: new Date(),
+      }),
+    ).resolves.toBe(1);
+    // FR-113: the held submission is in the queue, the unheld one waits for
+    // payment - and neither is counted twice.
+    await expect(
+      countCompaniesByStatus(db, { query: marker, now: new Date() }),
+    ).resolves.toEqual({
+      pending: 1,
+      awaiting_payment: 1,
+      approved: 1,
+      rejected: 0,
+    });
 
     const approved = await listCompaniesForAdmin(db, {
       query: marker,
       status: "approved",
+      now: new Date(),
     });
     expect(approved.map((row) => row.name)).toEqual([`${marker} c`]);
   });
@@ -481,21 +553,21 @@ describe("admin company directory: filters, paging and counts", () => {
       seeded.push(company);
     }
 
-    await expect(countCompaniesForAdmin(db, { query: marker })).resolves.toBe(
-      3,
-    );
     await expect(
-      countCompaniesForAdmin(db, { query: `${marker}ville` }),
+      countCompaniesForAdmin(db, { query: marker, now: new Date() }),
+    ).resolves.toBe(3);
+    await expect(
+      countCompaniesForAdmin(db, { query: `${marker}ville`, now: new Date() }),
     ).resolves.toBe(3);
 
     const first = await listCompaniesForAdmin(
       db,
-      { query: marker },
+      { query: marker, now: new Date() },
       { limit: 2, offset: 0 },
     );
     const second = await listCompaniesForAdmin(
       db,
-      { query: marker },
+      { query: marker, now: new Date() },
       { limit: 2, offset: 2 },
     );
 
@@ -586,5 +658,151 @@ describe("admin company detail: what the drawer can read", () => {
       "serviceNeeded",
       "status",
     ]);
+  });
+});
+
+/**
+ * FR-113 / ADR 0037: the approval captures the held price, so it cannot happen
+ * without one. The check is part of the UPDATE, which is what makes it hold
+ * against a direct call and against a hold cancelled mid-request.
+ */
+describe("FR-113: no approval without the price held on the card", () => {
+  it("FR-113: refuses to approve a pending company with nothing held", async () => {
+    const db = testDbClient();
+    const { company } = await seedCompany(db, { moderationStatus: "pending" });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null, {
+        kind: "capturable_hold",
+        now: new Date(),
+      }),
+    ).resolves.toBe(false);
+    expect((await findCompanyById(db, company.id))?.moderationStatus).toBe(
+      "pending",
+    );
+  });
+
+  it("FR-113: refuses when the only hold has lapsed", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "pending",
+    });
+    await seedCapturableHold(db, {
+      companyId: company.id,
+      memberId: owner.id,
+      captureBefore: new Date(Date.now() - 60_000),
+    });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null, {
+        kind: "capturable_hold",
+        now: new Date(),
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("FR-114: approves once the price is held", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "pending",
+    });
+    await seedCapturableHold(db, { companyId: company.id, memberId: owner.id });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null, {
+        kind: "capturable_hold",
+        now: new Date(),
+      }),
+    ).resolves.toBe(true);
+  });
+
+  it("FR-113: restoring cannot approve a pending company that skipped the queue", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "pending",
+    });
+    // Even with a hold: a pending company is approved from the queue, not
+    // restored.
+    await seedCapturableHold(db, { companyId: company.id, memberId: owner.id });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null, {
+        kind: "restorable",
+        now: new Date(),
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("FR-113: restoring a rejected company needs a paid listing or a hold", async () => {
+    const db = testDbClient();
+    const unpaid = await seedCompany(db, { moderationStatus: "rejected" });
+    await expect(
+      setCompanyModerationStatus(db, unpaid.company.id, "approved", null, {
+        kind: "restorable",
+        now: new Date(),
+      }),
+    ).resolves.toBe(false);
+
+    const held = await seedCompany(db, { moderationStatus: "rejected" });
+    await seedCapturableHold(db, {
+      companyId: held.company.id,
+      memberId: held.owner.id,
+    });
+    await expect(
+      setCompanyModerationStatus(db, held.company.id, "approved", null, {
+        kind: "restorable",
+        now: new Date(),
+      }),
+    ).resolves.toBe(true);
+  });
+
+  it("FR-113: restores a hidden company whose listing subscription is still active", async () => {
+    const db = testDbClient();
+    const { company, owner } = await seedCompany(db, {
+      moderationStatus: "rejected",
+    });
+    await db.insert(subscriptions).values({
+      plan: "listing",
+      memberId: owner.id,
+      companyId: company.id,
+      stripeCustomerId: `cus_${crypto.randomUUID()}`,
+      stripeSubscriptionId: `sub_${crypto.randomUUID()}`,
+      status: "active",
+      priceId: `price_${crypto.randomUUID()}`,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    await expect(
+      setCompanyModerationStatus(db, company.id, "approved", null, {
+        kind: "restorable",
+        now: new Date(),
+      }),
+    ).resolves.toBe(true);
+  });
+
+  it("FR-113: the admin list says per row whether the price is held", async () => {
+    const db = testDbClient();
+    const marker = `Held${crypto.randomUUID().slice(0, 8)}`;
+    const held = await seedCompany(db, {
+      moderationStatus: "pending",
+      name: `${marker} held`,
+    });
+    await seedCapturableHold(db, {
+      companyId: held.company.id,
+      memberId: held.owner.id,
+    });
+    await seedCompany(db, {
+      moderationStatus: "pending",
+      name: `${marker} unheld`,
+    });
+
+    const rows = await listCompaniesForAdmin(db, {
+      query: marker,
+      now: new Date(),
+    });
+    expect(
+      Object.fromEntries(rows.map((row) => [row.name, row.cardHeld])),
+    ).toEqual({ [`${marker} held`]: true, [`${marker} unheld`]: false });
   });
 });

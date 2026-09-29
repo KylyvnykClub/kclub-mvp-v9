@@ -15,7 +15,11 @@ import {
 import type { DbClient } from "./db";
 import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
 import type { PageParams } from "./pagination";
-import { companyIsPaidByHold, listCompanyIdsPaidByHold } from "./listing-holds";
+import {
+  companyHasCapturableHold,
+  companyIsPaidByHold,
+  listCompanyIdsPaidByHold,
+} from "./listing-holds";
 import {
   businessCategories,
   businessCategoryTranslations,
@@ -902,9 +906,42 @@ export async function listPublicPartnerSlugs(
   return rows.map((r) => r.slug);
 }
 
-export async function listPendingCompanies(db: DbClient) {
+/**
+ * The moderation queue: pending companies whose price is reserved on the card.
+ * A submission without a hold is not an application yet (FR-113, ADR 0037) -
+ * it waits under "awaiting payment" and a moderator cannot act on it.
+ */
+export function companyAwaitingReview(now: Date): SQL {
+  return and(
+    eq(companies.moderationStatus, "pending"),
+    companyHasCapturableHold(now),
+  )!;
+}
+
+/**
+ * The SQL twin of `companyListingIsPaid`: an access-granting listing
+ * subscription, or a captured hold that still covers the month. Spelled out
+ * for the same aliasing reason as `companyHasCapturableHold`.
+ */
+function companyListingPaid(now: Date): SQL {
+  const statuses = sql.join(
+    PUBLISHABLE_LISTING_STATUSES.map((status) => sql`${status}`),
+    sql`, `,
+  );
+  const at = sql`${now.toISOString()}::timestamptz`;
+  return sql`(EXISTS (SELECT 1 FROM "subscriptions" s WHERE s."company_id" = "companies"."id" AND s."status" IN (${statuses})) OR EXISTS (SELECT 1 FROM "listing_holds" lh WHERE lh."company_id" = "companies"."id" AND lh."status" = 'succeeded' AND lh."refunded_at" IS NULL AND lh."captured_at" IS NOT NULL AND lh."covers_until" > ${at}))`;
+}
+
+function awaitingPayment(now: Date): SQL {
+  return and(
+    eq(companies.moderationStatus, "pending"),
+    sql`NOT ${companyHasCapturableHold(now)}`,
+  )!;
+}
+
+export async function listPendingCompanies(db: DbClient, now: Date) {
   return db.query.companies.findMany({
-    where: eq(companies.moderationStatus, "pending"),
+    where: companyAwaitingReview(now),
     with: {
       categories: { with: { businessCategory: true } },
       owner: {
@@ -918,8 +955,14 @@ export async function listPendingCompanies(db: DbClient) {
   });
 }
 
+/**
+ * The admin filter chips. `pending` is the review queue - held companies only;
+ * `awaiting_payment` is the rest of the `pending` rows, submitted but not yet
+ * reserved on the card. Neither is a stored status of its own.
+ */
 export const COMPANY_ADMIN_STATUSES = [
   "pending",
+  "awaiting_payment",
   "approved",
   "rejected",
 ] as const;
@@ -929,6 +972,8 @@ export type CompanyAdminStatus = (typeof COMPANY_ADMIN_STATUSES)[number];
 export interface CompanyAdminFilters {
   query?: string;
   status?: CompanyAdminStatus;
+  /** Decides whether a hold is still capturable. */
+  now: Date;
 }
 
 const COMPANY_ADMIN_RELATIONS = {
@@ -959,7 +1004,11 @@ function companyAdminWhere(filters: CompanyAdminFilters): SQL | undefined {
     );
   }
 
-  if (filters.status) {
+  if (filters.status === "pending") {
+    conditions.push(companyAwaitingReview(filters.now));
+  } else if (filters.status === "awaiting_payment") {
+    conditions.push(awaitingPayment(filters.now));
+  } else if (filters.status) {
     conditions.push(eq(companies.moderationStatus, filters.status));
   }
 
@@ -976,12 +1025,18 @@ function companyAdminWhere(filters: CompanyAdminFilters): SQL | undefined {
  */
 export async function listCompaniesForAdmin(
   db: DbClient,
-  filters: CompanyAdminFilters = {},
+  filters: CompanyAdminFilters,
   page: PageParams = { limit: 50, offset: 0 },
 ) {
   return db.query.companies.findMany({
     where: companyAdminWhere(filters),
     with: COMPANY_ADMIN_RELATIONS,
+    // Per row, so a page of fifty does not load every hold in the database.
+    extras: {
+      cardHeld: sql<boolean>`${companyHasCapturableHold(filters.now)}`.as(
+        "card_held",
+      ),
+    },
     // Newest first, since the reason to open this screen is usually the
     // submission that just arrived. id breaks ties so paging stays stable.
     orderBy: [desc(companies.createdAt), desc(companies.id)],
@@ -1008,7 +1063,7 @@ export async function findCompanyForAdmin(db: DbClient, companyId: string) {
 
 export async function countCompaniesForAdmin(
   db: DbClient,
-  filters: CompanyAdminFilters = {},
+  filters: CompanyAdminFilters,
 ): Promise<number> {
   const [row] = await db
     .select({ value: count() })
@@ -1024,43 +1079,83 @@ export async function countCompaniesForAdmin(
  */
 export async function countCompaniesByStatus(
   db: DbClient,
-  filters: Omit<CompanyAdminFilters, "status"> = {},
+  filters: Omit<CompanyAdminFilters, "status">,
 ): Promise<Record<CompanyAdminStatus, number>> {
+  // Grouped by the output name: repeating the expression would bind `now`
+  // twice, and Postgres does not treat $1 and $5 as the same expression.
   const rows = await db
-    .select({ status: companies.moderationStatus, value: count() })
+    .select({
+      status: companies.moderationStatus,
+      held: sql<boolean>`${companyHasCapturableHold(filters.now)}`.as("held"),
+      value: count(),
+    })
     .from(companies)
     .where(companyAdminWhere(filters))
-    .groupBy(companies.moderationStatus);
+    .groupBy(companies.moderationStatus, sql`"held"`);
 
   const counts: Record<CompanyAdminStatus, number> = {
     pending: 0,
+    awaiting_payment: 0,
     approved: 0,
     rejected: 0,
   };
 
   for (const row of rows) {
-    counts[row.status] = row.value;
+    const key =
+      row.status === "pending" && !row.held ? "awaiting_payment" : row.status;
+    counts[key] += row.value;
   }
 
   return counts;
 }
 
 /**
+ * What must already be true for a decision to apply, checked in the UPDATE's
+ * own WHERE so no read-then-write race can slip past it.
+ *
+ * - `capturable_hold`: approving an application captures the price held on
+ *   the card, so there must be one (FR-113, ADR 0037).
+ * - `restorable`: bringing back a rejected or hidden company - only when its
+ *   listing is still paid for, or a hold is on the card to be captured.
+ *   Otherwise restoring would be an approval nobody paid for.
+ */
+export type ModerationPrecondition =
+  { kind: "capturable_hold"; now: Date } | { kind: "restorable"; now: Date };
+
+/**
  * Move a company to a moderation outcome, once.
  *
- * Returns false when the company was already in that status, so the caller can
- * stop rather than repeat the decision's side effects. A rejection may still
- * cancel a subscription and refund an invoice - for a company that paid under
- * the old order (ADR 0019, superseded by ADR 0036) - and a double-clicked
- * reject must not do either of those twice. The guard is in the WHERE clause
- * rather than in a prior read, so two concurrent requests cannot both pass it.
+ * Returns false when the company was already in that status - or when the
+ * precondition does not hold - so the caller can stop rather than repeat the
+ * decision's side effects. A rejection may still cancel a subscription and
+ * refund an invoice - for a company that paid under the old order (ADR 0019,
+ * superseded by ADR 0036) - and a double-clicked reject must not do either of
+ * those twice. The guard is in the WHERE clause rather than in a prior read,
+ * so two concurrent requests cannot both pass it.
  */
 export async function setCompanyModerationStatus(
   db: DbClient,
   companyId: string,
   status: "approved" | "rejected",
   reason: string | null,
+  precondition?: ModerationPrecondition,
 ): Promise<boolean> {
+  const conditions: SQL[] = [
+    eq(companies.id, companyId),
+    ne(companies.moderationStatus, status),
+  ];
+  if (precondition?.kind === "capturable_hold") {
+    conditions.push(companyHasCapturableHold(precondition.now));
+  } else if (precondition?.kind === "restorable") {
+    conditions.push(eq(companies.moderationStatus, "rejected"));
+    conditions.push(
+      or(
+        companyHasCapturableHold(precondition.now),
+        companyListingPaid(precondition.now),
+      )!,
+    );
+  }
+
   const changed = await db
     .update(companies)
     .set({
@@ -1068,9 +1163,7 @@ export async function setCompanyModerationStatus(
       rejectionReason: reason,
       updatedAt: new Date(),
     })
-    .where(
-      and(eq(companies.id, companyId), ne(companies.moderationStatus, status)),
-    )
+    .where(and(...conditions))
     .returning({ id: companies.id });
 
   return changed.length > 0;
