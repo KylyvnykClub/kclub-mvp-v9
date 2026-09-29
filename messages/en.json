@@ -153,8 +153,11 @@
       "phone_taken": "This phone number is already registered.",
       "email_taken": "That address cannot be used. Try a different one.",
       "failed": "The account could not be created. Please try again.",
-      "throttled": "Too many attempts from here. Try again in an hour."
-    }
+      "throttled": "Too many attempts from here. Try again in an hour.",
+      "phone_invalid": "This is not a phone number we can use. Check the country code to the left of the number.",
+      "field_invalid": "Check the field “{field}” and try again."
+    },
+    "passwordsNeeded": "Enter a password of at least 8 characters and repeat it to continue."
   },
   "dashboard": {
     "title": "Dashboard",
