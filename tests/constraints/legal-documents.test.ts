@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import { describe, expect, it } from "vitest";
@@ -16,6 +16,9 @@ const LEGAL_DOCUMENT_IDS = [
   "disclaimer",
   "contact-us",
 ] as const;
+
+/** Every locale has its own file; uk is being translated from ru. */
+const LOCALE_SUFFIXES = [".en.mdx", ".ru.mdx", ".uk.mdx"] as const;
 
 const CORRUPTION_PATTERNS = [
   /Ð|Ñ|�/,
@@ -38,7 +41,7 @@ describe("constraint: legal document localization (FR-093)", () => {
 
   it("keeps the Russian source documents non-authoritative", () => {
     for (const id of LEGAL_DOCUMENT_IDS) {
-      const file = readFileSync(join(LEGAL_DIR, `${id}.mdx`), "utf-8");
+      const file = readFileSync(join(LEGAL_DIR, `${id}.ru.mdx`), "utf-8");
       const parsed = matter(file);
 
       expect(parsed.data.authoritative, id).toBe(false);
@@ -48,7 +51,9 @@ describe("constraint: legal document localization (FR-093)", () => {
 
   it("does not contain mojibake or extracted Word metadata", () => {
     for (const id of LEGAL_DOCUMENT_IDS) {
-      for (const suffix of [".mdx", ".en.mdx"]) {
+      for (const suffix of LOCALE_SUFFIXES.filter((suffix) =>
+        existsSync(join(LEGAL_DIR, `${id}${suffix}`)),
+      )) {
         const file = readFileSync(join(LEGAL_DIR, `${id}${suffix}`), "utf-8");
         for (const pattern of CORRUPTION_PATTERNS) {
           expect(file, `${id}${suffix} contains ${pattern}`).not.toMatch(
@@ -72,7 +77,9 @@ describe("constraint: legal document localization (FR-093)", () => {
 
 describe("constraint: legal documents share one formatted shape", () => {
   const documents = LEGAL_DOCUMENT_IDS.flatMap((id) =>
-    [".mdx", ".en.mdx"].map((suffix) => ({
+    LOCALE_SUFFIXES.filter((suffix) =>
+      existsSync(join(LEGAL_DIR, `${id}${suffix}`)),
+    ).map((suffix) => ({
       name: `${id}${suffix}`,
       parsed: matter(readFileSync(join(LEGAL_DIR, `${id}${suffix}`), "utf-8")),
     })),
@@ -91,6 +98,7 @@ describe("constraint: legal documents share one formatted shape", () => {
       /^## KYLYVNYK CLUB\.?$/m,
       /^(Effective Date|Version|Platform Operator|Managed by)\b/m,
       /^(Дата вступления|Версия|Оператор платформы|Управляется)/m,
+      /^(Дата набрання|Версія|Оператор платформи)/m,
       /^kylyvnykclub@gmail\.com$/m,
     ];
     for (const { name, parsed } of documents) {
@@ -123,6 +131,26 @@ describe("constraint: legal documents share one formatted shape", () => {
         parsed.content,
         `${name} has a blank line inside a list`,
       ).not.toMatch(/^- .*\n\n- /m);
+    }
+  });
+});
+
+describe("constraint: a locale is never served another locale's translation (FR-093)", () => {
+  it("serves Ukrainian or the authoritative English on /uk, never the Russian text", async () => {
+    const { getLegalDocument } = await import("@/lib/mdx");
+    for (const id of LEGAL_DOCUMENT_IDS) {
+      const doc = await getLegalDocument(id, "uk");
+      expect(doc, id).not.toBeNull();
+      // ы, э, ъ, ё exist in Russian and not in Ukrainian.
+      expect(doc!.content, `${id} on /uk is Russian`).not.toMatch(/[ыэъё]/i);
+    }
+  });
+
+  it("serves the Russian text on /ru", async () => {
+    const { getLegalDocument } = await import("@/lib/mdx");
+    for (const id of LEGAL_DOCUMENT_IDS) {
+      const doc = await getLegalDocument(id, "ru");
+      expect(doc!.content, id).toMatch(/[ыэ]/i);
     }
   });
 });
