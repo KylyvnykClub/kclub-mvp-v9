@@ -45,24 +45,22 @@ export const companyDetailsSchema = z.object({
   legalName: z.string().max(255).optional(),
   taxId: z.string().max(50).optional(),
   website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  description: multiline(z.string().max(1000).optional()),
+  // Owner decision 2026-09-29: an application says what the business offers
+  // members and how to reach it - the catalogue card is empty without them.
+  description: multiline(z.string().trim().min(20).max(1000)),
   specializationDescription: multiline(
     z.string().min(2, "Specialization description is required").max(500),
   ),
   logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   // Since the onboarding rework (ADR 0024) the offer and contacts sit with the
   // rest of the business details.
-  discount: z.string().max(255).optional(),
+  discount: z.string().trim().min(1).max(255),
   // FR-117: "special privileges" for club members, beyond or instead of a
   // discount. A switch, and optionally what the privileges are.
   specialPrivileges: z.enum(["true", "false"]).optional(),
   specialPrivilegesNote: multiline(z.string().max(500).optional()),
-  contactEmail: z
-    .string()
-    .email("Must be a valid email")
-    .optional()
-    .or(z.literal("")),
-  contactPhone: z.string().max(50).optional(),
+  contactEmail: z.string().trim().min(1).email("Must be a valid email"),
+  contactPhone: z.string().trim().min(5).max(50),
 });
 
 export const companyLocationSchema = z
@@ -124,6 +122,12 @@ export const companyLocationSchema = z
  */
 export const companyMediaSchema = z.object({
   logoStaged: z.enum(["true", ""]).optional(),
+  /**
+   * The partner application uploads its logo with the submit rather than
+   * staging it. Set by the server from the file actually posted, never
+   * trusted from the browser.
+   */
+  logoAttached: z.enum(["true", ""]).optional(),
   galleryImageIds: z
     .string()
     .max(400)
@@ -209,6 +213,10 @@ export function describeCompanyIssue(error: z.ZodError): CompanyFormIssue {
     case "invalid_type":
       return { code: "required", field };
     case "too_small":
+      // min(1) is how this schema spells "required" for a text field.
+      if (issue.origin === "string" && Number(issue.minimum) === 1) {
+        return { code: "required", field };
+      }
       return issue.origin === "array"
         ? { code: "tooFew", field, limit: Number(issue.minimum) }
         : { code: "tooShort", field, limit: Number(issue.minimum) };
@@ -230,6 +238,27 @@ export function describeCompanyIssue(error: z.ZodError): CompanyFormIssue {
 export const registerCompanySchema = companyDetailsSchema
   .extend(companyLocationSchema.shape)
   .extend(companyMediaSchema.shape);
+
+/**
+ * What a submission must satisfy: the fields, plus a logo from one of the
+ * three places a logo can come from. Separate from `registerCompanySchema`
+ * because a refined object cannot be made `.partial()` for the draft.
+ */
+export const submitCompanySchema = registerCompanySchema.superRefine(
+  (value, context) => {
+    const hasLogo =
+      value.logoStaged === "true" ||
+      value.logoAttached === "true" ||
+      Boolean(value.logoUrl);
+    if (!hasLogo) {
+      context.addIssue({
+        code: "custom",
+        path: ["logoStaged"],
+        message: "Logo is required",
+      });
+    }
+  },
+);
 
 /**
  * A draft read back from the database is input, not state we control: it was

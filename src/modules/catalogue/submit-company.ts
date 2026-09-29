@@ -11,7 +11,7 @@ import { deleteCompanyDraft } from "@/data/company-drafts";
 import { companyLogoServePath } from "@/lib/company-image-path";
 import {
   describeCompanyIssue,
-  registerCompanySchema,
+  submitCompanySchema,
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { parseDraftImageIds } from "@/lib/draft-media-path";
@@ -52,7 +52,7 @@ export async function submitCompany(
   formData: FormData,
 ): Promise<SubmitCompanyResult> {
   try {
-    const parsed = registerCompanySchema.safeParse(
+    const parsed = submitCompanySchema.safeParse(
       Object.fromEntries(formData.entries()),
     );
 

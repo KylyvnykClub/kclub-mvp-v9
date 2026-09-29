@@ -12,7 +12,7 @@ import {
 import {
   COMPANY_FIELD_LABEL_KEYS,
   describeCompanyIssue,
-  registerCompanySchema,
+  submitCompanySchema,
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,7 @@ export function CompanyRegistrationForm() {
       // The same schema the Server Action parses with, so a submission cannot
       // pass here and fail on the wire (CLAUDE.md). It also means the message
       // names the field without a round trip.
-      const parsed = registerCompanySchema.safeParse(
+      const parsed = submitCompanySchema.safeParse(
         Object.fromEntries(formData.entries()),
       );
       if (!parsed.success) {
