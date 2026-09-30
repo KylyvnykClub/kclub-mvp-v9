@@ -5,6 +5,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
+import { db } from "@/data/db";
+import {
+  loadMembershipAccess,
+  memberCanBecomePartner,
+} from "@/data/membership-access";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import { MONTHLY_PRICE_MINOR, formatPrice } from "@/domain/pricing";
 import { localeAlternates } from "@/lib/seo";
@@ -47,6 +52,20 @@ export default async function PricingPage({
   const current = await getCurrentMember();
   const actor = current?.member ? buildActor(current.member) : null;
 
+  // Where each button leads depends on whether this member is in the club
+  // yet. An unpaid member used to be sent to dashboard pages, which the dues
+  // gate turned into the $4.99 screen - whichever plan they had picked.
+  const unpaid =
+    current?.member && !(actor && staffAtLeast(actor, "staff_support"))
+      ? (await loadMembershipAccess(db, current.member, new Date())) ===
+        "awaiting_payment"
+      : false;
+  const mayApplyAsBusiness =
+    unpaid && current?.member
+      ? current.member.duesKind === "partner" ||
+        (await memberCanBecomePartner(db, current.member.id))
+      : false;
+
   const plans = [
     {
       key: "membership" as const,
@@ -61,9 +80,13 @@ export default async function PricingPage({
       name: t("vipName"),
       description: t("vipDescription"),
       cta: t("vipCta"),
-      href: current?.member
-        ? `/${locale}/dashboard/profile`
-        : `/${locale}/register`,
+      // VIP is added on top of membership (ADR 0033): an unpaid member starts
+      // with the dues screen, which says so; a paid one adds it in Billing.
+      href: !current?.member
+        ? `/${locale}/register`
+        : unpaid
+          ? `/${locale}/membership`
+          : `/${locale}/dashboard/profile?tab=billing`,
       featured: false,
     },
     {
@@ -75,9 +98,14 @@ export default async function PricingPage({
       // partner application and not to member sign-up (FR-109). A member who
       // is already in the club submits from the dashboard, which is where
       // their draft lives.
-      href: current?.member
-        ? `/${locale}/dashboard/company/new`
-        : `/${locale}/partner`,
+      //
+      // A member who registered but never paid applies as a business on
+      // /partner, where the listing - not the dues - is what they pay for.
+      href: !current?.member
+        ? `/${locale}/partner`
+        : mayApplyAsBusiness
+          ? `/${locale}/partner`
+          : `/${locale}/dashboard/company/new`,
       featured: false,
     },
   ];

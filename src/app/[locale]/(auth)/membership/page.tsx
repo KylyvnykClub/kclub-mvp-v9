@@ -15,7 +15,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import { loadMembershipAccess } from "@/data/membership-access";
+import {
+  loadMembershipAccess,
+  memberCanBecomePartner,
+} from "@/data/membership-access";
 import { listCompaniesByOwner } from "@/data/companies";
 import { SignOutButton } from "./_components/sign-out-button";
 import { PartnerStanding } from "./_components/partner-standing";
@@ -133,6 +136,12 @@ export default async function MembershipDuesPage({
   // told plainly and the button is not offered, rather than being handed a
   // button that throws on the one screen they are allowed to see.
   const sellable = await checkoutPriceIsConfigured(db, "membership");
+  // A business, not a club member: the listing is its plan (ADR 0036). Only
+  // offered to an account that has never been in the club (see /partner).
+  const mayApplyAsBusiness = await memberCanBecomePartner(
+    db,
+    current.member.id,
+  );
 
   return (
     <AuthShell
@@ -158,9 +167,30 @@ export default async function MembershipDuesPage({
             <li>{t("include2")}</li>
             <li>{t("include3")}</li>
           </ul>
+          {/* VIP is added on top of the dues (ADR 0033); the pricing page's VIP
+              button lands here, so this screen says why it asks for {price}. */}
           <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
+            {t("vipNote", {
+              price,
+              vipPrice: monthlyPrice("vip", locale),
+            })}
+          </p>
+          <p className="text-sm font-light leading-6 text-muted-foreground">
             {t("sponsoredNote")}
           </p>
+          {mayApplyAsBusiness && (
+            <p className="text-sm font-light leading-6 text-muted-foreground">
+              {t("businessNote", {
+                listingPrice: monthlyPrice("listing", locale),
+              })}{" "}
+              <Link
+                href={`/${locale}/partner`}
+                className="font-bold text-foreground underline hover:text-accent-ink"
+              >
+                {t("businessLink")}
+              </Link>
+            </p>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
           {/* The redirect back from Stripe grants nothing: access appears when

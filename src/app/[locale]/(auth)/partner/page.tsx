@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { listCompaniesByOwner } from "@/data/companies";
+import { memberCanBecomePartner } from "@/data/membership-access";
 import { env } from "@/env";
 import { getLegalDocument } from "@/lib/mdx";
 import { monthlyPrice } from "@/domain/pricing";
@@ -50,7 +51,13 @@ export default async function PartnerApplicationPage({
   const current = await getCurrentMember();
 
   if (current?.member) {
-    if (current.member.duesKind !== "partner") {
+    // A member in the club registers a company from the dashboard. One who
+    // registered but never paid dues may apply here instead, as a business:
+    // the application makes theirs a partner account (see the action).
+    if (
+      current.member.duesKind !== "partner" &&
+      !(await memberCanBecomePartner(db, current.member.id))
+    ) {
       redirect(`/${locale}/dashboard/company/new`);
     }
 

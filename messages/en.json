@@ -1751,7 +1751,10 @@
     "signOut": "Sign out",
     "cancelAnytime": "Cancel any time from the billing portal. Payment is taken by Stripe; we never see your card.",
     "sponsoredNote": "Joined through the club's link? You are not asked to pay — sign in and you are in.",
-    "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later."
+    "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later.",
+    "vipNote": "VIP ({vipPrice} a month) is added on top of membership: membership first at {price}, then VIP in your account, under Billing.",
+    "businessNote": "Here for a business that only wants to be in the catalogue? A partner pays for the listing, not the dues — {listingPrice} a month.",
+    "businessLink": "Apply as a partner"
   },
   "pricing": {
     "title": "Plans and prices",
@@ -1762,7 +1765,7 @@
     "membershipDescription": "Being in the club: your card, the partner catalogue and every member discount.",
     "membershipCta": "Join the club",
     "vipName": "VIP membership",
-    "vipDescription": "Everything membership has, plus sending client introductions and priority support.",
+    "vipDescription": "An add-on to membership: everything membership gives, plus client referrals and priority support.",
     "vipCta": "Upgrade to VIP",
     "listingName": "Partner listing",
     "listingDescription": "Your business published in the catalogue, per company, after moderation approves it.",
