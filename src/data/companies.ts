@@ -19,7 +19,6 @@ import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
 import type { PageParams } from "./pagination";
 import {
   companyHasCapturableHold,
-  companyIsPaidByHold,
   listCompanyIdsPaidByHold,
 } from "./listing-holds";
 import {
@@ -503,11 +502,17 @@ export async function listCompanyIdsWithPaidListing(
       .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES)),
     listCompanyIdsPaidByHold(db, now),
     // ADR 0040: a listing waived by the owner's partner link is paid for as
-    // far as publication is concerned. Approval is still checked by readers.
+    // far as publication is concerned - once approved, which is all any
+    // reader of this list acts on.
     db
       .select({ id: companies.id })
       .from(companies)
-      .where(isNotNull(companies.listingWaivedAt)),
+      .where(
+        and(
+          isNotNull(companies.listingWaivedAt),
+          eq(companies.moderationStatus, "approved"),
+        ),
+      ),
   ]);
 
   const ids = new Set([...heldIds, ...waived.map((row) => row.id)]);
@@ -517,37 +522,22 @@ export async function listCompanyIdsWithPaidListing(
   return [...ids];
 }
 
-/** The same rule as `listCompanyIdsWithPaidListing`, for one company. */
+/**
+ * The same rule as `listCompanyIdsWithPaidListing`, for one company - one
+ * statement over the same `companyListingPaid` predicate the restore guard
+ * uses, so the two cannot drift.
+ */
 export async function companyListingIsPaid(
   db: DbClient,
   companyId: string,
   now: Date,
 ): Promise<boolean> {
-  const [[subscription], [waived]] = await Promise.all([
-    db
-      .select({ id: subscriptions.id })
-      .from(subscriptions)
-      .where(
-        and(
-          eq(subscriptions.companyId, companyId),
-          inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES),
-        ),
-      )
-      .limit(1),
-    db
-      .select({ id: companies.id })
-      .from(companies)
-      .where(
-        and(eq(companies.id, companyId), isNotNull(companies.listingWaivedAt)),
-      )
-      .limit(1),
-  ]);
-
-  return (
-    subscription !== undefined ||
-    waived !== undefined ||
-    companyIsPaidByHold(db, companyId, now)
-  );
+  const [row] = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(and(eq(companies.id, companyId), companyListingPaid(now)))
+    .limit(1);
+  return row !== undefined;
 }
 
 export interface PartnerFilters {

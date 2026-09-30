@@ -76,6 +76,7 @@ import {
   type CompanyDraftData,
   type CompanyFormIssue,
 } from "@/lib/company-form";
+import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
@@ -142,7 +143,13 @@ export async function registerCompanyAction(
   // Only the partner application uploads a logo with the submit; here the
   // logo is staged, and the flag is never the browser's to set.
   formData.delete("logoAttached");
-  return submitCompany(db, auth.member.id, formData);
+  const result = await submitCompany(db, auth.member.id, formData);
+  // ADR 0040: a member who followed the partner link and was sent here from
+  // /partner keeps the free listing.
+  if (result.success && result.companyId) {
+    await applyPartnerLinkWaiver(db, auth.member.id, result.companyId);
+  }
+  return result;
 }
 
 export type CompanyDraftState = { success: boolean; issue?: CompanyFormIssue };

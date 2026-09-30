@@ -4,6 +4,7 @@ import type { Db, DbClient } from "@/data/db.js";
 import {
   findCompanyById,
   insertCompany,
+  companyListingIsPaid,
   listCompanyIdsWithPaidListing,
   listPendingCompanies,
   setCompanyModerationStatus,
@@ -153,7 +154,7 @@ describe("FR-113, FR-044, FR-110: a waived listing stands in for payment", () =>
     ).resolves.toBe(true);
   });
 
-  it("FR-044: counts as a paid listing for publication", async () => {
+  it("FR-044: counts as a paid listing for publication once approved", async () => {
     const link = await rotateJoinLink(tx(), "partner", secret(), null);
     const { companyId } = await seedPartnerApplication();
     expect(await listCompanyIdsWithPaidListing(db(), new Date())).not.toContain(
@@ -161,9 +162,19 @@ describe("FR-113, FR-044, FR-110: a waived listing stands in for payment", () =>
     );
 
     await waiveListingByPartnerLink(db(), companyId, link.id, new Date());
+    // Not before approval: nothing unapproved is published anyway, and the
+    // admin's "paid" badge must not claim it.
+    expect(await listCompanyIdsWithPaidListing(db(), new Date())).not.toContain(
+      companyId,
+    );
+
+    await setCompanyModerationStatus(db(), companyId, "approved", null);
     expect(await listCompanyIdsWithPaidListing(db(), new Date())).toContain(
       companyId,
     );
+    await expect(
+      companyListingIsPaid(db(), companyId, new Date()),
+    ).resolves.toBe(true);
   });
 
   it("FR-110: opens the club for its partner only once approved", async () => {

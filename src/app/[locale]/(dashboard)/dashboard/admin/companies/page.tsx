@@ -229,13 +229,15 @@ export default async function AdminCompaniesPage({
                       paid for, which is what makes it live.
                     */}
                     <TableCell className="hidden sm:table-cell">
-                      {company.paid ? (
-                        <StatusBadge tone="positive" label={t("listingPaid")} />
-                      ) : company.listingWaivedAt ? (
+                      {/* ADR 0040 first: a waived listing counts as paid,
+                          and "Listing paid" would hide that it is free. */}
+                      {company.listingWaivedAt ? (
                         <StatusBadge
                           tone="positive"
                           label={t("listingWaived")}
                         />
+                      ) : company.paid ? (
+                        <StatusBadge tone="positive" label={t("listingPaid")} />
                       ) : company.cardHeld ? (
                         <StatusBadge tone="warning" label={t("holdReserved")} />
                       ) : (

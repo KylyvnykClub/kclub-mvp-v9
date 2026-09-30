@@ -1058,7 +1058,8 @@
     "subscribeListing": "Subscribe Listing ($19.99/mo)",
     "portalFailedAlert": "Failed to open portal",
     "listingAwaitingReview": "This application is being reviewed. Nothing is charged until it is approved.",
-    "listingRejected": "This application was not approved, so there is nothing to pay for."
+    "listingRejected": "This application was not approved, so there is nothing to pay for.",
+    "waivedListing": "The listing is free — the company applied through the club's partner link."
   },
   "catalogue": {
     "metaTitle": "Partner Catalogue | KCLUB",
@@ -1716,7 +1717,8 @@
       "memberPurpose": "Whoever registers through it joins without membership dues.",
       "partnerTitle": "Business partner link",
       "partnerPurpose": "A company that applies through it is listed free: no card hold, straight to review, and live in the catalogue after approval without payment.",
-      "partnerNoneDescription": "There is no active link, so every partner pays for the listing."
+      "partnerNoneDescription": "There is no active link, so every partner pays for the listing.",
+      "partnerNoneBody": "Create a link when the club wants to list a business for free."
     }
   },
   "sessions": {

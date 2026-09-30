@@ -145,15 +145,21 @@ export function CompanyList({
               {isActive ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    {t("activeListing")}
+                    {company.listingWaivedAt
+                      ? t("waivedListing")
+                      : t("activeListing")}
                   </p>
-                  <Button
-                    onClick={handlePortal}
-                    disabled={isPending}
-                    variant="outline"
-                  >
-                    {isPending ? t("loading") : t("manageButton")}
-                  </Button>
+                  {/* ADR 0040: a waived listing has no Stripe billing to
+                      manage - the portal would fail for want of a customer. */}
+                  {!company.listingWaivedAt && (
+                    <Button
+                      onClick={handlePortal}
+                      disabled={isPending}
+                      variant="outline"
+                    >
+                      {isPending ? t("loading") : t("manageButton")}
+                    </Button>
+                  )}
                 </div>
               ) : (
                 // ADR 0037: the same reserve → approve → capture as a partner

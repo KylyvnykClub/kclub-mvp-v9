@@ -245,8 +245,12 @@ export async function registerMemberFromForm(
       // browser would attach to the next registration from this machine.
       cookieStore.set(PENDING_IDENTITY_COOKIE, "", { path: "/", maxAge: 0 });
       // Spent for the same reason: a join cookie left on the browser would
-      // waive dues for the next registration from this machine too.
-      cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
+      // waive dues for the next registration from this machine too. A partner
+      // link's cookie is kept: it waives the application, which is filed after
+      // the account exists (and again on a retry), and is spent there.
+      if (joinLink?.kind !== "partner") {
+        cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
+      }
 
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,

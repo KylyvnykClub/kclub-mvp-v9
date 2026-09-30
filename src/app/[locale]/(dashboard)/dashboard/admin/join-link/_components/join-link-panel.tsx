@@ -109,7 +109,9 @@ export function JoinLinkPanel({
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">{t("noneBody")}</p>
+          <p className="text-sm text-muted-foreground">
+            {kind === "member" ? t("noneBody") : t("partnerNoneBody")}
+          </p>
         )}
       </CardContent>
       <CardFooter className="flex flex-wrap gap-3">
