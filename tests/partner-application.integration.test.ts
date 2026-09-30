@@ -98,8 +98,12 @@ function application(
   const values: Record<string, string> = {
     name: `Applicant ${crypto.randomUUID().slice(0, 8)}`,
     specializationDescription: "Roasting, tasting and wholesale supply.",
-    description: "A coffee roastery.",
+    description: "A coffee roastery with a tasting room.",
     discount: "15% for KCLUB members",
+    contactEmail: "hello@roastery.example",
+    contactPhone: "+380501234567",
+    // As the partner action sets it once a logo file came with the submit.
+    logoAttached: "true",
     businessCategoryIds: categoryIds.join(","),
     registrationCountryCode: COUNTRY.code,
     serviceCountryCodes: COUNTRY.code,

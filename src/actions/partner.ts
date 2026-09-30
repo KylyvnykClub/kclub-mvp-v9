@@ -7,7 +7,7 @@ import { assertCan } from "@/domain/authorization";
 import type { RegisterErrorCode } from "@/domain/registration";
 import {
   describeCompanyIssue,
-  registerCompanySchema,
+  submitCompanySchema,
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import {
@@ -47,6 +47,14 @@ export async function registerPartnerAction(
   _previous: PartnerApplicationState,
   formData: FormData,
 ): Promise<PartnerApplicationState> {
+  // The logo rides with the submit (see the form); whether one arrived is
+  // read from the request itself, not from a field the browser could set.
+  const logoFile = formData.get("logoFile");
+  formData.set(
+    "logoAttached",
+    logoFile instanceof File && logoFile.size > 0 ? "true" : "",
+  );
+
   // Somebody already signed in is filing an application, not registering. This
   // is the path a partner takes whose account exists because an earlier
   // attempt created it and then the application half failed.
@@ -69,7 +77,7 @@ export async function registerPartnerAction(
   // need the database - the category is known and permitted, the city belongs
   // to the country - still run inside it, and a failure there leaves an
   // account that this action's signed-in branch lets them finish from.
-  const shape = registerCompanySchema.safeParse(
+  const shape = submitCompanySchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!shape.success) {

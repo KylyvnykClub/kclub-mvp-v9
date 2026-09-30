@@ -232,7 +232,7 @@
     "logoRemove": "Remove logo",
     "logoHint": "Shown whole, never cropped. For a sharp logo, 1000px or more on the long side; a transparent PNG works best. JPEG, PNG, WebP or GIF, up to 5MB.",
     "onboardingMediaSection": "Logo and photos",
-    "onboardingMediaNote": "Optional. You can add or change these later from My Companies.",
+    "onboardingMediaNote": "A logo is required. Photos are optional and can be added or changed later in My companies.",
     "noLogoYet": "No logo yet",
     "bioLabel": "Bio",
     "bioPlaceholder": "Tell us about yourself...",
@@ -1232,7 +1232,9 @@
     "specialPrivilegesLabel": "Special privileges",
     "specialPrivilegesNoteLabel": "Which privileges (optional)",
     "specialPrivilegesNotePlaceholder": "e.g. Priority booking and a welcome gift for KCLUB members",
-    "specialPrivilegesOn": "Offered"
+    "specialPrivilegesOn": "Offered",
+    "logoSectionLabel": "Logo",
+    "galleryLabel": "Photo gallery"
   },
   "admin": {
     "nav": {

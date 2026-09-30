@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslations } from "next-intl";
 import { useFormStatus } from "react-dom";
 
@@ -15,7 +21,7 @@ import {
 import {
   COMPANY_FIELD_LABEL_KEYS,
   describeCompanyIssue,
-  registerCompanySchema,
+  submitCompanySchema,
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { Button } from "@/components/ui/button";
@@ -88,7 +94,7 @@ export function CompanyRegistrationForm() {
       // The same schema the Server Action parses with, so a submission cannot
       // pass here and fail on the wire (CLAUDE.md). It also means the message
       // names the field without a round trip.
-      const parsed = registerCompanySchema.safeParse(
+      const parsed = submitCompanySchema.safeParse(
         Object.fromEntries(formData.entries()),
       );
       if (!parsed.success) {
@@ -192,7 +198,18 @@ export function CompanyRegistrationForm() {
   const stagedImageIds = parseDraftImageIds(values.galleryImageIds);
 
   return (
-    <form action={action} className="space-y-8">
+    // Submitted by hand rather than through `action`: React 19 resets a form
+    // after its action returns, and the reset event makes each Radix checkbox
+    // drop back to unchecked - silently clearing the chosen subcategory after
+    // any refusal.
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        startTransition(() => action(formData));
+      }}
+      className="space-y-8"
+    >
       {issue && (
         <p
           role="alert"

@@ -139,6 +139,9 @@ export async function registerCompanyAction(
   // The work is in `submitCompany`, shared with the partner application
   // (FR-109). What belongs here is the one thing that form does differently:
   // the owner is whoever is signed in.
+  // Only the partner application uploads a logo with the submit; here the
+  // logo is staged, and the flag is never the browser's to set.
+  formData.delete("logoAttached");
   return submitCompany(db, auth.member.id, formData);
 }
 

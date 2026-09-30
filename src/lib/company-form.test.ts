@@ -6,6 +6,8 @@ import {
   companyLocationSchema,
   companyMediaSchema,
   registerCompanySchema,
+  describeCompanyIssue,
+  submitCompanySchema,
 } from "./company-form";
 
 /**
@@ -21,6 +23,10 @@ import {
 const DETAILS = {
   name: "Acme Coffee",
   specializationDescription: "Coffee roasting and tasting sessions",
+  description: "A roastery with a tasting room in the city centre.",
+  discount: "15% for members",
+  contactEmail: "hello@acme.example",
+  contactPhone: "+380501234567",
 };
 const LOCATION = {
   businessCategoryIds: "7,12",
@@ -302,5 +308,68 @@ describe("FR-117: special privileges on the application", () => {
     });
     expect(draft.specialPrivileges).toBe("true");
     expect(draft.specialPrivilegesNote).toBe("Gift");
+  });
+});
+
+describe("company applications carry the details a catalogue card needs", () => {
+  const COMPLETE = { ...DETAILS, ...LOCATION, logoStaged: "true" };
+
+  it("accepts a complete application with a staged logo", () => {
+    expect(submitCompanySchema.safeParse(COMPLETE).success).toBe(true);
+  });
+
+  it("accepts the partner application's uploaded logo instead of a staged one", () => {
+    expect(
+      submitCompanySchema.safeParse({
+        ...COMPLETE,
+        logoStaged: "",
+        logoAttached: "true",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("refuses an application without a logo, naming the logo field", () => {
+    const parsed = submitCompanySchema.safeParse({
+      ...COMPLETE,
+      logoStaged: "",
+    });
+    expect(parsed.success).toBe(false);
+    expect(describeCompanyIssue(parsed.error!)).toEqual({
+      code: "required",
+      field: "logoStaged",
+    });
+  });
+
+  it.each([
+    ["discount", ""],
+    ["contactEmail", ""],
+    ["contactPhone", ""],
+  ])("refuses an empty %s as a required field", (field, value) => {
+    const parsed = submitCompanySchema.safeParse({
+      ...COMPLETE,
+      [field]: value,
+    });
+    expect(parsed.success).toBe(false);
+    expect(describeCompanyIssue(parsed.error!).field).toBe(field);
+  });
+
+  it("refuses a description shorter than 20 characters", () => {
+    const parsed = submitCompanySchema.safeParse({
+      ...COMPLETE,
+      description: "Coffee",
+    });
+    expect(describeCompanyIssue(parsed.error!)).toEqual({
+      code: "tooShort",
+      field: "description",
+      limit: 20,
+    });
+  });
+
+  it("refuses a contact email that is not an address", () => {
+    const parsed = submitCompanySchema.safeParse({
+      ...COMPLETE,
+      contactEmail: "not-an-email",
+    });
+    expect(describeCompanyIssue(parsed.error!).field).toBe("contactEmail");
   });
 });

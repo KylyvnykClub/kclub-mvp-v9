@@ -232,7 +232,7 @@
     "logoRemove": "Удалить логотип",
     "logoHint": "Показываем целиком, без обрезки. Для чёткости — от 1000 px по длинной стороне; лучше всего PNG с прозрачным фоном. JPEG, PNG, WebP или GIF, до 5МБ.",
     "onboardingMediaSection": "Логотип и фото",
-    "onboardingMediaNote": "Необязательно. Добавить или изменить можно позже в разделе «Мои компании».",
+    "onboardingMediaNote": "Логотип обязателен. Фото — по желанию, их можно добавить или изменить позже в разделе «Мои компании».",
     "noLogoYet": "Логотипа пока нет",
     "bioLabel": "О себе",
     "bioPlaceholder": "Расскажите о себе...",
@@ -1232,7 +1232,9 @@
     "specialPrivilegesLabel": "Особые привилегии",
     "specialPrivilegesNoteLabel": "Какие именно (по желанию)",
     "specialPrivilegesNotePlaceholder": "напр. Приоритетная запись и приветственный подарок для участников KCLUB",
-    "specialPrivilegesOn": "Предоставляются"
+    "specialPrivilegesOn": "Предоставляются",
+    "logoSectionLabel": "Логотип",
+    "galleryLabel": "Фотогалерея"
   },
   "admin": {
     "nav": {
