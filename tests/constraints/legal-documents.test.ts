@@ -17,7 +17,7 @@ const LEGAL_DOCUMENT_IDS = [
   "contact-us",
 ] as const;
 
-/** Every locale has its own file; uk is being translated from ru. */
+/** Every document exists in every locale; English is authoritative. */
 const LOCALE_SUFFIXES = [".en.mdx", ".ru.mdx", ".uk.mdx"] as const;
 
 const CORRUPTION_PATTERNS = [
@@ -119,7 +119,7 @@ describe("constraint: legal documents share one formatted shape", () => {
       for (const section of sections) {
         const heading = section.split("\n")[0] ?? "";
         expect(heading, `${name}: ${heading}`).toMatch(
-          /^## (\d+\.(?!\d)|IMPORTANT NOTICE|ВАЖНОЕ УВЕДОМЛЕНИЕ)/,
+          /^## (\d+\.(?!\d)|IMPORTANT NOTICE|ВАЖНОЕ УВЕДОМЛЕНИЕ|ВАЖЛИВЕ ПОВІДОМЛЕННЯ)/,
         );
       }
     }
@@ -136,13 +136,15 @@ describe("constraint: legal documents share one formatted shape", () => {
 });
 
 describe("constraint: a locale is never served another locale's translation (FR-093)", () => {
-  it("serves Ukrainian or the authoritative English on /uk, never the Russian text", async () => {
+  it("serves every document in Ukrainian on /uk, never the Russian text", async () => {
     const { getLegalDocument } = await import("@/lib/mdx");
     for (const id of LEGAL_DOCUMENT_IDS) {
       const doc = await getLegalDocument(id, "uk");
       expect(doc, id).not.toBeNull();
-      // ы, э, ъ, ё exist in Russian and not in Ukrainian.
+      // ы, э, ъ, ё exist in Russian and not in Ukrainian; і, ї, є the reverse.
       expect(doc!.content, `${id} on /uk is Russian`).not.toMatch(/[ыэъё]/i);
+      expect(doc!.content, `${id} on /uk is not Ukrainian`).toMatch(/[іїє]/i);
+      expect(doc!.authoritative, id).toBe(false);
     }
   });
 
