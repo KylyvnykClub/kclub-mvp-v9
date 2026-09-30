@@ -1,4 +1,14 @@
-import { and, desc, eq, gt, isNotNull, isNull, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { companies, listingHolds } from "./schema";
@@ -219,6 +229,20 @@ export async function listCompanyIdsWithCapturableHold(
       ),
     );
   return rows.map((row) => row.companyId);
+}
+
+/**
+ * True for a `companies` row with a capturable hold - the same rule as
+ * `listCompanyIdsWithCapturableHold`, as a correlated EXISTS so the moderation
+ * queue can filter and count on it in one statement (FR-113: a company waits
+ * for review only once its price is reserved on the card).
+ */
+export function companyHasCapturableHold(now: Date): SQL {
+  // Spelled out rather than interpolated from the table objects: inside a
+  // relational `findMany` drizzle re-aliases every column reference to the
+  // root table, which turned `listing_holds.company_id` into
+  // `companies.company_id`. "companies" is the alias both query styles use.
+  return sql`EXISTS (SELECT 1 FROM "listing_holds" lh WHERE lh."company_id" = "companies"."id" AND lh."status" = 'requires_capture' AND (lh."capture_before" IS NULL OR lh."capture_before" > ${now.toISOString()}::timestamptz))`;
 }
 
 /**

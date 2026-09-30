@@ -10,6 +10,7 @@ import {
   sql,
 } from "drizzle-orm";
 import type { DbClient } from "./db";
+import { companyAwaitingReview } from "./companies";
 import { companies, members, referrals, subscriptions } from "./schema";
 
 const CLUB_MEMBER_ROLES = [
@@ -161,7 +162,9 @@ export async function getAdminSupportMetrics(db: DbClient) {
   const [pendingCompaniesResult] = await db
     .select({ value: count() })
     .from(companies)
-    .where(eq(companies.moderationStatus, "pending"));
+    // The review queue, not every pending row: a company without a hold on
+    // the card is not waiting for a moderator yet (FR-113).
+    .where(companyAwaitingReview(new Date()));
   const pendingCompanies = countValue(pendingCompaniesResult);
 
   const [pendingReferralsResult] = await db

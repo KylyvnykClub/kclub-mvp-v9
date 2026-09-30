@@ -34,8 +34,8 @@ export function ModerateActions({
   companyId: string;
   /**
    * The listing price is reserved on the partner's card (ADR 0037). Approving
-   * captures it; rejecting releases it. Without a reservation, approval sends
-   * the partner a request to pay instead.
+   * captures it; rejecting releases it. Without a reservation there is nothing
+   * to approve - the server refuses it (FR-113) and the button says why.
    */
   cardHeld: boolean;
   /** Called after a decision lands - the sheet uses it to close itself. */
@@ -83,7 +83,11 @@ export function ModerateActions({
         return;
       }
 
-      toast.error(t("actionFailed", { error: res.error ?? "" }));
+      toast.error(
+        res.error === "hold_required"
+          ? t("approveNeedsHold")
+          : t("actionFailed", { error: res.error ?? "" }),
+      );
     });
   };
 
@@ -106,7 +110,7 @@ export function ModerateActions({
       <div className="min-w-[240px] space-y-3">
         <p className="text-sm">{t("approveConfirm")}</p>
         <p className="text-xs text-muted-foreground">
-          {cardHeld ? t("approveCapturesHold") : t("approveNoHold")}
+          {t("approveCapturesHold")}
         </p>
         <div className="flex gap-2">
           <Button
@@ -184,13 +188,20 @@ export function ModerateActions({
     );
   }
 
+  // FR-113: approval captures the held price, so without a hold there is
+  // nothing to approve. The server refuses it too; this only says why.
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
+      {!cardHeld && (
+        <p className="w-full text-xs text-muted-foreground">
+          {t("approveNeedsHold")}
+        </p>
+      )}
       <Button
         variant="outline"
         size="sm"
         onClick={() => setMode("confirmApprove")}
-        disabled={isPending}
+        disabled={isPending || !cardHeld}
         className="text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600"
       >
         <Check className="mr-1 size-4" /> {t("approve")}

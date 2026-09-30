@@ -65,10 +65,7 @@ import {
   refundCapturedListingHolds,
   settleListingHolds,
 } from "@/modules/billing/listing-hold";
-import {
-  listCompanyIdsWithCapturableHold,
-  listListingHoldsByCompany,
-} from "@/data/listing-holds";
+import { listListingHoldsByCompany } from "@/data/listing-holds";
 import {
   holdIsCapturable,
   holdIsOpen,
@@ -121,8 +118,8 @@ export type CompanyFormState = {
   /**
    * The application that was filed. The dashboard form does not use it; the
    * partner application does, to attach the photos it holds in the browser
-   * once the company exists (FR-109). Nothing opens checkout with it - since
-   * ADR 0036 there is nothing to pay for until a moderator has approved it.
+   * once the company exists (FR-109). The dashboard form uses it to offer the
+   * card hold straight away (ADR 0037, FR-113).
    */
   companyId?: string;
 };
@@ -373,18 +370,12 @@ export async function getPendingCompaniesAction() {
     return { success: false, error: "Unauthorized", data: [] };
   }
 
-  const [pending, heldIds] = await Promise.all([
-    listPendingCompanies(db),
-    listCompanyIdsWithCapturableHold(db, new Date()),
-  ]);
-  const held = new Set(heldIds);
+  // Every row of the queue has its price held on the card (FR-113).
+  const pending = await listPendingCompanies(db, new Date());
 
   return {
     success: true,
-    data: pending.map((company) => ({
-      ...company,
-      cardHeld: held.has(company.id),
-    })),
+    data: pending.map((company) => ({ ...company, cardHeld: true })),
   };
 }
 
@@ -403,7 +394,7 @@ const EMPTY_COMPANY_PAGE = {
   total: 0,
   page: 1,
   pageSize: DEFAULT_PAGE_SIZE,
-  statusCounts: { pending: 0, approved: 0, rejected: 0 },
+  statusCounts: { pending: 0, awaiting_payment: 0, approved: 0, rejected: 0 },
 };
 
 export async function getCompaniesForAdminAction(
@@ -420,11 +411,12 @@ export async function getCompaniesForAdminAction(
   }
 
   const { query, status, page } = companiesListParamsSchema.parse(params);
-  const filters = { query: query || undefined, status };
+  const now = new Date();
+  const filters = { query: query || undefined, status, now };
 
   const [total, statusCounts] = await Promise.all([
     countCompaniesForAdmin(db, filters),
-    countCompaniesByStatus(db, { query: filters.query }),
+    countCompaniesByStatus(db, { query: filters.query, now }),
   ]);
 
   // Counting first means a page past the end lands on the last real page
@@ -437,26 +429,15 @@ export async function getCompaniesForAdminAction(
     pageParamsFromSearchParam(currentPage, DEFAULT_PAGE_SIZE),
   );
 
-  // Since ADR 0036 every company reaches the queue unpaid: there is nothing
-  // to charge for until a moderator has approved it. The indicator therefore
-  // marks approved listings that have been paid for and gone live, and the
-  // queue is never filtered by it - FR-042 says a submitted company enters the
-  // queue, and filtering would hide the very rows waiting to be judged.
-  const now = new Date();
-  const [paidList, heldList] = await Promise.all([
-    listCompanyIdsWithPaidListing(db, now),
-    listCompanyIdsWithCapturableHold(db, now),
-  ]);
-  const paidIds = new Set(paidList);
-  const heldIds = new Set(heldList);
+  // `paid` marks approved listings that have been paid for and gone live.
+  // The queue itself is filtered by the hold in the data layer (FR-113).
+  // `cardHeld` comes with each row from the query: the price is reserved on
+  // the card, ready to be captured by an approval (ADR 0037).
+  const paidIds = new Set(await listCompanyIdsWithPaidListing(db, now));
   const rows = page_
     .map((company) => ({
       ...company,
       paid: paidIds.has(company.id),
-      // ADR 0037: the price is reserved on the card, ready to be captured
-      // by an approval. What the moderator most needs to know about a
-      // pending row before approving it.
-      cardHeld: heldIds.has(company.id),
     }))
     .sort((a, b) => Number(b.paid) - Number(a.paid));
 
@@ -714,15 +695,23 @@ export async function moderateCompanyAction(
 
   // Idempotency for the whole decision, enforced in the UPDATE's own WHERE so
   // two concurrent requests cannot both pass it. A repeat must not re-audit,
-  // re-notify, capture or refund a second time.
+  // re-notify, capture or refund a second time. An approval also needs the
+  // price held on the card (FR-113, ADR 0037), checked in the same WHERE.
   const changed = await setCompanyModerationStatus(
     db,
     id,
     status,
     reason ?? null,
+    status === "approved"
+      ? { kind: "capturable_hold", now: new Date() }
+      : undefined,
   );
   if (!changed) {
-    return { success: true, alreadyApplied: true };
+    const current = await findCompanyById(db, id);
+    if (current?.moderationStatus === status) {
+      return { success: true, alreadyApplied: true };
+    }
+    return { success: false, error: "hold_required" };
   }
 
   await appendAuditEntry(db, {
@@ -885,7 +874,27 @@ export async function unhideCompanyAction(companyId: string) {
   const actor = buildActor(auth.member);
   assertCan(actor, "approve", "company");
 
-  await setCompanyModerationStatus(db, companyId, "approved", null);
+  if (!z.string().uuid().safeParse(companyId).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
+  // Restoring is an approval. Only a rejected or hidden company comes back,
+  // and only if its listing is still paid for or a hold is on the card -
+  // otherwise it would be an approval nobody paid for (FR-113).
+  const restored = await setCompanyModerationStatus(
+    db,
+    companyId,
+    "approved",
+    null,
+    { kind: "restorable", now: new Date() },
+  );
+  if (!restored) {
+    const current = await findCompanyById(db, companyId);
+    if (current?.moderationStatus === "approved") {
+      return { success: true, alreadyApplied: true };
+    }
+    return { success: false, error: "hold_required" };
+  }
 
   await appendAuditEntry(db, {
     actorType: "staff",

@@ -2,7 +2,10 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useFormStatus } from "react-dom";
+
+import { Link } from "@/i18n/navigation";
+import { createListingHoldCheckoutAction } from "@/actions/stripe";
 
 import {
   registerCompanyAction,
@@ -40,9 +43,9 @@ import { parseDraftImageIds } from "@/lib/draft-media-path";
  * stops typing, so a closed tab costs nothing at any point rather than only at
  * the four boundaries.
  *
- * Nothing here opens checkout. Since ADR 0036 a listing is paid for after the
- * application has been approved, from the screen that announces the approval —
- * an applicant is never charged for a listing that moderation may refuse.
+ * Submitting does not charge anything. The success screen offers the one step
+ * that makes it an application (ADR 0037, FR-113): reserving the listing fee on
+ * the card. Until that hold exists the company is not in the moderation queue.
  */
 
 /** Fields sent to `registerCompanyAction`; the two breadcrumbs are not. */
@@ -159,11 +162,23 @@ export function CompanyRegistrationForm() {
         {/* ADR 0037: one step left - reserve the listing fee on the card.
             Reserved, not charged, until a moderator approves. */}
         <p className="text-muted-foreground">{t("reviewHandoff")}</p>
+        {state.companyId && (
+          <form
+            action={createListingHoldCheckoutAction.bind(null, state.companyId)}
+          >
+            <ReserveButton
+              label={t("reserveListing")}
+              pendingLabel={t("reserveOpening")}
+            />
+          </form>
+        )}
+        {/* The locale-aware Link: a bare "/dashboard/..." bypasses the
+            middleware's locale prefix and lands on the 404. */}
         <Link
           href="/dashboard/profile?tab=companies"
-          className="inline-block underline hover:text-green-400"
+          className="inline-block text-muted-foreground underline hover:text-foreground"
         >
-          {t("returnToProfile")}
+          {t("laterInProfile")}
         </Link>
       </div>
     );
@@ -247,3 +262,18 @@ type FormState = {
   issue?: CompanyFormIssue;
   companyId?: string;
 } | null;
+
+function ReserveButton({
+  label,
+  pendingLabel,
+}: {
+  label: string;
+  pendingLabel: string;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? pendingLabel : label}
+    </Button>
+  );
+}

@@ -36,12 +36,14 @@ type CompanyDetail = NonNullable<
 
 const STATUS_LABEL_KEYS = {
   pending: "statusPending",
+  awaiting_payment: "statusAwaitingPayment",
   approved: "statusApproved",
   rejected: "statusRejected",
 } as const;
 
 const STATUS_TONES: Record<keyof typeof STATUS_LABEL_KEYS, StatusTone> = {
   pending: "warning",
+  awaiting_payment: "neutral",
   approved: "positive",
   rejected: "negative",
 };
@@ -198,7 +200,11 @@ export function CompanyDetailSheet({
       const res = await work();
 
       if (!res.success) {
-        toast.error(t("actionFailed", { error: res.error ?? "" }));
+        toast.error(
+          res.error === "hold_required"
+            ? t("restoreNeedsPayment")
+            : t("actionFailed", { error: res.error ?? "" }),
+        );
         return;
       }
 
@@ -340,6 +346,14 @@ export function CompanyDetailSheet({
     </div>
   );
 
+  // The same label the table row shows: a pending company with nothing held
+  // on the card is awaiting payment, not waiting for a moderator (FR-113).
+  const cardHeld = detail?.holds.some((hold) => hold.capturable) ?? false;
+  const sheetStatus =
+    company?.moderationStatus === "pending" && !cardHeld
+      ? "awaiting_payment"
+      : (company?.moderationStatus ?? "pending");
+
   const moderationTab = !company ? (
     loading
   ) : (
@@ -347,8 +361,8 @@ export function CompanyDetailSheet({
       <Section title={t("moderationCurrent")}>
         <div className="space-y-3">
           <StatusBadge
-            tone={STATUS_TONES[company.moderationStatus]}
-            label={t(STATUS_LABEL_KEYS[company.moderationStatus])}
+            tone={STATUS_TONES[sheetStatus]}
+            label={t(STATUS_LABEL_KEYS[sheetStatus])}
           />
           {company.rejectionReason && (
             <p className="text-sm text-muted-foreground">
@@ -366,7 +380,7 @@ export function CompanyDetailSheet({
           {canModerate && company.moderationStatus === "pending" && (
             <ModerateActions
               companyId={companyId}
-              cardHeld={detail.holds.some((hold) => hold.capturable)}
+              cardHeld={cardHeld}
               onModerated={() => handleOpenChange(false)}
             />
           )}
