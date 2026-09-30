@@ -228,7 +228,11 @@ export async function openListingHoldCheckout(
 
 export async function partnerStandingFor(
   db: DbClient,
-  company: { id: string; moderationStatus: string },
+  company: {
+    id: string;
+    moderationStatus: string;
+    listingWaivedAt?: Date | null;
+  },
   now: Date,
 ): Promise<{ standing: PartnerPaymentStanding; holds: ListingHoldRow[] }> {
   const [holds, subscriptionActive] = await Promise.all([
@@ -241,6 +245,7 @@ export async function partnerStandingFor(
       moderationStatus: company.moderationStatus,
       holds,
       listingSubscriptionActive: subscriptionActive,
+      listingWaived: Boolean(company.listingWaivedAt),
       now,
     }),
     holds,

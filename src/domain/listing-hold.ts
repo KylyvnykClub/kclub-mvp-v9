@@ -241,17 +241,30 @@ export type PartnerPaymentStanding =
   /** Confirmed and paying for the listing. */
   | "paid"
   /** Refused. Nothing is charged; any hold is released. */
-  | "rejected";
+  | "rejected"
+  /**
+   * In review, and nothing to pay: the application came through the owner's
+   * partner link, which waives the listing (ADR 0040).
+   */
+  | "waived";
 
 export function partnerPaymentStanding(input: {
   moderationStatus: string;
   holds: readonly ListingHoldState[];
   listingSubscriptionActive: boolean;
+  /** ADR 0040: the listing was waived by the owner's partner link. */
+  listingWaived?: boolean;
   now: Date;
 }): PartnerPaymentStanding {
   const { moderationStatus, holds, now } = input;
 
   if (moderationStatus === "rejected") return "rejected";
+
+  // A waived listing is never asked for money: in review it waits, approved
+  // it is as good as paid.
+  if (input.listingWaived) {
+    return moderationStatus === "approved" ? "paid" : "waived";
+  }
 
   if (
     input.listingSubscriptionActive ||

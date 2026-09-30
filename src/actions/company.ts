@@ -763,6 +763,10 @@ export async function moderateCompanyAction(
         // it as a quoted moderator note beside the localised shell (FR-090).
         ...(status === "rejected" && reason ? { reason } : {}),
         ...(status === "approved" && paymentHeld ? { paymentHeld: "yes" } : {}),
+        // ADR 0040: nothing to pay - the partner link waived the listing.
+        ...(status === "approved" && company.listingWaivedAt
+          ? { listingWaived: "yes" }
+          : {}),
         ...(status === "rejected" && holdOpen ? { holdReleased: "yes" } : {}),
       },
     });
@@ -777,6 +781,7 @@ export async function moderateCompanyAction(
     status,
     reason: reason ?? null,
     paymentHeld: status === "approved" && paymentHeld,
+    listingWaived: status === "approved" && Boolean(company?.listingWaivedAt),
   });
 
   revalidatePath("/dashboard/admin/companies");

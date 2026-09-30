@@ -95,6 +95,7 @@ that the folder cannot be trusted.
 |[0037](0037-card-held-at-application.md)|A partner's card is held at application, captured on approval and released on rejection; whole logos, special privileges, a public partner page with a QR code|Accepted; the logo plate of decision 9 superseded by 0038|2026-09-26|
 |[0038](0038-partner-images-whole-and-filling.md)|A partner's logos and photos are shown whole over a blurred copy of themselves that fills the box; the partner banner carries only the country flag; larger stored images|Accepted|2026-09-28|
 |[0039](0039-framing-images-at-upload.md)|The owner frames a logo or photo before it is uploaded: 3:1 banner, 4:3 photos, a logo shape of their choice starting whole; drawn in the browser, uploaded through the unchanged pipeline|Accepted|2026-09-28|
+|[0040](0040-partner-join-link.md)|A second join link, of kind `partner`, waives a business's listing: no card hold, reviewed as usual, free once approved|Accepted|2026-09-30|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

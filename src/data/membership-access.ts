@@ -2,6 +2,7 @@ import { and, asc, eq, ne } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { listMemberSubscriptionPlans } from "./billing";
+import { memberHasWaivedApprovedListing } from "./companies";
 import { memberIsPaidByHold } from "./listing-holds";
 import { companies } from "./schema";
 import { buildActor, staffAtLeast } from "@/domain/actor";
@@ -31,10 +32,15 @@ export async function loadMembershipAccess(
   const [subscriptions, paidByHold] = await Promise.all([
     listMemberSubscriptionPlans(db, member.id),
     member.duesKind === "partner"
-      ? memberIsPaidByHold(db, member.id, now)
+      ? Promise.all([
+          memberIsPaidByHold(db, member.id, now),
+          memberHasWaivedApprovedListing(db, member.id),
+        ]).then(([held, waived]) => held || waived)
       : Promise.resolve(false),
   ]);
 
+  // A listing waived by the partner link (ADR 0040) opens the club for its
+  // partner the way a paid one does - once approved.
   return membershipAccess(member, subscriptions, paidByHold);
 }
 
@@ -93,6 +99,8 @@ export async function listOwnApplications(db: DbClient, ownerId: string) {
       name: companies.name,
       rejectionReason: companies.rejectionReason,
       moderationStatus: companies.moderationStatus,
+      // ADR 0040: a waived listing reads "free", never "reserve".
+      listingWaivedAt: companies.listingWaivedAt,
     })
     .from(companies)
     .where(eq(companies.ownerId, ownerId))

@@ -321,3 +321,26 @@ describe("FR-113: what the partner is told", () => {
     expect(standing("rejected", [hold()])).toBe("rejected");
   });
 });
+
+describe("ADR 0040: a listing waived by the partner link is never asked for money", () => {
+  const standing = (moderationStatus: string, holds: ListingHoldState[] = []) =>
+    partnerPaymentStanding({
+      moderationStatus,
+      holds,
+      listingSubscriptionActive: false,
+      listingWaived: true,
+      now: NOW,
+    });
+
+  it("waits in review without asking for the card", () => {
+    expect(standing("pending")).toBe("waived");
+  });
+
+  it("counts as paid once approved", () => {
+    expect(standing("approved")).toBe("paid");
+  });
+
+  it("is still refused like any other application", () => {
+    expect(standing("rejected")).toBe("rejected");
+  });
+});

@@ -6,6 +6,8 @@ import {
   eq,
   ilike,
   inArray,
+  isNotNull,
+  isNull,
   ne,
   or,
   sql,
@@ -494,15 +496,21 @@ export async function listCompanyIdsWithPaidListing(
   db: DbClient,
   now: Date,
 ): Promise<string[]> {
-  const [rows, heldIds] = await Promise.all([
+  const [rows, heldIds, waived] = await Promise.all([
     db
       .select({ companyId: subscriptions.companyId })
       .from(subscriptions)
       .where(inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES)),
     listCompanyIdsPaidByHold(db, now),
+    // ADR 0040: a listing waived by the owner's partner link is paid for as
+    // far as publication is concerned. Approval is still checked by readers.
+    db
+      .select({ id: companies.id })
+      .from(companies)
+      .where(isNotNull(companies.listingWaivedAt)),
   ]);
 
-  const ids = new Set(heldIds);
+  const ids = new Set([...heldIds, ...waived.map((row) => row.id)]);
   for (const row of rows) {
     if (row.companyId !== null) ids.add(row.companyId);
   }
@@ -515,18 +523,31 @@ export async function companyListingIsPaid(
   companyId: string,
   now: Date,
 ): Promise<boolean> {
-  const [subscription] = await db
-    .select({ id: subscriptions.id })
-    .from(subscriptions)
-    .where(
-      and(
-        eq(subscriptions.companyId, companyId),
-        inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES),
-      ),
-    )
-    .limit(1);
+  const [[subscription], [waived]] = await Promise.all([
+    db
+      .select({ id: subscriptions.id })
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.companyId, companyId),
+          inArray(subscriptions.status, PUBLISHABLE_LISTING_STATUSES),
+        ),
+      )
+      .limit(1),
+    db
+      .select({ id: companies.id })
+      .from(companies)
+      .where(
+        and(eq(companies.id, companyId), isNotNull(companies.listingWaivedAt)),
+      )
+      .limit(1),
+  ]);
 
-  return subscription !== undefined || companyIsPaidByHold(db, companyId, now);
+  return (
+    subscription !== undefined ||
+    waived !== undefined ||
+    companyIsPaidByHold(db, companyId, now)
+  );
 }
 
 export interface PartnerFilters {
@@ -914,7 +935,18 @@ export async function listPublicPartnerSlugs(
 export function companyAwaitingReview(now: Date): SQL {
   return and(
     eq(companies.moderationStatus, "pending"),
+    companyReadyForReview(now),
+  )!;
+}
+
+/**
+ * What stands in for payment before review: the price held on the card
+ * (ADR 0037), or the listing waived by the owner's partner link (ADR 0040).
+ */
+function companyReadyForReview(now: Date): SQL {
+  return or(
     companyHasCapturableHold(now),
+    isNotNull(companies.listingWaivedAt),
   )!;
 }
 
@@ -924,6 +956,10 @@ export function companyAwaitingReview(now: Date): SQL {
  * for the same aliasing reason as `companyHasCapturableHold`.
  */
 function companyListingPaid(now: Date): SQL {
+  return or(isNotNull(companies.listingWaivedAt), listingPaidByMoney(now))!;
+}
+
+function listingPaidByMoney(now: Date): SQL {
   const statuses = sql.join(
     PUBLISHABLE_LISTING_STATUSES.map((status) => sql`${status}`),
     sql`, `,
@@ -935,7 +971,7 @@ function companyListingPaid(now: Date): SQL {
 function awaitingPayment(now: Date): SQL {
   return and(
     eq(companies.moderationStatus, "pending"),
-    sql`NOT ${companyHasCapturableHold(now)}`,
+    sql`NOT ${companyReadyForReview(now)}`,
   )!;
 }
 
@@ -1086,7 +1122,7 @@ export async function countCompaniesByStatus(
   const rows = await db
     .select({
       status: companies.moderationStatus,
-      held: sql<boolean>`${companyHasCapturableHold(filters.now)}`.as("held"),
+      held: sql<boolean>`${companyReadyForReview(filters.now)}`.as("held"),
       value: count(),
     })
     .from(companies)
@@ -1145,7 +1181,7 @@ export async function setCompanyModerationStatus(
     ne(companies.moderationStatus, status),
   ];
   if (precondition?.kind === "capturable_hold") {
-    conditions.push(companyHasCapturableHold(precondition.now));
+    conditions.push(companyReadyForReview(precondition.now));
   } else if (precondition?.kind === "restorable") {
     conditions.push(eq(companies.moderationStatus, "rejected"));
     conditions.push(
@@ -1364,4 +1400,54 @@ export async function listOwnedCompanyIds(
     .from(companies)
     .where(eq(companies.ownerId, ownerId));
   return rows.map((r) => r.id);
+}
+
+/**
+ * ADR 0040: mark a freshly filed application's listing as waived by the
+ * owner's partner link. Only a pending, not yet waived company, and only
+ * while that link is still an active partner link - checked in the UPDATE, so
+ * a link revoked a moment ago waives nothing.
+ */
+export async function waiveListingByPartnerLink(
+  db: DbClient,
+  companyId: string,
+  joinLinkId: string,
+  now: Date,
+): Promise<boolean> {
+  const changed = await db
+    .update(companies)
+    .set({ listingWaivedAt: now, listingWaiverLinkId: joinLinkId })
+    .where(
+      and(
+        eq(companies.id, companyId),
+        eq(companies.moderationStatus, "pending"),
+        isNull(companies.listingWaivedAt),
+        sql`EXISTS (SELECT 1 FROM "join_links" jl WHERE jl."id" = ${joinLinkId} AND jl."kind" = 'partner' AND jl."active" AND jl."revoked_at" IS NULL)`,
+      ),
+    )
+    .returning({ id: companies.id });
+  return changed.length > 0;
+}
+
+/**
+ * ADR 0040: whether this member owns an approved listing that the partner
+ * link waived - the waived counterpart of `memberIsPaidByHold`, for the
+ * partner access rule.
+ */
+export async function memberHasWaivedApprovedListing(
+  db: DbClient,
+  memberId: string,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(
+      and(
+        eq(companies.ownerId, memberId),
+        eq(companies.moderationStatus, "approved"),
+        isNotNull(companies.listingWaivedAt),
+      ),
+    )
+    .limit(1);
+  return row !== undefined;
 }

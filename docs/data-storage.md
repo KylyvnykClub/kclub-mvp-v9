@@ -35,7 +35,7 @@ only ever read from the projected subscription rows. `partner`
 ([ADR 0036](decisions/0036-payment-after-moderation.md)) owes no dues at all:
 the account was created by a business application, and what opens the club for
 it is a paid listing — an active listing subscription, or in its first month a listing hold whose capture Stripe has confirmed ([ADR 0037](decisions/0037-card-held-at-application.md)). `companies` also carries `special_privileges` and an optional `special_privileges_note` (FR-117), public like the discount. `join_links` holds the club's current
-private join URL, one active row at a time; it references no member, counts
+private join URLs, one active row per kind (`member`, `partner`, [ADR 0040](decisions/0040-partner-join-link.md)), and a company whose application came through the partner link carries `listing_waived_at`; it references no member, counts
 nobody and is not personal data.
 
 ```text
@@ -214,6 +214,7 @@ security control first and a cost control second.
 |`listing_holds` rows|Life of the company|`ON DELETE CASCADE` with the company or the member. Holds only Stripe ids, a status, an amount and timestamps — no card data; the payment itself is recorded in Stripe, which is the system of record ([ADR 0037](decisions/0037-card-held-at-application.md))|Whether a listing's first month is paid; nothing else reads it|
 |Payment and invoice records|7 years|Retained; never deleted by a user request|Tax and accounting law. Named explicitly in the Privacy Policy as an exception to erasure|
 |`join_links`|Life of the club; a revoked link is retained|Never swept — one row per rotation, holding no personal data. The secret is stored in clear on purpose ([ADR 0033](decisions/0033-standard-membership-is-paid.md))|Knowing which link admitted which cohort|
+|`companies.listing_waived_at`, `listing_waiver_link_id`|Life of the company|Deleted with the company; no personal data. The link reference is nulled if the link row is deleted ([ADR 0040](decisions/0040-partner-join-link.md))|Which listings are free, and through which link|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
 |Member inbox (`notifications`)|180 days from creation, read or unread alike|Hard delete by the retention sweep. On member erasure, deleted **explicitly** — the anonymise-not-delete rule above means the `ON DELETE CASCADE` on `member_id` never fires|An inbox is a record of recent events ([decisions/0020](decisions/0020-member-inbox.md))|
 |Member avatar (R2 `media/avatars/{memberId}.webp`)|While the account exists, same 30-day clock as the rest of the member's data|Hard delete of the R2 object, best-effort, in the day-30 erasure job|New personal data needs a retention period and a deletion path before it ships ([ADR 0021](decisions/0021-member-avatar-upload.md)); one object per member means there is nothing to sweep|

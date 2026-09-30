@@ -211,9 +211,12 @@ export async function registerMemberFromForm(
     );
     // And the door has to still be open: the seal says it was, half an hour
     // ago at most, but revoking a leaked link must take effect at once.
-    const sponsored = pendingJoin
-      ? Boolean(await findActiveJoinLinkById(db, pendingJoin.joinLinkId))
-      : false;
+    // Only the member link waives dues. The partner link (ADR 0040) waives a
+    // listing, and is read by the partner application instead.
+    const joinLink = pendingJoin
+      ? await findActiveJoinLinkById(db, pendingJoin.joinLinkId)
+      : null;
+    const sponsored = joinLink?.kind === "member";
 
     const duesKind =
       options.duesKind === "partner"

@@ -29,6 +29,7 @@ type Mode = "idle" | "confirmApprove" | "reject";
 export function ModerateActions({
   companyId,
   cardHeld,
+  waived = false,
   onModerated,
 }: {
   companyId: string;
@@ -38,6 +39,8 @@ export function ModerateActions({
    * to approve - the server refuses it (FR-113) and the button says why.
    */
   cardHeld: boolean;
+  /** ADR 0040: the listing is free through the partner link. */
+  waived?: boolean;
   /** Called after a decision lands - the sheet uses it to close itself. */
   onModerated?: () => void;
 }) {
@@ -110,7 +113,7 @@ export function ModerateActions({
       <div className="min-w-[240px] space-y-3">
         <p className="text-sm">{t("approveConfirm")}</p>
         <p className="text-xs text-muted-foreground">
-          {t("approveCapturesHold")}
+          {waived ? t("approveWaived") : t("approveCapturesHold")}
         </p>
         <div className="flex gap-2">
           <Button
@@ -192,7 +195,7 @@ export function ModerateActions({
   // nothing to approve. The server refuses it too; this only says why.
   return (
     <div className="flex flex-wrap gap-2">
-      {!cardHeld && (
+      {!cardHeld && !waived && (
         <p className="w-full text-xs text-muted-foreground">
           {t("approveNeedsHold")}
         </p>
@@ -201,7 +204,7 @@ export function ModerateActions({
         variant="outline"
         size="sm"
         onClick={() => setMode("confirmApprove")}
-        disabled={isPending || !cardHeld}
+        disabled={isPending || (!cardHeld && !waived)}
         className="text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600"
       >
         <Check className="mr-1 size-4" /> {t("approve")}

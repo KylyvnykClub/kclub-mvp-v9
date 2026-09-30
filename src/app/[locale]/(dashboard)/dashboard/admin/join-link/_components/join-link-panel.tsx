@@ -30,10 +30,12 @@ interface JoinLink {
  * it is pressed rather than after.
  */
 export function JoinLinkPanel({
+  kind,
   initialLink,
   baseUrl,
   locale,
 }: {
+  kind: "member" | "partner";
   initialLink: JoinLink | null;
   baseUrl: string;
   locale: string;
@@ -47,7 +49,7 @@ export function JoinLinkPanel({
   function rotate() {
     startTransition(async () => {
       try {
-        const next = await rotateJoinLinkAction();
+        const next = await rotateJoinLinkAction(kind);
         setLink({
           secret: next.secret,
           createdAt: next.createdAt.toISOString(),
@@ -62,7 +64,7 @@ export function JoinLinkPanel({
   function revoke() {
     startTransition(async () => {
       try {
-        await revokeJoinLinkAction();
+        await revokeJoinLinkAction(kind);
         setLink(null);
         toast.success(t("revoked"));
       } catch {
@@ -74,9 +76,16 @@ export function JoinLinkPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("currentTitle")}</CardTitle>
+        <CardTitle>
+          {kind === "member" ? t("memberTitle") : t("partnerTitle")}
+        </CardTitle>
         <CardDescription>
-          {url ? t("currentDescription") : t("noneDescription")}
+          {kind === "member" ? t("memberPurpose") : t("partnerPurpose")}{" "}
+          {url
+            ? t("currentDescription")
+            : kind === "member"
+              ? t("noneDescription")
+              : t("partnerNoneDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

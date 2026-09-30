@@ -13,7 +13,11 @@ import {
 } from "@/data/join-links";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
+import { z } from "zod";
 import { getCurrentMember } from "./session";
+
+/** Validated at the boundary: every export here is a public endpoint. */
+const kindSchema = z.enum(["member", "partner"]);
 
 /**
  * The owner's control over the join link (FR-106, ADR 0033).
@@ -48,10 +52,10 @@ async function requestContext() {
   };
 }
 
-export async function getJoinLinkAction() {
+export async function getJoinLinkAction(kind: "member" | "partner") {
   await ownerOrThrow();
 
-  const link = await findActiveJoinLink(db);
+  const link = await findActiveJoinLink(db, kindSchema.parse(kind));
   if (!link) return null;
 
   return {
@@ -65,12 +69,14 @@ export async function getJoinLinkAction() {
  * A new door, and the old one closed. 16 bytes of randomness: long enough that
  * guessing is hopeless, short enough to read down a phone.
  */
-export async function rotateJoinLinkAction() {
+export async function rotateJoinLinkAction(kind: "member" | "partner") {
   const member = await ownerOrThrow();
+  const parsedKind = kindSchema.parse(kind);
   const context = await requestContext();
 
   const link = await rotateJoinLink(
     db,
+    parsedKind,
     randomBytes(16).toString("base64url"),
     member.id,
   );
@@ -81,7 +87,7 @@ export async function rotateJoinLinkAction() {
     action: "manage_join_link",
     subjectType: "join_link",
     subjectId: link.id,
-    meta: { operation: "rotate" },
+    meta: { operation: "rotate", kind: parsedKind },
     ip: context.ip,
     userAgent: context.userAgent,
   });
@@ -91,12 +97,13 @@ export async function rotateJoinLinkAction() {
   return { id: link.id, secret: link.secret, createdAt: link.createdAt };
 }
 
-export async function revokeJoinLinkAction() {
+export async function revokeJoinLinkAction(kind: "member" | "partner") {
   const member = await ownerOrThrow();
+  const parsedKind = kindSchema.parse(kind);
   const context = await requestContext();
 
-  const existing = await findActiveJoinLink(db);
-  const revoked = await revokeActiveJoinLink(db);
+  const existing = await findActiveJoinLink(db, parsedKind);
+  const revoked = await revokeActiveJoinLink(db, parsedKind);
 
   if (revoked && existing) {
     await appendAuditEntry(db, {
@@ -105,7 +112,7 @@ export async function revokeJoinLinkAction() {
       action: "manage_join_link",
       subjectType: "join_link",
       subjectId: existing.id,
-      meta: { operation: "revoke" },
+      meta: { operation: "revoke", kind: parsedKind },
       ip: context.ip,
       userAgent: context.userAgent,
     });

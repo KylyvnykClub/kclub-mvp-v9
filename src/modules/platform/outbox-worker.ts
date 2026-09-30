@@ -566,6 +566,7 @@ async function processCompanyModeration(
       companyName: company.name,
       locale,
       paymentHeld: payload.paymentHeld === true,
+      listingWaived: payload.listingWaived === true,
     });
   } else if (payload.status === "rejected") {
     await sendCompanyRejectedEmail({

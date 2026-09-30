@@ -281,6 +281,13 @@
       "when": 1790416800000,
       "tag": "20260926100000_listing_holds",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1790762400000,
+      "tag": "20260930100000_partner_join_link",
+      "breakpoints": true
     }
   ]
 }

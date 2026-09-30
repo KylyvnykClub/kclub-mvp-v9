@@ -1,4 +1,11 @@
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { members } from "./members";
 
 /**
@@ -15,12 +22,22 @@ import { members } from "./members";
  * hash cannot be read back. Knowing the secret makes somebody a sponsored
  * member and nothing else; the answer to a leak is rotation.
  *
- * `join_links_one_active` (a partial unique index on `active`) keeps exactly
- * one live door: rotation is revoke-then-insert, and a second active row is
- * refused by the database rather than by whoever remembers.
+ * `join_links_one_active_per_kind` (a partial unique index on `kind` where
+ * `active`) keeps exactly one live door of each kind: rotation is
+ * revoke-then-insert, and a second active row is refused by the database
+ * rather than by whoever remembers.
+ *
+ * ADR 0040 adds the second kind. A `member` link makes a sponsored member; a
+ * `partner` link lets a business file its application with the listing
+ * waived. Neither records who shared it.
  */
+export const joinLinkKindEnum = pgEnum("join_link_kind", ["member", "partner"]);
+
+export type JoinLinkKind = (typeof joinLinkKindEnum.enumValues)[number];
+
 export const joinLinks = pgTable("join_links", {
   id: uuid("id").primaryKey().defaultRandom(),
+  kind: joinLinkKindEnum("kind").notNull().default("member"),
   secret: text("secret").notNull().unique(),
   active: boolean("active").notNull().default(true),
   createdBy: uuid("created_by").references(() => members.id, {

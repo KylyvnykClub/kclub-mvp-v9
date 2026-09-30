@@ -277,6 +277,9 @@ export function PartnerApplicationForm({
                     id="phone"
                     name="phone"
                     label={tAuth("phoneLabel")}
+                    // Same as registration: most of the club dials +380, and
+                    // "050..." under a US code is refused as invalid.
+                    defaultCountry={locale === "uk" ? "UA" : undefined}
                     requiredMark
                     autoComplete="username"
                     required

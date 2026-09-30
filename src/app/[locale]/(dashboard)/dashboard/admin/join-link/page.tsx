@@ -37,17 +37,29 @@ export default async function AdminJoinLinkPage({
   }
 
   const t = await getTranslations("admin.joinLink");
-  const link = await getJoinLinkAction();
+  const [memberLink, partnerLink] = await Promise.all([
+    getJoinLinkAction("member"),
+    getJoinLinkAction("partner"),
+  ]);
+  const shown = (link: typeof memberLink) =>
+    link
+      ? { secret: link.secret, createdAt: link.createdAt.toISOString() }
+      : null;
 
+  // One card per kind of door (ADR 0040): each has its own link, and
+  // rotating or revoking one leaves the other as it is.
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8">
       <PageHeader title={t("title")} description={t("description")} />
       <JoinLinkPanel
-        initialLink={
-          link
-            ? { secret: link.secret, createdAt: link.createdAt.toISOString() }
-            : null
-        }
+        kind="member"
+        initialLink={shown(memberLink)}
+        baseUrl={env.server.NEXT_PUBLIC_APP_URL}
+        locale={locale}
+      />
+      <JoinLinkPanel
+        kind="partner"
+        initialLink={shown(partnerLink)}
         baseUrl={env.server.NEXT_PUBLIC_APP_URL}
         locale={locale}
       />

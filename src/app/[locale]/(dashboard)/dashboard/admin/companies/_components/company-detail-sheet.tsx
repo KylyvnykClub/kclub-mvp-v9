@@ -349,8 +349,10 @@ export function CompanyDetailSheet({
   // The same label the table row shows: a pending company with nothing held
   // on the card is awaiting payment, not waiting for a moderator (FR-113).
   const cardHeld = detail?.holds.some((hold) => hold.capturable) ?? false;
+  // ADR 0040: waived by the partner link - approvable with nothing held.
+  const waived = Boolean(company?.listingWaivedAt);
   const sheetStatus =
-    company?.moderationStatus === "pending" && !cardHeld
+    company?.moderationStatus === "pending" && !cardHeld && !waived
       ? "awaiting_payment"
       : (company?.moderationStatus ?? "pending");
 
@@ -381,6 +383,7 @@ export function CompanyDetailSheet({
             <ModerateActions
               companyId={companyId}
               cardHeld={cardHeld}
+              waived={waived}
               onModerated={() => handleOpenChange(false)}
             />
           )}

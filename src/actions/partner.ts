@@ -1,7 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
+
+import { appendAuditEntry } from "@/data/audit-log";
+import { waiveListingByPartnerLink } from "@/data/companies";
 import { db } from "@/data/db";
 import { ownsLiveApplication } from "@/data/membership-access";
+import { env } from "@/env";
+import { openPendingJoin, PENDING_JOIN_COOKIE } from "@/lib/pending-join";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import type { RegisterErrorCode } from "@/domain/registration";
@@ -55,6 +61,17 @@ export async function registerPartnerAction(
     logoFile instanceof File && logoFile.size > 0 ? "true" : "",
   );
 
+  // ADR 0040: the owner's partner link, if this browser came through one.
+  // Read now, because creating the account below spends the cookie. Only the
+  // link's id travels; whether it is still an active partner link is decided
+  // when the waiver is written, in the same statement.
+  const cookieStore = await cookies();
+  const pendingJoin = openPendingJoin(
+    cookieStore.get(PENDING_JOIN_COOKIE)?.value,
+    env.server.BETTER_AUTH_SECRET,
+  );
+  const partnerLinkId = pendingJoin?.joinLinkId ?? null;
+
   // Somebody already signed in is filing an application, not registering. This
   // is the path a partner takes whose account exists because an earlier
   // attempt created it and then the application half failed.
@@ -69,7 +86,7 @@ export async function registerPartnerAction(
       return { success: false, issue: { code: "unauthorized" } };
     }
 
-    return fileApplication(auth.member.id, formData);
+    return fileApplication(auth.member.id, formData, partnerLinkId);
   }
 
   // Shape first, before an account exists. `submitCompany` would reject the
@@ -97,7 +114,7 @@ export async function registerPartnerAction(
     };
   }
 
-  return fileApplication(account.memberId, formData);
+  return fileApplication(account.memberId, formData, partnerLinkId);
 }
 
 /**
@@ -111,11 +128,34 @@ export async function registerPartnerAction(
 async function fileApplication(
   ownerId: string,
   formData: FormData,
+  partnerLinkId: string | null,
 ): Promise<PartnerApplicationState> {
   const result = await submitCompany(db, ownerId, formData);
 
   if (result.success && result.companyId) {
     await attachApplicationMedia(db, result.companyId, formData);
+
+    if (partnerLinkId) {
+      const waived = await waiveListingByPartnerLink(
+        db,
+        result.companyId,
+        partnerLinkId,
+        new Date(),
+      );
+      if (waived) {
+        await appendAuditEntry(db, {
+          actorType: "member",
+          actorId: ownerId,
+          action: "company.listing_waived",
+          subjectType: "company",
+          subjectId: result.companyId,
+          meta: { joinLinkId: partnerLinkId },
+        });
+      }
+      // Spent either way: a join cookie left on the browser would waive the
+      // next application from this machine too.
+      (await cookies()).set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
+    }
   }
 
   return result;
