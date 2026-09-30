@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
+import { awaitsPaymentOutsideClub } from "@/data/membership-access";
 import {
   findStripeCustomerIdByMember,
   upsertStripeCustomerMapping,
@@ -211,22 +212,28 @@ export async function createListingHoldCheckoutAction(companyId: string) {
     throw new Error("Company not found");
   }
 
-  // Back to wherever this owner watches the application: a partner is held
-  // on the standing screen, a member sees it in Profile → Companies.
+  // Back to wherever this owner watches the application: a partner, or a
+  // member whose dues are unpaid, on the standing screen (the dashboard is
+  // closed to them, FR-103); a member in the club in Profile → Companies.
+  const [outsideTheClub, stripeCustomerId, priceId, origin] = await Promise.all(
+    [
+      // A partner's return address is settled by what they are.
+      auth.member.duesKind === "partner"
+        ? Promise.resolve(true)
+        : awaitsPaymentOutsideClub(db, auth.member, new Date()),
+      getOrCreateStripeCustomer(
+        auth.member.id,
+        auth.member.email ?? undefined,
+        auth.member.displayName,
+      ),
+      checkoutPriceIdForPlan(db, "listing"),
+      appOrigin(),
+    ],
+  );
   const back =
-    auth.member.duesKind === "partner"
+    auth.member.duesKind === "partner" || outsideTheClub
       ? `/${locale}/membership`
       : `/${locale}/dashboard/profile?tab=companies`;
-
-  const [stripeCustomerId, priceId, origin] = await Promise.all([
-    getOrCreateStripeCustomer(
-      auth.member.id,
-      auth.member.email ?? undefined,
-      auth.member.displayName,
-    ),
-    checkoutPriceIdForPlan(db, "listing"),
-    appOrigin(),
-  ]);
 
   const separator = back.includes("?") ? "&" : "?";
   const result = await openListingHoldCheckout(
@@ -238,7 +245,9 @@ export async function createListingHoldCheckoutAction(companyId: string) {
       stripeCustomerId,
       receiptEmail: auth.member.email || company.contactEmail || null,
       priceId,
-      successUrl: `${origin}${back}${separator}hold=returned`,
+      // The company rides along, so a screen listing several applications
+      // marks only this one as "confirming".
+      successUrl: `${origin}${back}${separator}hold=returned&company=${company.id}`,
       cancelUrl: `${origin}${back}`,
       now: new Date(),
     },

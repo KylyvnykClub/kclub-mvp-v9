@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/data/db";
-import { listCompaniesByOwner } from "@/data/companies";
+import { ownsLiveApplication } from "@/data/membership-access";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import type { RegisterErrorCode } from "@/domain/registration";
@@ -63,8 +63,9 @@ export async function registerPartnerAction(
     const actor = buildActor(auth.member);
     assertCan(actor, "create", "own_company");
 
-    const existing = await listCompaniesByOwner(db, auth.member.id);
-    if (existing.length > 0) {
+    // One live application at a time; a rejected one may be followed by
+    // another.
+    if (await ownsLiveApplication(db, auth.member.id)) {
       return { success: false, issue: { code: "unauthorized" } };
     }
 

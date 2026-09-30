@@ -1745,13 +1745,16 @@
     "includesTitle": "What membership includes",
     "include1": "Your membership card, with a QR anyone can verify",
     "include2": "The partner catalogue, with every member discount",
-    "include3": "Your own business in the catalogue, once it is approved",
+    "include3": "The option to list your own business — the listing is paid for separately",
     "payButton": "Pay {price} a month",
     "pricingLink": "See all plans",
     "signOut": "Sign out",
     "cancelAnytime": "Cancel any time from the billing portal. Payment is taken by Stripe; we never see your card.",
     "sponsoredNote": "Joined through the club's link? You are not asked to pay — sign in and you are in.",
-    "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later."
+    "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later.",
+    "vipNote": "VIP ({vipPrice} a month) is added on top of membership: membership first at {price}, then VIP in your account, under Billing.",
+    "businessNote": "Want your business in the catalogue? The listing is paid separately from membership — {listingPrice} a month, after the application is approved.",
+    "businessLink": "Apply as a partner"
   },
   "pricing": {
     "title": "Plans and prices",
@@ -1762,7 +1765,7 @@
     "membershipDescription": "Being in the club: your card, the partner catalogue and every member discount.",
     "membershipCta": "Join the club",
     "vipName": "VIP membership",
-    "vipDescription": "Everything membership has, plus sending client introductions and priority support.",
+    "vipDescription": "An add-on to membership: everything membership gives, plus client referrals and priority support.",
     "vipCta": "Upgrade to VIP",
     "listingName": "Partner listing",
     "listingDescription": "Your business published in the catalogue, per company, after moderation approves it.",
@@ -1817,7 +1820,10 @@
     "payBody": "{name} passed review, but there is no active reservation on your card — it may have expired. Pay {price} to put the listing live.",
     "returnedPending": "If you have just completed the payment step, Stripe's confirmation can take a moment.",
     "renewalNote": "After the first payment the listing renews at {price} a month from the same card, with a receipt each time. You can cancel at any time.",
-    "rejectedHoldReleased": "Nothing was charged. If an amount was reserved on your card, the reservation has been cancelled."
+    "rejectedHoldReleased": "Nothing was charged. If an amount was reserved on your card, the reservation has been cancelled.",
+    "liveTitle": "Listing live",
+    "liveBody": "{name} is in the catalogue and its listing is paid for.",
+    "applyAgain": "Apply again"
   },
   "partnerQr": {
     "title": "QR code for your page",

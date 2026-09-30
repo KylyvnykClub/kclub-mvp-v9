@@ -3,7 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
-import { listCompaniesByOwner } from "@/data/companies";
+import {
+  awaitsPaymentOutsideClub,
+  ownsLiveApplication,
+} from "@/data/membership-access";
 import { env } from "@/env";
 import { getLegalDocument } from "@/lib/mdx";
 import { monthlyPrice } from "@/domain/pricing";
@@ -22,10 +25,13 @@ import { PartnerApplicationForm } from "./_components/partner-application-form";
  * business filing an application is not inside the club yet, and the gate that
  * protects the club would otherwise keep them from the form that gets them in.
  *
- * Three ways to arrive, three answers:
+ * Four ways to arrive, four answers:
  * - signed out — the whole thing, account and application, on one page;
  * - a partner whose account exists but whose application does not — the
  *   application half, so a half-finished registration can be finished;
+ * - a member whose dues are unpaid and who has no company yet — the
+ *   application half too: the dashboard is closed to them (FR-103), and the
+ *   listing is paid for on its own (ADR 0037);
  * - anybody else who is signed in — the dashboard's own form, which is the
  *   same questions with a draft behind them.
  */
@@ -50,14 +56,21 @@ export default async function PartnerApplicationPage({
   const current = await getCurrentMember();
 
   if (current?.member) {
-    if (current.member.duesKind !== "partner") {
+    // A member in the club registers a company from the dashboard. One whose
+    // dues are unpaid cannot reach the dashboard (FR-103), so they file here;
+    // the listing is its own payment either way (ADR 0037), and the dues
+    // screen then shows the application's standing.
+    if (
+      current.member.duesKind !== "partner" &&
+      !(await awaitsPaymentOutsideClub(db, current.member, new Date()))
+    ) {
       redirect(`/${locale}/dashboard/company/new`);
     }
 
-    const companies = await listCompaniesByOwner(db, current.member.id);
-    if (companies.length > 0) {
-      // Their application exists; the standing screen is where its outcome and
-      // its payment live (FR-110, FR-111).
+    // A live application (pending or approved) has its outcome and payment on
+    // the standing screen (FR-110, FR-111). A rejected one does not stop the
+    // applicant from filing again here.
+    if (await ownsLiveApplication(db, current.member.id)) {
       redirect(`/${locale}/membership`);
     }
   }

@@ -220,6 +220,15 @@ function newestCapturable(
  * Where a partner's payment stands, for the one screen they can see before
  * their listing is live (FR-110, FR-113).
  */
+/**
+ * Whether an application still counts - pending or approved. A refused one
+ * does not stop its owner applying again. `ownsLiveApplication` is the SQL
+ * twin of this.
+ */
+export function applicationIsLive(moderationStatus: string): boolean {
+  return moderationStatus !== "rejected";
+}
+
 export type PartnerPaymentStanding =
   /** Application in review and nothing authorised yet: ask for the card. */
   | "authorise"

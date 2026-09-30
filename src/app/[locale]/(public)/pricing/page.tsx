@@ -5,8 +5,17 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
+import { db } from "@/data/db";
+import {
+  awaitsPaymentOutsideClub,
+  ownsLiveApplication,
+} from "@/data/membership-access";
 import { buildActor, staffAtLeast } from "@/domain/actor";
-import { MONTHLY_PRICE_MINOR, formatPrice } from "@/domain/pricing";
+import {
+  MONTHLY_PRICE_MINOR,
+  formatPrice,
+  pricingDestinations,
+} from "@/domain/pricing";
 import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -47,13 +56,31 @@ export default async function PricingPage({
   const current = await getCurrentMember();
   const actor = current?.member ? buildActor(current.member) : null;
 
+  // Where each button leads depends on whether this reader is in the club
+  // yet; the rule itself is `pricingDestinations`, tested on its own. Staff
+  // are never gated (ADR 0007), so they read as paid.
+  const member = current?.member;
+  const outside = member
+    ? await awaitsPaymentOutsideClub(db, member, new Date())
+    : false;
+  // Only asked when it changes the answer: an unpaid member with a live
+  // application is sent to its standing rather than to a new one.
+  const ownsCompany =
+    member && outside ? await ownsLiveApplication(db, member.id) : false;
+  const href = pricingDestinations(
+    member
+      ? { signedIn: true, awaitingPayment: outside, ownsCompany }
+      : { signedIn: false },
+    locale,
+  );
+
   const plans = [
     {
       key: "membership" as const,
       name: t("membershipName"),
       description: t("membershipDescription"),
       cta: t("membershipCta"),
-      href: current?.member ? `/${locale}/membership` : `/${locale}/register`,
+      href: href.membership,
       featured: true,
     },
     {
@@ -61,9 +88,7 @@ export default async function PricingPage({
       name: t("vipName"),
       description: t("vipDescription"),
       cta: t("vipCta"),
-      href: current?.member
-        ? `/${locale}/dashboard/profile`
-        : `/${locale}/register`,
+      href: href.vip,
       featured: false,
     },
     {
@@ -71,13 +96,7 @@ export default async function PricingPage({
       name: t("listingName"),
       description: t("listingDescription"),
       cta: t("listingCta"),
-      // The listing is a business's plan, so a signed-out reader goes to the
-      // partner application and not to member sign-up (FR-109). A member who
-      // is already in the club submits from the dashboard, which is where
-      // their draft lives.
-      href: current?.member
-        ? `/${locale}/dashboard/company/new`
-        : `/${locale}/partner`,
+      href: href.listing,
       featured: false,
     },
   ];

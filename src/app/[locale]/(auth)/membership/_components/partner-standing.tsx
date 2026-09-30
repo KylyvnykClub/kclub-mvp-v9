@@ -72,6 +72,13 @@ export function PartnerStanding({
           </blockquote>
         )}
         <Body>{t("rejectedHoldReleased")}</Body>
+        {/* A refusal is not the end: another application may be filed. */}
+        <Link
+          href={`/${locale}/partner`}
+          className="inline-block text-sm font-bold uppercase tracking-[0.12em] text-foreground underline hover:text-accent-ink"
+        >
+          {t("applyAgain")}
+        </Link>
       </div>
     );
   }
@@ -93,7 +100,19 @@ export function PartnerStanding({
     );
   }
 
-  if (standing === "confirming" || standing === "paid") {
+  // Live. A partner who is paid up is let into the club and never sees this;
+  // a member whose dues are unpaid does, and must not be told "confirming"
+  // about a listing that is already paid for.
+  if (standing === "paid") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("liveTitle")}</Title>
+        <Body>{t("liveBody", { name: application.name })}</Body>
+      </div>
+    );
+  }
+
+  if (standing === "confirming") {
     return (
       <div className="space-y-4">
         <Title>{t("confirmingTitle")}</Title>

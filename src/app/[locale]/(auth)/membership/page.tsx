@@ -15,12 +15,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import { loadMembershipAccess } from "@/data/membership-access";
-import { listCompaniesByOwner } from "@/data/companies";
+import {
+  awaitsPaymentOutsideClub,
+  listOwnApplications,
+} from "@/data/membership-access";
 import { SignOutButton } from "./_components/sign-out-button";
 import { PartnerStanding } from "./_components/partner-standing";
 import { db } from "@/data/db";
-import { holdIsCapturable } from "@/domain/listing-hold";
+import { applicationIsLive, holdIsCapturable } from "@/domain/listing-hold";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
 import { monthlyPrice } from "@/domain/pricing";
 
@@ -57,10 +59,14 @@ export default async function MembershipDuesPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ hold?: string }>;
+  searchParams: Promise<{ hold?: string; company?: string }>;
 }) {
   const { locale } = await params;
-  const { hold } = await searchParams;
+  const { hold, company: returnedCompany } = await searchParams;
+  // Back from Stripe for one company: only its card says "confirming".
+  const returnedFor = (companyId: string) =>
+    hold === "returned" &&
+    (returnedCompany === undefined || returnedCompany === companyId);
   setRequestLocale(locale);
 
   const current = await getCurrentMember();
@@ -68,8 +74,10 @@ export default async function MembershipDuesPage({
     redirect(`/${locale}/login`);
   }
 
+  // The same rule as every other gate, staff exemption included (ADR 0007):
+  // anyone inside the club is sent in, so this screen never asks them to pay.
   const now = new Date();
-  if ((await loadMembershipAccess(db, current.member, now)) === "active") {
+  if (!(await awaitsPaymentOutsideClub(db, current.member, now))) {
     redirect(`/${locale}/dashboard/profile`);
   }
 
@@ -81,7 +89,9 @@ export default async function MembershipDuesPage({
       namespace: "partnerStanding",
     });
     const listingPrice = monthlyPrice("listing", locale);
-    const [application] = await listCompaniesByOwner(db, current.member.id);
+    const application = currentApplication(
+      await listOwnApplications(db, current.member.id),
+    );
     const { standing, holds } = application
       ? await partnerStandingFor(db, application, now)
       : { standing: null, holds: [] };
@@ -110,7 +120,9 @@ export default async function MembershipDuesPage({
               holdExpiresAt={heldUntil ? heldUntil.toISOString() : null}
               price={listingPrice}
               sellable={await checkoutPriceIsConfigured(db, "listing")}
-              returnedFromCheckout={hold === "returned"}
+              returnedFromCheckout={
+                application ? returnedFor(application.id) : false
+              }
             />
           </CardContent>
           <CardFooter className="justify-between border-t border-border p-6 sm:p-8">
@@ -132,7 +144,39 @@ export default async function MembershipDuesPage({
   // No price configured means Stripe cannot be opened at all. The member is
   // told plainly and the button is not offered, rather than being handed a
   // button that throws on the one screen they are allowed to see.
-  const sellable = await checkoutPriceIsConfigured(db, "membership");
+  const [sellable, owned, listingSellable, tPartner] = await Promise.all([
+    checkoutPriceIsConfigured(db, "membership"),
+    listOwnApplications(db, current.member.id),
+    checkoutPriceIsConfigured(db, "listing"),
+    getTranslations({ locale, namespace: "partnerStanding" }),
+  ]);
+
+  // A member whose dues are unpaid may still have filed companies (from
+  // /partner, since the dashboard is closed to them). Each listing is its own
+  // payment (ADR 0037), so every live application's standing - and its hold
+  // button - sits here too, next to the dues and separate from them. With no
+  // live one, the latest refusal is shown, with the way to apply again.
+  const live = owned.filter((company) =>
+    applicationIsLive(company.moderationStatus),
+  );
+  const shownCompanies = live.length > 0 ? live : owned.slice(-1);
+  const hasLiveApplication = live.length > 0;
+  const standings =
+    shownCompanies.length > 0
+      ? await Promise.all(
+          shownCompanies.map(async (company) => {
+            const { standing, holds } = await partnerStandingFor(
+              db,
+              company,
+              now,
+            );
+            const heldUntil =
+              holds.find((h) => holdIsCapturable(h, now))?.captureBefore ??
+              null;
+            return { company, standing, heldUntil };
+          }),
+        )
+      : [];
 
   return (
     <AuthShell
@@ -140,6 +184,32 @@ export default async function MembershipDuesPage({
       title={t("duesTitle")}
       subtitle={t("duesSubtitle", { price })}
     >
+      {standings.map(({ company, standing, heldUntil }) => (
+        <Card
+          key={company.id}
+          className="mb-6 w-full border-white/10 bg-background text-foreground shadow-none"
+        >
+          <CardHeader className="space-y-2 border-b border-border p-6 sm:p-8">
+            <CardTitle className="text-xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
+              {tPartner("title")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 p-6 sm:p-8">
+            <PartnerStanding
+              application={{
+                id: company.id,
+                name: company.name,
+                rejectionReason: company.rejectionReason,
+              }}
+              standing={standing}
+              holdExpiresAt={heldUntil ? heldUntil.toISOString() : null}
+              price={monthlyPrice("listing", locale)}
+              sellable={listingSellable}
+              returnedFromCheckout={returnedFor(company.id)}
+            />
+          </CardContent>
+        </Card>
+      ))}
       <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
           <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
@@ -158,9 +228,30 @@ export default async function MembershipDuesPage({
             <li>{t("include2")}</li>
             <li>{t("include3")}</li>
           </ul>
+          {/* VIP is added on top of the dues (ADR 0033); the pricing page's VIP
+              button lands here, so this screen says why it asks for {price}. */}
           <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
+            {t("vipNote", {
+              price,
+              vipPrice: monthlyPrice("vip", locale),
+            })}
+          </p>
+          <p className="text-sm font-light leading-6 text-muted-foreground">
             {t("sponsoredNote")}
           </p>
+          {!hasLiveApplication && (
+            <p className="text-sm font-light leading-6 text-muted-foreground">
+              {t("businessNote", {
+                listingPrice: monthlyPrice("listing", locale),
+              })}{" "}
+              <Link
+                href={`/${locale}/partner`}
+                className="font-bold text-foreground underline hover:text-accent-ink"
+              >
+                {t("businessLink")}
+              </Link>
+            </p>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
           {/* The redirect back from Stripe grants nothing: access appears when
@@ -195,4 +286,17 @@ export default async function MembershipDuesPage({
       </Card>
     </AuthShell>
   );
+}
+
+/**
+ * The application a partner's standing screen is about: the latest live one
+ * (pending or approved), or else the latest refusal. The oldest row used to be
+ * shown, which after a refusal and a new application would have been the
+ * refusal.
+ */
+function currentApplication<T extends { moderationStatus: string }>(
+  companies: readonly T[],
+): T | undefined {
+  const live = companies.filter((c) => applicationIsLive(c.moderationStatus));
+  return live.at(-1) ?? companies.at(-1);
 }
