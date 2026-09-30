@@ -15,6 +15,7 @@ import {
   type RegisterField,
 } from "@/modules/identity/registration-form";
 import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
+import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { getCurrentMember } from "./session";
 
@@ -116,6 +117,9 @@ async function fileApplication(
 
   if (result.success && result.companyId) {
     await attachApplicationMedia(db, result.companyId, formData);
+
+    // ADR 0040: free listing if this browser came through the partner link.
+    await applyPartnerLinkWaiver(db, ownerId, result.companyId);
   }
 
   return result;

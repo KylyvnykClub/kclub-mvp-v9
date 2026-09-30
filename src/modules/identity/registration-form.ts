@@ -211,9 +211,12 @@ export async function registerMemberFromForm(
     );
     // And the door has to still be open: the seal says it was, half an hour
     // ago at most, but revoking a leaked link must take effect at once.
-    const sponsored = pendingJoin
-      ? Boolean(await findActiveJoinLinkById(db, pendingJoin.joinLinkId))
-      : false;
+    // Only the member link waives dues. The partner link (ADR 0040) waives a
+    // listing, and is read by the partner application instead.
+    const joinLink = pendingJoin
+      ? await findActiveJoinLinkById(db, pendingJoin.joinLinkId)
+      : null;
+    const sponsored = joinLink?.kind === "member";
 
     const duesKind =
       options.duesKind === "partner"
@@ -242,8 +245,12 @@ export async function registerMemberFromForm(
       // browser would attach to the next registration from this machine.
       cookieStore.set(PENDING_IDENTITY_COOKIE, "", { path: "/", maxAge: 0 });
       // Spent for the same reason: a join cookie left on the browser would
-      // waive dues for the next registration from this machine too.
-      cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
+      // waive dues for the next registration from this machine too. A partner
+      // link's cookie is kept: it waives the application, which is filed after
+      // the account exists (and again on a retry), and is spent there.
+      if (joinLink?.kind !== "partner") {
+        cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
+      }
 
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,

@@ -1,19 +1,21 @@
 import { and, desc, eq, isNull } from "drizzle-orm";
 
 import type { Db, DbClient } from "./db";
-import { joinLinks } from "./schema";
+import { joinLinks, type JoinLinkKind } from "./schema";
 
 /**
- * The club's join link (ADR 0033). One live row at a time, enforced by the
+ * The club's join links (ADR 0033, ADR 0040): one for members, one for
+ * business partners. One live row of each kind at a time, enforced by the
  * partial unique index rather than by whoever remembers.
  */
 export type JoinLinkRow = typeof joinLinks.$inferSelect;
 
 export async function findActiveJoinLink(
   db: DbClient,
+  kind: JoinLinkKind,
 ): Promise<JoinLinkRow | null> {
   const row = await db.query.joinLinks.findFirst({
-    where: eq(joinLinks.active, true),
+    where: and(eq(joinLinks.active, true), eq(joinLinks.kind, kind)),
     orderBy: [desc(joinLinks.createdAt)],
   });
 
@@ -68,6 +70,7 @@ export async function findActiveJoinLinkById(
  */
 export async function rotateJoinLink(
   db: Db,
+  kind: JoinLinkKind,
   secret: string,
   createdBy: string | null,
 ): Promise<JoinLinkRow> {
@@ -75,23 +78,26 @@ export async function rotateJoinLink(
     await tx
       .update(joinLinks)
       .set({ active: false, revokedAt: new Date() })
-      .where(eq(joinLinks.active, true));
+      .where(and(eq(joinLinks.active, true), eq(joinLinks.kind, kind)));
 
     const [row] = await tx
       .insert(joinLinks)
-      .values({ secret, createdBy })
+      .values({ kind, secret, createdBy })
       .returning();
 
     return row!;
   });
 }
 
-/** Closes the door and opens none. Registration then charges everybody. */
-export async function revokeActiveJoinLink(db: Db): Promise<boolean> {
+/** Closes the door of this kind and opens none. */
+export async function revokeActiveJoinLink(
+  db: Db,
+  kind: JoinLinkKind,
+): Promise<boolean> {
   const rows = await db
     .update(joinLinks)
     .set({ active: false, revokedAt: new Date() })
-    .where(eq(joinLinks.active, true))
+    .where(and(eq(joinLinks.active, true), eq(joinLinks.kind, kind)))
     .returning({ id: joinLinks.id });
 
   return rows.length > 0;

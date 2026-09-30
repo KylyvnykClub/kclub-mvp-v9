@@ -83,6 +83,16 @@ export function PartnerStanding({
     );
   }
 
+  // ADR 0040: came through the owner's partner link; nothing to pay.
+  if (standing === "waived") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("waivedTitle")}</Title>
+        <Body>{t("waivedBody", { name: application.name })}</Body>
+      </div>
+    );
+  }
+
   if (standing === "held") {
     const expires = holdExpiresAt
       ? new Intl.DateTimeFormat(locale, { dateStyle: "long" }).format(

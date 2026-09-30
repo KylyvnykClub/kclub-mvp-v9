@@ -90,9 +90,12 @@ export function NotificationList({
                     // ADR 0037: an approval that captured the held price
                     // says so, rather than asking for a payment.
                     row.kind === "company_approved" &&
-                      params.paymentHeld === "yes"
-                      ? "company_approved_held"
-                      : row.kind,
+                      params.listingWaived === "yes"
+                      ? "company_approved_waived"
+                      : row.kind === "company_approved" &&
+                          params.paymentHeld === "yes"
+                        ? "company_approved_held"
+                        : row.kind,
                     { ...params },
                   )}
                 </p>

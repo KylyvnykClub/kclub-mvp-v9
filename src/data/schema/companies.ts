@@ -7,8 +7,10 @@ import {
   uuid,
   pgEnum,
   boolean,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
+import { joinLinks } from "./join-links";
 import { members } from "./members";
 import { businessCategories } from "./business-categories";
 
@@ -89,4 +91,16 @@ export const companies = pgTable("companies", {
 
   // Pending owner edits awaiting re-moderation (FR-045)
   pendingChanges: jsonb("pending_changes"),
+
+  /**
+   * ADR 0040: the listing is free because the application came through the
+   * owner's partner link. Set once, when the application is filed, from a
+   * link that was active at that moment. Stands in for payment everywhere a
+   * paid listing is asked about; approval is still required.
+   */
+  listingWaivedAt: timestamp("listing_waived_at", { withTimezone: true }),
+  listingWaiverLinkId: uuid("listing_waiver_link_id").references(
+    () => joinLinks.id,
+    { onDelete: "set null" },
+  ),
 });

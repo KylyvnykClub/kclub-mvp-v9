@@ -79,6 +79,18 @@ const COMPANY_APPROVED_HELD_BODIES: Record<
     `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nСума, зарезервована на вашій картці, зараз списується. Щойно платіж буде підтверджено, розміщення з'явиться в каталозі, а чек про оплату надійде вам окремим листом. Далі розміщення подовжується щомісяця з цієї ж картки.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+const COMPANY_APPROVED_WAIVED_BODIES: Record<
+  Locale,
+  (companyName: string, link: string) => string
+> = {
+  en: (companyName, link) =>
+    `Congratulations!\n\nYour company "${companyName}" has passed review for the KYLYVNYK CLUB Partner Catalogue.\n\nYou applied through the club's partner link, so the listing is free: it is live in the catalogue now and nothing is charged.\n\n${link}\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (companyName, link) =>
+    `Поздравляем!\n\nВаша компания «${companyName}» прошла проверку для Каталога партнёров KYLYVNYK CLUB.\n\nВы подали заявку по партнёрской ссылке клуба, поэтому размещение бесплатное: компания уже в каталоге, ничего не списывается.\n\n${link}\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (companyName, link) =>
+    `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nВи подали заявку за партнерським посиланням клубу, тому розміщення безоплатне: компанія вже в каталозі, нічого не списується.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 const COMPANY_REJECTED_SUBJECTS: Record<Locale, string> = {
   en: "Your company submission was not approved",
   ru: "Ваша заявка на компанию не одобрена",
@@ -201,6 +213,8 @@ export async function sendCompanyApprovedEmail(params: {
   locale: Locale;
   /** The price was held on the card and approval asked Stripe to capture it. */
   paymentHeld?: boolean;
+  /** ADR 0040: the partner link waived the listing; nothing is charged. */
+  listingWaived?: boolean;
 }): Promise<boolean> {
   // Straight to the owner's own screen. A partner with no active listing is
   // forwarded from there to the standing screen that carries the button, so
@@ -210,9 +224,11 @@ export async function sendCompanyApprovedEmail(params: {
   return sendEmail(
     params.to,
     COMPANY_APPROVED_SUBJECTS[params.locale],
-    (params.paymentHeld
-      ? COMPANY_APPROVED_HELD_BODIES
-      : COMPANY_APPROVED_BODIES)[params.locale](params.companyName, link),
+    (params.listingWaived
+      ? COMPANY_APPROVED_WAIVED_BODIES
+      : params.paymentHeld
+        ? COMPANY_APPROVED_HELD_BODIES
+        : COMPANY_APPROVED_BODIES)[params.locale](params.companyName, link),
   );
 }
 

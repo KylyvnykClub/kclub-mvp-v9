@@ -15,4 +15,6 @@ export interface CompanyModerationPayload {
    * taken rather than asking for it.
    */
   paymentHeld?: boolean;
+  /** ADR 0040: the listing was waived by the partner link; nothing to pay. */
+  listingWaived?: boolean;
 }

@@ -72,7 +72,15 @@ export async function GET(
     return registration();
   }
 
-  const response = registration();
+  // A partner link leads to the partner application, where the listing is
+  // what it waives (ADR 0040); a member link to member registration.
+  const response =
+    link.kind === "partner"
+      ? new NextResponse(null, {
+          status: 307,
+          headers: { Location: `/${locale}/partner` },
+        })
+      : registration();
 
   response.cookies.set(
     PENDING_JOIN_COOKIE,

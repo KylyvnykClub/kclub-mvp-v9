@@ -175,10 +175,14 @@ export default async function AdminCompaniesPage({
               data.rows.map((company) => {
                 // FR-113: a pending row without a hold is not in the queue
                 // yet - it is shown as awaiting payment and cannot be judged.
+                // ADR 0040: a listing waived by the partner link is ready for
+                // review the way a held one is.
+                const ready =
+                  company.cardHeld || Boolean(company.listingWaivedAt);
                 const isPending =
-                  company.moderationStatus === "pending" && company.cardHeld;
+                  company.moderationStatus === "pending" && ready;
                 const rowStatus =
-                  company.moderationStatus === "pending" && !company.cardHeld
+                  company.moderationStatus === "pending" && !ready
                     ? "awaiting_payment"
                     : company.moderationStatus;
                 return (
@@ -225,7 +229,14 @@ export default async function AdminCompaniesPage({
                       paid for, which is what makes it live.
                     */}
                     <TableCell className="hidden sm:table-cell">
-                      {company.paid ? (
+                      {/* ADR 0040 first: a waived listing counts as paid,
+                          and "Listing paid" would hide that it is free. */}
+                      {company.listingWaivedAt ? (
+                        <StatusBadge
+                          tone="positive"
+                          label={t("listingWaived")}
+                        />
+                      ) : company.paid ? (
                         <StatusBadge tone="positive" label={t("listingPaid")} />
                       ) : company.cardHeld ? (
                         <StatusBadge tone="warning" label={t("holdReserved")} />
