@@ -1820,7 +1820,10 @@
     "payBody": "{name} passed review, but there is no active reservation on your card — it may have expired. Pay {price} to put the listing live.",
     "returnedPending": "If you have just completed the payment step, Stripe's confirmation can take a moment.",
     "renewalNote": "After the first payment the listing renews at {price} a month from the same card, with a receipt each time. You can cancel at any time.",
-    "rejectedHoldReleased": "Nothing was charged. If an amount was reserved on your card, the reservation has been cancelled."
+    "rejectedHoldReleased": "Nothing was charged. If an amount was reserved on your card, the reservation has been cancelled.",
+    "liveTitle": "Listing live",
+    "liveBody": "{name} is in the catalogue and its listing is paid for.",
+    "applyAgain": "Apply again"
   },
   "partnerQr": {
     "title": "QR code for your page",

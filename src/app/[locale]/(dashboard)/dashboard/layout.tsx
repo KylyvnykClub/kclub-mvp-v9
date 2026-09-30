@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
-import { loadMembershipAccess } from "@/data/membership-access";
+import { awaitsPaymentOutsideClub } from "@/data/membership-access";
 import { db } from "@/data/db";
 import { countUnreadForMember } from "@/data/notifications";
 import { buildActor, staffAtLeast } from "@/domain/actor";
@@ -46,13 +46,8 @@ export default async function DashboardLayout({ children, params }: Props) {
   // Staff are exempt: a staff account is not a club membership (ADR 0007), and
   // gating the console behind a member's dues would lock the owner out of the
   // screen where dues are managed.
-  if (!canAccessAdmin) {
-    if (
-      (await loadMembershipAccess(db, result.member, new Date())) ===
-      "awaiting_payment"
-    ) {
-      redirect(`/${locale}/membership`);
-    }
+  if (await awaitsPaymentOutsideClub(db, result.member, new Date())) {
+    redirect(`/${locale}/membership`);
   }
 
   // The badge count is fetched here rather than inside SiteHeader, because that

@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
-import { loadMembershipAccess } from "@/data/membership-access";
+import { awaitsPaymentOutsideClub } from "@/data/membership-access";
 import {
   findStripeCustomerIdByMember,
   upsertStripeCustomerMapping,
@@ -215,23 +215,22 @@ export async function createListingHoldCheckoutAction(companyId: string) {
   // Back to wherever this owner watches the application: a partner, or a
   // member whose dues are unpaid, on the standing screen (the dashboard is
   // closed to them, FR-103); a member in the club in Profile → Companies.
-  const outsideTheClub =
-    auth.member.duesKind === "partner" ||
-    (await loadMembershipAccess(db, auth.member, new Date())) ===
-      "awaiting_payment";
-  const back = outsideTheClub
-    ? `/${locale}/membership`
-    : `/${locale}/dashboard/profile?tab=companies`;
-
-  const [stripeCustomerId, priceId, origin] = await Promise.all([
-    getOrCreateStripeCustomer(
-      auth.member.id,
-      auth.member.email ?? undefined,
-      auth.member.displayName,
-    ),
-    checkoutPriceIdForPlan(db, "listing"),
-    appOrigin(),
-  ]);
+  const [outsideTheClub, stripeCustomerId, priceId, origin] = await Promise.all(
+    [
+      awaitsPaymentOutsideClub(db, auth.member, new Date()),
+      getOrCreateStripeCustomer(
+        auth.member.id,
+        auth.member.email ?? undefined,
+        auth.member.displayName,
+      ),
+      checkoutPriceIdForPlan(db, "listing"),
+      appOrigin(),
+    ],
+  );
+  const back =
+    auth.member.duesKind === "partner" || outsideTheClub
+      ? `/${locale}/membership`
+      : `/${locale}/dashboard/profile?tab=companies`;
 
   const separator = back.includes("?") ? "&" : "?";
   const result = await openListingHoldCheckout(

@@ -6,8 +6,10 @@ import { getCurrentMember } from "@/actions/session";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { db } from "@/data/db";
-import { listCompaniesByOwner } from "@/data/companies";
-import { loadMembershipAccess } from "@/data/membership-access";
+import {
+  awaitsPaymentOutsideClub,
+  ownsLiveApplication,
+} from "@/data/membership-access";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import {
   MONTHLY_PRICE_MINOR,
@@ -58,20 +60,16 @@ export default async function PricingPage({
   // yet; the rule itself is `pricingDestinations`, tested on its own. Staff
   // are never gated (ADR 0007), so they read as paid.
   const member = current?.member;
-  const [access, owned] =
-    member && !(actor && staffAtLeast(actor, "staff_support"))
-      ? await Promise.all([
-          loadMembershipAccess(db, member, new Date()),
-          listCompaniesByOwner(db, member.id),
-        ])
-      : [null, []];
+  const outside = member
+    ? await awaitsPaymentOutsideClub(db, member, new Date())
+    : false;
+  // Only asked when it changes the answer: an unpaid member with a live
+  // application is sent to its standing rather than to a new one.
+  const ownsCompany =
+    member && outside ? await ownsLiveApplication(db, member.id) : false;
   const href = pricingDestinations(
     member
-      ? {
-          signedIn: true,
-          awaitingPayment: access === "awaiting_payment",
-          ownsCompany: owned.length > 0,
-        }
+      ? { signedIn: true, awaitingPayment: outside, ownsCompany }
       : { signedIn: false },
     locale,
   );

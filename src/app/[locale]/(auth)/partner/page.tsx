@@ -3,8 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
-import { listCompaniesByOwner } from "@/data/companies";
-import { loadMembershipAccess } from "@/data/membership-access";
+import {
+  awaitsPaymentOutsideClub,
+  ownsLiveApplication,
+} from "@/data/membership-access";
 import { env } from "@/env";
 import { getLegalDocument } from "@/lib/mdx";
 import { monthlyPrice } from "@/domain/pricing";
@@ -60,15 +62,15 @@ export default async function PartnerApplicationPage({
     // screen then shows the application's standing.
     if (
       current.member.duesKind !== "partner" &&
-      (await loadMembershipAccess(db, current.member, new Date())) === "active"
+      !(await awaitsPaymentOutsideClub(db, current.member, new Date()))
     ) {
       redirect(`/${locale}/dashboard/company/new`);
     }
 
-    const companies = await listCompaniesByOwner(db, current.member.id);
-    if (companies.length > 0) {
-      // Their application exists; the standing screen is where its outcome and
-      // its payment live (FR-110, FR-111).
+    // A live application (pending or approved) has its outcome and payment on
+    // the standing screen (FR-110, FR-111). A rejected one does not stop the
+    // applicant from filing again here.
+    if (await ownsLiveApplication(db, current.member.id)) {
       redirect(`/${locale}/membership`);
     }
   }
