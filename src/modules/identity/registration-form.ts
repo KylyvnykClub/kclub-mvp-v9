@@ -22,7 +22,9 @@ import { safeErrorFields } from "@/lib/safe-error";
 import { registerSchema } from "@/lib/registration-schema";
 import {
   registerErrorField,
+  registerFieldAt,
   type RegisterErrorCode,
+  type RegisterField,
 } from "@/domain/registration";
 import { RateLimited } from "@/domain/errors";
 import {
@@ -65,8 +67,8 @@ export type RegistrationOutcome =
   | {
       success: false;
       error: RegisterErrorCode;
-      /** The box the refusal belongs against, where it is one of the two. */
-      field?: "phone" | "email" | null;
+      /** The box the refusal belongs against, so the form can say which. */
+      field?: RegisterField | null;
     };
 
 /**
@@ -296,7 +298,8 @@ export async function registerMemberFromForm(
  * identifiers. Anything else is a form-level refusal — the form marks its own
  * required fields, so a missing name is already visible without this.
  */
-function zodField(error: z.ZodError): "phone" | "email" | null {
-  const path = error.issues[0]?.path[0];
-  return path === "phone" || path === "email" ? path : null;
+export type { RegisterField };
+
+function zodField(error: z.ZodError): RegisterField | null {
+  return registerFieldAt(error.issues[0]?.path);
 }

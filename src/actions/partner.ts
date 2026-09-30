@@ -10,7 +10,10 @@ import {
   registerCompanySchema,
   type CompanyFormIssue,
 } from "@/lib/company-form";
-import { registerMemberFromForm } from "@/modules/identity/registration-form";
+import {
+  registerMemberFromForm,
+  type RegisterField,
+} from "@/modules/identity/registration-form";
 import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { getCurrentMember } from "./session";
@@ -35,7 +38,7 @@ export type PartnerApplicationState = {
   /** A refusal about the account half, as a `register.error.*` key. */
   accountError?: RegisterErrorCode;
   /** The identifier box the account refusal belongs against. */
-  accountField?: "phone" | "email" | null;
+  accountField?: RegisterField | null;
   /** A refusal about the business half. */
   issue?: CompanyFormIssue;
 } | null;

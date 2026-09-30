@@ -13,15 +13,18 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#090909",
     orientation: "portrait",
     categories: ["business", "lifestyle"],
+    // Square files whose real size is the one declared - a constraint test
+    // reads the PNG headers. The crown logos used before were 81x103 and
+    // 596x418 but claimed 512x512, which browsers reject.
     icons: [
       {
-        src: "/brand/logo/card-logo.png",
+        src: "/brand/icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/brand/logo/crown-gold-logo.png",
+        src: "/brand/icons/icon-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

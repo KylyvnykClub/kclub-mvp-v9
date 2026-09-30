@@ -9,6 +9,7 @@ import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
+import type { RegisterField } from "@/domain/registration";
 import { AuthDivider, GoogleButton } from "@/components/auth/google-button";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { nextChallengeNonce } from "@/components/auth/turnstile-nonce";
@@ -56,7 +57,7 @@ type RegisterResult = {
   duesOwed?: boolean;
   error?: string;
   /** The box the refusal belongs against, where it is one of the two. */
-  field?: "phone" | "email" | null;
+  field?: RegisterField | null;
   /** The number already belongs to a member (ADR 0030). */
   taken?: boolean;
 } | null;
@@ -218,6 +219,13 @@ export function RegisterFlow({
         return null;
       }
 
+      // The country picker posts through a hidden input, which the browser's
+      // own `required` check never sees. Say so here, against the field,
+      // instead of a round trip that came back as an unexplained refusal.
+      if (!formData.get("country")) {
+        return { success: false, error: "invalid_input", field: "country" };
+      }
+
       const result = await registerAction(formData);
 
       if (result?.success) {
@@ -276,6 +284,21 @@ export function RegisterFlow({
   // which is why the action says which field each one was.
   const emailRefused = active?.field === "email";
   const phoneRefused = active?.field === "phone";
+  // The number is refused either as taken (offer sign-in) or as not a number
+  // the country picker can read (say so - the usual cause is a code left on
+  // the wrong country).
+  const phoneTaken = phoneRefused && active?.error === "phone_taken";
+  const fieldLabels = {
+    displayName: t("nameLabel"),
+    password: tAuth("passwordLabel"),
+    country: t("countryLabel"),
+  } as const;
+  const otherField =
+    active?.error === "invalid_input" &&
+    active.field &&
+    active.field in fieldLabels
+      ? fieldLabels[active.field as keyof typeof fieldLabels]
+      : null;
 
   return (
     <AuthShell
@@ -376,6 +399,9 @@ export function RegisterFlow({
                   id="phone"
                   name="phone"
                   label={tAuth("phoneLabel")}
+                  // Most of the club dials +380; a Ukrainian applicant typing
+                  // "050..." under a US code was refused as an invalid number.
+                  defaultCountry={locale === "uk" ? "UA" : undefined}
                   requiredMark
                   autoComplete="username"
                   required
@@ -386,7 +412,15 @@ export function RegisterFlow({
                     says so against the field with everything else still
                     typed. The 20-per-hour limit on the asking is what bounds
                     the disclosure. */}
-                {phoneRefused && (
+                {phoneRefused && !phoneTaken && (
+                  <p
+                    role="alert"
+                    className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+                  >
+                    {t("error.phone_invalid")}
+                  </p>
+                )}
+                {phoneTaken && (
                   <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm">
                     <p className="font-medium text-destructive">
                       {registerErrorMessage(t, active?.error)}
@@ -549,8 +583,22 @@ export function RegisterFlow({
               />
 
               {state?.error && !emailRefused && !phoneRefused && (
-                <p className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  {registerErrorMessage(t, state.error)}
+                <p
+                  role="alert"
+                  className="border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+                >
+                  {otherField
+                    ? t("error.field_invalid", { field: otherField })
+                    : registerErrorMessage(t, state.error)}
+                </p>
+              )}
+
+              {/* A greyed button with no reason was the other half of "nothing
+                  happens": a password manager fills the first box only, and
+                  the confirmation stays empty. */}
+              {legalReady && !passwordsUsable && (
+                <p className="text-center text-xs text-muted-foreground">
+                  {t("passwordsNeeded")}
                 </p>
               )}
 

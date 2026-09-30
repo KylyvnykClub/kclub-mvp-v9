@@ -35,11 +35,13 @@ function resolveContentFile(fileName: string): string | null {
 }
 
 /**
- * A document is stored as `{id}.mdx` when it is the authoritative version
- * (FR-093: the English version is authoritative). Translations, when they
- * exist, are stored as `{id}.{locale}.mdx`; the locale file wins for that
- * locale, otherwise the authoritative version is served.
+ * Every document is stored per locale as `{id}.{locale}.mdx`. The English one
+ * is authoritative (FR-093) and is what a locale without its own file is
+ * served - never another translation. `{id}.mdx` used to hold the Russian text
+ * and was the fallback for every locale, which is how the Ukrainian site
+ * showed Russian documents.
  */
+const AUTHORITATIVE_LOCALE = "en";
 async function readDocument(filePath: string): Promise<LegalDocument | null> {
   try {
     if (!filePath.startsWith(`${CONTENT_PATH}${path.sep}`)) {
@@ -80,7 +82,9 @@ export async function getLegalDocument(
   }
 
   const localizedPath = resolveContentFile(`${id}.${locale}.mdx`);
-  const authoritativePath = resolveContentFile(`${id}.mdx`);
+  const authoritativePath = resolveContentFile(
+    `${id}.${AUTHORITATIVE_LOCALE}.mdx`,
+  );
   if (!localizedPath || !authoritativePath) {
     return null;
   }

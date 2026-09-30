@@ -39,3 +39,26 @@ export function registerErrorField(
       return null;
   }
 }
+
+export const REGISTER_FIELDS = [
+  "phone",
+  "email",
+  "displayName",
+  "password",
+  "country",
+] as const;
+
+export type RegisterField = (typeof REGISTER_FIELDS)[number];
+
+/**
+ * The field an input refusal is about, from the path of its first issue. Only
+ * phone and email used to be named, so a missing country or a short name came
+ * back as a bare "check your input" with nothing to say which box - the "I
+ * press register and nothing happens" report from a Ukrainian applicant.
+ */
+export function registerFieldAt(
+  path: readonly PropertyKey[] | undefined,
+): RegisterField | null {
+  const key = path?.[0];
+  return REGISTER_FIELDS.find((field) => field === key) ?? null;
+}
