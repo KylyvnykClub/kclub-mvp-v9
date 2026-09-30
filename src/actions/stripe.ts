@@ -217,7 +217,10 @@ export async function createListingHoldCheckoutAction(companyId: string) {
   // closed to them, FR-103); a member in the club in Profile → Companies.
   const [outsideTheClub, stripeCustomerId, priceId, origin] = await Promise.all(
     [
-      awaitsPaymentOutsideClub(db, auth.member, new Date()),
+      // A partner's return address is settled by what they are.
+      auth.member.duesKind === "partner"
+        ? Promise.resolve(true)
+        : awaitsPaymentOutsideClub(db, auth.member, new Date()),
       getOrCreateStripeCustomer(
         auth.member.id,
         auth.member.email ?? undefined,
@@ -242,7 +245,9 @@ export async function createListingHoldCheckoutAction(companyId: string) {
       stripeCustomerId,
       receiptEmail: auth.member.email || company.contactEmail || null,
       priceId,
-      successUrl: `${origin}${back}${separator}hold=returned`,
+      // The company rides along, so a screen listing several applications
+      // marks only this one as "confirming".
+      successUrl: `${origin}${back}${separator}hold=returned&company=${company.id}`,
       cancelUrl: `${origin}${back}`,
       now: new Date(),
     },

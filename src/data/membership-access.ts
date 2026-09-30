@@ -1,4 +1,4 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { listMemberSubscriptionPlans } from "./billing";
@@ -13,6 +13,10 @@ import {
 
 /**
  * Everything `membershipAccess` reads, loaded in one place (FR-103, FR-110).
+ *
+ * A gate does not call this directly: it calls `awaitsPaymentOutsideClub`,
+ * which adds the staff exemption (ADR 0007). Two gates that called this one
+ * disagreed about staff.
  *
  * Every gate calls this rather than assembling the inputs itself: a gate that
  * forgot the listing hold would lock out a partner who has paid for their
@@ -75,4 +79,22 @@ export async function ownsLiveApplication(
     )
     .limit(1);
   return row !== undefined;
+}
+
+/**
+ * The owner's applications, oldest first, with only what the standing screen
+ * reads - not the relational load (categories, countries, images) the company
+ * screens need. The dues screen is where every unpaid member lands.
+ */
+export async function listOwnApplications(db: DbClient, ownerId: string) {
+  return db
+    .select({
+      id: companies.id,
+      name: companies.name,
+      rejectionReason: companies.rejectionReason,
+      moderationStatus: companies.moderationStatus,
+    })
+    .from(companies)
+    .where(eq(companies.ownerId, ownerId))
+    .orderBy(asc(companies.createdAt), asc(companies.id));
 }
