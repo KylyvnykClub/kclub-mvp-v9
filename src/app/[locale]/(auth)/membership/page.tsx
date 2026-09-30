@@ -15,10 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import {
-  loadMembershipAccess,
-  memberCanBecomePartner,
-} from "@/data/membership-access";
+import { loadMembershipAccess } from "@/data/membership-access";
 import { listCompaniesByOwner } from "@/data/companies";
 import { SignOutButton } from "./_components/sign-out-button";
 import { PartnerStanding } from "./_components/partner-standing";
@@ -135,13 +132,26 @@ export default async function MembershipDuesPage({
   // No price configured means Stripe cannot be opened at all. The member is
   // told plainly and the button is not offered, rather than being handed a
   // button that throws on the one screen they are allowed to see.
-  const sellable = await checkoutPriceIsConfigured(db, "membership");
-  // A business, not a club member: the listing is its plan (ADR 0036). Only
-  // offered to an account that has never been in the club (see /partner).
-  const mayApplyAsBusiness = await memberCanBecomePartner(
-    db,
-    current.member.id,
-  );
+  const [sellable, listingSellable, [ownCompany]] = await Promise.all([
+    checkoutPriceIsConfigured(db, "membership"),
+    checkoutPriceIsConfigured(db, "listing"),
+    listCompaniesByOwner(db, current.member.id),
+  ]);
+
+  // A member whose dues are unpaid may still have filed a company (from
+  // /partner, since the dashboard is closed to them). Its listing is its own
+  // payment (ADR 0037), so its standing - and the hold button - sit here too,
+  // next to the dues and separate from them.
+  const ownStanding = ownCompany
+    ? await partnerStandingFor(db, ownCompany, now)
+    : null;
+  const ownHeldUntil =
+    ownStanding?.holds.find((h) => holdIsCapturable(h, now))?.captureBefore ??
+    null;
+  const tPartner = await getTranslations({
+    locale,
+    namespace: "partnerStanding",
+  });
 
   return (
     <AuthShell
@@ -149,6 +159,29 @@ export default async function MembershipDuesPage({
       title={t("duesTitle")}
       subtitle={t("duesSubtitle", { price })}
     >
+      {ownCompany && ownStanding && (
+        <Card className="mb-6 w-full border-white/10 bg-background text-foreground shadow-none">
+          <CardHeader className="space-y-2 border-b border-border p-6 sm:p-8">
+            <CardTitle className="text-xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
+              {tPartner("title")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 p-6 sm:p-8">
+            <PartnerStanding
+              application={{
+                id: ownCompany.id,
+                name: ownCompany.name,
+                rejectionReason: ownCompany.rejectionReason,
+              }}
+              standing={ownStanding.standing}
+              holdExpiresAt={ownHeldUntil ? ownHeldUntil.toISOString() : null}
+              price={monthlyPrice("listing", locale)}
+              sellable={listingSellable}
+              returnedFromCheckout={hold === "returned"}
+            />
+          </CardContent>
+        </Card>
+      )}
       <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
           <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
@@ -178,7 +211,7 @@ export default async function MembershipDuesPage({
           <p className="text-sm font-light leading-6 text-muted-foreground">
             {t("sponsoredNote")}
           </p>
-          {mayApplyAsBusiness && (
+          {!ownCompany && (
             <p className="text-sm font-light leading-6 text-muted-foreground">
               {t("businessNote", {
                 listingPrice: monthlyPrice("listing", locale),

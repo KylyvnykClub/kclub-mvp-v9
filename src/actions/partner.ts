@@ -1,9 +1,7 @@
 "use server";
 
 import { db } from "@/data/db";
-import { appendAuditEntry } from "@/data/audit-log";
 import { listCompaniesByOwner } from "@/data/companies";
-import { convertToPartnerAccount } from "@/data/membership-access";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import type { RegisterErrorCode } from "@/domain/registration";
@@ -68,33 +66,6 @@ export async function registerPartnerAction(
     const existing = await listCompaniesByOwner(db, auth.member.id);
     if (existing.length > 0) {
       return { success: false, issue: { code: "unauthorized" } };
-    }
-
-    // A member who registered but never paid dues and applies as a business
-    // becomes a partner account: they pay for the listing, not the dues
-    // (ADR 0036, FR-110). The rule is re-checked in the UPDATE, and the
-    // listing gate still holds them outside until the listing is paid.
-    if (auth.member.duesKind === "paying") {
-      // Shape first: a refused application must not leave a converted
-      // account behind. (The company cannot be filed first - owning one is
-      // what ends the eligibility the conversion checks.)
-      const shape = submitCompanySchema.safeParse(
-        Object.fromEntries(formData.entries()),
-      );
-      if (!shape.success) {
-        return { success: false, issue: describeCompanyIssue(shape.error) };
-      }
-      const converted = await convertToPartnerAccount(db, auth.member.id);
-      if (converted) {
-        await appendAuditEntry(db, {
-          actorType: "member",
-          actorId: auth.member.id,
-          action: "member.became_partner",
-          subjectType: "member",
-          subjectId: auth.member.id,
-          meta: {},
-        });
-      }
     }
 
     return fileApplication(auth.member.id, formData);

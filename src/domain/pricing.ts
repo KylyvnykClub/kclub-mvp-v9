@@ -46,3 +46,56 @@ export function formatPrice(
 export function monthlyPrice(plan: PricedPlan, locale: string): string {
   return formatPrice(MONTHLY_PRICE_MINOR[plan], locale);
 }
+
+/** What a pricing button needs to know about whoever is reading the page. */
+export type PricingReader =
+  | { signedIn: false }
+  | {
+      signedIn: true;
+      /** Dues (or, for a partner, the listing) not yet paid: FR-103's gate. */
+      awaitingPayment: boolean;
+      /** Owns at least one company, pending or live. */
+      ownsCompany: boolean;
+    };
+
+/**
+ * Where each pricing button leads, so that it arrives at the price it names.
+ *
+ * An unpaid member used to be sent into the dashboard, which the dues gate
+ * turned into the $4.99 screen whichever plan they had picked.
+ *
+ * - VIP is added on top of membership (ADR 0033), so an unpaid member starts
+ *   on the dues screen, which says so. A paid one adds it under Billing.
+ * - The listing is its own payment (ADR 0037). An unpaid member with no
+ *   company applies on /partner; one who already has a company reserves its
+ *   price on the dues screen, which shows its standing. A paid member files
+ *   from the dashboard, where their draft lives.
+ */
+export function pricingDestinations(
+  reader: PricingReader,
+  locale: string,
+): Record<PricedPlan, string> {
+  if (!reader.signedIn) {
+    return {
+      membership: `/${locale}/register`,
+      vip: `/${locale}/register`,
+      listing: `/${locale}/partner`,
+    };
+  }
+
+  if (reader.awaitingPayment) {
+    return {
+      membership: `/${locale}/membership`,
+      vip: `/${locale}/membership`,
+      listing: reader.ownsCompany
+        ? `/${locale}/membership`
+        : `/${locale}/partner`,
+    };
+  }
+
+  return {
+    membership: `/${locale}/membership`,
+    vip: `/${locale}/dashboard/profile?tab=billing`,
+    listing: `/${locale}/dashboard/company/new`,
+  };
+}

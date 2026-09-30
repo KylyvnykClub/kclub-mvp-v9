@@ -102,7 +102,7 @@ a translation table of its own; it now offers all of them, searchable.
 
 |Screen|User goal|Access|Notes|
 |-|-|-|-|
-|Membership dues (`/{locale}/membership`)|Pay the $4.99 monthly dues and get in|member|The only screen a member reaches while their dues are unpaid — everything else under `(dashboard)` redirects here (FR-103). It sits outside the member area, because a screen inside the gated layout would redirect to itself. Price, what membership includes, one button to Stripe Checkout, a link to Pricing, sign out. Never shown to a sponsored or legacy-free member|
+|Membership dues (`/{locale}/membership`)|Pay the $4.99 monthly dues and get in|member|The only screen a member reaches while their dues are unpaid — everything else under `(dashboard)` redirects here (FR-103). It sits outside the member area, because a screen inside the gated layout would redirect to itself. Price, what membership includes, one button to Stripe Checkout, a note that VIP is added on top of membership (ADR 0033), a link to Pricing, sign out. A member without a company is offered the partner application, because the listing is paid for separately. One who has filed a company also sees its listing standing and the $19.99 hold above the dues card. Never shown to a sponsored or legacy-free member|
 |My card|Show membership|member|Default landing. Large QR, tier, serial, name-visibility toggle|
 |Catalogue|Find a trusted business|member|Search, category/country/city filters, results|
 |Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element|
@@ -254,6 +254,13 @@ member to nominate a business, which is also how the catalogue grows.
 dues, so `/{locale}/membership` shows them their application's standing instead
 of the dues ask: reserve, held, confirming, pay again, or refused with the
 moderator's note (FR-110, FR-113).
+
+A member whose dues are unpaid reaches the same application on `/partner`,
+because the dashboard is closed to them (FR-103). Their `/membership` then
+shows the listing's standing above the dues card. The two are paid
+separately: the $19.99 listing does not open the club, and the $4.99 dues do
+not pay for the listing. The Pricing page sends each button to the screen that
+asks for the price it names (`pricingDestinations`).
 
 **Success:** the applicant always knows whether their money is reserved,
 charged or released, and why.

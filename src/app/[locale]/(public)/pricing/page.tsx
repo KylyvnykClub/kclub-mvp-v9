@@ -6,12 +6,14 @@ import { getCurrentMember } from "@/actions/session";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { db } from "@/data/db";
-import {
-  loadMembershipAccess,
-  memberCanBecomePartner,
-} from "@/data/membership-access";
+import { listCompaniesByOwner } from "@/data/companies";
+import { loadMembershipAccess } from "@/data/membership-access";
 import { buildActor, staffAtLeast } from "@/domain/actor";
-import { MONTHLY_PRICE_MINOR, formatPrice } from "@/domain/pricing";
+import {
+  MONTHLY_PRICE_MINOR,
+  formatPrice,
+  pricingDestinations,
+} from "@/domain/pricing";
 import { localeAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -52,19 +54,27 @@ export default async function PricingPage({
   const current = await getCurrentMember();
   const actor = current?.member ? buildActor(current.member) : null;
 
-  // Where each button leads depends on whether this member is in the club
-  // yet. An unpaid member used to be sent to dashboard pages, which the dues
-  // gate turned into the $4.99 screen - whichever plan they had picked.
-  const unpaid =
-    current?.member && !(actor && staffAtLeast(actor, "staff_support"))
-      ? (await loadMembershipAccess(db, current.member, new Date())) ===
-        "awaiting_payment"
-      : false;
-  const mayApplyAsBusiness =
-    unpaid && current?.member
-      ? current.member.duesKind === "partner" ||
-        (await memberCanBecomePartner(db, current.member.id))
-      : false;
+  // Where each button leads depends on whether this reader is in the club
+  // yet; the rule itself is `pricingDestinations`, tested on its own. Staff
+  // are never gated (ADR 0007), so they read as paid.
+  const member = current?.member;
+  const [access, owned] =
+    member && !(actor && staffAtLeast(actor, "staff_support"))
+      ? await Promise.all([
+          loadMembershipAccess(db, member, new Date()),
+          listCompaniesByOwner(db, member.id),
+        ])
+      : [null, []];
+  const href = pricingDestinations(
+    member
+      ? {
+          signedIn: true,
+          awaitingPayment: access === "awaiting_payment",
+          ownsCompany: owned.length > 0,
+        }
+      : { signedIn: false },
+    locale,
+  );
 
   const plans = [
     {
@@ -72,7 +82,7 @@ export default async function PricingPage({
       name: t("membershipName"),
       description: t("membershipDescription"),
       cta: t("membershipCta"),
-      href: current?.member ? `/${locale}/membership` : `/${locale}/register`,
+      href: href.membership,
       featured: true,
     },
     {
@@ -80,13 +90,7 @@ export default async function PricingPage({
       name: t("vipName"),
       description: t("vipDescription"),
       cta: t("vipCta"),
-      // VIP is added on top of membership (ADR 0033): an unpaid member starts
-      // with the dues screen, which says so; a paid one adds it in Billing.
-      href: !current?.member
-        ? `/${locale}/register`
-        : unpaid
-          ? `/${locale}/membership`
-          : `/${locale}/dashboard/profile?tab=billing`,
+      href: href.vip,
       featured: false,
     },
     {
@@ -94,18 +98,7 @@ export default async function PricingPage({
       name: t("listingName"),
       description: t("listingDescription"),
       cta: t("listingCta"),
-      // The listing is a business's plan, so a signed-out reader goes to the
-      // partner application and not to member sign-up (FR-109). A member who
-      // is already in the club submits from the dashboard, which is where
-      // their draft lives.
-      //
-      // A member who registered but never paid applies as a business on
-      // /partner, where the listing - not the dues - is what they pay for.
-      href: !current?.member
-        ? `/${locale}/partner`
-        : mayApplyAsBusiness
-          ? `/${locale}/partner`
-          : `/${locale}/dashboard/company/new`,
+      href: href.listing,
       featured: false,
     },
   ];

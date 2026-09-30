@@ -1745,7 +1745,7 @@
     "includesTitle": "What membership includes",
     "include1": "Your membership card, with a QR anyone can verify",
     "include2": "The partner catalogue, with every member discount",
-    "include3": "Your own business in the catalogue, once it is approved",
+    "include3": "The option to list your own business — the listing is paid for separately",
     "payButton": "Pay {price} a month",
     "pricingLink": "See all plans",
     "signOut": "Sign out",
@@ -1753,7 +1753,7 @@
     "sponsoredNote": "Joined through the club's link? You are not asked to pay — sign in and you are in.",
     "unavailable": "Payment is not available right now. Nothing is wrong with your account — the club is being told about it, and you can sign in again later.",
     "vipNote": "VIP ({vipPrice} a month) is added on top of membership: membership first at {price}, then VIP in your account, under Billing.",
-    "businessNote": "Here for a business that only wants to be in the catalogue? A partner pays for the listing, not the dues — {listingPrice} a month.",
+    "businessNote": "Want your business in the catalogue? The listing is paid separately from membership — {listingPrice} a month, after the application is approved.",
     "businessLink": "Apply as a partner"
   },
   "pricing": {

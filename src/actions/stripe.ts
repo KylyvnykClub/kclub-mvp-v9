@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
+import { loadMembershipAccess } from "@/data/membership-access";
 import {
   findStripeCustomerIdByMember,
   upsertStripeCustomerMapping,
@@ -211,12 +212,16 @@ export async function createListingHoldCheckoutAction(companyId: string) {
     throw new Error("Company not found");
   }
 
-  // Back to wherever this owner watches the application: a partner is held
-  // on the standing screen, a member sees it in Profile → Companies.
-  const back =
-    auth.member.duesKind === "partner"
-      ? `/${locale}/membership`
-      : `/${locale}/dashboard/profile?tab=companies`;
+  // Back to wherever this owner watches the application: a partner, or a
+  // member whose dues are unpaid, on the standing screen (the dashboard is
+  // closed to them, FR-103); a member in the club in Profile → Companies.
+  const outsideTheClub =
+    auth.member.duesKind === "partner" ||
+    (await loadMembershipAccess(db, auth.member, new Date())) ===
+      "awaiting_payment";
+  const back = outsideTheClub
+    ? `/${locale}/membership`
+    : `/${locale}/dashboard/profile?tab=companies`;
 
   const [stripeCustomerId, priceId, origin] = await Promise.all([
     getOrCreateStripeCustomer(

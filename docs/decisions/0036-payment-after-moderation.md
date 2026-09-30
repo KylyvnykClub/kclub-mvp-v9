@@ -149,18 +149,6 @@ paid for.
   have gone live rather than distinguishing serious applicants from abandoned
   checkouts.
 
-### Amendment 2026-09-30: a member who never paid may apply as a business
-
-The pricing page's partner button sent a signed-in member who had registered
-but never paid to the dashboard. The dues gate then turned that into the $4.99
-screen. A business does not owe dues (FR-110), so such an account now files on
-`/partner` and becomes a partner account in the same request. The account must
-have never held a membership or VIP subscription (lapsed ones included) and
-must own no company. The rule is checked inside the `UPDATE`, and the change is
-audited as `member.became_partner`. It grants nothing: the partner gate keeps
-the account outside until the listing is paid. Anyone who has been in the club
-keeps registering companies from the dashboard, as before.
-
 ## Revisit if
 
 - The share of approved applications that are never paid for exceeds roughly a

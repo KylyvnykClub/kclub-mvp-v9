@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getCurrentMember } from "@/actions/session";
 import { db } from "@/data/db";
 import { listCompaniesByOwner } from "@/data/companies";
-import { memberCanBecomePartner } from "@/data/membership-access";
+import { loadMembershipAccess } from "@/data/membership-access";
 import { env } from "@/env";
 import { getLegalDocument } from "@/lib/mdx";
 import { monthlyPrice } from "@/domain/pricing";
@@ -23,10 +23,13 @@ import { PartnerApplicationForm } from "./_components/partner-application-form";
  * business filing an application is not inside the club yet, and the gate that
  * protects the club would otherwise keep them from the form that gets them in.
  *
- * Three ways to arrive, three answers:
+ * Four ways to arrive, four answers:
  * - signed out — the whole thing, account and application, on one page;
  * - a partner whose account exists but whose application does not — the
  *   application half, so a half-finished registration can be finished;
+ * - a member whose dues are unpaid and who has no company yet — the
+ *   application half too: the dashboard is closed to them (FR-103), and the
+ *   listing is paid for on its own (ADR 0037);
  * - anybody else who is signed in — the dashboard's own form, which is the
  *   same questions with a draft behind them.
  */
@@ -51,12 +54,13 @@ export default async function PartnerApplicationPage({
   const current = await getCurrentMember();
 
   if (current?.member) {
-    // A member in the club registers a company from the dashboard. One who
-    // registered but never paid dues may apply here instead, as a business:
-    // the application makes theirs a partner account (see the action).
+    // A member in the club registers a company from the dashboard. One whose
+    // dues are unpaid cannot reach the dashboard (FR-103), so they file here;
+    // the listing is its own payment either way (ADR 0037), and the dues
+    // screen then shows the application's standing.
     if (
       current.member.duesKind !== "partner" &&
-      !(await memberCanBecomePartner(db, current.member.id))
+      (await loadMembershipAccess(db, current.member, new Date())) === "active"
     ) {
       redirect(`/${locale}/dashboard/company/new`);
     }
