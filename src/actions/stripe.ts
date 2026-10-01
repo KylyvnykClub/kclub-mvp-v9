@@ -4,19 +4,14 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
-import { awaitsPaymentOutsideClub } from "@/data/membership-access";
-import {
-  findStripeCustomerIdByMember,
-  upsertStripeCustomerMapping,
-} from "@/data/billing";
-import { findCompanyByOwner } from "@/data/companies";
+import { findStripeCustomerIdByMember } from "@/data/billing";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import {
-  openListingHoldCheckout,
-  productionListingHoldDeps,
-} from "@/modules/billing/listing-hold";
-import { headers } from "next/headers";
+  appOrigin,
+  getOrCreateStripeCustomer,
+  listingHoldCheckoutUrl,
+} from "@/modules/billing/listing-hold-checkout";
 import { redirect } from "next/navigation";
 import { env } from "@/env";
 import {
@@ -26,60 +21,6 @@ import {
 import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
-
-function stripeResourceMissing(error: unknown): boolean {
-  return (
-    error instanceof Stripe.errors.StripeInvalidRequestError &&
-    error.code === "resource_missing"
-  );
-}
-
-async function stripeCustomerIsUsable(stripeCustomerId: string) {
-  try {
-    const customer = await stripe.customers.retrieve(stripeCustomerId);
-    return !customer.deleted;
-  } catch (error) {
-    if (stripeResourceMissing(error)) {
-      return false;
-    }
-
-    throw error;
-  }
-}
-
-/**
- * Not exported. Every export of a "use server" file is a callable endpoint,
- * and this one takes a member id from its caller: exported, it answered any
- * visitor with that member's Stripe customer id.
- */
-async function getOrCreateStripeCustomer(
-  memberId: string,
-  email?: string,
-  name?: string,
-) {
-  const existing = await findStripeCustomerIdByMember(db, memberId);
-
-  if (existing && (await stripeCustomerIsUsable(existing))) {
-    return existing;
-  }
-
-  const customer = await stripe.customers.create({
-    metadata: {
-      memberId: memberId,
-    },
-    email: email || undefined,
-    name: name || undefined,
-  });
-
-  await upsertStripeCustomerMapping(db, memberId, customer.id);
-
-  return customer.id;
-}
-
-async function appOrigin(): Promise<string> {
-  const headersList = await headers();
-  return headersList.get("origin") || env.server.NEXT_PUBLIC_APP_URL;
-}
 
 async function createSubscriptionCheckout(params: {
   plan: CheckoutPlan;
@@ -206,54 +147,7 @@ export async function createListingHoldCheckoutAction(companyId: string) {
     throw new Error("Invalid company id");
   }
 
-  const locale = auth.member.language || "en";
-  const company = await findCompanyByOwner(db, parsed.data, auth.member.id);
-  if (!company) {
-    throw new Error("Company not found");
-  }
-
-  // Back to wherever this owner watches the application: a partner, or a
-  // member whose dues are unpaid, on the standing screen (the dashboard is
-  // closed to them, FR-103); a member in the club in Profile → Companies.
-  const [outsideTheClub, stripeCustomerId, priceId, origin] = await Promise.all(
-    [
-      // A partner's return address is settled by what they are.
-      auth.member.duesKind === "partner"
-        ? Promise.resolve(true)
-        : awaitsPaymentOutsideClub(db, auth.member, new Date()),
-      getOrCreateStripeCustomer(
-        auth.member.id,
-        auth.member.email ?? undefined,
-        auth.member.displayName,
-      ),
-      checkoutPriceIdForPlan(db, "listing"),
-      appOrigin(),
-    ],
-  );
-  const back =
-    auth.member.duesKind === "partner" || outsideTheClub
-      ? `/${locale}/membership`
-      : `/${locale}/dashboard/profile?tab=companies`;
-
-  const separator = back.includes("?") ? "&" : "?";
-  const result = await openListingHoldCheckout(
-    db,
-    await productionListingHoldDeps(),
-    {
-      memberId: auth.member.id,
-      companyId: company.id,
-      stripeCustomerId,
-      receiptEmail: auth.member.email || company.contactEmail || null,
-      priceId,
-      // The company rides along, so a screen listing several applications
-      // marks only this one as "confirming".
-      successUrl: `${origin}${back}${separator}hold=returned&company=${company.id}`,
-      cancelUrl: `${origin}${back}`,
-      now: new Date(),
-    },
-  );
-
-  redirect(result.outcome === "opened" ? result.url : back);
+  redirect(await listingHoldCheckoutUrl(auth.member, parsed.data));
 }
 
 export async function createPortalSessionAction() {

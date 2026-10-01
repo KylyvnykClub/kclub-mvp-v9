@@ -1,6 +1,9 @@
 "use server";
 
+import { redirect } from "next/navigation";
+
 import { db } from "@/data/db";
+import { findMemberById } from "@/data/identity";
 import { ownsLiveApplication } from "@/data/membership-access";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
@@ -17,6 +20,7 @@ import {
 import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
 import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
+import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { getCurrentMember } from "./session";
 
 /**
@@ -28,9 +32,9 @@ import { getCurrentMember } from "./session";
  * again" is what sent a business arriving from the landing page into the
  * member sign-up and lost them there.
  *
- * Nothing is charged. The application goes to moderation and the listing is
- * paid for after it is approved (ADR 0036, FR-111), which is why this action
- * has no Stripe call in it and returns no checkout url.
+ * Nothing is charged. A successful submit goes straight on to Stripe to
+ * reserve the listing price on the card (ADR 0037, FR-113); it is captured
+ * only when a moderator approves.
  */
 
 export type PartnerApplicationState = {
@@ -120,6 +124,15 @@ async function fileApplication(
 
     // ADR 0040: free listing if this browser came through the partner link.
     await applyPartnerLinkWaiver(db, ownerId, result.companyId);
+
+    // Straight on to reserving the listing (ADR 0037) - or, when the link
+    // waived it, to the standing screen. The owner is read by id: a session
+    // created by this same request is not on the request yet.
+    const owner = await findMemberById(db, ownerId);
+    const next = owner
+      ? await holdCheckoutUrlOrNull(owner, result.companyId)
+      : null;
+    if (next) redirect(next);
   }
 
   return result;
