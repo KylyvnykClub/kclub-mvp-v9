@@ -11,6 +11,7 @@ import {
   uploadDraftLogoAction,
 } from "@/actions/company-draft-media";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { uploadImageSafely } from "@/lib/client-image-upload";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 import { DRAFT_LOGO_SLOT, draftMediaServePath } from "@/lib/draft-media-path";
@@ -57,7 +58,10 @@ export function DraftLogoField({
   return (
     <div className="space-y-2">
       {cropDialog}
-      <Label htmlFor="draftLogo">{t("logoSectionLabel")}</Label>
+      <Label htmlFor="draftLogo">
+        {t("logoSectionLabel")}
+        <RequiredMark />
+      </Label>
       {error && (
         <p role="alert" className="text-sm text-red-500">
           {error}

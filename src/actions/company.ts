@@ -78,10 +78,12 @@ import {
 } from "@/lib/company-form";
 import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
+import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
 
 const SKIP_DB_PRERENDER = process.env.KCLUB_SKIP_DB_PRERENDER === "1";
@@ -148,6 +150,11 @@ export async function registerCompanyAction(
   // /partner keeps the free listing.
   if (result.success && result.companyId) {
     await applyPartnerLinkWaiver(db, auth.member.id, result.companyId);
+    // Straight on to reserving the listing (ADR 0037): the application is not
+    // in the moderation queue until the hold exists, so a second button
+    // between the two was one more place to stop.
+    const next = await holdCheckoutUrlOrNull(auth.member, result.companyId);
+    if (next) redirect(next);
   }
   return result;
 }

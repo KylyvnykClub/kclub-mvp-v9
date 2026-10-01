@@ -523,7 +523,7 @@
         "countries": "Країни присутності"
       },
       "top": {
-        "title": "Топпартнери",
+        "title": "Топ-партнери",
         "viewAll": "Усі партнери",
         "offer": "Перевага для учасників",
         "specialPrivileges": "Особливі привілеї"
@@ -1162,7 +1162,7 @@
     "namePlaceholder": "напр. Acme Corp",
     "legalNameLabel": "Юридична назва (необов'язково)",
     "legalNamePlaceholder": "напр. Acme Corporation LLC",
-    "taxIdLabel": "Податковий ID / ЄДРПОУ (необов'язково)",
+    "taxIdLabel": "Податковий ID / ЄДРПОУ",
     "websiteLabel": "Сайт (необов'язково)",
     "logoLabel": "URL логотипу (необов'язково)",
     "countryLabel": "Країна",
@@ -1205,7 +1205,7 @@
     "moderationRejected": "Відхилена",
     "draftLoading": "Завантажуємо вашу заявку...",
     "draftSaving": "Зберігаємо...",
-    "reviewNote": "Перевірте відповіді. Оплата поки не стягується — заявку розглянуть протягом 1–3 робочих днів.",
+    "reviewNote": "Після натискання ви одразу перейдете до резервування оплати лістингу на картці. Сума спишеться лише в разі схвалення заявки (1–3 робочі дні), інакше резерв буде знято.",
     "notProvided": "Не вказано",
     "errors": {
       "aboutField": "{field}: {reason}",
@@ -1400,6 +1400,8 @@
       "tabHistory": "Історія",
       "cityLabel": "Місто",
       "websiteLabel": "Сайт",
+      "taxIdLabel": "Податковий ID / ЄДРПОУ",
+      "legalNameLabel": "Юридична назва",
       "createdLabel": "Подана",
       "updatedLabel": "Остання зміна",
       "descriptionLabel": "Опис",

@@ -9,6 +9,7 @@ import { listCitiesForCountryAction } from "@/actions/cities";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CountrySelect } from "@/components/ui/country-select";
 import { Input } from "@/components/ui/input";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { countryOptions } from "@/lib/countries";
@@ -76,15 +77,21 @@ export const COMPANY_FIELD_ORDER = [
 export function Field({
   id,
   label,
+  required = false,
   children,
 }: {
   id: string;
   label: string;
+  /** Shows the mark: the application cannot be submitted without this. */
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>
+        {label}
+        {required && <RequiredMark />}
+      </Label>
       {children}
     </div>
   );
@@ -159,7 +166,7 @@ export function CompanyFields({
         <SectionHeading>{t("categorySection")}</SectionHeading>
         <p className="text-sm text-muted-foreground">{t("categoryNote")}</p>
 
-        <Field id="block" label={t("blockLabel")}>
+        <Field id="block" required label={t("blockLabel")}>
           <select
             id="block"
             className={SELECT_CLASS}
@@ -183,7 +190,7 @@ export function CompanyFields({
           </select>
         </Field>
 
-        <Field id="category" label={t("categoryLabel")}>
+        <Field id="category" required label={t("categoryLabel")}>
           <select
             id="category"
             className={SELECT_CLASS}
@@ -207,7 +214,7 @@ export function CompanyFields({
           </select>
         </Field>
 
-        <Field id="businessCategoryIds" label={t("subcategoryLabel")}>
+        <Field id="businessCategoryIds" required label={t("subcategoryLabel")}>
           <div
             id="businessCategoryIds"
             role="group"
@@ -262,7 +269,7 @@ export function CompanyFields({
       <section className="space-y-4">
         <SectionHeading>{t("detailsSection")}</SectionHeading>
 
-        <Field id="name" label={t("nameLabel")}>
+        <Field id="name" required label={t("nameLabel")}>
           <Input
             id="name"
             value={values.name ?? ""}
@@ -282,12 +289,13 @@ export function CompanyFields({
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field id="taxId" label={t("taxIdLabel")}>
+          <Field id="taxId" required label={t("taxIdLabel")}>
             <Input
               id="taxId"
               value={values.taxId ?? ""}
               placeholder="12345678"
               onChange={(e) => set("taxId", e.target.value)}
+              required
             />
           </Field>
           <Field id="website" label={t("websiteLabel")}>
@@ -300,7 +308,7 @@ export function CompanyFields({
           </Field>
         </div>
 
-        <Field id="description" label={t("descriptionLabel")}>
+        <Field id="description" required label={t("descriptionLabel")}>
           <Textarea
             id="description"
             value={values.description ?? ""}
@@ -310,7 +318,11 @@ export function CompanyFields({
           />
         </Field>
 
-        <Field id="specializationDescription" label={t("specializationLabel")}>
+        <Field
+          id="specializationDescription"
+          required
+          label={t("specializationLabel")}
+        >
           <Textarea
             id="specializationDescription"
             value={values.specializationDescription ?? ""}
@@ -328,7 +340,7 @@ export function CompanyFields({
         <SectionHeading>{t("partnerSection")}</SectionHeading>
         <p className="text-sm text-muted-foreground">{t("partnerNote")}</p>
 
-        <Field id="discount" label={t("discountLabel")}>
+        <Field id="discount" required label={t("discountLabel")}>
           <Input
             id="discount"
             value={values.discount ?? ""}
@@ -340,7 +352,7 @@ export function CompanyFields({
         <SpecialPrivilegesField values={values} set={set} />
 
         <div className="grid grid-cols-2 gap-4">
-          <Field id="contactEmail" label={t("contactEmailLabel")}>
+          <Field id="contactEmail" required label={t("contactEmailLabel")}>
             <Input
               id="contactEmail"
               type="email"
@@ -349,7 +361,7 @@ export function CompanyFields({
               onChange={(e) => set("contactEmail", e.target.value)}
             />
           </Field>
-          <Field id="contactPhone" label={t("contactPhoneLabel")}>
+          <Field id="contactPhone" required label={t("contactPhoneLabel")}>
             <Input
               id="contactPhone"
               value={values.contactPhone ?? ""}
@@ -364,7 +376,7 @@ export function CompanyFields({
       <section className="space-y-4">
         <SectionHeading>{t("locationSection")}</SectionHeading>
 
-        <Field id="businessFormat" label={t("businessFormatLabel")}>
+        <Field id="businessFormat" required label={t("businessFormatLabel")}>
           <select
             id="businessFormat"
             className={SELECT_CLASS}
@@ -383,6 +395,7 @@ export function CompanyFields({
         <Field
           id="registrationCountryCode"
           label={t("registrationCountryLabel")}
+          required
         >
           <CountrySelect
             id="registrationCountryCode"
@@ -470,7 +483,7 @@ function CityPicker({
   const exact = cities?.some((c) => c.toLowerCase() === query) ?? false;
 
   return (
-    <Field id="city" label={t("cityLabel")}>
+    <Field id="city" required label={t("cityLabel")}>
       <div className="relative">
         <Input
           id="city"
@@ -565,7 +578,11 @@ function ServiceCountriesPicker({
   const locked = worldwide || sameAsRegistration;
 
   return (
-    <Field id="serviceCountryCodes" label={t("serviceCountriesLabel")}>
+    <Field
+      id="serviceCountryCodes"
+      required={!worldwide}
+      label={t("serviceCountriesLabel")}
+    >
       <div
         className={`space-y-3 border border-input bg-background p-3 ${locked ? "opacity-60" : ""}`}
       >

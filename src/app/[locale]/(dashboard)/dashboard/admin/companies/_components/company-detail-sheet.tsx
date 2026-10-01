@@ -259,6 +259,17 @@ export function CompanyDetailSheet({
             label={t("cityLabel")}
             value={[company.city, company.country].filter(Boolean).join(", ")}
           />
+          <Field
+            label={t("taxIdLabel")}
+            value={
+              company.taxId ? (
+                <span className="font-mono">{company.taxId}</span>
+              ) : (
+                "—"
+              )
+            }
+          />
+          <Field label={t("legalNameLabel")} value={company.legalName} />
           <Field label={t("websiteLabel")} value={company.website} />
           <Field label={t("discountLabel")} value={company.discount} />
           <Field
