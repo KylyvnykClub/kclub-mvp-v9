@@ -325,6 +325,7 @@
     "authoritative": "Authoritative version",
     "authoritativeHint": "This is the authoritative version of the document",
     "operator": "Platform operator",
+    "operatorCountry": "United States",
     "contact": "Contact"
   },
   "metadata": {
