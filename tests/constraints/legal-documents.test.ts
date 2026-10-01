@@ -85,9 +85,55 @@ describe("constraint: legal documents share one formatted shape", () => {
     })),
   );
 
-  it("names every document in the same language, so the index reads as one set", () => {
+  // Owner decision 2026-10-01: each locale names its documents in its own
+  // language - no "TERMS OF USE" on the Ukrainian index. Upper case in every
+  // locale, so the index still reads as one set; Latin is allowed in ru/uk
+  // only for the words the glossary leaves untranslated.
+  it("names every document in its own language, in upper case", () => {
     for (const { name, parsed } of documents) {
-      expect(parsed.data.title, name).toMatch(/^[A-Z][A-Z /]+$/);
+      const title = String(parsed.data.title);
+      if (name.endsWith(".en.mdx")) {
+        expect(title, name).toMatch(/^[A-Z][A-Z /]+$/);
+      } else {
+        expect(title, name).toMatch(/^[А-ЯЁІЇЄҐ][А-ЯЁІЇЄҐ' A-Z]+$/);
+        expect(
+          title.replace(/BUSINESS INTRODUCTIONS|COOKIE/g, ""),
+          `${name} has untranslated Latin in its title`,
+        ).not.toMatch(/[A-Z]/);
+      }
+    }
+  });
+
+  // Stripping the repeated title once cut the first section off four
+  // documents in every language. Each translation carries the same sections
+  // as the English text, starting from section 1.
+  it("keeps every section, from section 1, in every locale", () => {
+    for (const id of LEGAL_DOCUMENT_IDS) {
+      const headings = (suffix: string) =>
+        readFileSync(join(LEGAL_DIR, `${id}${suffix}`), "utf-8")
+          .split("\n")
+          .filter((line) => /^##? /.test(line));
+      const english = headings(".en.mdx");
+      expect(
+        english.some((line) => line.startsWith("## 1. ")),
+        id,
+      ).toBe(true);
+      for (const suffix of [".ru.mdx", ".uk.mdx"]) {
+        expect(headings(suffix).length, `${id}${suffix}`).toBe(english.length);
+        expect(
+          headings(suffix).some((line) => line.startsWith("## 1. ")),
+          `${id}${suffix}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("does not name another document in English inside a ru/uk text", () => {
+    const englishNames =
+      /\b(Terms of Use|Privacy Policy|Cookie Policy|Club Rules|Partner Rules|Refund Policy|Disclaimer|Contact Us|Business Introduction Rules)\b/;
+    for (const { name, parsed } of documents) {
+      if (name.endsWith(".en.mdx")) continue;
+      expect(parsed.content, name).not.toMatch(englishNames);
     }
   });
 
