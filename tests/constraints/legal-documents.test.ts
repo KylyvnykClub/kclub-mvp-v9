@@ -128,6 +128,16 @@ describe("constraint: legal documents share one formatted shape", () => {
     }
   });
 
+  // Owner decision 2026-10-01: one contact address across the whole pack.
+  it("gives kylyvnykclub@gmail.com as the only contact address", () => {
+    for (const { name, parsed } of documents) {
+      const addresses = parsed.content.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) ?? [];
+      for (const address of addresses) {
+        expect(address, name).toBe("kylyvnykclub@gmail.com");
+      }
+    }
+  });
+
   it("does not name another document in English inside a ru/uk text", () => {
     const englishNames =
       /\b(Terms of Use|Privacy Policy|Cookie Policy|Club Rules|Partner Rules|Refund Policy|Disclaimer|Contact Us|Business Introduction Rules)\b/;

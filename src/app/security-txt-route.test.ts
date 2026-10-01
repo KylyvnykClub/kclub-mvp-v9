@@ -8,7 +8,7 @@ describe("/.well-known/security.txt", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/plain");
-    expect(body).toContain("Contact: mailto:security@kclub.com");
+    expect(body).toContain("Contact: mailto:kylyvnykclub@gmail.com");
     expect(body).toContain("Preferred-Languages: en, ru, uk");
     expect(body).toContain("/.well-known/security.txt");
   });

@@ -326,14 +326,14 @@ recipient company, not the recipient's personal details.
 
 |Step|Who|Action|
 |-|-|-|
-|1. Detect and report|Anyone|Report to `security@kclub.com` or the `#incident` channel. Anyone who suspects an incident declares one; false alarms are free, hesitation is not|
+|1. Detect and report|Anyone|Report to `kylyvnykclub@gmail.com` or the `#incident` channel. Anyone who suspects an incident declares one; false alarms are free, hesitation is not|
 |2. Contain|Tech lead|Rotate the affected credential first. Then: kill sessions (`DELETE FROM member_session`), disable sign-up or SMS with the kill switch, block an IP range at Cloudflare, or put the application in maintenance mode. Containment precedes understanding|
 |3. Assess|Tech lead + owner|What was accessed, by whom, when, and how many people are affected. Sources: audit log, Axiom logs (30 days), Sentry, Vercel and Cloudflare logs, Stripe and Twilio activity|
 |4. Notify|Owner|Supervisory authority within **72 hours** of becoming aware, where GDPR is engaged; affected individuals without undue delay where there is high risk to them; US state breach laws where the affected person resides — the strictest applicable clock governs. Legal counsel drafts; the owner signs|
 |5. Recover|Tech lead|Restore from backup if data was destroyed ([data-storage.md §5](data-storage.md#5-backup-and-recovery)); force password resets if credentials are implicated; reissue cards if QR tokens leaked; re-verify subscription state against Stripe|
 |6. Review|Whole team|Blameless post-mortem within 5 working days, with dated actions and owners. Every action lands in the document that failed to prevent it|
 
-**Security contact:** `security@kclub.com`, monitored by the owner and the tech
+**Security contact:** `kylyvnykclub@gmail.com`, monitored by the owner and the tech
 lead, published in `/.well-known/security.txt` with a 90-day disclosure window
 and a commitment to acknowledge within 3 working days.
 

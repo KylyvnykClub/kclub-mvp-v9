@@ -234,8 +234,11 @@ where a member is turned away at a counter for no reason.
 
 **Severity:** medium
 
-Eight documents give `kylyvnykclub@gmail.com`. Terms §37 gives
-`yurgarantzhitlo@gmail.com`. The design assumes `security@`, `privacy@` and a
+Eight documents give `kylyvnykclub@gmail.com`. Terms §37 gave
+`yurgarantzhitlo@gmail.com`; **resolved 2026-10-01 by owner decision** — every
+document, in every language and in `docs/policy`, now gives
+`kylyvnykclub@gmail.com`, and a constraint test keeps it that way. The rest of
+this finding stands. The design assumes `security@`, `privacy@` and a
 monitored `/.well-known/security.txt`
 ([security.md §9](security.md#9-incident-response),
 [CONTRIBUTING.md](../CONTRIBUTING.md#reporting-problems)).

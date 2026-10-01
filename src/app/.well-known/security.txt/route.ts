@@ -20,7 +20,7 @@ export function GET(): Response {
 
   return new Response(
     [
-      "Contact: mailto:security@kclub.com",
+      "Contact: mailto:kylyvnykclub@gmail.com",
       `Expires: ${expires}`,
       "Preferred-Languages: en, ru, uk",
       `Canonical: ${origin}/.well-known/security.txt`,

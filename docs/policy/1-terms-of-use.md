@@ -864,7 +864,7 @@ Kylyvnyk Consulting LLC
 
 Email:
 
-yurgarantzhitlo@gmail.com
+kylyvnykclub@gmail.com
 
 Почтовый адрес:
 
