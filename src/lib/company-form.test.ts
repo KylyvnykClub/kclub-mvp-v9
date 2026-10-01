@@ -22,6 +22,7 @@ import {
 
 const DETAILS = {
   name: "Acme Coffee",
+  taxId: "12345678",
   specializationDescription: "Coffee roasting and tasting sessions",
   description: "A roastery with a tasting room in the city centre.",
   discount: "15% for members",
@@ -371,5 +372,19 @@ describe("company applications carry the details a catalogue card needs", () => 
       contactEmail: "not-an-email",
     });
     expect(describeCompanyIssue(parsed.error!).field).toBe("contactEmail");
+  });
+
+  it("refuses an application without a tax ID (owner decision 2026-10-01)", () => {
+    const { taxId: _omitted, ...withoutTaxId } = DETAILS;
+    const missing = companyDetailsSchema.safeParse(withoutTaxId);
+    expect(missing.success).toBe(false);
+    expect(describeCompanyIssue(missing.error!)).toEqual({
+      code: "required",
+      field: "taxId",
+    });
+
+    const blank = companyDetailsSchema.safeParse({ ...DETAILS, taxId: "   " });
+    expect(blank.success).toBe(false);
+    expect(describeCompanyIssue(blank.error!).field).toBe("taxId");
   });
 });

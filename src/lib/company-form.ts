@@ -43,7 +43,9 @@ export const companyDetailsSchema = z.object({
     .min(2, "Company name must be at least 2 characters")
     .max(255),
   legalName: z.string().max(255).optional(),
-  taxId: z.string().max(50).optional(),
+  // Owner decision 2026-10-01: required, so staff can check the business
+  // against the state register before approving it.
+  taxId: z.string().trim().min(1).max(50),
   website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   // Owner decision 2026-09-29: an application says what the business offers
   // members and how to reach it - the catalogue card is empty without them.

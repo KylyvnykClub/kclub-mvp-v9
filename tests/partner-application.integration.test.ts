@@ -96,6 +96,7 @@ function application(
 ): FormData {
   const form = new FormData();
   const values: Record<string, string> = {
+    taxId: "12345678",
     name: `Applicant ${crypto.randomUUID().slice(0, 8)}`,
     specializationDescription: "Roasting, tasting and wholesale supply.",
     description: "A coffee roastery with a tasting room.",

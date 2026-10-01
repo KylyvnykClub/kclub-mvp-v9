@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { FILE_INPUT_CLASS } from "@/components/company/company-fields";
 import { useImageCrop } from "@/components/media/image-crop-dialog";
 import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
@@ -44,7 +45,10 @@ export function PartnerMediaField({
     <div className="space-y-6">
       {cropDialog}
       <div className="space-y-2">
-        <Label htmlFor="partnerLogo">{t("logoSectionLabel")}</Label>
+        <Label htmlFor="partnerLogo">
+          {t("logoSectionLabel")}
+          <RequiredMark />
+        </Label>
         <div className="flex items-center gap-4">
           {media.logo ? (
             <LocalPreview
