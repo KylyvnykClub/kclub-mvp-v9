@@ -325,6 +325,7 @@
     "authoritative": "Действующая версия",
     "authoritativeHint": "Это действующая версия документа",
     "operator": "Оператор платформы",
+    "operatorCountry": "США",
     "contact": "Контакт"
   },
   "metadata": {

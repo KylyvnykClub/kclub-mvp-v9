@@ -10,7 +10,9 @@ import { getTranslations } from "next-intl/server";
  */
 export const LEGAL_OPERATOR = {
   name: "Kylyvnyk Consulting LLC",
-  address: ["6 Pauline Pl", "Palm Coast, FL 32164-7535", "United States"],
+  // The postal lines stay in Latin, as a letter must be addressed; the country
+  // is named in the page's language.
+  address: ["6 Pauline Pl", "Palm Coast, FL 32164-7535"],
   email: "kylyvnykclub@gmail.com",
 } as const;
 
@@ -33,6 +35,7 @@ export async function LegalOperator() {
                 {line}
               </span>
             ))}
+            <span className="block">{t("operatorCountry")}</span>
           </dd>
         </div>
         <div>

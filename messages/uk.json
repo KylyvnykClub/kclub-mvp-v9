@@ -974,6 +974,7 @@
     "authoritative": "Чинна версія",
     "authoritativeHint": "Це чинна версія документа",
     "operator": "Оператор платформи",
+    "operatorCountry": "США",
     "contact": "Контакт"
   },
   "metadata": {

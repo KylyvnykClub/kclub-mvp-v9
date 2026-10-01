@@ -140,7 +140,7 @@ describe("constraint: legal documents share one formatted shape", () => {
 
   it("does not name another document in English inside a ru/uk text", () => {
     const englishNames =
-      /\b(Terms of Use|Privacy Policy|Cookie Policy|Club Rules|Partner Rules|Refund Policy|Disclaimer|Contact Us|Business Introduction Rules)\b/;
+      /\b(Terms of Use|Privacy Policy|Cookie Policy|Club Rules|Partner Rules|Refund Policy|Disclaimer|Contact Us|Business Introduction Rules|United States)\b/;
     for (const { name, parsed } of documents) {
       if (name.endsWith(".en.mdx")) continue;
       expect(parsed.content, name).not.toMatch(englishNames);
