@@ -171,9 +171,9 @@ export function KylHeader({
               <Link className="text-link" href="/login">
                 {t("signIn")}
               </Link>
-              <Link className="button button-small" href="/register">
+              <a className="button button-small" href="#plans">
                 {t("join")}
-              </Link>
+              </a>
             </>
           )}
           {languageSelect("desktop")}
@@ -227,13 +227,9 @@ export function KylHeader({
             <Link href="/login" onClick={() => setOpen(false)}>
               {t("signIn")}
             </Link>
-            <Link
-              className="button"
-              href="/register"
-              onClick={() => setOpen(false)}
-            >
+            <a className="button" href="#plans" onClick={() => setOpen(false)}>
               {t("join")}
-            </Link>
+            </a>
           </>
         )}
         {languageSelect("mobile")}

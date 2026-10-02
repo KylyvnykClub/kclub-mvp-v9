@@ -2,7 +2,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { KylReveal } from "./kyl-reveal";
 
-import { Link } from "@/i18n/navigation";
 import { landingStats, type ClubPresence } from "@/lib/club-stats";
 
 /**
@@ -40,9 +39,9 @@ export async function KylHero({ presence }: { presence: ClubPresence }) {
             {t("description")}
           </KylReveal>
           <KylReveal className="hero-cta">
-            <Link className="button hero-primary" href="/register">
+            <a className="button hero-primary" href="#plans">
               {t("primaryCta")}
-            </Link>
+            </a>
             <a className="button button-secondary" href="#about">
               {t("secondaryCta")}
             </a>
