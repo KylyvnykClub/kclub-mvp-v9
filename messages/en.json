@@ -887,7 +887,7 @@
           "action": "Explore VIP Membership"
         },
         "business": {
-          "name": "Business",
+          "name": "Business partner",
           "description": "Introduce your company to the network, publish your offer, and build useful relationships.",
           "action": "Add Your Business",
           "photoAlt": "Contemporary private meeting rooms"

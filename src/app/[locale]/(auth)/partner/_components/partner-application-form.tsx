@@ -231,11 +231,11 @@ export function PartnerApplicationForm({
         </CardHeader>
 
         <CardContent className="p-6 sm:p-8">
-          // Submitted by hand rather than through `action`: React 19 resets a
-          // form after its action returns, and the reset event makes each //
-          Radix checkbox drop back to unchecked - which silently cleared // the
-          chosen subcategory after any refusal, so the next attempt // failed on
-          a field the applicant had already filled.
+          {/* Submitted by hand rather than through `action`: React 19 resets
+              a form after its action returns, and the reset event makes each
+              Radix checkbox drop back to unchecked - which silently cleared the
+              chosen subcategory after any refusal, so the next attempt failed
+              on a field the applicant had already filled. */}
           <form
             onSubmit={(event) => {
               event.preventDefault();

@@ -3448,7 +3448,8 @@
 .kyl .footer-bottom {
   margin-top: 25px;
 }
-.kyl section[id]:not(#top) {
+.kyl section[id]:not(#top),
+.kyl #plans {
   scroll-margin-top: 96px;
 }
 @media (max-width: 1050px) {
@@ -3457,7 +3458,8 @@
   }
 }
 @media (max-width: 760px) {
-  .kyl section[id]:not(#top) {
+  .kyl section[id]:not(#top),
+  .kyl #plans {
     scroll-margin-top: 112px;
   }
   .kyl .partner-heading {

@@ -22,9 +22,15 @@ export async function KylFinalCta({ member }: { member: boolean }) {
           <br />
           {t("titleLine2")}
         </h2>
-        <Link className="button" href={member ? "/dashboard" : "/register"}>
-          {t("button")}
-        </Link>
+        {member ? (
+          <Link className="button" href="/dashboard">
+            {t("button")}
+          </Link>
+        ) : (
+          <a className="button" href="#plans">
+            {t("button")}
+          </a>
+        )}
       </KylReveal>
     </section>
   );

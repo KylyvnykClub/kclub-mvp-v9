@@ -26,6 +26,11 @@ import { monthlyPrice, type PricedPlan } from "@/domain/pricing";
  * dues and find the application afterwards. It now goes to the partner
  * application (FR-109), which asks the business its own questions and creates
  * the account as part of the same submit.
+ *
+ * The grid carries `id="plans"` because every signed-out "join" control on the
+ * landing scrolls here rather than to `/register`: a visitor who came to list a
+ * business kept missing the way in, so the choice of member, VIP or business
+ * partner is put in front of everyone before any form is.
  */
 const PLANS = [
   {
@@ -116,7 +121,7 @@ export async function KylMembership({ member }: { member: boolean }) {
         </KylReveal>
       </div>
 
-      <KylReveal className="shell plan-grid">
+      <KylReveal className="shell plan-grid" id="plans">
         {PLANS.map(({ key, plan, Icon, className, signedIn, signedOut }) => {
           const body = (
             <>

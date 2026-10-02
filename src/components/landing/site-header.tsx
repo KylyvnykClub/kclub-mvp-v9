@@ -222,7 +222,7 @@ export function SiteHeader({
                 {t("nav.signIn")}
               </Link>
               <Link
-                href="/register"
+                href="/#plans"
                 className="kclub-brand-button hidden lg:inline-flex"
               >
                 {t("nav.join")}
@@ -330,7 +330,7 @@ export function SiteHeader({
                     {t("nav.signIn")}
                   </Link>
                   <Link
-                    href="/register"
+                    href="/#plans"
                     onClick={() => setOpen(false)}
                     className="kclub-brand-button justify-center"
                   >
