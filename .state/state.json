@@ -68,27 +68,20 @@
     }
   ],
   "lastSession": {
-    "date": "2026-09-27",
+    "date": "2026-10-02",
     "checklist": [
-      "Implemented the client's Stripe spec as ADR 0037: card held at application (Checkout, manual capture, card saved, receipt_email), Approve captures, Reject cancels",
-      "Publication and partner access now wait for Stripe's payment_intent.succeeded webhook, re-read from the API; one 'paid listing' rule used everywhere",
-      "Monthly listing subscription starts from the saved card after the first confirmed capture, anchored to the end of the paid month",
-      "Expired or non-capturable holds are never captured; duplicate holds and holds after rejection are cancelled",
-      "Logos no longer cropped at upload and shown whole on a light plate everywhere",
-      "Special privileges switch + optional note on the application, shown on cards, partner page, owner and staff views",
-      "Partner page public in full (photos for guests) and a downloadable QR code per live partner in the owner's Companies tab",
-      "getOrCreateStripeCustomer no longer exported from a 'use server' file (was callable with any member id)",
-      "FR-113…FR-118 added, FR-044/052/110/111 amended, phase-10.md, data-storage/integration/operations/ux/glossary updated",
-      "pnpm verify green (672 unit), integration 335 with only the 3 known FR-083 failures, migration up/down/up proved",
-      "Owner decided: a member's own company also goes through reserve → approve → capture, and partner pages show contact details to everyone",
-      "All 10 findings of the adversarial /code-review fixed with regression tests"
+      "Checked prod: googlea8dedf67288c3460.html is served 200 on https://www.kylyvnyk.club (apex 308s to www); advised the advertiser to verify the www URL-prefix property or use a DNS Domain property",
+      "Every signed-out join control on the landing (header, mobile menu, hero, closing CTA) now scrolls to the three plan cards (#plans); SiteHeader join links to /#plans",
+      "Business plan card renamed to Business partner in en/ru/uk",
+      "/partner no longer prints a code comment as page text (JSX comment fix)",
+      "gitleaks 8.30.1 installed in ~/.local/bin so the pre-commit secret scan runs under WSL (docker is only a shim there)",
+      "pnpm verify green (714 unit); no browser walk - Docker not available in WSL, local Postgres down"
     ],
-    "stoppedAt": "Committed and pushed on feat/FR-113-card-hold; PR not opened yet (no gh here) - owner chose to go live without a test-mode run.",
+    "stoppedAt": "feat/join-plan-choice pushed with a PR against main, awaiting merge.",
     "nextSteps": [
-      "Open and merge the PR from the compare link",
-      "Live Stripe: add the five payment_intent.* events and charge.refunded to the webhook; give the restricted key write on PaymentIntents, Checkout Sessions, Customers, Subscriptions, Refunds",
-      "Live smoke with a real card: reserve on /ru/partner, confirm Uncaptured in Stripe, reject, confirm Canceled",
-      "Browser-walk the partner standing screen, console payment panel, privileges switch, logos and QR"
+      "Merge the join-plan-choice PR and check on prod that each join button lands on the cards (desktop + phone)",
+      "Enable Docker Desktop WSL integration so the app can be browser-walked locally",
+      "Look at React error #418 (hydration mismatch) on /directory"
     ]
   }
 }
