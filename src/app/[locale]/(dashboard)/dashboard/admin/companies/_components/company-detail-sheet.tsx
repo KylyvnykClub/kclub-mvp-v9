@@ -22,9 +22,11 @@ import {
   getCompanyAdminDetailAction,
   hideCompanyAction,
   rejectCompanyChangesAction,
+  revokeCompanyListingWaiverAction,
   setCompanyShowcaseAction,
   staffEditCompanyAction,
   unhideCompanyAction,
+  waiveCompanyListingAction,
 } from "@/actions/company";
 import { AdminDetailSheet } from "../../_components/admin-detail-sheet";
 import { ModerateActions } from "./moderate-actions";
@@ -454,6 +456,43 @@ export function CompanyDetailSheet({
               );
             })}
           </ul>
+        )}
+        {/* ADR 0041: the console's own waiver - publish without payment,
+            or take that back. A rejected company is restored first. */}
+        {canModerate && company.moderationStatus !== "rejected" && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {waived ? t("waiverOnHint") : t("waiverOffHint")}
+            </p>
+            {waived ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() =>
+                  run(
+                    () => revokeCompanyListingWaiverAction(companyId),
+                    t("waiverRevoked"),
+                  )
+                }
+                disabled={isPending}
+              >
+                {t("waiverRevoke")}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() =>
+                  run(
+                    () => waiveCompanyListingAction(companyId),
+                    t("waiverGranted"),
+                  )
+                }
+                disabled={isPending}
+              >
+                {t("waiverGrant")}
+              </Button>
+            )}
+          </div>
         )}
       </Section>
 
