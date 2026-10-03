@@ -1466,8 +1466,14 @@
       "paymentRetrying": "Stripe did not respond; the payment step will be retried automatically.",
       "specialPrivilegesLabel": "Special privileges",
       "specialPrivilegesOn": "Yes (no details given)",
-      "listingWaived": "Free via link",
-      "approveWaived": "The listing is free: the application came through the club's partner link. Once approved, the company goes straight into the catalogue and nothing is charged."
+      "listingWaived": "Free",
+      "approveWaived": "The listing is free: the application came through the club's partner link. Once approved, the company goes straight into the catalogue and nothing is charged.",
+      "waiverGrant": "Publish without payment",
+      "waiverRevoke": "Withdraw free listing",
+      "waiverGranted": "Listing is free — the company is in the catalogue once approved",
+      "waiverRevoked": "Free listing withdrawn",
+      "waiverOffHint": "Publish this listing without payment, for example when the partner paid outside the listing checkout.",
+      "waiverOnHint": "This listing is free: it is in the catalogue while approved, with nothing charged."
     },
     "referrals": {
       "title": "Client Introductions",

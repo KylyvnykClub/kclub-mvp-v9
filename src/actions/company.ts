@@ -33,6 +33,8 @@ import {
   setCompanyPendingChanges,
   setCompanyShowcase,
   updateCompanyFields,
+  revokeListingWaiver,
+  waiveListingByStaff,
   type PartnerFilters,
 } from "@/data/companies";
 import {
@@ -931,6 +933,85 @@ export async function unhideCompanyAction(companyId: string) {
   // and, as with approve, the listing waits for Stripe to confirm it.
   await settleListingHoldsForDecision(companyId, auth.member.id);
 
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return { success: true };
+}
+
+/**
+ * ADR 0041: staff publish a listing without payment - the console's own
+ * waiver, for a partner the owner admits by hand. Approved, it is live at
+ * once; pending, it enters the review queue like a held application.
+ */
+export async function waiveCompanyListingAction(companyId: string) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "approve", "company");
+
+  if (!z.string().uuid().safeParse(companyId).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
+  const waived = await db.transaction(async (tx) => {
+    const done = await waiveListingByStaff(tx, companyId, new Date());
+    if (!done) return false;
+    await appendAuditEntry(tx, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_waived",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { by: "staff" },
+    });
+    return true;
+  });
+  if (!waived) {
+    const current = await findCompanyById(db, companyId);
+    if (current?.listingWaivedAt)
+      return { success: true, alreadyApplied: true };
+    return { success: false, error: "waiver_not_applicable" };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return { success: true };
+}
+
+/** ADR 0041: take a waiver back; an unpaid listing leaves the catalogue. */
+export async function revokeCompanyListingWaiverAction(companyId: string) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "approve", "company");
+
+  if (!z.string().uuid().safeParse(companyId).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
+  const revoked = await db.transaction(async (tx) => {
+    const done = await revokeListingWaiver(tx, companyId);
+    if (!done) return false;
+    await appendAuditEntry(tx, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_waiver_revoked",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: {},
+    });
+    return true;
+  });
+  if (!revoked) return { success: true, alreadyApplied: true };
+
+  revalidatePath("/");
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
   return { success: true };

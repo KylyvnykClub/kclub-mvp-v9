@@ -192,6 +192,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-114|Approving an application with a capturable hold must capture it with no further staff action; the partner must be activated and published only after Stripe's webhook confirms the capture. A hold past its capture deadline, or no longer awaiting capture, must never be captured, and a failed capture must leave the partner inactive and unpublished|system|M|
 |FR-115|Rejecting an application must cancel its hold, so that nothing is charged and the bank releases the amount; a hold authorised after the rejection must be cancelled as soon as Stripe reports it|system|M|
 |FR-116|After the first confirmed capture the system must start a monthly listing subscription on the saved card with automatic collection, first billed when the captured month ends; later payments and failures follow FR-054…FR-056|system|M|
+|FR-121|A moderator must be able to publish a pending or approved company without payment from the console, and to withdraw that again; an approved company so waived is in the catalogue at once, a withdrawn one leaves it unless its listing is paid for, and both changes must write an audit entry ([ADR 0041](decisions/0041-staff-listing-waiver.md))|staff_moderator|M|
 
 ### 4.6 Client referrals
 

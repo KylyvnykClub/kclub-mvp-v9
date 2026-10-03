@@ -1420,6 +1420,48 @@ export async function waiveListingByPartnerLink(
 }
 
 /**
+ * ADR 0041: staff waive a listing from the console - the same waiver the
+ * partner link writes, so every "is it paid" rule already honours it. A
+ * rejected company is left alone: restoring it is a separate decision.
+ */
+export async function waiveListingByStaff(
+  db: DbClient,
+  companyId: string,
+  now: Date,
+): Promise<boolean> {
+  const changed = await db
+    .update(companies)
+    .set({ listingWaivedAt: now, listingWaiverLinkId: null })
+    .where(
+      and(
+        eq(companies.id, companyId),
+        isNull(companies.listingWaivedAt),
+        inArray(companies.moderationStatus, ["pending", "approved"]),
+      ),
+    )
+    .returning({ id: companies.id });
+  return changed.length > 0;
+}
+
+/**
+ * ADR 0041: take a waiver back, whoever wrote it. Without money behind it the
+ * listing leaves the catalogue on the next read.
+ */
+export async function revokeListingWaiver(
+  db: DbClient,
+  companyId: string,
+): Promise<boolean> {
+  const changed = await db
+    .update(companies)
+    .set({ listingWaivedAt: null, listingWaiverLinkId: null })
+    .where(
+      and(eq(companies.id, companyId), isNotNull(companies.listingWaivedAt)),
+    )
+    .returning({ id: companies.id });
+  return changed.length > 0;
+}
+
+/**
  * ADR 0040: whether this member owns an approved listing that the partner
  * link waived - the waived counterpart of `memberIsPaidByHold`, for the
  * partner access rule.
