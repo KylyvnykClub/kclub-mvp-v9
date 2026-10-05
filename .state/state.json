@@ -68,20 +68,21 @@
     }
   ],
   "lastSession": {
-    "date": "2026-10-02",
+    "date": "2026-10-05",
     "checklist": [
-      "Checked prod: googlea8dedf67288c3460.html is served 200 on https://www.kylyvnyk.club (apex 308s to www); advised the advertiser to verify the www URL-prefix property or use a DNS Domain property",
-      "Every signed-out join control on the landing (header, mobile menu, hero, closing CTA) now scrolls to the three plan cards (#plans); SiteHeader join links to /#plans",
-      "Business plan card renamed to Business partner in en/ru/uk",
-      "/partner no longer prints a code comment as page text (JSX comment fix)",
-      "gitleaks 8.30.1 installed in ~/.local/bin so the pre-commit secret scan runs under WSL (docker is only a shim there)",
-      "pnpm verify green (714 unit); no browser walk - Docker not available in WSL, local Postgres down"
+      "Owner decided on a real invite programme: personal links, who-brought-whom recorded; ADR 0042 and CLAUDE.md constraint 3 rewritten",
+      "Every member has a member link and a business link under Profile -> Invite programme, with copy, rotate and counts only",
+      "Matrix: partner (money-paid listing) or VIP brings members free; anyone brings a business with its first listing free; a club member's member link is attributed but paid",
+      "Staff member sheet shows who brought the member and how many they brought",
+      "Adversarial review done; its 6 findings fixed (waived partners do not give free memberships, waiver spent on first application, export, rotate race)",
+      "pnpm verify green (735 unit); integration test file written but NOT run - no Docker; no browser walk"
     ],
-    "stoppedAt": "feat/join-plan-choice pushed with a PR against main, awaiting merge.",
+    "stoppedAt": "feat/FR-122-invite-programme pushed; PR to be opened from the compare link (gh CLI not installed).",
     "nextSteps": [
-      "Merge the join-plan-choice PR and check on prod that each join button lands on the cards (desktop + phone)",
-      "Enable Docker Desktop WSL integration so the app can be browser-walked locally",
-      "Look at React error #418 (hydration mismatch) on /directory"
+      "Enable Docker and run pnpm test:integration -- tests/invite-programme.integration.test.ts",
+      "Browser-walk: VIP copies member link, incognito register lands in the club free, counter shows 1, admin sheet shows brought by",
+      "Ask the owner whether a partner with a waived (free) listing should count as a business partner in the matrix",
+      "Merge order: fix/staff-listing-waiver first, it is the base of this branch"
     ]
   }
 }
