@@ -16,6 +16,7 @@ import {
   registerMemberTx,
   setMemberEmail,
   setMemberPasswordHash,
+  type RegisterMemberInput,
 } from "@/data/identity";
 import {
   sendEmailVerificationEmail,
@@ -137,6 +138,8 @@ export class IdentityService {
      * `partner` where this is a business application (ADR 0036).
      */
     duesKind?: "paying" | "sponsored" | "partner";
+    /** Who brought this member, if anyone (ADR 0042). */
+    invitation?: RegisterMemberInput["invitation"];
     userAgent: string;
     ipAddress: string;
     consents: Array<{ documentId: string; version: string }>;
@@ -190,6 +193,7 @@ export class IdentityService {
         country: params.country,
         language: params.language,
         duesKind: params.duesKind ?? "paying",
+        invitation: params.invitation,
         userAgent: params.userAgent,
         ipAddress: params.ipAddress,
         consents: params.consents,

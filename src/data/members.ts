@@ -18,12 +18,18 @@ import {
   type MemberPlan,
 } from "./billing-access";
 import type { DbClient } from "./db";
+import {
+  loadMemberInviteSummary,
+  type MemberInviteSummary,
+} from "./invite-links";
 import type { PageParams } from "./pagination";
 import {
   accountDeletionRequests,
   auditLog,
   cards,
   companies,
+  invitations,
+  inviteLinks,
   legalAcceptances,
   members,
   profiles,
@@ -317,6 +323,8 @@ export type MemberAuditHistoryEntry = typeof auditLog.$inferSelect;
 
 export type MemberAdminDirectoryView = MemberAdminView & {
   activityHistory: MemberAuditHistoryEntry[];
+  /** Who brought them and how many they brought (FR-126, ADR 0042). */
+  invites: MemberInviteSummary;
 };
 
 export async function listMemberActivityHistory(
@@ -344,6 +352,7 @@ export async function withMemberActivityHistory(
     rows.map(async (member) => ({
       ...member,
       activityHistory: await listMemberActivityHistory(db, member),
+      invites: await loadMemberInviteSummary(db, member.id),
     })),
   );
 }
@@ -524,6 +533,15 @@ export async function getMemberExportData(db: DbClient, memberId: string) {
       where: eq(accountDeletionRequests.memberId, memberId),
     });
 
+  // ADR 0042: the member's own links and how they came in. The inviter is
+  // another member and is not named here (ADR 0005).
+  const memberInviteLinks = await db.query.inviteLinks.findMany({
+    where: eq(inviteLinks.ownerMemberId, memberId),
+  });
+  const memberInvitation = await db.query.invitations.findFirst({
+    where: eq(invitations.inviteeMemberId, memberId),
+  });
+
   const companyIds = memberCompanies.map((company) => company.id);
   const receivedReferrals =
     companyIds.length > 0
@@ -563,6 +581,22 @@ export async function getMemberExportData(db: DbClient, memberId: string) {
     referrals: {
       sent: sentReferrals,
       receivedForOwnedCompanies: receivedReferrals,
+    },
+    invites: {
+      links: memberInviteLinks.map((link) => ({
+        kind: link.kind,
+        code: link.code,
+        active: link.active,
+        createdAt: link.createdAt,
+        revokedAt: link.revokedAt,
+      })),
+      joinedThrough: memberInvitation
+        ? {
+            kind: memberInvitation.kind,
+            waived: memberInvitation.waived,
+            createdAt: memberInvitation.createdAt,
+          }
+        : null,
     },
     legalAcceptances: memberLegalAcceptances,
     accountDeletionRequests: memberDeletionRequests,

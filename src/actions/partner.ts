@@ -18,6 +18,7 @@ import {
   type RegisterField,
 } from "@/modules/identity/registration-form";
 import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
+import { applyInviteLinkWaiver } from "@/modules/catalogue/invite-link-waiver";
 import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
@@ -124,6 +125,8 @@ async function fileApplication(
 
     // ADR 0040: free listing if this browser came through the partner link.
     await applyPartnerLinkWaiver(db, ownerId, result.companyId);
+    // ADR 0042: or if a member's partner invite link brought this owner in.
+    await applyInviteLinkWaiver(db, ownerId, result.companyId);
 
     // Straight on to reserving the listing (ADR 0037) - or, when the link
     // waived it, to the standing screen. The owner is read by id: a session

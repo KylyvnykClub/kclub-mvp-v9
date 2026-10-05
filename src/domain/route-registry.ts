@@ -81,6 +81,16 @@ const staticRoutes: RouteEntry[] = [
     staffOnly: false,
   },
   {
+    // A member's invite link (ADR 0042). Public for the same reason as the
+    // join link: it stamps a cookie and forwards, and grants nothing itself.
+    method: "GET",
+    path: "/:locale/r/:code",
+    action: "read",
+    subject: "marketing",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
     // The dues screen (FR-103). Signed in, but deliberately outside the member
     // area: whoever sees it is not inside the club yet.
     method: "GET",
@@ -178,6 +188,16 @@ const staticRoutes: RouteEntry[] = [
     path: "/:locale/dashboard/profile",
     action: "read",
     subject: "own_subscription",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    // The invite programme tab (FR-122, FR-125): the caller's own links and
+    // counts, never who they brought (ADR 0005).
+    method: "GET",
+    path: "/:locale/dashboard/profile",
+    action: "read",
+    subject: "own_invite_link",
     mutating: false,
     staffOnly: false,
   },
@@ -553,6 +573,22 @@ const staticRoutes: RouteEntry[] = [
     path: "action:respondToReferralAction",
     action: "update",
     subject: "own_referral",
+    mutating: true,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:getMyInviteProgrammeAction",
+    action: "read",
+    subject: "own_invite_link",
+    mutating: false,
+    staffOnly: false,
+  },
+  {
+    method: "POST",
+    path: "action:rotateMyInviteLinkAction",
+    action: "update",
+    subject: "own_invite_link",
     mutating: true,
     staffOnly: false,
   },

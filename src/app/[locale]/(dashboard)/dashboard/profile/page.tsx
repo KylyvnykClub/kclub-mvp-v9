@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
 import { getCurrentMember } from "@/actions/session";
+import { getMyInviteProgrammeAction } from "@/actions/invite-link";
+import { buildActor } from "@/domain/actor";
+import { can } from "@/domain/authorization";
 import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
 import { maskEmail } from "@/lib/email";
@@ -29,6 +32,7 @@ import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { NotificationList } from "./_components/notification-list";
 import { CardQr } from "./_components/card-qr";
+import { InviteSection } from "./_components/invite-section";
 import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
 import { ActiveSessions } from "@/components/profile/active-sessions";
 
@@ -37,7 +41,15 @@ type Props = {
   searchParams: Promise<{ tab?: string; hold?: string }>;
 };
 
-const TABS = ["overview", "billing", "companies", "inbox", "settings", "edit"];
+const TABS = [
+  "overview",
+  "billing",
+  "companies",
+  "invite",
+  "inbox",
+  "settings",
+  "edit",
+];
 
 function maskPhone(phone: string) {
   if (!phone) return "";
@@ -97,6 +109,10 @@ export default async function ProfilePage({ params, searchParams }: Props) {
 
   const myNotifications = await listNotificationsForMember(db, member.id);
 
+  // Staff accounts are not club memberships (ADR 0007) and bring nobody in.
+  const invites = can(buildActor(member), "read", "own_invite_link");
+  const inviteProgramme = invites ? await getMyInviteProgrammeAction() : null;
+
   const mySubscriptions = await listSubscriptionsByMember(db, member.id);
   const deletionSubscriptions = await listActiveSubscriptionsForDeletion(
     db,
@@ -139,10 +155,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       </div>
 
       <Tabs
+        // Remounted per ?tab= so a header link to a tab works from this page.
+        key={tab ?? "overview"}
         defaultValue={tab && TABS.includes(tab) ? tab : "overview"}
         className="w-full"
       >
-        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 border border-border bg-muted/30 p-1 sm:grid-cols-3 lg:grid-cols-6">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 border border-border bg-muted/30 p-1 sm:grid-cols-4 lg:grid-cols-7">
           <TabsTrigger value="overview">
             {tDashboard("tabOverview")}
           </TabsTrigger>
@@ -150,6 +168,9 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           <TabsTrigger value="companies">
             {tDashboard("tabCompanies")}
           </TabsTrigger>
+          {invites && (
+            <TabsTrigger value="invite">{tDashboard("tabInvite")}</TabsTrigger>
+          )}
           <TabsTrigger value="inbox">{tDashboard("tabInbox")}</TabsTrigger>
           <TabsTrigger value="settings">
             {tDashboard("tabSettings")}
@@ -318,6 +339,16 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             returnedFromCheckout={hold === "returned"}
           />
         </TabsContent>
+
+        {invites && (
+          <TabsContent value="invite">
+            <InviteSection
+              programme={inviteProgramme}
+              baseUrl={env.client.NEXT_PUBLIC_APP_URL}
+              locale={locale}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="inbox">
           <NotificationList notifications={myNotifications} locale={locale} />

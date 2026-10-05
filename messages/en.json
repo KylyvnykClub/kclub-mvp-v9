@@ -187,6 +187,7 @@
     "tabBilling": "Billing",
     "tabCompanies": "My Companies",
     "tabInbox": "Inbox",
+    "tabInvite": "Invite programme",
     "unreadLabel": "{count, plural, one {# unread notification} other {# unread notifications}}",
     "tabEditProfile": "Edit Profile",
     "publicProfile": "Public Profile",
@@ -1347,7 +1348,19 @@
       "colPlan": "Plan",
       "planVip": "VIP",
       "planBusiness": "Business",
-      "planFree": "Free"
+      "planFree": "Free",
+      "invitesSection": "Invite programme",
+      "invitedByLabel": "Brought by",
+      "invitedByErased": "Deleted member",
+      "invitedThroughLabel": "Link",
+      "inviteKindMember": "Member link",
+      "inviteKindPartner": "Business link",
+      "invitedWaivedLabel": "Payment",
+      "inviteFree": "Waived",
+      "invitePaid": "Pays",
+      "notInvited": "Joined without an invite link.",
+      "broughtLabel": "Has brought",
+      "broughtValue": "{members} members, {businesses} businesses"
     },
     "companies": {
       "title": "Company Moderation",
@@ -1855,5 +1868,25 @@
     "copied": "Copied",
     "open": "Open page",
     "notLive": "Your QR code appears here once the listing is live in the catalogue."
+  },
+  "invite": {
+    "intro": "Your personal links bring people into the club. Whoever joins through one is recorded as brought by you. You see how many, never who.",
+    "memberTitle": "Bring a member",
+    "partnerTitle": "Bring a business",
+    "memberPurpose": "For a person who wants to join the club.",
+    "partnerPurpose": "For a business that wants to be listed in the catalogue as a partner.",
+    "memberFree": "Membership is free for the person you bring.",
+    "partnerFree": "The listing is free for the business you bring, once approved.",
+    "memberPaid": "The person you bring pays the membership dues.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "rotate": "New link",
+    "rotateConfirm": "The current link will stop working at once. Continue?",
+    "rotated": "A new link is ready; the old one no longer works",
+    "failed": "Something went wrong. Try again.",
+    "countsTitle": "You have brought",
+    "countMembers": "Members",
+    "countBusinesses": "Businesses",
+    "unavailable": "Invite links are available to members whose membership is active."
   }
 }

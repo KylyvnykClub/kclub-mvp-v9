@@ -2,7 +2,12 @@ import { cookies, headers } from "next/headers";
 import { z } from "zod";
 
 import { db } from "@/data/db";
+import {
+  findActiveInviteLinkById,
+  loadInviterStanding,
+} from "@/data/invite-links";
 import { findActiveJoinLinkById } from "@/data/join-links";
+import { inviteGrantsWaiver } from "@/domain/invites";
 import { env } from "@/env";
 import {
   AGE_ATTESTATION_VERSION,
@@ -16,6 +21,7 @@ import {
   PENDING_IDENTITY_COOKIE,
   openPendingIdentity,
 } from "@/lib/pending-identity";
+import { PENDING_INVITE_COOKIE, openPendingInvite } from "@/lib/pending-invite";
 import { PENDING_JOIN_COOKIE, openPendingJoin } from "@/lib/pending-join";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
@@ -218,10 +224,40 @@ export async function registerMemberFromForm(
       : null;
     const sponsored = joinLink?.kind === "member";
 
+    // ADR 0042: a member's invite link. Proved the same way - a cookie the
+    // route sealed, the link read again now - and judged by the inviter's
+    // standing now, not when the link was opened. An inviter outside the club
+    // records nothing and waives nothing.
+    const pendingInvite = openPendingInvite(
+      cookieStore.get(PENDING_INVITE_COOKIE)?.value,
+      env.server.BETTER_AUTH_SECRET,
+    );
+    const inviteLink = pendingInvite
+      ? await findActiveInviteLinkById(db, pendingInvite.inviteLinkId)
+      : null;
+    const inviterStanding = inviteLink
+      ? await loadInviterStanding(db, inviteLink.ownerMemberId, new Date())
+      : null;
+    const invitation =
+      inviteLink && inviterStanding
+        ? {
+            inviterMemberId: inviteLink.ownerMemberId,
+            inviteLinkId: inviteLink.id,
+            kind: inviteLink.kind,
+            inviterStanding,
+            // A member link waives dues, which a partner account never owes;
+            // a partner link waives the first listing this account files.
+            waived:
+              inviteGrantsWaiver(inviterStanding, inviteLink.kind) &&
+              !(inviteLink.kind === "member" && options.duesKind === "partner"),
+          }
+        : undefined;
+    const invitedFree = invitation?.kind === "member" && invitation.waived;
+
     const duesKind =
       options.duesKind === "partner"
         ? ("partner" as const)
-        : sponsored
+        : sponsored || invitedFree
           ? ("sponsored" as const)
           : ("paying" as const);
 
@@ -229,6 +265,7 @@ export async function registerMemberFromForm(
       phone: data.phone,
       email: data.email,
       duesKind,
+      invitation,
       provenBy,
       code: data.code,
       passwordPlain: data.password,
@@ -251,6 +288,9 @@ export async function registerMemberFromForm(
       if (joinLink?.kind !== "partner") {
         cookieStore.set(PENDING_JOIN_COOKIE, "", { path: "/", maxAge: 0 });
       }
+      // Always spent: the invitation is now a row, and the listing waiver of
+      // a partner link is read from that row, not from the cookie.
+      cookieStore.set(PENDING_INVITE_COOKIE, "", { path: "/", maxAge: 0 });
 
       cookieStore.set("session", result.sessionToken, {
         httpOnly: true,

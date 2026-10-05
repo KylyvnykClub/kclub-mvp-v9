@@ -207,6 +207,45 @@ export function MemberDetailSheet({
         </div>
       </Section>
 
+      <Section title={t("invitesSection")}>
+        {member.invites.invitedBy ? (
+          <>
+            <Field
+              label={t("invitedByLabel")}
+              value={
+                member.invites.invitedBy.inviterDisplayName ??
+                t("invitedByErased")
+              }
+            />
+            <Field
+              label={t("invitedThroughLabel")}
+              value={t(
+                member.invites.invitedBy.kind === "partner"
+                  ? "inviteKindPartner"
+                  : "inviteKindMember",
+              )}
+            />
+            <Field
+              label={t("invitedWaivedLabel")}
+              value={
+                member.invites.invitedBy.waived
+                  ? t("inviteFree")
+                  : t("invitePaid")
+              }
+            />
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t("notInvited")}</p>
+        )}
+        <Field
+          label={t("broughtLabel")}
+          value={t("broughtValue", {
+            members: member.invites.brought.member,
+            businesses: member.invites.brought.partner,
+          })}
+        />
+      </Section>
+
       <Section title={t("subscriptionsSection")}>
         {member.subscriptions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
