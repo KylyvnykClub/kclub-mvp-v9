@@ -5,6 +5,7 @@ import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
 import {
   cards,
+  invitations,
   legalAcceptances,
   members,
   notifications,
@@ -12,7 +13,12 @@ import {
   sessions,
   verificationTokens,
 } from "./schema";
-import type { IdentityProvider, VerificationPurpose } from "./schema";
+import type {
+  IdentityProvider,
+  InviteLinkKind,
+  VerificationPurpose,
+} from "./schema";
+import type { InviterStanding } from "@/domain/invites";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 import { hashSessionToken } from "@/lib/session-token";
 
@@ -81,6 +87,18 @@ export interface RegisterMemberInput {
   consents: Array<{ documentId: string; version: string }>;
   cardSerial: string;
   sessionToken: string;
+  /**
+   * Who brought this member (ADR 0042), written in the same transaction so a
+   * member brought free can never exist without the record of who brought
+   * them. Proved by the Server Action from a signed cookie.
+   */
+  invitation?: {
+    inviterMemberId: string;
+    inviteLinkId: string;
+    kind: InviteLinkKind;
+    inviterStanding: InviterStanding;
+    waived: boolean;
+  };
 }
 
 /** Returns the new member's id, which the caller needs to send them anything. */
@@ -119,6 +137,12 @@ export async function registerMemberTx(
         provider: input.identity.provider,
         providerAccountId: input.identity.providerAccountId,
       });
+    }
+
+    if (input.invitation) {
+      await tx
+        .insert(invitations)
+        .values({ inviteeMemberId: member!.id, ...input.invitation });
     }
 
     const cardId = randomUUID();

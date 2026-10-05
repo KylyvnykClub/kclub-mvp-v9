@@ -198,6 +198,13 @@ export function SiteHeader({
                     />
                   </Link>
                 </DropdownMenuItem>
+                {!admin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile?tab=invite">
+                      {tDashboard("tabInvite")}
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {admin && (
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/admin">{tDashboard("admin")}</Link>
@@ -307,6 +314,15 @@ export function SiteHeader({
                       label={tDashboard("unreadLabel", { count: unreadCount })}
                     />
                   </Link>
+                  {!admin && (
+                    <Link
+                      href="/dashboard/profile?tab=invite"
+                      onClick={() => setOpen(false)}
+                      className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                    >
+                      {tDashboard("tabInvite")}
+                    </Link>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"

@@ -64,7 +64,7 @@ that the folder cannot be trusted.
 |[0006](0006-postgres-full-text-search.md)|Use PostgreSQL full-text search for the catalogue, with no separate search engine|Accepted|2026-08-02|
 |[0007](0007-staff-identities-separate.md)|Keep staff identities entirely separate from member identities|Accepted|2026-08-02|
 |[0008](0008-durable-background-jobs-with-inngest.md)|Run background work on Inngest, fed by a transactional outbox in PostgreSQL|Accepted|2026-08-02|
-|[0009](0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire the client's contact data|Accepted|2026-08-02|
+|[0009](0009-referral-data-minimisation.md)|Referrals capture consent and minimise, encrypt and expire the client's contact data|Accepted; positioning amended by 0042|2026-08-02|
 |[0010](0010-no-own-a2p-registration-with-twilio-verify.md)|Send verification codes through Twilio Verify's registered sender pool, without our own A2P 10DLC registration|Accepted|2026-08-13|
 |[0011](0011-company-drafts-in-their-own-table.md)|Keep company application drafts in their own table, not as companies with a `draft` status|Accepted|2026-08-15|
 |[0012](0012-postpone-phone-verification-turnstile-gate.md)|Postpone SMS phone verification and gate registration with Cloudflare Turnstile instead|Accepted|2026-08-15|
@@ -88,14 +88,16 @@ that the folder cannot be trusted.
 |[0030](0030-registration-says-a-number-is-taken.md)|Registration says a phone number is taken, rate limited, as a stated exception to the enumeration rule|Accepted|2026-09-04|
 |[0031](0031-identity-returns-to-phone-only.md)|Identity returns to phone only; recovery is a request to staff; Google is hidden behind a flag|Superseded by 0032|2026-09-04|
 |[0032](0032-phone-and-email-both-required.md)|A phone number and an email address are both required; recovery emails a link, with the staff queue as the fallback|Accepted|2026-09-05|
-|[0033](0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted|2026-09-09|
+|[0033](0033-standard-membership-is-paid.md)|Standard membership costs $4.99 a month, and a join link waives it|Accepted; the refusal of per-person codes superseded by 0042|2026-09-09|
 |[0034](0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|2026-09-12|
 |[0035](0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|2026-09-22|
 |[0036](0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted; decision 4 superseded by 0037|2026-09-24|
 |[0037](0037-card-held-at-application.md)|A partner's card is held at application, captured on approval and released on rejection; whole logos, special privileges, a public partner page with a QR code|Accepted; the logo plate of decision 9 superseded by 0038|2026-09-26|
 |[0038](0038-partner-images-whole-and-filling.md)|A partner's logos and photos are shown whole over a blurred copy of themselves that fills the box; the partner banner carries only the country flag; larger stored images|Accepted|2026-09-28|
 |[0039](0039-framing-images-at-upload.md)|The owner frames a logo or photo before it is uploaded: 3:1 banner, 4:3 photos, a logo shape of their choice starting whole; drawn in the browser, uploaded through the unchanged pipeline|Accepted|2026-09-28|
-|[0040](0040-partner-join-link.md)|A second join link, of kind `partner`, waives a business's listing: no card hold, reviewed as usual, free once approved|Accepted|2026-09-30|
+|[0040](0040-partner-join-link.md)|A second join link, of kind `partner`, waives a business's listing: no card hold, reviewed as usual, free once approved|Accepted; decision 6 superseded by 0042|2026-09-30|
+|[0041](0041-staff-listing-waiver.md)|Staff can waive a listing from the console, and withdraw the waiver|Accepted|2026-10-03|
+|[0042](0042-member-invite-programme.md)|Members bring people in through personal links; the club records who brought whom, one level, and the inviter receives nothing|Accepted|2026-10-05|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

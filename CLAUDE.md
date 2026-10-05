@@ -106,10 +106,13 @@ perfectly reasonable.
 2. **Money and access must never disagree.** Entitlements are projected from
    Stripe webhooks as a fold over events, never from a checkout redirect, never
    from client state. ([ADR 0004](docs/decisions/0004-stripe-billing-as-system-of-record.md))
-3. **This is structurally not MLM.** No referral code, no downline, no
-   commission, no invite quota, no reward for introducing anyone. A "referral"
-   here is a client introduction between two businesses, with recorded consent
-   and a hard quota. ([ADR 0009](docs/decisions/0009-referral-data-minimisation.md))
+3. **This is structurally not MLM.** No downline, no commission, no reward to
+   anyone for introducing anyone. Members have personal invite links and the
+   club records who brought whom — one level, frozen at registration, visible to
+   the inviter only as counts — and the only benefit is a dues or listing waiver
+   for the newcomer ([ADR 0042](docs/decisions/0042-member-invite-programme.md)).
+   A "referral" is a client introduction between two businesses, with recorded
+   consent and a hard quota. ([ADR 0009](docs/decisions/0009-referral-data-minimisation.md))
 
 **If a task appears to require breaking one of these, stop and say so.** Do not
 implement a narrower version of it. The correct output is a question, not a
@@ -204,7 +207,7 @@ The glossary is short and worth reading once. The mistakes that recur:
 |`User` (in domain code)|`Member`|"User" appears only where `better-auth` forces it, mapped at the boundary|
 |"Directory"|"Catalogue"|A directory implies listing people, which is the thing this product does not do|
 |"Lead"|"Client referral"|Frames a person as a commodity; the feature's defensibility rests on it being an introduction|
-|"Invite"|—|There is no invitation mechanic. Anything named `invite` is a misunderstanding of the model|
+|"Referral link" for an invite link|"Invite link" (`InviteLink`)|"Referral" is the client introduction of ADR 0009. A member's personal link is an invite link ([ADR 0042](docs/decisions/0042-member-invite-programme.md)); the club's anonymous links are join links|
 |`Partner` as a type|`Company`|A company exists before it is a partner. The interface says partner, the code says `Company`|
 |"Customer" for a member|`Member`|`Customer` means a Stripe Customer object and nothing else|
 

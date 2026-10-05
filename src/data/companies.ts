@@ -1420,6 +1420,34 @@ export async function waiveListingByPartnerLink(
 }
 
 /**
+ * ADR 0042: mark a freshly filed application's listing as waived by the
+ * owner's partner invitation. Only a pending, not yet waived company of that
+ * owner. The invitation's one-listing rule is the caller's, in the same
+ * transaction (`spendInviteListingWaiver`).
+ */
+export async function waiveListingByInvite(
+  db: DbClient,
+  companyId: string,
+  ownerId: string,
+  inviteLinkId: string | null,
+  now: Date,
+): Promise<boolean> {
+  const changed = await db
+    .update(companies)
+    .set({ listingWaivedAt: now, listingWaiverInviteLinkId: inviteLinkId })
+    .where(
+      and(
+        eq(companies.id, companyId),
+        eq(companies.ownerId, ownerId),
+        eq(companies.moderationStatus, "pending"),
+        isNull(companies.listingWaivedAt),
+      ),
+    )
+    .returning({ id: companies.id });
+  return changed.length > 0;
+}
+
+/**
  * ADR 0041: staff waive a listing from the console - the same waiver the
  * partner link writes, so every "is it paid" rule already honours it. A
  * rejected company is left alone: restoring it is a separate decision.
@@ -1431,7 +1459,11 @@ export async function waiveListingByStaff(
 ): Promise<boolean> {
   const changed = await db
     .update(companies)
-    .set({ listingWaivedAt: now, listingWaiverLinkId: null })
+    .set({
+      listingWaivedAt: now,
+      listingWaiverLinkId: null,
+      listingWaiverInviteLinkId: null,
+    })
     .where(
       and(
         eq(companies.id, companyId),
@@ -1453,12 +1485,42 @@ export async function revokeListingWaiver(
 ): Promise<boolean> {
   const changed = await db
     .update(companies)
-    .set({ listingWaivedAt: null, listingWaiverLinkId: null })
+    .set({
+      listingWaivedAt: null,
+      listingWaiverLinkId: null,
+      listingWaiverInviteLinkId: null,
+    })
     .where(
       and(eq(companies.id, companyId), isNotNull(companies.listingWaivedAt)),
     )
     .returning({ id: companies.id });
   return changed.length > 0;
+}
+
+/**
+ * ADR 0042: whether this member is a business partner for the invite matrix -
+ * the owner of an approved company whose listing is paid for **with money**: a
+ * listing subscription or a captured hold. A waived listing does not count,
+ * or a free listing would become a source of free memberships with no money
+ * anywhere in the chain (ADR 0004).
+ */
+export async function memberOwnsPaidListing(
+  db: DbClient,
+  memberId: string,
+  now: Date,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(
+      and(
+        eq(companies.ownerId, memberId),
+        eq(companies.moderationStatus, "approved"),
+        listingPaidByMoney(now),
+      ),
+    )
+    .limit(1);
+  return row !== undefined;
 }
 
 /**

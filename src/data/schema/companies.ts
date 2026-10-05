@@ -10,6 +10,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
+import { inviteLinks } from "./invite-links";
 import { joinLinks } from "./join-links";
 import { members } from "./members";
 import { businessCategories } from "./business-categories";
@@ -101,6 +102,14 @@ export const companies = pgTable("companies", {
   listingWaivedAt: timestamp("listing_waived_at", { withTimezone: true }),
   listingWaiverLinkId: uuid("listing_waiver_link_id").references(
     () => joinLinks.id,
+    { onDelete: "set null" },
+  ),
+  /**
+   * ADR 0042: the listing was waived because its owner came in through a
+   * member's partner invite link. At most one company per invitation.
+   */
+  listingWaiverInviteLinkId: uuid("listing_waiver_invite_link_id").references(
+    () => inviteLinks.id,
     { onDelete: "set null" },
   ),
 });

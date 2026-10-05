@@ -240,6 +240,20 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-100|Listing checkout must be reachable as soon as a company is submitted, before moderation, and must be refused only for a company the caller does not own or that has already been rejected|partner_owner|M|
 |FR-101|Rejecting a company whose listing subscription was already paid must cancel that subscription and refund its last invoice, exactly once however many times the rejection is submitted|staff_moderator|M|
 
+### 4.9 Invite programme
+
+The decision is [ADR 0042](decisions/0042-member-invite-programme.md). The invite
+matrix: a business partner whose listing is paid with money, or a VIP member, waives both a newcomer's membership
+dues and a business's listing; a club member waives a listing only.
+
+|ID|Requirement|Role|Priority|
+|-|-|-|-|
+|FR-122|Every member who is in the club must be able to read, copy and rotate their own invite links in the cabinet — one `member` and one `partner` link, one active link of each kind — and each link must say whether the person brought through it will be charged, according to the invite matrix and the member's standing at that moment|member|M|
+|FR-123|A new account created through an active invite link must record, once, who brought it: the inviter, the link, its kind, the inviter's standing and whether anything was waived. An inviter not in the club, a rotated link, an already signed-in visitor and an account that already has an inviter must record nothing|system|M|
+|FR-124|A newcomer brought through a member invite link whose inviter is a business partner or VIP member must become a sponsored member who is never asked to pay; through a club member's link they must owe dues. The first company filed by an account brought through a partner invite link must have its listing waived as in FR-105, with an audit entry; the waiver is spent on that first application whether or not it was needed. A partner whose own listing is waived rather than paid counts as a club member in the matrix|system|M|
+|FR-125|The cabinet must show a member how many members and how many businesses they have brought, as counts only; no endpoint may return to a member who the people they brought are|member|M|
+|FR-126|The staff console's member sheet must show who brought the member, through which kind of link and whether it was waived, and how many people the member has brought|staff_support|S|
+
 ---
 
 ## 5. Non-functional requirements
@@ -370,6 +384,7 @@ before the largest surface (the staff console) is built.
 |8 — Membership dues|15–16|FR-102…FR-108|Standard membership sells and lapses against a Stripe test clock; a join link admits a member free; nobody who was already here is ever billed|
 |9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
 |10 — Card hold and partner page|18|FR-113…FR-120|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
+|11 — Invite programme|19|FR-121…FR-126|Every member has invite links in the cabinet, a newcomer brought through one is recorded against the member who brought them and is waived exactly as the invite matrix says, the member sees counts and staff see who|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

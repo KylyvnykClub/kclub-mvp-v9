@@ -6,6 +6,8 @@ import {
   cards,
   companies,
   companyImages,
+  invitations,
+  inviteLinks,
   members,
   notifications,
   referrals,
@@ -149,6 +151,19 @@ export async function eraseMemberTx(
         note: null,
       })
       .where(eq(referrals.senderId, memberId));
+
+    // Who brought this person, and whom they brought (ADR 0042). Their own
+    // invitation goes; the people they brought keep theirs, with the inviter
+    // forgotten. Their links go too - the row is anonymised, not deleted, so
+    // neither ON DELETE clause fires on its own.
+    await tx
+      .delete(invitations)
+      .where(eq(invitations.inviteeMemberId, memberId));
+    await tx
+      .update(invitations)
+      .set({ inviterMemberId: null })
+      .where(eq(invitations.inviterMemberId, memberId));
+    await tx.delete(inviteLinks).where(eq(inviteLinks.ownerMemberId, memberId));
 
     // The inbox describes things that happened to this person and names their
     // companies; none of it survives them (ADR 0020).

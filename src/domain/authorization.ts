@@ -35,6 +35,8 @@ export type Subject =
   | "own_session"
   | "own_referral"
   | "own_notification"
+  /** A member's own invite links and their counts (ADR 0042). */
+  | "own_invite_link"
   | "card_verification"
   | "referral"
   | "member"
@@ -110,6 +112,20 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "update",
     subject: "own_notification",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+
+  // The invite programme (FR-122, FR-125). "own_" only: the counts are the
+  // member's, and no subject exists that would name the people behind them
+  // (ADR 0005, ADR 0042).
+  {
+    action: "read",
+    subject: "own_invite_link",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+  {
+    action: "update",
+    subject: "own_invite_link",
     check: (a) => a.type === "member" || a.type === "partner_owner",
   },
 

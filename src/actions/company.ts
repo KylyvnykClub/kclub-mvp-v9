@@ -78,6 +78,7 @@ import {
   type CompanyDraftData,
   type CompanyFormIssue,
 } from "@/lib/company-form";
+import { applyInviteLinkWaiver } from "@/modules/catalogue/invite-link-waiver";
 import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
 import { submitCompany } from "@/modules/catalogue/submit-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
@@ -152,6 +153,7 @@ export async function registerCompanyAction(
   // /partner keeps the free listing.
   if (result.success && result.companyId) {
     await applyPartnerLinkWaiver(db, auth.member.id, result.companyId);
+    await applyInviteLinkWaiver(db, auth.member.id, result.companyId);
     // Straight on to reserving the listing (ADR 0037): the application is not
     // in the moderation queue until the hold exists, so a second button
     // between the two was one more place to stop.

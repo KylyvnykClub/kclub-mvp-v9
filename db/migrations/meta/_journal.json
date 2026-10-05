@@ -288,6 +288,13 @@
       "when": 1790762400000,
       "tag": "20260930100000_partner_join_link",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791194400000,
+      "tag": "20261005100000_member_invite_programme",
+      "breakpoints": true
     }
   ]
 }
