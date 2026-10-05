@@ -418,6 +418,7 @@ shaped it without leaving the page.
 |[0034](decisions/0034-the-catalogue-is-public.md)|The partner catalogue is public; contact details are not|Accepted|
 |[0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|
 |[0036](decisions/0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted|
+|[0042](decisions/0042-member-invite-programme.md)|Members bring people in through personal links; the club records who brought whom, one level, and the inviter receives nothing|Accepted|
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-02
+> **Last updated:** 2026-10-05
 > **Write when:** as soon as a second person joins the project.
 
 One agreed name per concept, used everywhere — in conversation, in the
@@ -58,7 +58,7 @@ variation.
 |Discount|The benefit a partner promises members, with its conditions|`DiscountTerms`|`company.discount_*`|"Offer", "Deal", "Coupon" — there is no coupon code anywhere in this product|
 |Catalogue|The member-only, searchable set of published partners|`catalogue` module|—|"Directory" — rejected, because a directory implies listing people, which we never do. "Marketplace" — rejected, we sell nothing on a partner's behalf|
 |Showcase|The curated set of partners visible on the public site|`showcase`|`company.showcase_rank`|The catalogue. The showcase is a marketing surface; the catalogue is the product|
-|Referral|A warm introduction of a **client** from one partner company to another. The user-facing English name is "Client referral"|`Referral`|`referral`|**"Business Introduction"** — a different feature entirely (see the next row). "Lead" — rejected, it frames a person as a commodity. "Invitation" — that would mean inviting a member, which does not exist here|
+|Referral|A warm introduction of a **client** from one partner company to another. The user-facing English name is "Client referral"|`Referral`|`referral`|**"Business Introduction"** — a different feature entirely (see the next row). "Lead" — rejected, it frames a person as a commodity. "Invitation" — that is a member bringing in another member ([ADR 0042](decisions/0042-member-invite-programme.md)), a different feature|
 |Business Introduction|The legal pack's name for introducing two **participants** to each other and exchanging their own contact details, plus networking events. Listed in Club Rules §3.2 as a VIP benefit separate from client referrals, and governed by its own Business Introduction Rules|— (not implemented)|—|Client referral, which moves a **third party's** data and is not covered by those Rules. Confusing the two is the error in [legal-alignment.md C-02](legal-alignment.md#c-02-business-introductions-and-client-referrals-are-two-different-features-and-only-one-is-designed)|
 |Business profile|The legal pack's name for what the code calls a `Company` and the interface calls a partner listing|`Company`|`company`|The three words describe one thing at three stages. Use "business profile" only when quoting the legal documents|
 |Platform Operator|Kylyvnyk Consulting LLC, a Florida LLC. The legal entity behind KCLUB and the data controller|—|—|KYLYVNYK CLUB, which is the brand. Legal documents name the operator; the interface names the club|
@@ -66,9 +66,12 @@ variation.
 |Consent attestation|The sender's recorded statement that the client agreed to the introduction|`ConsentAttestation`|`referral.consent_*`|Consent given to us by the client — we never obtain that directly|
 |Subscription|A recurring payment: membership dues, VIP membership or a listing. Owned by Stripe, projected locally|`Subscription`|`subscription`|Membership itself, which outlives any one subscription — a member whose dues lapse is still a member, they just cannot get in|
 |Membership dues|What standard membership costs: $4.99 a month, sold as the `member_monthly` plan ([ADR 0033](decisions/0033-standard-membership-is-paid.md)). A member owes them, is sponsored, or predates them|`membershipAccess`|`members.dues_kind`|The VIP subscription, which buys referrals and priority support on top and is not a substitute for dues|
-|Sponsored membership|Membership whose dues the club waives, because the member joined through the join link or an owner said so. Free for as long as the club says|`dues_kind = "sponsored"`|`members.dues_kind`|An "invited member" — there is no invitation mechanic here, and nobody is credited for a sponsored member ([ADR 0009](decisions/0009-referral-data-minimisation.md))|
-|Join link|The club's current private URL that admits a person with dues waived. One at a time, rotated and revoked by the owner|`JoinLink`|`join_links`|An "invite link" or a "referral link". It carries no identity, credits nobody, has no quota and rewards no one for sharing it|
-|Partner link|The owner's private URL for businesses: an application filed through it has its listing waived — no card hold, reviewed as usual, free once approved. A `partner` kind of join link. "Партнёрская ссылка" (ru), "Партнерське посилання" (uk) ([ADR 0040](decisions/0040-partner-join-link.md))|`JoinLink` with `kind: "partner"`|`join_links.kind`; `companies.listing_waived_at`|An "invite link" or a "referral link". It credits nobody and carries no attribution (ADR 0009)|
+|Sponsored membership|Membership whose dues the club waives, because the member joined through the join link or an owner said so. Free for as long as the club says|`dues_kind = "sponsored"`|`members.dues_kind`|A member waived through a member's invite link is sponsored too, and the invitation records who brought them ([ADR 0042](decisions/0042-member-invite-programme.md)). Through the club's join link nobody is credited|
+|Join link|The club's current private URL that admits a person with dues waived. One at a time, rotated and revoked by the owner|`JoinLink`|`join_links`|An invite link, which belongs to a member. The join link carries no identity, credits nobody, has no quota and rewards no one for sharing it|
+|Partner link|The owner's private URL for businesses: an application filed through it has its listing waived — no card hold, reviewed as usual, free once approved. A `partner` kind of join link. "Партнёрская ссылка" (ru), "Партнерське посилання" (uk) ([ADR 0040](decisions/0040-partner-join-link.md))|`JoinLink` with `kind: "partner"`|`join_links.kind`; `companies.listing_waived_at`|A member's partner invite link. The club's partner link credits nobody and carries no attribution|
+|Invite link|A member's personal URL for bringing someone in: kind `member` (to join the club) or `partner` (to apply as a business). One active link of each kind per member, rotated by the member. Whether the newcomer is waived depends on who the member is (the invite matrix). "Реферальная ссылка" (ru), "Реферальне посилання" (uk) ([ADR 0042](decisions/0042-member-invite-programme.md))|`InviteLink`|`invite_links`|A join link, which is the club's anonymous link. A "referral" in code, which is the client introduction of ADR 0009|
+|Invitation|The record that one member brought another into the club: one level, written once at registration, with the inviter's standing then and whether anything was waived. The inviter sees only counts|`Invitation`|`invitations`|A downline. There is no second level, no reward, and no view of who the people brought are|
+|Invite matrix|Who brings whom free: a business partner whose listing is paid with money, or a VIP, waives both a member's dues and a business's listing; a club member waives a listing only, and the member they bring pays|`inviteGrantsWaiver`|— (code, `src/domain/invites.ts`)|A rule in the data; it is one function so that it can change|
 |Partner account|An account created by the business application: it owes no membership dues, and the club opens for it when its listing subscription is active ([ADR 0036](decisions/0036-payment-after-moderation.md))|`dues_kind = "partner"`|`members.dues_kind`|A `Company`, which is the business itself, and a partner owner, which is an ordinary member who happens to own one|
 |Listing hold|The listing price authorised on a partner's card at application: charged when a moderator approves, released when one rejects. "Холд / резерв" (ru), "холд / резерв" (uk) ([ADR 0037](decisions/0037-card-held-at-application.md))|`ListingHold`|`listing_holds`|A payment — until Stripe confirms the capture, nothing has been paid|
 |Awaiting payment|A submitted company with no capturable listing hold: not in the moderation queue, not counted, and not approvable until the partner reserves the fee. "Ожидает оплаты" (ru), "Очікує оплати" (uk) ([ADR 0037](decisions/0037-card-held-at-application.md), FR-113)|`awaiting_payment` (admin filter)|— (derived: `moderation_status = pending` with no capturable hold)|"Pending", "unpaid" or "draft" — it is not in review, and nothing is owed yet|
@@ -105,9 +108,10 @@ variation.
 |Client|Клиент|Клієнт||
 |Subscription|Подписка|Підписка||
 |Membership dues|Членский взнос|Членський внесок|Never "абонплата" — the club has members, not subscribers|
-|Sponsored membership|Спонсируемое членство|Спонсоване членство|Never "приглашение" — nobody is invited, the dues are waived|
-|Join link|Ссылка для вступления|Посилання для вступу|Never "инвайт" or "реферальная ссылка"|
+|Sponsored membership|Спонсируемое членство|Спонсоване членство|Never "приглашение" — the dues are waived, whoever brought the member|
+|Join link|Ссылка для вступления|Посилання для вступу|Never "инвайт" or "реферальная ссылка" — that is a member's invite link|
 |Partner link|Партнёрская ссылка|Партнерське посилання|Never "реферальная ссылка"|
+|Invite link|Реферальная ссылка|Реферальне посилання|The cabinet section is "Реферальная программа" / "Реферальна програма" ("Invite programme" in en). Never "инвайт"|
 |Partner account|Аккаунт партнёра|Акаунт партнера|Never "бизнес-членство" — a partner is not a club member and owes no dues|
 |Partner application|Заявка партнёра|Заявка партнера|Never "регистрация бизнеса" in member-facing text — the business applies, we decide|
 |Page banner|Баннер страницы|Банер сторінки|Never "обложка" in partner-facing text|
@@ -124,7 +128,7 @@ variation.
 |Lead|Referral|2026-08-02|Nowhere in code. Rejected before implementation because it frames the introduced person as a commodity, and because the feature's defensibility rests on it being a personal introduction|
 |User|Member (in the domain)|2026-08-02|Framework-level types only (`better-auth` calls its record `user`). The adapter maps it to `Member` at the module boundary, and that mapping is the only place the word may appear|
 |Vendor / Merchant|Partner|2026-08-02|Nowhere. Recorded so it is not reintroduced when someone reaches for a synonym|
-|Invite|— (no such concept)|2026-08-02|Nowhere. There is no invitation mechanic; anything named "invite" is a misunderstanding of the model and should be challenged in review|
+|Invite|Invite link, invitation|2026-10-05|Was "no such concept" from 2026-08-02. [ADR 0042](decisions/0042-member-invite-programme.md) introduced personal invite links with one-level attribution|
 
 ---
 
