@@ -22,6 +22,12 @@ import {
   type CheckoutPlan,
 } from "@/modules/billing/checkout";
 import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
+import {
+  membershipConsentTicked,
+  postedMembershipWording,
+  recordMembershipPaymentAuthority,
+  type MembershipConsentWording,
+} from "@/modules/billing/membership-consent";
 
 const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
 
@@ -96,6 +102,36 @@ async function createSubscriptionCheckout(params: {
 }
 
 /**
+ * The box above every membership or VIP button. Throws without it - the
+ * buttons are disabled until it is ticked, so only a forged request gets
+ * here - and records it when it is there.
+ */
+async function requireMembershipConsent(
+  formData: FormData | undefined,
+  accepted: readonly MembershipConsentWording[],
+): Promise<void> {
+  const auth = await getCurrentMember();
+  if (!auth?.member) throw new Error("Unauthorized");
+  // The words shown must be words for this charge: a switch is authorised
+  // as a switch, never by the dues screen's box.
+  const wording = postedMembershipWording(formData);
+  if (
+    !membershipConsentTicked(formData) ||
+    !wording ||
+    !accepted.includes(wording)
+  ) {
+    throw new Error("Payment authority is required");
+  }
+  await recordMembershipPaymentAuthority(db, {
+    memberId: auth.member.id,
+    locale: auth.member.language || "en",
+    residenceCountry: auth.member.country ?? null,
+    wording,
+    now: new Date(),
+  });
+}
+
+/**
  * Open membership dues checkout (FR-102).
  *
  * The session grants nothing on its return, exactly like the two beside it: the
@@ -103,7 +139,10 @@ async function createSubscriptionCheckout(params: {
  * event (FR-104, ADR 0004). Until then they are back on the dues screen, which
  * is the correct place for someone who has not paid.
  */
-export async function createMembershipCheckoutAction() {
+export async function createMembershipCheckoutAction(formData?: FormData) {
+  // The payment authority box (ADR 0044 §2): no Checkout without it, and the
+  // words it showed are recorded before Stripe is opened.
+  await requireMembershipConsent(formData, ["member_dues"]);
   await createSubscriptionCheckout({
     plan: "membership",
     priceId: await checkoutPriceIdForPlan(db, "membership"),
@@ -125,7 +164,7 @@ export async function createMembershipCheckoutAction() {
  * plan and the card tier follow when `customer.subscription.updated` is
  * projected, which resolves the plan from the new price (ADR 0004).
  */
-export async function createVipCheckoutAction() {
+export async function createVipCheckoutAction(formData?: FormData) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
     throw new Error("Unauthorized");
@@ -143,6 +182,12 @@ export async function createVipCheckoutAction() {
     db,
     auth.member.id,
     "membership",
+  );
+  // A new VIP subscription and a switch are authorised in different words:
+  // the second charges the difference now.
+  await requireMembershipConsent(
+    formData,
+    dues ? ["vip_switch"] : ["member_dues", "vip_new"],
   );
   if (!dues) {
     await createSubscriptionCheckout({ plan: "vip", priceId: vipPriceId });

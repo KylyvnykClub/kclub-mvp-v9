@@ -6,6 +6,10 @@ import Link from "next/link";
 
 import { registerPartnerAction } from "@/actions/partner";
 import { AuthShell } from "@/components/auth/auth-shell";
+import {
+  AccountConsents,
+  useAccountConsents,
+} from "@/components/auth/account-consents";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
@@ -125,6 +129,7 @@ export function PartnerApplicationForm({
   // Followed so the EU withdrawal right appears for an EU resident as soon
   // as they pick the country, not after a refused submit.
   const [country, setCountry] = useState("");
+  const accountConsents = useAccountConsents();
   const applicationConsents = useApplicationConsents({
     invited,
     waived,
@@ -430,26 +435,7 @@ export function PartnerApplicationForm({
                     schema still requires the field (FR-091). */}
                 <input type="hidden" name="language" value={locale} />
 
-                <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
-                  {tRegister.rich("legalNotice", {
-                    terms: (chunks) => (
-                      <Link
-                        href={`/${locale}/legal/terms-of-use`}
-                        className="font-bold underline hover:text-accent-ink"
-                      >
-                        {chunks}
-                      </Link>
-                    ),
-                    privacy: (chunks) => (
-                      <Link
-                        href={`/${locale}/legal/privacy-policy`}
-                        className="font-bold underline hover:text-accent-ink"
-                      >
-                        {chunks}
-                      </Link>
-                    ),
-                  })}
-                </p>
+                <AccountConsents state={accountConsents} />
 
                 <TurnstileWidget
                   siteKey={turnstileSiteKey}
@@ -490,7 +476,7 @@ export function PartnerApplicationForm({
               disabled={
                 !legalReady ||
                 !applicationConsents.state.complete ||
-                (!signedIn && !passwordsUsable)
+                (!signedIn && (!passwordsUsable || !accountConsents.complete))
               }
             />
             {applicationConsents.state.submitNote && (
