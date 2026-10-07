@@ -3646,6 +3646,29 @@ body.kyl-menu-open {
 .kyl .footer-legal a:hover {
   color: var(--gold-bright);
 }
+/* "Cookie settings" is a button (it opens the banner, ADR 0045) that reads
+   as one more link in the row. */
+.kyl .footer-legal .footer-cookie-settings {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.kyl .footer-legal a + .footer-cookie-settings::before {
+  content: "·";
+  margin-right: 26px;
+  color: var(--gold-dark);
+}
+.kyl .footer-legal .footer-cookie-settings:hover {
+  color: var(--gold-bright);
+}
+@media (max-width: 760px) {
+  .kyl .footer-legal a + .footer-cookie-settings::before {
+    display: none;
+  }
+}
 @media (max-width: 760px) {
   .kyl .footer-legal a + a::before {
     display: none;

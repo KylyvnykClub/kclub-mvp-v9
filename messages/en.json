@@ -159,7 +159,8 @@
     "passwordsNeeded": "Enter a password of at least 8 characters and repeat it to continue.",
     "consentTerms": "I accept the <terms>Terms of Use</terms>, including the arbitration agreement and class-action waiver (§29–30), and the <privacy>Privacy Policy</privacy>.",
     "consentAge": "I am 18 years of age or older.",
-    "consentsMissing": "Tick both boxes to create the account."
+    "consentsMissing": "Tick both boxes to create the account.",
+    "legalNotice": "By clicking Create account you confirm that you are 18 years of age or older and agree to the <terms>Terms</terms>, including the arbitration agreement and class-action waiver (§29–30), and to the <privacy>Privacy Policy</privacy>."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1987,5 +1988,13 @@
     "paymentVip": "I authorise Kylyvnyk Consulting LLC to switch my subscription to VIP and charge {vipPrice} a month to my card automatically until I cancel; for the current month only the difference is charged now.",
     "missing": "Tick the box to continue to payment.",
     "paymentVipNew": "I authorise Kylyvnyk Consulting LLC to charge {vipPrice} a month for VIP to my card automatically every month until I cancel."
+  },
+  "cookieConsent": {
+    "title": "Cookies",
+    "body": "We use analytics and marketing cookies (Google Tag Manager) to understand how the site is used, only if you agree. Necessary cookies that keep you signed in are always on.",
+    "policy": "Cookie Policy",
+    "accept": "Accept",
+    "reject": "Reject",
+    "settings": "Cookie settings"
   }
 }

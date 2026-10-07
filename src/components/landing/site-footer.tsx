@@ -1,3 +1,4 @@
+import { CookieSettingsLink } from "@/components/analytics/consent-and-gtm";
 import Image from "next/image";
 import { ArrowUp } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -92,6 +93,9 @@ export function SiteFooter({ className = "" }: { className?: string }) {
                 </Link>
               </li>
             ))}
+            <li>
+              <CookieSettingsLink className="text-left hover:text-accent-ink" />
+            </li>
           </ul>
         </div>
       </div>

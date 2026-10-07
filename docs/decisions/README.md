@@ -100,6 +100,7 @@ that the folder cannot be trusted.
 |[0042](0042-member-invite-programme.md)|Members bring people in through personal links; the club records who brought whom, one level, and the inviter receives nothing|Accepted|2026-10-05|
 |[0043](0043-vip-includes-membership.md)|VIP includes membership: one $19.99 subscription pays the dues; a dues payer upgrading has their subscription switched, not doubled|Accepted|2026-10-07|
 |[0044](0044-business-application-consents-and-invite-trial.md)|A business applies with explicit recorded consents; an invited business saves a card and gets one free month from publication; cancel auto-renewal and EU withdrawal in the account|Accepted; supersedes 0042 §5 for new applications|2026-10-07|
+|[0045](0045-google-tag-manager-behind-consent.md)|Google Tag Manager runs on public pages only, after the visitor accepts the cookie banner|Accepted|2026-10-07|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
