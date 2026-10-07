@@ -48,7 +48,11 @@ describe("FR-024, FR-089: robots.txt", () => {
     const result = robots();
     const rules = Array.isArray(result.rules) ? result.rules[0]! : result.rules;
 
-    expect(rules.allow).toBe("/");
+    expect(rules.allow).toEqual([
+      "/",
+      "/api/company-logo/",
+      "/api/company-image/",
+    ]);
     expect(rules.disallow).toEqual(
       expect.arrayContaining([
         "/*/dashboard/",
@@ -61,6 +65,7 @@ describe("FR-024, FR-089: robots.txt", () => {
     );
     expect(rules.disallow).not.toContain("/*/directory");
     expect(result.sitemap).toBe("https://www.kylyvnyk.club/sitemap.xml");
+    expect(result.host).toBe("https://www.kylyvnyk.club");
   });
 
   it("closes a preview deployment entirely and advertises no sitemap", () => {

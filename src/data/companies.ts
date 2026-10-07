@@ -899,23 +899,39 @@ export async function listSimilarApprovedCompanies(
 }
 
 /**
- * Slugs of the publicly listable partners - approved and among the set with an
- * active subscription. Used by the sitemap; returns only the slug so it stays a
- * cheap query even as the catalogue grows.
+ * The publicly listable partners as the sitemap needs them - approved and
+ * among the set with a paid (or free-month) listing: the slug, when the
+ * profile last changed, and the pictures it shows. Kept to those columns so
+ * it stays cheap as the catalogue grows.
  */
-export async function listPublicPartnerSlugs(
+export async function listPublicPartnersForSitemap(
   db: DbClient,
   ids: string[],
-): Promise<string[]> {
+): Promise<
+  {
+    id: string;
+    slug: string;
+    updatedAt: Date;
+    hasLogo: boolean;
+    imageIds: string[];
+  }[]
+> {
   if (ids.length === 0) return [];
   const rows = await db.query.companies.findMany({
     where: and(
       eq(companies.moderationStatus, "approved"),
       inArray(companies.id, ids),
     ),
-    columns: { slug: true },
+    columns: { id: true, slug: true, updatedAt: true, logoUrl: true },
+    with: { images: { columns: { id: true } } },
   });
-  return rows.map((r) => r.slug);
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    updatedAt: row.updatedAt,
+    hasLogo: Boolean(row.logoUrl),
+    imageIds: row.images.map((image) => image.id),
+  }));
 }
 
 /**
