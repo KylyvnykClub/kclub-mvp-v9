@@ -44,11 +44,13 @@ export function memberStatusTone(status: string): StatusTone {
 }
 
 /**
- * Tone per plan, for the same reason. Free is `neutral` rather than negative:
- * a member on no subscription is the ordinary case, not a problem to flag.
+ * Tone per plan, for the same reason. Free is `neutral`: a member let in
+ * without dues is an ordinary case. Unpaid is `negative` - somebody who
+ * registered and is held on the payment screen, not inside the club.
  */
 export function memberPlanTone(plan: string): StatusTone {
-  if (plan === "vip") return "positive";
+  if (plan === "vip" || plan === "member") return "positive";
   if (plan === "business") return "warning";
+  if (plan === "unpaid") return "negative";
   return "neutral";
 }

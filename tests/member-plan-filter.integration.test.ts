@@ -28,7 +28,13 @@ function testDbClient(): DbClient {
   return getTestDb() as unknown as DbClient;
 }
 
-async function seedMember(db: DbClient, displayName: string) {
+async function seedMember(
+  db: DbClient,
+  displayName: string,
+  // Sponsored unless said otherwise, so "holds nothing" reads free; a paying
+  // member holding nothing is unpaid, which the dues cases seed on purpose.
+  duesKind: "paying" | "sponsored" = "sponsored",
+) {
   const [member] = await db
     .insert(members)
     .values({
@@ -38,6 +44,7 @@ async function seedMember(db: DbClient, displayName: string) {
       country: "US",
       language: "en",
       role: "member",
+      duesKind,
     })
     .returning();
 
@@ -69,10 +76,16 @@ async function seedCompany(db: DbClient, ownerId: string) {
 
 async function seedSubscription(
   db: DbClient,
-  input: { memberId: string; companyId?: string | null; status: string },
+  input: {
+    memberId: string;
+    companyId?: string | null;
+    status: string;
+    plan?: "membership" | "vip";
+  },
 ) {
   await db.insert(subscriptions).values({
-    plan: "listing",
+    // A company makes it a listing; otherwise VIP unless the case says dues.
+    plan: input.companyId ? "listing" : (input.plan ?? "vip"),
     memberId: input.memberId,
     companyId: input.companyId ?? null,
     stripeCustomerId: `cus_${crypto.randomUUID()}`,
@@ -170,6 +183,26 @@ describe("FR-083: filtering the member list by plan", () => {
     expect(await idsMatching(db, "vip")).toEqual([]);
   });
 
+  it("FR-103: a registration that never paid is unpaid, not free", async () => {
+    const db = testDbClient();
+    await clearMembers(db);
+
+    const unpaid = await seedMember(db, "Never Paid", "paying");
+    const paid = await seedMember(db, "Paid Dues", "paying");
+    await seedSubscription(db, {
+      memberId: paid.id,
+      status: "active",
+      plan: "membership",
+    });
+    const vipOnly = await seedMember(db, "Vip Only", "paying");
+    await seedSubscription(db, { memberId: vipOnly.id, status: "active" });
+
+    expect(await idsMatching(db, "unpaid")).toEqual([unpaid.id]);
+    expect(await idsMatching(db, "member")).toEqual([paid.id]);
+    expect(await idsMatching(db, "vip")).toEqual([vipOnly.id]);
+    expect(await idsMatching(db, "free")).toEqual([]);
+  });
+
   it("the filter and the rendered badge agree about every member", async () => {
     const db = testDbClient();
     await clearMembers(db);
@@ -196,13 +229,33 @@ describe("FR-083: filtering the member list by plan", () => {
       companyId: bothCompany.id,
       status: "active",
     });
+    const unpaid = await seedMember(db, "Agree Unpaid", "paying");
+    const duesPaid = await seedMember(db, "Agree Dues", "paying");
+    await seedSubscription(db, {
+      memberId: duesPaid.id,
+      status: "active",
+      plan: "membership",
+    });
+    const unpaidOwner = await seedMember(db, "Agree Unpaid Owner", "paying");
+    const unpaidCompany = await seedCompany(db, unpaidOwner.id);
+    await seedSubscription(db, {
+      memberId: unpaidOwner.id,
+      companyId: unpaidCompany.id,
+      status: "active",
+    });
 
     const everyone = await searchMembers(db, {}, { limit: 50, offset: 0 });
-    expect(everyone).toHaveLength(5);
+    expect(everyone).toHaveLength(8);
+    expect(await idsMatching(db, "unpaid")).toEqual(
+      [unpaid.id, unpaidOwner.id].sort(),
+    );
+    expect(await idsMatching(db, "member")).toEqual([duesPaid.id]);
 
     for (const plan of MEMBER_ADMIN_PLANS) {
       const badgeSays = everyone
-        .filter((member) => memberPlansOf(member.subscriptions).includes(plan))
+        .filter((member) =>
+          memberPlansOf(member, member.subscriptions).includes(plan),
+        )
         .map((member) => member.id)
         .sort();
 
