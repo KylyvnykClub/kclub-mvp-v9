@@ -61,6 +61,7 @@ describe("FR-024, FR-089: robots.txt", () => {
     );
     expect(rules.disallow).not.toContain("/*/directory");
     expect(result.sitemap).toBe("https://www.kylyvnyk.club/sitemap.xml");
+    expect(result.host).toBe("https://www.kylyvnyk.club");
   });
 
   it("closes a preview deployment entirely and advertises no sitemap", () => {

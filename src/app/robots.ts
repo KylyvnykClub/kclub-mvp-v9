@@ -32,7 +32,8 @@ const PRIVATE_PATHS = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
-  const sitemap = `${env.server.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "")}/sitemap.xml`;
+  const origin = env.server.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
+  const sitemap = `${origin}/sitemap.xml`;
 
   // A preview deployment is a copy of the site on another host. Closed
   // outright, so it never competes with the real domain in search.
@@ -47,5 +48,9 @@ export default function robots(): MetadataRoute.Robots {
       disallow: PRIVATE_PATHS,
     },
     sitemap,
+    // The canonical host, with its scheme: the apex redirects to www, and
+    // this names the one crawlers should index. Only Yandex reads it; the
+    // rest take the canonical from each page.
+    host: origin,
   };
 }
