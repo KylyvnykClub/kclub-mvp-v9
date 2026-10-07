@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 
 import { appendAuditEntry } from "@/data/audit-log";
 import { waiveListingByPartnerLink } from "@/data/companies";
-import type { Db } from "@/data/db";
+import { findActiveJoinLinkById } from "@/data/join-links";
+import type { Db, DbClient } from "@/data/db";
 import { env } from "@/env";
 import { logger } from "@/lib/logger";
 import { openPendingJoin, PENDING_JOIN_COOKIE } from "@/lib/pending-join";
@@ -60,4 +61,21 @@ export async function applyPartnerLinkWaiver(
       error: error instanceof Error ? error.message : String(error),
     });
   }
+}
+
+/**
+ * Whether this browser carries the club's partner link, still active - the
+ * question the application form asks before anything is filed, so it can say
+ * "free" instead of asking for a card (ADR 0040, ADR 0044). The waiver itself
+ * is still written by `applyPartnerLinkWaiver`, which checks the link again.
+ */
+export async function clubPartnerLinkPending(db: DbClient): Promise<boolean> {
+  const cookieStore = await cookies();
+  const pending = openPendingJoin(
+    cookieStore.get(PENDING_JOIN_COOKIE)?.value,
+    env.server.BETTER_AUTH_SECRET,
+  );
+  if (!pending) return false;
+  const link = await findActiveJoinLinkById(db, pending.joinLinkId);
+  return link?.kind === "partner";
 }

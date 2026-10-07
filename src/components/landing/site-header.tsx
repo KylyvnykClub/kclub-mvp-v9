@@ -187,11 +187,17 @@ export function SiteHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-48">
                 <DropdownMenuItem asChild>
+                  <Link href="/dashboard/profile">{tDashboard("profile")}</Link>
+                </DropdownMenuItem>
+                {/* The badge counts the inbox, so it sits on the item that
+                    opens the inbox. On "Profile" it pointed at the card tab,
+                    and from the profile page the click went nowhere. */}
+                <DropdownMenuItem asChild>
                   <Link
-                    href="/dashboard/profile"
+                    href="/dashboard/profile?tab=inbox"
                     className="flex items-center gap-2"
                   >
-                    {tDashboard("profile")}
+                    {tDashboard("tabInbox")}
                     <UnreadBadge
                       count={unreadCount}
                       label={tDashboard("unreadLabel", { count: unreadCount })}
@@ -306,9 +312,16 @@ export function SiteHeader({
                   <Link
                     href="/dashboard/profile"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                    className="border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
                   >
                     {tDashboard("profile")}
+                  </Link>
+                  <Link
+                    href="/dashboard/profile?tab=inbox"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 border border-border px-4 py-3 text-sm font-bold uppercase tracking-[0.12em]"
+                  >
+                    {tDashboard("tabInbox")}
                     <UnreadBadge
                       count={unreadCount}
                       label={tDashboard("unreadLabel", { count: unreadCount })}

@@ -41,3 +41,29 @@ export function localeAlternates(
   languages["x-default"] = absoluteUrl(`/${routing.defaultLocale}${suffix}`);
   return { canonical: absoluteUrl(`/${locale}${suffix}`), languages };
 }
+
+/**
+ * Whether search engines may index the public pages (marketing, catalogue,
+ * pricing, legal).
+ *
+ * The site launched with this behind a variable that defaulted to "no" and
+ * was never set in Vercel, so production served `noindex, nofollow` on every
+ * page and stayed out of search. The default now follows the deployment:
+ * production is indexable, previews and local builds are not, so a
+ * `*.vercel.app` preview never competes with the real domain. The variable is
+ * left as an explicit override in either direction.
+ */
+export function publicIndexingAllowed(input: {
+  override: boolean | undefined;
+  vercelEnv: string | undefined;
+}): boolean {
+  return input.override ?? input.vercelEnv === "production";
+}
+
+/** `publicIndexingAllowed` for this deployment. */
+export function indexingAllowedHere(): boolean {
+  return publicIndexingAllowed({
+    override: env.server.ALLOW_PUBLIC_INDEXING,
+    vercelEnv: env.server.VERCEL_ENV,
+  });
+}

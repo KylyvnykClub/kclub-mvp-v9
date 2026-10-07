@@ -33,7 +33,7 @@ describe("FR-103: each pricing button arrives at the price it names", () => {
   it("sends a visitor to sign-up, and a business to the partner application", () => {
     expect(pricingDestinations({ signedIn: false }, "ru")).toEqual({
       membership: "/ru/register",
-      vip: "/ru/register",
+      vip: "/ru/register?plan=vip",
       listing: "/ru/partner",
     });
   });
@@ -47,7 +47,7 @@ describe("FR-103: each pricing button arrives at the price it names", () => {
       Object.values(unpaid).some((href) => href.includes("/dashboard")),
     ).toBe(false);
     expect(unpaid.listing).toBe("/uk/partner");
-    expect(unpaid.vip).toBe("/uk/membership");
+    expect(unpaid.vip).toBe("/uk/membership?plan=vip");
   });
 
   it("sends an unpaid member who already has a company to its standing", () => {

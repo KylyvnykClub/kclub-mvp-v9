@@ -34,41 +34,51 @@ export function tierForSubscriptionStatus(status: string): "vip" | "free" {
 }
 
 /**
- * What a member is currently paying for.
+ * What a member is currently paying for - or that they owe and have not paid.
  *
- * `vip` is the VIP subscription (FR-050); `business` is a company listing
- * (FR-051), which belongs to a company the member owns, so a member can hold
- * both at once and this returns both. `free` means neither.
+ * `vip` is the VIP subscription (FR-050), which includes membership
+ * (ADR 0043); `member` is standard membership dues (FR-102) without it;
+ * `business` is a company listing (FR-051), which belongs to a company the
+ * member owns, so it can sit beside either. `unpaid` is a `paying` member
+ * with neither dues nor VIP - registered, held on the payment screen, not in
+ * the club (FR-103). `free` is everyone else: let in without dues by the join
+ * link or the invite programme, here before dues existed, or a partner whose
+ * listing is not (or need not be) paid.
  *
- * Read from the subscription's own `plan` since ADR 0033. It used to read "no
- * company attached" as VIP, which stopped being true the moment membership
- * dues became a member-scoped subscription too: every member paying $4.99
- * would have been handed the VIP entitlement. Dues are deliberately not a chip
- * here - the console's three chips still mean VIP, listing and neither.
+ * Dues used to be left out, so the console showed "Free" both for a member
+ * paying $4.99 and for one who had registered and never paid. The client read
+ * the second as somebody let in without paying, which is the misreading this
+ * column exists to prevent.
  *
- * Derived from `ACCESS_GRANTING_SUBSCRIPTION_STATUSES` rather than from
- * `status === "active"`, which matters during dunning: FR-056 keeps access
- * through `past_due` while Stripe retries, so a member in the grace window is
- * still VIP. Reading it any other way would show staff `free` for someone who
- * has paid and has not lost anything - money and access disagreeing on a
- * screen instead of in the database.
+ * Read from the subscription's own `plan` since ADR 0033, and from
+ * `ACCESS_GRANTING_SUBSCRIPTION_STATUSES` rather than `status === "active"`,
+ * which matters during dunning: FR-056 keeps access through `past_due` while
+ * Stripe retries. Reading it any other way would show staff `unpaid` for
+ * someone who has paid and has not lost anything.
  */
-export type MemberPlan = "vip" | "business" | "free";
+export type MemberPlan = "vip" | "member" | "business" | "unpaid" | "free";
 
 export function memberPlansOf(
+  member: { duesKind: string },
   subscriptions: readonly { plan: string; status: string }[],
 ): MemberPlan[] {
   const paid = subscriptions.filter((subscription) =>
     ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
   );
+  const holds = (plan: string) =>
+    paid.some((subscription) => subscription.plan === plan);
 
   const plans: MemberPlan[] = [];
-  if (paid.some((subscription) => subscription.plan === "vip")) {
+  if (holds("vip")) {
     plans.push("vip");
+  } else if (holds("membership")) {
+    plans.push("member");
+  } else if (member.duesKind === "paying") {
+    plans.push("unpaid");
   }
-  if (paid.some((subscription) => subscription.plan === "listing")) {
-    plans.push("business");
-  }
+  // Beside the dues answer, not instead of it: an unpaid member with a
+  // listing reads "unpaid, business", and both are true.
+  if (holds("listing")) plans.push("business");
 
   return plans.length > 0 ? plans : ["free"];
 }

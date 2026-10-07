@@ -246,7 +246,25 @@ export type PartnerPaymentStanding =
    * In review, and nothing to pay: the application came through the owner's
    * partner link, which waives the listing (ADR 0040).
    */
-  | "waived";
+  | "waived"
+  /** ADR 0044, card saved rather than held: no card yet - ask for it. */
+  | "save_card"
+  /** In review with the card saved. Nothing is charged. */
+  | "card_saved"
+  /** Approved, but an EU consumer's 14 days have not passed (ADR 0044 §5). */
+  | "scheduled"
+  /** Approved with the card saved; the subscription is being started. */
+  | "starting"
+  /** Published and in the free month (`trialing`). */
+  | "trial"
+  /** The owner withdrew the application or the contract. */
+  | "withdrawn";
+
+/** The saved-card half of an application (ADR 0044), when it has one. */
+export interface ListingActivationState {
+  cardSavedAt: Date | null;
+  startNotBefore: Date | null;
+}
 
 export function partnerPaymentStanding(input: {
   moderationStatus: string;
@@ -254,11 +272,28 @@ export function partnerPaymentStanding(input: {
   listingSubscriptionActive: boolean;
   /** ADR 0040: the listing was waived by the owner's partner link. */
   listingWaived?: boolean;
+  /** ADR 0044: the listing subscription is `trialing`. */
+  listingSubscriptionTrialing?: boolean;
+  /** ADR 0044: a card saved for a free month or a deferred start. */
+  activation?: ListingActivationState | null;
+  withdrawn?: boolean;
   now: Date;
 }): PartnerPaymentStanding {
   const { moderationStatus, holds, now } = input;
 
+  if (input.withdrawn) return "withdrawn";
   if (moderationStatus === "rejected") return "rejected";
+
+  if (input.activation) {
+    if (input.listingSubscriptionActive) return "paid";
+    if (input.listingSubscriptionTrialing) return "trial";
+    if (!input.activation.cardSavedAt) return "save_card";
+    if (moderationStatus !== "approved") return "card_saved";
+    return input.activation.startNotBefore &&
+      input.activation.startNotBefore > now
+      ? "scheduled"
+      : "starting";
+  }
 
   // A waived listing is never asked for money: in review it waits, approved
   // it is as good as paid.

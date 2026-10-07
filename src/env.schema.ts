@@ -127,15 +127,15 @@ export const serverSchema = z
       .transform((v) => v === "true"),
     E2E_TEST_SECRET: z.string().optional(),
 
-    // ── SEO / launch ────────────────────────────────────────
-    // Public marketing, catalogue and legal pages stay noindex until launch.
-    // Flip to "true" in the production environment the moment the site goes
-    // live. Private subtrees ((auth), (dashboard), card) are noindex
-    // regardless of this switch. Tracked as seo-public-pages-are-noindex.
+    // ── SEO ─────────────────────────────────────────────────
+    // An override, not the switch: unset, the production deployment is
+    // indexable and every other one is not (`publicIndexingAllowed`). "false"
+    // closes production again; "true" opens a non-production deployment.
+    // Private subtrees ((auth), (dashboard), card) are noindex regardless.
     ALLOW_PUBLIC_INDEXING: z
       .enum(["true", "false", ""])
       .default("")
-      .transform((v) => v === "true"),
+      .transform((v) => (v === "" ? undefined : v === "true")),
   })
   .superRefine((env, ctx) => {
     if (env.VERCEL_ENV === "production" && !env.CRON_SECRET) {

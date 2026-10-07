@@ -147,6 +147,26 @@ export async function findActiveVipSubscription(
 }
 
 /**
+ * The member's subscription on this plan that still grants access, if any -
+ * the same status set as `membershipAccess`, so "already paying dues" here and
+ * "inside the club" there cannot disagree. Newest first, should there be two.
+ */
+export async function findAccessGrantingSubscription(
+  db: DbClient,
+  memberId: string,
+  plan: "membership" | "vip",
+) {
+  return db.query.subscriptions.findFirst({
+    where: and(
+      eq(subscriptions.memberId, memberId),
+      eq(subscriptions.plan, plan),
+      inArray(subscriptions.status, [...ACCESS_GRANTING_SUBSCRIPTION_STATUSES]),
+    ),
+    orderBy: [desc(subscriptions.currentPeriodEnd)],
+  });
+}
+
+/**
  * Every subscription this member holds, as `membershipAccess` wants to read
  * them (ADR 0033): the plan and the status, nothing else. Deliberately not
  * filtered by status - the rule decides which statuses grant access, and a
@@ -233,7 +253,10 @@ export async function findLapsedSubscriptions(
     .from(subscriptions)
     .where(
       and(
-        eq(subscriptions.status, "active"),
+        // `trialing` too (ADR 0044): a free month whose end event was lost
+        // must not keep a listing published, or a partner in the club,
+        // forever. For a trial the period end is `trial_end`.
+        inArray(subscriptions.status, ["active", "trialing"]),
         lte(subscriptions.currentPeriodEnd, now),
       ),
     );

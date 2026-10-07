@@ -18,9 +18,11 @@ import {
   type RegisterField,
 } from "@/modules/identity/registration-form";
 import { attachApplicationMedia } from "@/modules/catalogue/attach-application-media";
-import { applyInviteLinkWaiver } from "@/modules/catalogue/invite-link-waiver";
-import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
-import { submitCompany } from "@/modules/catalogue/submit-company";
+import {
+  consentsComplete,
+  RENDERED_WORDING_FIELD,
+} from "@/modules/catalogue/application-consents";
+import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { getCurrentMember } from "./session";
 
@@ -33,9 +35,12 @@ import { getCurrentMember } from "./session";
  * again" is what sent a business arriving from the landing page into the
  * member sign-up and lost them there.
  *
- * Nothing is charged. A successful submit goes straight on to Stripe to
- * reserve the listing price on the card (ADR 0037, FR-113); it is captured
- * only when a moderator approves.
+ * Nothing is charged. A successful submit goes straight on to Stripe - to
+ * reserve the listing price on the card (ADR 0037, FR-113), captured only
+ * when a moderator approves, or to save the card for a free month or a
+ * deferred start (ADR 0044). Neither opens without the consents: the three
+ * required boxes are checked before an account exists, and the payment
+ * authority is checked again by the checkout itself.
  */
 
 export type PartnerApplicationState = {
@@ -78,6 +83,15 @@ export async function registerPartnerAction(
     return fileApplication(auth.member.id, formData);
   }
 
+  // ADR 0044: the boxes come first, before an account exists - an applicant
+  // who has not agreed must not end up with an account they did not finish.
+  // Whether payment authority is needed follows the wording the form showed;
+  // the server decides the real terms again once the account exists.
+  const renderedWording = formData.get(RENDERED_WORDING_FIELD);
+  if (!consentsComplete(formData, renderedWording !== "none")) {
+    return { success: false, issue: { code: "consentsRequired" } };
+  }
+
   // Shape first, before an account exists. `submitCompany` would reject the
   // same submission a moment later, but by then the account would be real and
   // the applicant would own a membership they did not ask for. The checks that
@@ -118,25 +132,20 @@ async function fileApplication(
   ownerId: string,
   formData: FormData,
 ): Promise<PartnerApplicationState> {
-  const result = await submitCompany(db, ownerId, formData);
+  // The owner is read by id: a session created by this same request is not
+  // on the request yet.
+  const owner = await findMemberById(db, ownerId);
+  if (!owner) return { success: false, issue: { code: "unauthorized" } };
 
-  if (result.success && result.companyId) {
-    await attachApplicationMedia(db, result.companyId, formData);
+  const outcome = await fileWithTerms(owner, formData);
+  if (!outcome.success || !outcome.companyId) return outcome;
 
-    // ADR 0040: free listing if this browser came through the partner link.
-    await applyPartnerLinkWaiver(db, ownerId, result.companyId);
-    // ADR 0042: or if a member's partner invite link brought this owner in.
-    await applyInviteLinkWaiver(db, ownerId, result.companyId);
+  await attachApplicationMedia(db, outcome.companyId, formData);
 
-    // Straight on to reserving the listing (ADR 0037) - or, when the link
-    // waived it, to the standing screen. The owner is read by id: a session
-    // created by this same request is not on the request yet.
-    const owner = await findMemberById(db, ownerId);
-    const next = owner
-      ? await holdCheckoutUrlOrNull(owner, result.companyId)
-      : null;
-    if (next) redirect(next);
-  }
+  // Straight on to Stripe (ADR 0037, ADR 0044) - or, with nothing to pay, to
+  // the standing screen.
+  const next = await holdCheckoutUrlOrNull(owner, outcome.companyId);
+  if (next) redirect(next);
 
-  return result;
+  return outcome;
 }

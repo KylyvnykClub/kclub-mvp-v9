@@ -31,6 +31,20 @@ import {
   type CompanyModerationPayload,
 } from "@/modules/moderation/outbox";
 import {
+  LISTING_ACTIVATION_EVENT_TOPIC,
+  LISTING_ACTIVATION_SETTLE_TOPIC,
+  LISTING_ACTIVATION_SYNC_TOPIC,
+  productionListingActivationDeps,
+  projectListingSetup,
+  projectListingSetupIntent,
+  settleListingActivation,
+} from "@/modules/billing/listing-activation";
+import {
+  handleListingActivationEvent,
+  productionActivationEventDeps,
+  type ActivationEventPayload,
+} from "@/modules/billing/listing-activation-events";
+import {
   LISTING_HOLD_SETTLE_TOPIC,
   LISTING_HOLD_SYNC_TOPIC,
   productionListingHoldDeps,
@@ -318,6 +332,14 @@ async function handleEntry(
     return handleListingHold(tx, entry, deps);
   }
 
+  if (
+    entry.topic === LISTING_ACTIVATION_SYNC_TOPIC ||
+    entry.topic === LISTING_ACTIVATION_SETTLE_TOPIC ||
+    entry.topic === LISTING_ACTIVATION_EVENT_TOPIC
+  ) {
+    return handleListingActivation(tx, entry);
+  }
+
   if (entry.topic !== BILLING_OUTBOX_TOPIC) {
     await markProcessed(tx, entry.id);
     return "ignored";
@@ -395,6 +417,67 @@ async function handleListingHold(
   }
 
   await settleListingHolds(tx, stripe, payload.companyId, now);
+  await markProcessed(tx, entry.id);
+  return "applied";
+}
+
+/**
+ * A listing paid by a saved card (ADR 0044): the card projected from a setup
+ * session, a start retried, or a subscription/invoice event after the start.
+ * Each throws to be retried while Stripe is unreachable.
+ */
+async function handleListingActivation(
+  tx: DbClient,
+  entry: OutboxEntry,
+): Promise<EntryOutcome> {
+  const payload = entry.payload as {
+    checkoutSessionId?: string;
+    setupIntentId?: string;
+    companyId?: string;
+    eventCreated?: number;
+  };
+  const now = new Date();
+
+  if (entry.topic === LISTING_ACTIVATION_EVENT_TOPIC) {
+    const outcome = await handleListingActivationEvent(
+      tx,
+      await productionActivationEventDeps(),
+      entry.payload as ActivationEventPayload,
+      now,
+    );
+    await markProcessed(tx, entry.id);
+    return outcome;
+  }
+
+  const stripe = await productionListingActivationDeps();
+
+  if (entry.topic === LISTING_ACTIVATION_SYNC_TOPIC) {
+    let outcome: string = "ignored";
+    if (payload.setupIntentId) {
+      outcome = await projectListingSetupIntent(
+        tx,
+        stripe,
+        payload.setupIntentId,
+        now,
+      );
+    } else if (payload.checkoutSessionId && payload.eventCreated) {
+      outcome = await projectListingSetup(
+        tx,
+        stripe,
+        payload.checkoutSessionId,
+        payload.eventCreated,
+        now,
+      );
+    }
+    await markProcessed(tx, entry.id);
+    return outcome === "applied" ? "applied" : "ignored";
+  }
+
+  if (!payload.companyId) {
+    await markProcessed(tx, entry.id);
+    return "malformed";
+  }
+  await settleListingActivation(tx, stripe, payload.companyId, now);
   await markProcessed(tx, entry.id);
   return "applied";
 }
@@ -567,6 +650,7 @@ async function processCompanyModeration(
       locale,
       paymentHeld: payload.paymentHeld === true,
       listingWaived: payload.listingWaived === true,
+      cardSaved: payload.cardSaved === true,
     });
   } else if (payload.status === "rejected") {
     await sendCompanyRejectedEmail({

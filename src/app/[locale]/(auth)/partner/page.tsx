@@ -11,6 +11,9 @@ import { env } from "@/env";
 import { getLegalDocument } from "@/lib/mdx";
 import { monthlyPrice } from "@/domain/pricing";
 import { PartnerApplicationForm } from "./_components/partner-application-form";
+import { findUnspentPartnerInvitation } from "@/data/business-applications";
+import { visitorInvitedToTrial } from "@/modules/catalogue/application-consents";
+import { clubPartnerLinkPending } from "@/modules/catalogue/partner-link-waiver";
 
 /**
  * Business partner registration (FR-109).
@@ -75,9 +78,15 @@ export default async function PartnerApplicationPage({
     }
   }
 
-  const [terms, privacy] = await Promise.all([
+  // ADR 0044: which terms the form shows. Decided again on submit; a guess
+  // that turns out wrong is refused with "the terms changed".
+  const [terms, privacy, invited, waived] = await Promise.all([
     getLegalDocument("terms-of-use", locale),
     getLegalDocument("privacy-policy", locale),
+    current?.member
+      ? findUnspentPartnerInvitation(db, current.member.id).then(Boolean)
+      : visitorInvitedToTrial(db),
+    clubPartnerLinkPending(db),
   ]);
 
   return (
@@ -87,6 +96,9 @@ export default async function PartnerApplicationPage({
       privacyVersion={privacy?.version ?? null}
       turnstileSiteKey={env.client.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null}
       listingPrice={monthlyPrice("listing", locale)}
+      invited={invited}
+      waived={waived}
+      residenceCountry={current?.member?.country ?? null}
     />
   );
 }

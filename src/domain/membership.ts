@@ -11,11 +11,14 @@
  * the browser sent (ADR 0004).
  *
  * Four kinds of member and two ways to be paid up: dues for a member, a
- * listing for a partner (ADR 0036). Nothing else grants membership - VIP is an
- * addition to it, not a substitute for it.
+ * listing for a partner (ADR 0036). Dues are paid by either of the two member
+ * plans - standard membership or VIP, which includes it (ADR 0043).
  */
 
-import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./subscription-access";
+import {
+  ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+  LISTING_PUBLISHABLE_STATUSES,
+} from "./subscription-access";
 
 /** Who owes membership dues. Mirrors `members.dues_kind`. */
 export type MemberDuesKind =
@@ -61,10 +64,12 @@ export function membershipAccess(
   if (member.duesKind === "partner") {
     if (listingPaidByHold) return "active";
 
+    // A published listing in its free month opens the club too (ADR 0044):
+    // the partner is listed, and that is what membership is for them.
     return subscriptions.some(
       (subscription) =>
         subscription.plan === "listing" &&
-        ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
+        LISTING_PUBLISHABLE_STATUSES.includes(subscription.status),
     )
       ? "active"
       : "awaiting_payment";
@@ -72,9 +77,11 @@ export function membershipAccess(
 
   if (member.duesKind !== "paying") return "active";
 
+  // VIP is membership with more in it, not an addition charged on top of it
+  // (ADR 0043), so either plan pays the dues.
   const paidUp = subscriptions.some(
     (subscription) =>
-      subscription.plan === "membership" &&
+      (subscription.plan === "membership" || subscription.plan === "vip") &&
       ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
   );
 

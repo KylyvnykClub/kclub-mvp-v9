@@ -6,7 +6,6 @@ import {
   findCompanyById,
   insertCompany,
   setCompanyModerationStatus,
-  waiveListingByPartnerLink,
 } from "@/data/companies.js";
 import type { Db, DbClient } from "@/data/db.js";
 import { registerMemberTx } from "@/data/identity.js";
@@ -22,18 +21,28 @@ import {
   recordInvitation,
   rotateInviteLink,
 } from "@/data/invite-links.js";
-import { rotateJoinLink } from "@/data/join-links.js";
 import { loadMembershipAccess } from "@/data/membership-access.js";
 import {
   auditLog,
   companies,
+  consentRecords,
   invitations,
   inviteLinks,
   members,
   subscriptions,
 } from "@/data/schema/index.js";
 import { inviteGrantsWaiver } from "@/domain/invites.js";
-import { applyInviteLinkWaiver } from "@/modules/catalogue/invite-link-waiver.js";
+import {
+  findListingActivation,
+  findUnspentPartnerInvitation,
+  hasPaymentAuthority,
+} from "@/data/business-applications.js";
+import {
+  applicationTerms,
+  paymentAuthorityWording,
+  type ConsentKind,
+} from "@/domain/business-application.js";
+import { settleFiledApplication } from "@/modules/catalogue/application-consents.js";
 import { getTestDb } from "./setup/integration-setup.js";
 
 /**
@@ -380,7 +389,7 @@ describe("FR-123, FR-124: registration records who brought the newcomer", () => 
   });
 });
 
-describe("FR-124: a partner invite link waives one listing", () => {
+describe("FR-124, ADR 0044: a partner invite link gives one free month from publication", () => {
   async function partnerBroughtBy(
     inviterDuesKind: "legacy_free" = "legacy_free",
   ) {
@@ -399,64 +408,145 @@ describe("FR-124: a partner invite link waives one listing", () => {
     });
   }
 
-  it("FR-124: even a club member's partner link waives the first application, with an audit entry", async () => {
+  /**
+   * What `resolveApplication` decides, without the request scope it needs
+   * for the club-link cookie (absent here).
+   */
+  async function resolvedFor(memberId: string) {
+    const invitation = await findUnspentPartnerInvitation(db(), memberId);
+    const terms = applicationTerms({
+      invited: invitation !== undefined,
+      residenceCountry: "US",
+      earlyStartRequested: false,
+      now: now(),
+    });
+    return {
+      terms,
+      wording: paymentAuthorityWording(terms),
+      inviteLinkId: invitation?.inviteLinkId ?? null,
+    };
+  }
+
+  const ALL_REQUIRED = new Set<ConsentKind>([
+    "terms",
+    "payment_authority",
+    "publication",
+  ]);
+
+  async function settle(memberId: string, companyId: string) {
+    await settleFiledApplication(tx(), {
+      memberId,
+      companyId,
+      residenceCountry: "US",
+      locale: "ru",
+      ticked: ALL_REQUIRED,
+      resolved: await resolvedFor(memberId),
+      now: now(),
+    });
+  }
+
+  it("FR-124: the first application is on the invite route, with a saved-card activation and no permanent waiver", async () => {
     const { link, newcomer } = await partnerBroughtBy();
     expect(newcomer.duesKind).toBe("partner");
     const companyId = await fileApplication(newcomer.id);
 
-    await applyInviteLinkWaiver(tx(), newcomer.id, companyId);
+    await settle(newcomer.id, companyId);
 
     const company = await findCompanyById(db(), companyId);
-    expect(company?.listingWaivedAt).toBeInstanceOf(Date);
-    expect(company?.listingWaiverInviteLinkId).toBe(link.id);
+    expect(company?.applicationRoute).toBe("invite");
+    expect(company?.applicationInviteLinkId).toBe(link.id);
+    expect(company?.listingWaivedAt).toBeNull();
+
+    const activation = await findListingActivation(db(), companyId);
+    expect(activation?.freeMonth).toBe(true);
+    expect(activation?.cardSavedAt).toBeNull();
+
+    expect(
+      (await findInvitationOf(db(), newcomer.id))?.waiverUsedAt,
+    ).toBeInstanceOf(Date);
+
     const entries = await db()
       .select()
       .from(auditLog)
       .where(eq(auditLog.subjectId, companyId));
     expect(entries.map((entry) => entry.action)).toContain(
-      "company.listing_waived",
+      "company.application_terms",
     );
   });
 
-  it("FR-124: a second application is not waived", async () => {
+  it("ADR 0044: records each ticked box with the full Russian text, the wording and the version", async () => {
     const { newcomer } = await partnerBroughtBy();
-    const first = await fileApplication(newcomer.id);
-    const second = await fileApplication(newcomer.id);
+    const companyId = await fileApplication(newcomer.id);
+    await settle(newcomer.id, companyId);
 
-    await applyInviteLinkWaiver(tx(), newcomer.id, first);
-    await applyInviteLinkWaiver(tx(), newcomer.id, second);
-
-    expect((await findCompanyById(db(), second))?.listingWaivedAt).toBeNull();
+    const records = await db()
+      .select()
+      .from(consentRecords)
+      .where(eq(consentRecords.companyId, companyId));
+    expect(records.map((record) => record.kind).sort()).toEqual([
+      "payment_authority",
+      "publication",
+      "terms",
+    ]);
+    const payment = records.find((r) => r.kind === "payment_authority");
+    expect(payment?.wording).toBe("invite");
+    expect(payment?.route).toBe("invite");
+    expect(payment?.text).toContain(
+      "Ожидание одобрения не входит в бесплатный месяц",
+    );
+    expect(payment?.textHash).toHaveLength(64);
+    expect(
+      await hasPaymentAuthority(db(), companyId, newcomer.id, "invite"),
+    ).toBe(true);
+    expect(
+      await hasPaymentAuthority(db(), companyId, newcomer.id, "public_hold"),
+    ).toBe(false);
   });
 
-  it("FR-124: the waiver is spent on the first application even when the club's partner link already waived it", async () => {
+  it("FR-124: a second application gets no free month - it is on the public route", async () => {
     const { newcomer } = await partnerBroughtBy();
-    const joinLink = await rotateJoinLink(tx(), "partner", code(), null);
-    const first = await fileApplication(newcomer.id);
-    await waiveListingByPartnerLink(db(), first, joinLink.id, now());
+    await settle(newcomer.id, await fileApplication(newcomer.id));
 
-    await applyInviteLinkWaiver(tx(), newcomer.id, first);
+    const second = await fileApplication(newcomer.id);
+    await settle(newcomer.id, second);
+
+    expect((await findCompanyById(db(), second))?.applicationRoute).toBe(
+      "public",
+    );
+    expect(await findListingActivation(db(), second)).toBeNull();
+  });
+
+  it("ADR 0044: without the required boxes nothing is recorded and the invitation is not spent", async () => {
+    const { newcomer } = await partnerBroughtBy();
+    const companyId = await fileApplication(newcomer.id);
+
+    await expect(
+      settleFiledApplication(tx(), {
+        memberId: newcomer.id,
+        companyId,
+        residenceCountry: "US",
+        locale: "en",
+        ticked: new Set<ConsentKind>(["terms"]),
+        resolved: await resolvedFor(newcomer.id),
+        now: now(),
+      }),
+    ).rejects.toThrow();
+
     expect(
       (await findInvitationOf(db(), newcomer.id))?.waiverUsedAt,
-    ).toBeInstanceOf(Date);
-
-    const second = await fileApplication(newcomer.id);
-    await applyInviteLinkWaiver(tx(), newcomer.id, second);
-    expect((await findCompanyById(db(), second))?.listingWaivedAt).toBeNull();
+    ).toBeNull();
+    expect(await findListingActivation(db(), companyId)).toBeNull();
   });
 
-  it("FR-124: a member brought through a member link gets no listing waiver", async () => {
+  it("FR-124: a member brought through a member link has no free business month", async () => {
     const vip = await seedMember("legacy_free");
     await giveSubscription(vip.id, "vip");
     const link = await linkOf(vip.id, "member");
     const newcomer = await registerThrough(link.code);
-    const companyId = await fileApplication(newcomer.id);
-
-    await applyInviteLinkWaiver(tx(), newcomer.id, companyId);
 
     expect(
-      (await findCompanyById(db(), companyId))?.listingWaivedAt,
-    ).toBeNull();
+      await findUnspentPartnerInvitation(db(), newcomer.id),
+    ).toBeUndefined();
   });
 });
 

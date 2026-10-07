@@ -46,8 +46,9 @@ const PLANS = [
     plan: "vip" as PricedPlan,
     Icon: Gem,
     className: "plan-card plan-featured",
-    signedIn: "/dashboard/profile",
-    signedOut: "/register",
+    // VIP includes membership (ADR 0043): the dues screen offers it first.
+    signedIn: "/dashboard/profile?tab=billing",
+    signedOut: "/register?plan=vip",
   },
   {
     key: "business",

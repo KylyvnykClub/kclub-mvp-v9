@@ -64,8 +64,9 @@ export type PricingReader =
  * An unpaid member used to be sent into the dashboard, which the dues gate
  * turned into the $4.99 screen whichever plan they had picked.
  *
- * - VIP is added on top of membership (ADR 0033), so an unpaid member starts
- *   on the dues screen, which says so. A paid one adds it under Billing.
+ * - VIP includes membership (ADR 0043), so a visitor who picked it registers
+ *   and lands on the dues screen with VIP offered first, and an unpaid member
+ *   goes straight there. A paid one switches to it under Billing.
  * - The listing is its own payment (ADR 0037). An unpaid member with no
  *   company applies on /partner; one who already has a company reserves its
  *   price on the dues screen, which shows its standing. A paid member files
@@ -78,7 +79,7 @@ export function pricingDestinations(
   if (!reader.signedIn) {
     return {
       membership: `/${locale}/register`,
-      vip: `/${locale}/register`,
+      vip: `/${locale}/register?plan=vip`,
       listing: `/${locale}/partner`,
     };
   }
@@ -86,7 +87,7 @@ export function pricingDestinations(
   if (reader.awaitingPayment) {
     return {
       membership: `/${locale}/membership`,
-      vip: `/${locale}/membership`,
+      vip: `/${locale}/membership?plan=vip`,
       listing: reader.ownsCompany
         ? `/${locale}/membership`
         : `/${locale}/partner`,

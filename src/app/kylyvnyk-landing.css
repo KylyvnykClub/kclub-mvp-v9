@@ -3787,6 +3787,32 @@ body.kyl-menu-open {
   .kyl .mobile-menu .language-control .kyl-select-trigger {
     width: 100%;
   }
+
+  /* The menu is fixed and the page behind it is locked, so on a short phone
+     screen whatever sat below the fold - the language control first - could
+     not be reached at all. The panel scrolls inside itself instead. */
+  .kyl .mobile-menu {
+    max-height: calc(100dvh - 108px - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* The language list opens in the flow of the menu instead of floating over
+     its clipped bottom edge: the menu grows and scrolls, so every language is
+     reachable however many there are. Opening scrolls the chosen one into
+     view (kyl-select.tsx). */
+  .kyl .mobile-menu .kyl-select-panel {
+    position: static;
+    max-width: none;
+    margin-top: 9px;
+  }
+}
+
+@media (max-width: 760px) {
+  .kyl .mobile-menu {
+    max-height: calc(100dvh - 94px - 16px);
+  }
 }
 
 /* A photograph behind the place label needs a scrim; a flat category colour

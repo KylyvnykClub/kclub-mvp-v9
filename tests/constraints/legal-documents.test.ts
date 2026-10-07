@@ -17,6 +17,18 @@ const LEGAL_DOCUMENT_IDS = [
   "contact-us",
 ] as const;
 
+/**
+ * The published version of each document. A change to a document's text is a
+ * new version, set here in the same commit - so a version cannot move, or fail
+ * to move, without somebody saying so. The Refund Policy is 1.1 since
+ * ADR 0044 added the business listing and EU withdrawal sections.
+ */
+const EXPECTED_VERSION: Partial<
+  Record<(typeof LEGAL_DOCUMENT_IDS)[number], string>
+> = {
+  "refund-policy": "1.1",
+};
+
 /** Every document exists in every locale; English is authoritative. */
 const LOCALE_SUFFIXES = [".en.mdx", ".ru.mdx", ".uk.mdx"] as const;
 
@@ -34,7 +46,7 @@ describe("constraint: legal document localization (FR-093)", () => {
       const parsed = matter(file);
 
       expect(parsed.data.authoritative, id).toBe(true);
-      expect(parsed.data.version, id).toBe("1.0");
+      expect(parsed.data.version, id).toBe(EXPECTED_VERSION[id] ?? "1.0");
       expect(parsed.content.trim().length, id).toBeGreaterThan(1000);
     }
   });

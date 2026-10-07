@@ -80,6 +80,23 @@ type RegisterResult = {
  * when Twilio comes back the form is filled in first and the code asked for
  * afterwards, so the number is proved without the form being split again.
  */
+/**
+ * Where a new member goes next. The VIP choice is a hint for which plan the
+ * dues screen puts first; it grants nothing and costs nothing to forge.
+ */
+function afterRegistration(
+  locale: string,
+  duesOwed: boolean | undefined,
+  vip: boolean,
+): string {
+  if (duesOwed) {
+    return vip ? `/${locale}/membership?plan=vip` : `/${locale}/membership`;
+  }
+  return vip
+    ? `/${locale}/dashboard/profile?tab=billing`
+    : `/${locale}/dashboard/profile`;
+}
+
 export function RegisterFlow({
   termsVersion,
   privacyVersion,
@@ -88,6 +105,7 @@ export function RegisterFlow({
   google,
   googleEmail,
   googleName,
+  vip,
 }: {
   termsVersion: string | null;
   privacyVersion: string | null;
@@ -99,6 +117,8 @@ export function RegisterFlow({
   /** Proved by Google in this session, or null for an ordinary registration. */
   googleEmail: string | null;
   googleName: string | null;
+  /** Came from a VIP button: the dues screen offers VIP first (ADR 0043). */
+  vip: boolean;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -229,11 +249,7 @@ export function RegisterFlow({
       const result = await registerAction(formData);
 
       if (result?.success) {
-        router.push(
-          result.duesOwed
-            ? `/${locale}/membership`
-            : `/${locale}/dashboard/profile`,
-        );
+        router.push(afterRegistration(locale, result.duesOwed, vip));
       }
 
       setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));
@@ -264,11 +280,7 @@ export function RegisterFlow({
       const result = await registerAction(pendingForm);
 
       if (result?.success) {
-        router.push(
-          result.duesOwed
-            ? `/${locale}/membership`
-            : `/${locale}/dashboard/profile`,
-        );
+        router.push(afterRegistration(locale, result.duesOwed, vip));
       }
 
       setChallengeNonce((n) => nextChallengeNonce(n, result ?? null));

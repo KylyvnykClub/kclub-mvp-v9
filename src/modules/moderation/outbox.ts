@@ -17,4 +17,6 @@ export interface CompanyModerationPayload {
   paymentHeld?: boolean;
   /** ADR 0040: the listing was waived by the partner link; nothing to pay. */
   listingWaived?: boolean;
+  /** ADR 0044: a card is saved; approval starts the subscription. */
+  cardSaved?: boolean;
 }

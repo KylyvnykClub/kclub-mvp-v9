@@ -68,21 +68,22 @@
     }
   ],
   "lastSession": {
-    "date": "2026-10-05",
+    "date": "2026-10-07",
     "checklist": [
-      "Owner decided on a real invite programme: personal links, who-brought-whom recorded; ADR 0042 and CLAUDE.md constraint 3 rewritten",
-      "Every member has a member link and a business link under Profile -> Invite programme, with copy, rotate and counts only",
-      "Matrix: partner (money-paid listing) or VIP brings members free; anyone brings a business with its first listing free; a club member's member link is attributed but paid",
-      "Staff member sheet shows who brought the member and how many they brought",
-      "Adversarial review done; its 6 findings fixed (waived partners do not give free memberships, waiver spent on first application, export, rotate race)",
-      "pnpm verify green (735 unit); integration test file written but NOT run - no Docker; no browser walk"
+      "Client bugs fixed: inbox badge opens the inbox, phone menu scrolls, console plan column tells Member / Not paid / Free apart",
+      "VIP is all-inclusive at $19.99 (ADR 0043): VIP pays the dues; a $4.99 payer is switched, not doubled",
+      "SEO: production is indexable by default, robots.txt tightened, sitemap lists pricing and every legal document",
+      "Client spec v1.7 implemented (ADR 0044): consent boxes recorded in full, no Checkout without payment authority, invite route saves the card and gets one free month from publication, EU 14-day withdrawal, cancel auto-renewal, new webhook events, emails, owner counters",
+      "Adversarial review of billing done; its 7 real findings fixed (double subscription guards, withdrawn approval, card projection, trial lapse, cancel key, VIP key)",
+      "Stripe Live dashboard configured with the owner: portal, emails, trial-over descriptor, webhook events, legal links",
+      "pnpm verify green (830 unit); integration tests and browser walk NOT run - Docker Desktop was off"
     ],
-    "stoppedAt": "feat/FR-122-invite-programme pushed; PR to be opened from the compare link (gh CLI not installed).",
+    "stoppedAt": "fix/client-feedback-oct pushed in 3 commits; PR to be opened from the compare link (gh CLI not installed).",
     "nextSteps": [
-      "Enable Docker and run pnpm test:integration -- tests/invite-programme.integration.test.ts",
-      "Browser-walk: VIP copies member link, incognito register lands in the club free, counter shows 1, admin sheet shows brought by",
-      "Ask the owner whether a partner with a waived (free) listing should count as a business partner in the matrix",
-      "Merge order: fix/staff-listing-waiver first, it is the base of this branch"
+      "Start Docker Desktop with WSL integration, run pnpm test:integration (invite-programme, business-application, member-plan-filter)",
+      "Browser-walk: invited business applies with boxes, saves card 4242, approve, trial shown, cancel auto-renewal; VIP signup lands on $19.99",
+      "After deploy: check Stripe retries are 8 in 2 weeks and no customer holds both Member and VIP",
+      "Ask the owner: should the club's own partner link (ADR 0040) also become a free month instead of a permanent waiver?"
     ]
   }
 }

@@ -5,6 +5,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { env } from "@/env";
+import { indexingAllowedHere } from "@/lib/seo";
 
 import {
   fontBody,
@@ -51,12 +52,11 @@ export async function generateMetadata({
       title: t("title"),
       description: t("description"),
     },
-    // Public marketing, catalogue and legal pages become indexable only once
-    // ALLOW_PUBLIC_INDEXING is set at launch; until then the whole site is
-    // noindex so the pre-launch beta stays out of search. The private subtrees
-    // ((auth), (dashboard), the card page) override this with their own hard
-    // noindex, so flipping the switch never exposes them.
-    robots: env.server.ALLOW_PUBLIC_INDEXING
+    // Public marketing, catalogue and legal pages are indexable on the
+    // production deployment and nowhere else (`publicIndexingAllowed`). The
+    // private subtrees ((auth), (dashboard), the card page) override this with
+    // their own hard noindex, so opening the site never exposes them.
+    robots: indexingAllowedHere()
       ? { index: true, follow: true }
       : { index: false, follow: false },
   };

@@ -134,7 +134,13 @@ export const MEMBER_ADMIN_STATUSES = [
 export type MemberAdminStatus = (typeof MEMBER_ADMIN_STATUSES)[number];
 
 /** The plan chips, in the order the console shows them. */
-export const MEMBER_ADMIN_PLANS = ["vip", "business", "free"] as const;
+export const MEMBER_ADMIN_PLANS = [
+  "vip",
+  "member",
+  "business",
+  "unpaid",
+  "free",
+] as const;
 
 export interface MemberAdminFilters {
   query?: string;
@@ -150,7 +156,9 @@ export interface MemberAdminFilters {
  * on the same member: a filter that disagrees with the badge it filters on is
  * worse than no filter.
  */
-function hasAccessGrantingSubscription(plan: "vip" | "listing"): SQL {
+function hasAccessGrantingSubscription(
+  plan: "membership" | "vip" | "listing",
+): SQL {
   // The subscription's own plan since ADR 0033, not "is a company attached":
   // membership dues are member-scoped and carry no company, and would have
   // matched the VIP filter.
@@ -168,12 +176,20 @@ function hasAccessGrantingSubscription(plan: "vip" | "listing"): SQL {
 }
 
 function planCondition(plan: MemberPlan): SQL {
-  if (plan === "vip") return hasAccessGrantingSubscription("vip");
-  if (plan === "business") return hasAccessGrantingSubscription("listing");
+  const vip = hasAccessGrantingSubscription("vip");
+  const dues = hasAccessGrantingSubscription("membership");
+  const listing = hasAccessGrantingSubscription("listing");
+  const paying = sql`${members.duesKind} = 'paying'`;
 
-  // Free is the absence of both, not a plan of its own - so it is the negation
-  // of the union rather than a third predicate that could drift from them.
-  return sql`not (${hasAccessGrantingSubscription("vip")}) and not (${hasAccessGrantingSubscription("listing")})`;
+  if (plan === "vip") return vip;
+  if (plan === "business") return listing;
+  if (plan === "member") return sql`${dues} and not (${vip})`;
+  if (plan === "unpaid")
+    return sql`${paying} and not (${vip}) and not (${dues})`;
+
+  // Free is the absence of every other chip, not a plan of its own - so it is
+  // the negation of their union rather than a predicate that could drift.
+  return sql`not (${vip}) and not (${dues}) and not (${listing}) and not (${paying})`;
 }
 
 const MEMBER_ADMIN_RELATIONS = {

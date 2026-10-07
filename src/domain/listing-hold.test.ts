@@ -344,3 +344,86 @@ describe("FR-105, ADR 0040: a listing waived by the partner link is never asked 
     expect(standing("rejected")).toBe("rejected");
   });
 });
+
+describe("ADR 0044: the standing of an application paid by a saved card", () => {
+  const base = {
+    holds: [],
+    listingSubscriptionActive: false,
+    now: new Date("2026-10-07T12:00:00Z"),
+  };
+  const noCard = { cardSavedAt: null, startNotBefore: null };
+  const card = {
+    cardSavedAt: new Date("2026-10-07T10:00:00Z"),
+    startNotBefore: null,
+  };
+
+  it("asks for the card until Stripe confirms it was saved", () => {
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "pending",
+        activation: noCard,
+      }),
+    ).toBe("save_card");
+  });
+
+  it("waits for review with the card saved, never asking for a hold", () => {
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "pending",
+        activation: card,
+      }),
+    ).toBe("card_saved");
+  });
+
+  it("is starting once approved, and scheduled while an EU consumer's 14 days run", () => {
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "approved",
+        activation: card,
+      }),
+    ).toBe("starting");
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "approved",
+        activation: {
+          ...card,
+          startNotBefore: new Date("2026-10-21T12:00:00Z"),
+        },
+      }),
+    ).toBe("scheduled");
+  });
+
+  it("reads trial while the subscription is trialing, and paid once it is active", () => {
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "approved",
+        activation: card,
+        listingSubscriptionTrialing: true,
+      }),
+    ).toBe("trial");
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "approved",
+        activation: card,
+        listingSubscriptionActive: true,
+      }),
+    ).toBe("paid");
+  });
+
+  it("says withdrawn rather than rejected when the owner withdrew", () => {
+    expect(
+      partnerPaymentStanding({
+        ...base,
+        moderationStatus: "rejected",
+        activation: card,
+        withdrawn: true,
+      }),
+    ).toBe("withdrawn");
+  });
+});

@@ -37,7 +37,9 @@ const STATUS_LABEL_KEYS = {
 
 const PLAN_LABEL_KEYS = {
   vip: "planVip",
+  member: "planMember",
   business: "planBusiness",
+  unpaid: "planUnpaid",
   free: "planFree",
 } as const;
 
@@ -213,9 +215,11 @@ export default async function AdminMembersPage({
                   </TableCell>
                   <TableCell>
                     {/* A member can hold VIP and a listing at once, so this
-                        renders every plan rather than picking a winner. */}
+                        renders every plan rather than picking a winner. Dues
+                        are read too: "unpaid" is a registration that never
+                        paid, not a member let in free. */}
                     <div className="flex flex-wrap gap-1">
-                      {memberPlansOf(m.subscriptions).map((memberPlan) => (
+                      {memberPlansOf(m, m.subscriptions).map((memberPlan) => (
                         <StatusBadge
                           key={memberPlan}
                           tone={memberPlanTone(memberPlan)}

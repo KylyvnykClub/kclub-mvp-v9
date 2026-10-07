@@ -91,6 +91,19 @@ const COMPANY_APPROVED_WAIVED_BODIES: Record<
     `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB.\n\nВи подали заявку за партнерським посиланням клубу, тому розміщення безоплатне: компанія вже в каталозі, нічого не списується.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
 };
 
+/** ADR 0044: the card was saved at application; approval publishes. */
+const COMPANY_APPROVED_CARD_SAVED_BODIES: Record<
+  Locale,
+  (companyName: string, link: string) => string
+> = {
+  en: (companyName, link) =>
+    `Congratulations!\n\nYour company "${companyName}" has passed review for the KYLYVNYK CLUB Partner Catalogue. It is being published now; a separate email gives the exact dates, the amount and when the first payment is taken.\n\n${link}\n\nBest,\nKYLYVNYK CLUB`,
+  ru: (companyName, link) =>
+    `Поздравляем!\n\nВаша компания «${companyName}» прошла проверку для Каталога партнёров KYLYVNYK CLUB и сейчас публикуется. В отдельном письме будут точные даты, сумма и момент первого платежа.\n\n${link}\n\nС уважением,\nKYLYVNYK CLUB`,
+  uk: (companyName, link) =>
+    `Вітаємо!\n\nВаша компанія «${companyName}» пройшла перевірку для Каталогу партнерів KYLYVNYK CLUB і зараз публікується. В окремому листі будуть точні дати, сума і момент першого платежу.\n\n${link}\n\nЗ повагою,\nKYLYVNYK CLUB`,
+};
+
 const COMPANY_REJECTED_SUBJECTS: Record<Locale, string> = {
   en: "Your company submission was not approved",
   ru: "Ваша заявка на компанию не одобрена",
@@ -215,6 +228,8 @@ export async function sendCompanyApprovedEmail(params: {
   paymentHeld?: boolean;
   /** ADR 0040: the partner link waived the listing; nothing is charged. */
   listingWaived?: boolean;
+  /** ADR 0044: a card was saved at application; approval publishes. */
+  cardSaved?: boolean;
 }): Promise<boolean> {
   // Straight to the owner's own screen. A partner with no active listing is
   // forwarded from there to the standing screen that carries the button, so
@@ -226,9 +241,11 @@ export async function sendCompanyApprovedEmail(params: {
     COMPANY_APPROVED_SUBJECTS[params.locale],
     (params.listingWaived
       ? COMPANY_APPROVED_WAIVED_BODIES
-      : params.paymentHeld
-        ? COMPANY_APPROVED_HELD_BODIES
-        : COMPANY_APPROVED_BODIES)[params.locale](params.companyName, link),
+      : params.cardSaved
+        ? COMPANY_APPROVED_CARD_SAVED_BODIES
+        : params.paymentHeld
+          ? COMPANY_APPROVED_HELD_BODIES
+          : COMPANY_APPROVED_BODIES)[params.locale](params.companyName, link),
   );
 }
 
@@ -312,7 +329,7 @@ export async function sendPasswordChangedEmail(
  * silently, which for FR-056's grace warning means the member is never warned
  * at all: the enqueued row still suppresses the next sweep.
  */
-async function sendEmail(
+export async function sendEmail(
   to: string,
   subject: string,
   text: string,

@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import type { DbClient } from "@/data/db";
 import { listSubscriptionsByCompanyId } from "@/data/billing";
 import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "@/data/billing-access";
+import { findListingActivation } from "@/data/business-applications";
 import { findCompanyById } from "@/data/companies";
 import { enqueueOutbox } from "@/data/outbox";
 import {
@@ -232,20 +233,29 @@ export async function partnerStandingFor(
     id: string;
     moderationStatus: string;
     listingWaivedAt?: Date | null;
+    withdrawnAt?: Date | null;
   },
   now: Date,
 ): Promise<{ standing: PartnerPaymentStanding; holds: ListingHoldRow[] }> {
-  const [holds, subscriptionActive] = await Promise.all([
+  const [holds, subscriptions, activation] = await Promise.all([
     listListingHoldsByCompany(db, company.id),
-    listingSubscriptionActive(db, company.id),
+    listSubscriptionsByCompanyId(db, company.id),
+    findListingActivation(db, company.id),
   ]);
 
   return {
     standing: partnerPaymentStanding({
       moderationStatus: company.moderationStatus,
       holds,
-      listingSubscriptionActive: subscriptionActive,
+      listingSubscriptionActive: subscriptions.some((subscription) =>
+        ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
+      ),
+      listingSubscriptionTrialing: subscriptions.some(
+        (subscription) => subscription.status === "trialing",
+      ),
       listingWaived: Boolean(company.listingWaivedAt),
+      activation,
+      withdrawn: Boolean(company.withdrawnAt),
       now,
     }),
     holds,

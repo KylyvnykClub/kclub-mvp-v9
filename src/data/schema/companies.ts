@@ -112,4 +112,20 @@ export const companies = pgTable("companies", {
     () => inviteLinks.id,
     { onDelete: "set null" },
   ),
+  /**
+   * ADR 0044: which way the application came in, decided by the server when
+   * it was filed. Null for applications filed before the decision.
+   */
+  applicationRoute: varchar("application_route", { length: 16 }),
+  /** The member's partner invite link that gave the free month (ADR 0044). */
+  applicationInviteLinkId: uuid("application_invite_link_id").references(
+    () => inviteLinks.id,
+    { onDelete: "set null" },
+  ),
+  /**
+   * The owner withdrew the application, or withdrew from the contract under
+   * EU law (ADR 0044 §4, §5). Moderation then reads `rejected`, with this
+   * saying it was the owner's choice rather than a moderator's.
+   */
+  withdrawnAt: timestamp("withdrawn_at", { withTimezone: true }),
 });

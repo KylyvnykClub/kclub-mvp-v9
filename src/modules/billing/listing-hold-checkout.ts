@@ -15,6 +15,14 @@ import {
   openListingHoldCheckout,
   productionListingHoldDeps,
 } from "@/modules/billing/listing-hold";
+import {
+  openListingSetupCheckout,
+  productionListingActivationDeps,
+} from "@/modules/billing/listing-activation";
+import {
+  findListingActivation,
+  hasPaymentAuthority,
+} from "@/data/business-applications";
 import { checkoutPriceIdForPlan } from "@/modules/billing/prices";
 
 /**
@@ -119,6 +127,33 @@ export async function listingHoldCheckoutUrl(
     : `/${locale}/dashboard/profile?tab=companies`;
 
   const separator = back.includes("?") ? "&" : "?";
+
+  // ADR 0044: a card saved rather than held - the invite route's free month,
+  // or an EU consumer's deferred start.
+  const activation = await findListingActivation(db, company.id);
+  if (activation) {
+    const setup = await openListingSetupCheckout(
+      db,
+      await productionListingActivationDeps(),
+      {
+        memberId: owner.id,
+        companyId: company.id,
+        stripeCustomerId,
+        successUrl: `${origin}${back}${separator}hold=returned&company=${company.id}`,
+        cancelUrl: `${origin}${back}`,
+        now: new Date(),
+      },
+    );
+    return setup.outcome === "opened" ? setup.url : back;
+  }
+
+  // ADR 0044 §2: no reservation without the payment authority for it. An
+  // application filed before consents were recorded is sent back to the
+  // screen that asks for them.
+  if (!(await hasPaymentAuthority(db, company.id, owner.id, "public_hold"))) {
+    return back;
+  }
+
   const result = await openListingHoldCheckout(
     db,
     await productionListingHoldDeps(),

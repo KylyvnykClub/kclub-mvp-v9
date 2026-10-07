@@ -8,6 +8,11 @@ import {
   LISTING_HOLD_KIND,
   LISTING_HOLD_SYNC_TOPIC,
 } from "./listing-hold";
+import {
+  LISTING_ACTIVATION_EVENT_TOPIC,
+  LISTING_ACTIVATION_SYNC_TOPIC,
+  LISTING_SETUP_KIND,
+} from "./listing-activation";
 
 /**
  * How the handler defers the projection. In production this is Next's
@@ -108,6 +113,53 @@ export async function handleStripeWebhook(
             paymentIntentId,
           });
         }
+      }
+
+      // ADR 0044: a card saved for a listing. The metadata only routes the
+      // event; the worker re-reads the session and its SetupIntent.
+      if (
+        event.type === "checkout.session.completed" &&
+        event.data.object.mode === "setup" &&
+        event.data.object.metadata?.kind === LISTING_SETUP_KIND
+      ) {
+        await enqueueOutbox(tx, LISTING_ACTIVATION_SYNC_TOPIC, {
+          eventId: event.id,
+          eventCreated: event.created,
+          checkoutSessionId: event.data.object.id,
+        });
+      }
+      if (
+        event.type === "setup_intent.succeeded" &&
+        event.data.object.metadata?.kind === LISTING_SETUP_KIND &&
+        event.data.object.metadata?.companyId
+      ) {
+        await enqueueOutbox(tx, LISTING_ACTIVATION_SYNC_TOPIC, {
+          eventId: event.id,
+          eventCreated: event.created,
+          setupIntentId: event.data.object.id,
+        });
+      }
+
+      if (event.type === "customer.subscription.trial_will_end") {
+        await enqueueOutbox(tx, LISTING_ACTIVATION_EVENT_TOPIC, {
+          eventId: event.id,
+          type: "trial_will_end",
+          subscriptionId: event.data.object.id,
+        });
+      }
+
+      // Routed by id only: the worker re-reads the invoice from Stripe before
+      // it records a first payment or sends a link.
+      if (
+        event.type === "invoice.paid" ||
+        event.type === "invoice.payment_action_required" ||
+        event.type === "invoice.finalization_failed"
+      ) {
+        await enqueueOutbox(tx, LISTING_ACTIVATION_EVENT_TOPIC, {
+          eventId: event.id,
+          type: event.type,
+          invoiceId: event.data.object.id,
+        });
       }
 
       if (event.type === "invoice.payment_failed") {

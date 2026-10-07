@@ -39,8 +39,28 @@ describe("FR-103: a paying member reaches the club only while their dues are pai
     ).toBe("awaiting_payment");
   });
 
-  it("does not let VIP or a listing pay the dues", () => {
-    expect(membershipAccess({ duesKind: "paying" }, [VIP, LISTING])).toBe(
+  it("admits a paying member whose VIP subscription is active - VIP includes the dues (ADR 0043)", () => {
+    expect(membershipAccess({ duesKind: "paying" }, [VIP])).toBe("active");
+  });
+
+  it("keeps a VIP member in through the dunning window, like the dues", () => {
+    expect(
+      membershipAccess({ duesKind: "paying" }, [
+        { plan: "vip", status: "past_due" },
+      ]),
+    ).toBe("active");
+  });
+
+  it("refuses a paying member whose VIP has ended and who holds no dues", () => {
+    expect(
+      membershipAccess({ duesKind: "paying" }, [
+        { plan: "vip", status: "canceled" },
+      ]),
+    ).toBe("awaiting_payment");
+  });
+
+  it("does not let a listing pay the dues", () => {
+    expect(membershipAccess({ duesKind: "paying" }, [LISTING])).toBe(
       "awaiting_payment",
     );
   });
@@ -115,6 +135,23 @@ describe("FR-110: a partner's access follows the listing, not the dues", () => {
     expect(membershipAccess({ duesKind: "partner" }, [DUES])).toBe(
       "awaiting_payment",
     );
+  });
+
+  it("ADR 0044: lets a partner in during the free month of a published listing", () => {
+    expect(
+      membershipAccess({ duesKind: "partner" }, [
+        { plan: "listing", status: "trialing" },
+      ]),
+    ).toBe("active");
+  });
+
+  it("ADR 0044: a trial never pays a paying member's dues", () => {
+    expect(
+      membershipAccess({ duesKind: "paying" }, [
+        { plan: "listing", status: "trialing" },
+        { plan: "vip", status: "trialing" },
+      ]),
+    ).toBe("awaiting_payment");
   });
 
   it("does not let VIP stand in for the listing", () => {
