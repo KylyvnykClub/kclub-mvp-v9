@@ -6,7 +6,7 @@ describe("constraint: privacy and indexing controls (FR-089, FR-094)", () => {
     const source = readFileSync("src/app/robots.ts", "utf8");
 
     expect(source).toContain('userAgent: "*"');
-    expect(source).toContain('allow: "/"');
+    expect(source).toContain('allow: ["/"');
     expect(source).toContain('"/*/dashboard/"');
     expect(source).toContain('"/*/card/"');
     expect(source).toContain('"/api/"');

@@ -44,7 +44,10 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
+      // The partners' logos and photos are served from under /api/, which is
+      // otherwise closed. The longer, more specific Allow wins, so the
+      // catalogue's pictures can be indexed and the image sitemap read.
+      allow: ["/", "/api/company-logo/", "/api/company-image/"],
       disallow: PRIVATE_PATHS,
     },
     sitemap,

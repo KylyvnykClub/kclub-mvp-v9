@@ -48,7 +48,11 @@ describe("FR-024, FR-089: robots.txt", () => {
     const result = robots();
     const rules = Array.isArray(result.rules) ? result.rules[0]! : result.rules;
 
-    expect(rules.allow).toBe("/");
+    expect(rules.allow).toEqual([
+      "/",
+      "/api/company-logo/",
+      "/api/company-image/",
+    ]);
     expect(rules.disallow).toEqual(
       expect.arrayContaining([
         "/*/dashboard/",
