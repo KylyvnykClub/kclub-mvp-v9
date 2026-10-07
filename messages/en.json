@@ -159,8 +159,7 @@
     "passwordsNeeded": "Enter a password of at least 8 characters and repeat it to continue.",
     "consentTerms": "I accept the <terms>Terms of Use</terms>, including the arbitration agreement and class-action waiver (§29–30), and the <privacy>Privacy Policy</privacy>.",
     "consentAge": "I am 18 years of age or older.",
-    "consentsMissing": "Tick both boxes to create the account.",
-    "legalNotice": "By clicking Create account you confirm that you are 18 years of age or older and agree to the <terms>Terms</terms>, including the arbitration agreement and class-action waiver (§29–30), and to the <privacy>Privacy Policy</privacy>."
+    "consentsMissing": "Tick both boxes to create the account."
   },
   "dashboard": {
     "title": "Dashboard",
