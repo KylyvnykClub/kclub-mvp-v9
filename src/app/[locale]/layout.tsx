@@ -15,6 +15,7 @@ import {
   fontLandingDisplay,
 } from "@/app/fonts";
 import { PwaRegister } from "@/components/pwa-register";
+import { ConsentAndGtm } from "@/components/analytics/consent-and-gtm";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -98,6 +99,8 @@ export default async function LocaleLayout({ children, params }: Props) {
                 them was a silent no-op without a Toaster in the tree. */}
             <Toaster />
             <PwaRegister />
+            {/* ADR 0045: the cookie banner, and GTM only after "Accept". */}
+            <ConsentAndGtm />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

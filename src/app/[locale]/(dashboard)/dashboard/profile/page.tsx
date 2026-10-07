@@ -12,6 +12,7 @@ import { env } from "@/env";
 import { holdIsCapturable } from "@/domain/listing-hold";
 import { monthlyPrice } from "@/domain/pricing";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
+import { findAccessGrantingSubscription } from "@/data/billing";
 import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
 import { companyListingIsPaid, listCompaniesByOwner } from "@/data/companies";
@@ -115,6 +116,10 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     ),
   );
   const listingSellable = await checkoutPriceIsConfigured(db, "listing");
+  // ADR 0043: a member paying $4.99 is switched to VIP, and is told so.
+  const payingDues = Boolean(
+    await findAccessGrantingSubscription(db, member.id, "membership"),
+  );
 
   const myNotifications = await listNotificationsForMember(db, member.id);
 
@@ -325,7 +330,11 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         </TabsContent>
 
         <TabsContent value="billing">
-          <BillingSection tier={card?.tier || "free"} />
+          <BillingSection
+            tier={card?.tier || "free"}
+            switching={payingDues}
+            vipPrice={monthlyPrice("vip", locale)}
+          />
         </TabsContent>
 
         <TabsContent value="companies">

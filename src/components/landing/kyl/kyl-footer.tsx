@@ -1,3 +1,4 @@
+import { CookieSettingsLink } from "@/components/analytics/consent-and-gtm";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
@@ -59,6 +60,7 @@ export async function KylFooter() {
           </Link>
         ))}
         <Link href="/legal">{t("allLegal")}</Link>
+        <CookieSettingsLink className="footer-cookie-settings" />
       </div>
 
       <div className="shell footer-bottom">
