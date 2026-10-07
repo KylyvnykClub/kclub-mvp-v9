@@ -220,7 +220,7 @@ reaches a browser.
 |Lockfile policy|`pnpm-lock.yaml` committed; CI installs with `--frozen-lockfile`; a pull request that changes the lockfile without changing `package.json` is rejected|
 |Base image / runtime patching|No containers in production — Vercel patches the runtime. Node major versions are our responsibility and follow the LTS policy|
 |Build integrity|CI has no production credentials. Deployment is performed by Vercel from a signed GitHub commit; no engineer's laptop can deploy to production|
-|Third-party client-side scripts|None. No analytics tag, no chat widget, no font CDN, no advertising pixel. Every asset is first-party, which is what makes the strict CSP in §6 achievable — a single third-party script would end it|
+|Third-party client-side scripts|One: Google Tag Manager, on public pages only and only after the visitor accepts cookies ([ADR 0045](decisions/0045-google-tag-manager-behind-consent.md)). Never on the account, the console, payment, sign-up or any form. No chat widget, no font CDN|
 
 ---
 
@@ -295,7 +295,7 @@ because the account nobody remembers is always the one that matters.
 |CCPA / CPRA|California residents in the primary market|Notice at collection; right to know, delete and correct; an explicit statement that we do not sell or share personal information — which is true, and is why there is no advertising pixel anywhere in the product|
 |TCPA + CTIA messaging principles|SMS to US numbers|Express consent captured and stored at sign-up with the exact wording shown; opt-out honoured (STOP/HELP handled by Twilio); no marketing SMS without separate consent. No A2P 10DLC registration of our own — verification codes leave from Twilio Verify's registered sender pool ([decisions/0010](decisions/0010-no-own-a2p-registration-with-twilio-verify.md)); the consent and opt-out obligations above are ours regardless and are unaffected by that|
 |PCI-DSS SAQ-A|Card payments|Satisfied by construction: card data is entered only on Stripe-hosted pages, never transits our servers, and no field on any of our forms accepts a card number. Annual self-assessment questionnaire|
-|ePrivacy / cookie rules|EU visitors|Only strictly necessary cookies are set (session, locale, theme). No consent banner is required because there is nothing to consent to — a direct consequence of having no third-party scripts|
+|ePrivacy / cookie rules|EU visitors|Strictly necessary cookies (session, locale, theme, the consent choice) are always set. Analytics and marketing cookies come only from Google Tag Manager, which loads after the visitor presses Accept on the banner; Reject is equally prominent and "Cookie settings" reopens it ([ADR 0045](decisions/0045-google-tag-manager-behind-consent.md))|
 |Digital services tax / VAT|Cross-border subscription sales|Depends on the operating entity; open question in [brief.md](brief.md#open-questions). Stripe Tax is the planned mitigation|
 
 **The gap between this section and what is published.** The controls above are

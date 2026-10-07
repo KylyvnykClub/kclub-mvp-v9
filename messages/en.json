@@ -1976,5 +1976,13 @@
       "consentsRequired": "Tick the three required boxes to continue.",
       "failed": "Something went wrong. Please try again."
     }
+  },
+  "cookieConsent": {
+    "title": "Cookies",
+    "body": "We use analytics and marketing cookies (Google Tag Manager) to understand how the site is used, only if you agree. Necessary cookies that keep you signed in are always on.",
+    "policy": "Cookie Policy",
+    "accept": "Accept",
+    "reject": "Reject",
+    "settings": "Cookie settings"
   }
 }
