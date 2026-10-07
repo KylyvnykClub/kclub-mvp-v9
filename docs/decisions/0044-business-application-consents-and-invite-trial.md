@@ -60,6 +60,15 @@ creates no Checkout session of either kind unless a payment-authority record
 exists for that company and route.** Ticking a box in the browser is not enough,
 and entering a card or accepting the Terms does not stand in for it.
 
+**2a. Members too.** The same rule applies to membership: registration asks for
+two empty boxes (the Terms with the arbitration clause and the Privacy Policy;
+being 18 or older), and the server refuses an account without them. The dues
+screen and the VIP button in Billing show the seller, renewal and cancellation
+and ask for a payment authority. Its wording names the charge: both plans on
+the dues screen, a new VIP subscription, or a switch from dues to VIP. No
+membership or VIP Checkout, and no switch, happens without it, and it is
+recorded in `consent_records` with no company.
+
 **3. Access is still projected from Stripe (ADR 0004).** A `trialing` listing
 subscription publishes the listing and opens the club to its partner exactly as
 `active` does. That is the one place `trialing` grants anything. It is never a

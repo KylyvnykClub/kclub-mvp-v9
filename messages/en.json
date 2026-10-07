@@ -141,7 +141,6 @@
       "network": "The verification challenge could not be loaded. Check your connection and reload the page.",
       "retryable": "The verification challenge failed. Please reload the page and try again. (code {code})"
     },
-    "legalNotice": "By clicking Create account you confirm that you are 18 years of age or older and agree to the <terms>Terms</terms>, including the arbitration agreement and class-action waiver (§29–30), and to the <privacy>Privacy Policy</privacy>.",
     "emailFromGoogle": "Confirmed by Google. Change it and we will send a confirmation link instead.",
     "error": {
       "invalid_input": "Check the details you entered and try again.",
@@ -157,7 +156,10 @@
       "phone_invalid": "This is not a phone number we can use. Check the country code to the left of the number.",
       "field_invalid": "Check the field “{field}” and try again."
     },
-    "passwordsNeeded": "Enter a password of at least 8 characters and repeat it to continue."
+    "passwordsNeeded": "Enter a password of at least 8 characters and repeat it to continue.",
+    "consentTerms": "I accept the <terms>Terms of Use</terms>, including the arbitration agreement and class-action waiver (§29–30), and the <privacy>Privacy Policy</privacy>.",
+    "consentAge": "I am 18 years of age or older.",
+    "consentsMissing": "Tick both boxes to create the account."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1976,5 +1978,14 @@
       "consentsRequired": "Tick the three required boxes to continue.",
       "failed": "Something went wrong. Please try again."
     }
+  },
+  "membershipConsent": {
+    "seller": "Seller: Kylyvnyk Consulting LLC · {email}",
+    "renewal": "The subscription renews automatically every month until you cancel it. Taxes are included in the price.",
+    "cancel": "Cancel any time in your account, under Billing — no call needed. Cancelling stops future charges; it is not a refund of a month already paid (see the Refund Policy).",
+    "payment": "I authorise Kylyvnyk Consulting LLC to charge the plan I choose below — {price} a month for membership or {vipPrice} a month for VIP — to my card automatically every month until I cancel.",
+    "paymentVip": "I authorise Kylyvnyk Consulting LLC to switch my subscription to VIP and charge {vipPrice} a month to my card automatically until I cancel; for the current month only the difference is charged now.",
+    "missing": "Tick the box to continue to payment.",
+    "paymentVipNew": "I authorise Kylyvnyk Consulting LLC to charge {vipPrice} a month for VIP to my card automatically every month until I cancel."
   }
 }

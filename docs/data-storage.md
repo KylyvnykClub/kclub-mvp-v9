@@ -115,7 +115,7 @@ nobody and is not personal data.
 |`plan`, `price`|What we sell and for how much, with history|1:N|3 plans, ~10 prices|
 |`subscription`|A Stripe subscription, projected|N:1 plan; subject = member or company|100 → 3,000|
 |`listing_holds`|A partner's listing price authorised on the card at application — a manually captured Stripe PaymentIntent, projected from `payment_intent.*` events; once Stripe confirms the capture it pays for the listing's first month ([ADR 0037](decisions/0037-card-held-at-application.md))|N:1 company, N:1 member|50 → 2,000|
-|`consent_records`|One box a business ticked, with the full text it saw, its version, the route, UTC time, country of residence, IP and user agent; also an EU withdrawal ([ADR 0044](decisions/0044-business-application-consents-and-invite-trial.md))|N:1 member, N:1 company|300 → 12,000|
+|`consent_records`|One box a business ticked, with the full text it saw, its version, the route, UTC time, country of residence, IP and user agent; also an EU withdrawal, and a member's payment authority for dues or VIP (no company) ([ADR 0044](decisions/0044-business-application-consents-and-invite-trial.md))|N:1 member, N:1 company|300 → 12,000|
 |`listing_activations`|A listing paid by a saved card - the invite route's free month or an EU deferred start: the card saved by a setup Checkout, the publication moment, the subscription started and the first real payment ([ADR 0044](decisions/0044-business-application-consents-and-invite-trial.md))|1:1 company, N:1 member|20 → 1,000|
 |`entitlement`|What a subscription unlocks in the product|N:1 subscription|100 → 3,000|
 |`payment`|A settled Stripe invoice|N:1 subscription|300 → 30,000/year|

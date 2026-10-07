@@ -7,6 +7,10 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { requestPhoneVerificationAction, registerAction } from "@/actions/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
+import {
+  AccountConsents,
+  useAccountConsents,
+} from "@/components/auth/account-consents";
 import { PasswordInput } from "@/components/auth/password-input";
 import { PhoneField } from "@/components/auth/phone-input";
 import type { RegisterField } from "@/domain/registration";
@@ -122,6 +126,7 @@ export function RegisterFlow({
 }) {
   const router = useRouter();
   const locale = useLocale();
+  const accountConsents = useAccountConsents();
   const t = useTranslations("register");
   const tAuth = useTranslations("auth");
   const tCommon = useTranslations("common");
@@ -562,31 +567,11 @@ export function RegisterFlow({
                   still requires the field (FR-091). */}
               <input type="hidden" name="language" value={locale} />
 
-              {/* The four acknowledgements are no longer ticked one by one;
-                  submitting the form is the act of agreement. Every document is
-                  still recorded in legal_acceptances at the version published at
-                  submit time (FR-093, FR-097), so the evidence is unchanged -
-                  only the interface is. */}
-              <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
-                {t.rich("legalNotice", {
-                  terms: (chunks) => (
-                    <Link
-                      href={`/${locale}/legal/terms-of-use`}
-                      className="font-bold underline hover:text-accent-ink"
-                    >
-                      {chunks}
-                    </Link>
-                  ),
-                  privacy: (chunks) => (
-                    <Link
-                      href={`/${locale}/legal/privacy-policy`}
-                      className="font-bold underline hover:text-accent-ink"
-                    >
-                      {chunks}
-                    </Link>
-                  ),
-                })}
-              </p>
+              {/* The acknowledgements are ticked by the applicant, and the
+                  server refuses a registration without them. Every document is
+                  still recorded in legal_acceptances at the version published
+                  at submit time (FR-093, FR-097). */}
+              <AccountConsents state={accountConsents} />
 
               <TurnstileWidget
                 siteKey={turnstileSiteKey}
@@ -616,7 +601,9 @@ export function RegisterFlow({
 
               <SubmitButton
                 label={t("createAccount")}
-                disabled={!legalReady || !passwordsUsable}
+                disabled={
+                  !legalReady || !passwordsUsable || !accountConsents.complete
+                }
               />
 
               {/* Google settles the address; the phone number still has to be

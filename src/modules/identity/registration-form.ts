@@ -63,6 +63,9 @@ import { verifyTurnstileToken } from "./turnstile";
  * real applicant's budget (ADR 0012, ADR 0030).
  */
 
+/** The account boxes the form posts; both must be ticked. */
+export const ACCOUNT_CONSENT_FIELDS = ["accountTerms", "accountAge"] as const;
+
 export type RegistrationOutcome =
   | {
       success: true;
@@ -153,7 +156,13 @@ export async function registerMemberFromForm(
       submittedIds.size === requiredIds.size &&
       [...requiredIds].every((id) => submittedIds.has(id));
 
-    if (!allAccepted) {
+    // The boxes themselves, ticked by the person (the client's spec): the
+    // list above says which documents, these say the applicant agreed.
+    const boxesTicked = ACCOUNT_CONSENT_FIELDS.every(
+      (field) => formData.get(field) === "on",
+    );
+
+    if (!allAccepted || !boxesTicked) {
       return { success: false, error: "consents_required" };
     }
 

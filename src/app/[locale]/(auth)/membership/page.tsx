@@ -3,12 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getCurrentMember } from "@/actions/session";
-import {
-  createMembershipCheckoutAction,
-  createVipCheckoutAction,
-} from "@/actions/stripe";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -23,6 +18,7 @@ import {
   listOwnApplications,
 } from "@/data/membership-access";
 import { SignOutButton } from "./_components/sign-out-button";
+import { DuesPaymentChoice } from "./_components/dues-payment-choice";
 import { PartnerStanding } from "./_components/partner-standing";
 import { db } from "@/data/db";
 import { applicationIsLive, holdIsCapturable } from "@/domain/listing-hold";
@@ -287,35 +283,13 @@ export default async function MembershipDuesPage({
           {/* The redirect back from Stripe grants nothing: access appears when
               the subscription is projected from Stripe's own event (FR-104). */}
           {sellable || vipSellable ? (
-            <div
-              className={`flex w-full gap-3 ${vipFirst ? "flex-col-reverse" : "flex-col"}`}
-            >
-              {sellable && (
-                <form
-                  action={createMembershipCheckoutAction}
-                  className="w-full"
-                >
-                  <Button
-                    type="submit"
-                    variant={vipFirst ? "outline" : "default"}
-                    className={payButtonClass(!vipFirst)}
-                  >
-                    {t("payButton", { price })}
-                  </Button>
-                </form>
-              )}
-              {vipSellable && (
-                <form action={createVipCheckoutAction} className="w-full">
-                  <Button
-                    type="submit"
-                    variant={vipFirst ? "default" : "outline"}
-                    className={payButtonClass(vipFirst)}
-                  >
-                    {t("vipPayButton", { vipPrice })}
-                  </Button>
-                </form>
-              )}
-            </div>
+            <DuesPaymentChoice
+              price={price}
+              vipPrice={vipPrice}
+              sellable={sellable}
+              vipSellable={vipSellable}
+              vipFirst={vipFirst}
+            />
           ) : (
             <p
               role="alert"
@@ -337,14 +311,6 @@ export default async function MembershipDuesPage({
       </Card>
     </AuthShell>
   );
-}
-
-/** The chosen plan's button is the gold one; the other is outlined. */
-function payButtonClass(primary: boolean): string {
-  const base = "h-12 w-full text-xs font-black uppercase tracking-[0.16em]";
-  return primary
-    ? `${base} bg-accent text-accent-foreground hover:bg-[#b49126]`
-    : `${base} border-accent/60 text-foreground hover:bg-accent/10`;
 }
 
 /**
