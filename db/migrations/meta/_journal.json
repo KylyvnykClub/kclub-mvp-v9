@@ -295,6 +295,13 @@
       "when": 1791194400000,
       "tag": "20261005100000_member_invite_programme",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791367200000,
+      "tag": "20261007100000_business_application_consents",
+      "breakpoints": true
     }
   ]
 }

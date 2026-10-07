@@ -3,6 +3,10 @@ import { getCurrentMember } from "@/actions/session";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyRegistrationForm } from "@/components/company/company-registration-form";
+import { findUnspentPartnerInvitation } from "@/data/business-applications";
+import { db } from "@/data/db";
+import { monthlyPrice } from "@/domain/pricing";
+import { clubPartnerLinkPending } from "@/modules/catalogue/partner-link-waiver";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -18,6 +22,13 @@ export default async function NewCompanyPage({ params }: Props) {
   if (!result || !result.member) {
     redirect(`/${locale}/login`);
   }
+
+  // ADR 0044: the terms this member's application is shown on; decided again
+  // when it is filed.
+  const [invited, waived] = await Promise.all([
+    findUnspentPartnerInvitation(db, result.member.id).then(Boolean),
+    clubPartnerLinkPending(db),
+  ]);
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,7 +46,14 @@ export default async function NewCompanyPage({ params }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CompanyRegistrationForm />
+          <CompanyRegistrationForm
+            terms={{
+              invited,
+              waived,
+              residenceCountry: result.member.country ?? null,
+              listingPrice: monthlyPrice("listing", locale),
+            }}
+          />
         </CardContent>
       </Card>
     </div>

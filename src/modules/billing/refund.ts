@@ -1,6 +1,6 @@
 import type { DbClient } from "@/data/db";
 import { listSubscriptionsByCompanyId } from "@/data/billing";
-import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "@/data/billing-access";
+import { LISTING_PUBLISHABLE_STATUSES } from "@/domain/subscription-access";
 
 /**
  * Undo the money gate when the judgement gate fails (ADR 0019, ADR 0036).
@@ -98,8 +98,11 @@ export async function refundListingForCompany(
   companyId: string,
 ): Promise<RefundOutcome> {
   const subscriptions = await listSubscriptionsByCompanyId(db, companyId);
+  // `trialing` too (ADR 0044): a rejected listing in its free month must be
+  // cancelled, or it would start billing a company that is not listed. Its
+  // invoice is $0, so `latestPaidInvoice` finds nothing to refund.
   const live = subscriptions.find((subscription) =>
-    ACCESS_GRANTING_SUBSCRIPTION_STATUSES.includes(subscription.status),
+    LISTING_PUBLISHABLE_STATUSES.includes(subscription.status),
   );
 
   if (!live) {

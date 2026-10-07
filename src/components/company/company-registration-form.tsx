@@ -32,6 +32,10 @@ import {
 } from "./company-fields";
 import { DraftGalleryField, DraftLogoField } from "./company-draft-media";
 import { parseDraftImageIds } from "@/lib/draft-media-path";
+import {
+  ApplicationConsents,
+  useApplicationConsents,
+} from "./application-consents";
 
 /**
  * The company submission form for a member who is already in the club
@@ -68,6 +72,7 @@ const SUBMITTED_FIELDS = [
   "servesWorldwide",
   "businessFormat",
   "city",
+  "administrativeLevel1",
   "discount",
   "specialPrivileges",
   "specialPrivilegesNote",
@@ -79,9 +84,22 @@ const SUBMITTED_FIELDS = [
 
 const DRAFT_SAVE_DELAY_MS = 1000;
 
-export function CompanyRegistrationForm() {
+/** The terms the page decided on the server (ADR 0044). */
+export interface CompanyApplicationTerms {
+  invited: boolean;
+  waived: boolean;
+  residenceCountry: string | null;
+  listingPrice: string;
+}
+
+export function CompanyRegistrationForm({
+  terms,
+}: {
+  terms: CompanyApplicationTerms;
+}) {
   const t = useTranslations("company");
   const tDashboard = useTranslations("dashboard");
+  const applicationConsents = useApplicationConsents(terms);
 
   const [values, setValues] = useState<CompanyFormValues>({
     servesWorldwide: "false",
@@ -257,11 +275,26 @@ export function CompanyRegistrationForm() {
         />
       ))}
 
+      {/* ADR 0044: the same disclosure and boxes as /partner. */}
+      <ApplicationConsents
+        listingPrice={terms.listingPrice}
+        consents={applicationConsents}
+      />
+
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">{t("reviewNote")}</p>
-        <Button type="submit" disabled={pending} className="w-full">
-          {pending ? t("submitting") : t("submit")}
+        <Button
+          type="submit"
+          disabled={pending || !applicationConsents.state.complete}
+          className="w-full"
+        >
+          {pending ? t("submitting") : applicationConsents.state.submitLabel}
         </Button>
+        {applicationConsents.state.submitNote && (
+          <p className="text-center text-sm text-muted-foreground">
+            {applicationConsents.state.submitNote}
+          </p>
+        )}
         <p
           className="text-xs text-muted-foreground"
           aria-live="polite"

@@ -419,6 +419,8 @@ shaped it without leaving the page.
 |[0035](decisions/0035-landing-page-is-the-clients-stylesheet.md)|The landing page is the client's stylesheet, scoped to the landing page|Accepted|
 |[0036](decisions/0036-payment-after-moderation.md)|A business partner registers on one page, owes no membership dues, and pays for the listing after moderation|Accepted|
 |[0042](decisions/0042-member-invite-programme.md)|Members bring people in through personal links; the club records who brought whom, one level, and the inviter receives nothing|Accepted|
+|[0043](decisions/0043-vip-includes-membership.md)|VIP includes membership: one $19.99 subscription pays the dues; a dues payer upgrading has their subscription switched, not doubled|Accepted|
+|[0044](decisions/0044-business-application-consents-and-invite-trial.md)|A business applies with explicit recorded consents; an invited business saves a card and gets one free month from publication; cancel auto-renewal and EU withdrawal in the account|Accepted|
 
 ---
 

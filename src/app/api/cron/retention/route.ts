@@ -12,6 +12,7 @@ import {
   listExpiredCompanyDraftOwnerIds,
 } from "@/data/company-drafts";
 import { deleteExpiredNotifications } from "@/data/notifications";
+import { deleteExpiredConsentRecords } from "@/data/business-applications";
 import { deleteProcessedOutboxRows } from "@/data/outbox";
 import { listOwnedCompanyIds } from "@/data/companies";
 import { listCompanyImageRefsByOwner } from "@/data/company-images";
@@ -33,6 +34,7 @@ export interface RetentionResult {
   accountErasuresFailed: number;
   outboxRowsDeleted: number;
   notificationsDeleted: number;
+  consentRecordsDeleted: number;
 }
 
 /**
@@ -80,6 +82,9 @@ export async function GET(req: Request) {
   // FR-099: an inbox is a record of recent events. Read or unread alike, a
   // notification nobody opened in six months is not one still being waited for.
   const notificationsDeleted = await deleteExpiredNotifications(db, now);
+
+  // ADR 0044: consent evidence, six years from the agreement.
+  const consentRecordsDeleted = await deleteExpiredConsentRecords(db, now);
 
   // FR-009: the 30-day clock on a deletion request runs out here.
   const due = await findMembersDueForErasure(db, now);
@@ -152,6 +157,7 @@ export async function GET(req: Request) {
     accountErasuresFailed,
     outboxRowsDeleted,
     notificationsDeleted,
+    consentRecordsDeleted,
   };
 
   return NextResponse.json({ success: true, ...result });

@@ -6,6 +6,8 @@ import { getCurrentMember } from "@/actions/session";
 import { buildActor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 import { env } from "@/env";
+import { countInviteTrialFunnel } from "@/data/business-applications";
+import { db } from "@/data/db";
 
 import { PageHeader } from "../_components/page-header";
 import { JoinLinkPanel } from "./_components/join-link-panel";
@@ -37,10 +39,12 @@ export default async function AdminJoinLinkPage({
   }
 
   const t = await getTranslations("admin.joinLink");
-  const [memberLink, partnerLink] = await Promise.all([
+  const [memberLink, partnerLink, funnel] = await Promise.all([
     getJoinLinkAction("member"),
     getJoinLinkAction("partner"),
+    countInviteTrialFunnel(db),
   ]);
+  const tFunnel = await getTranslations("admin.inviteFunnel");
   const shown = (link: typeof memberLink) =>
     link
       ? { secret: link.secret, createdAt: link.createdAt.toISOString() }
@@ -63,6 +67,32 @@ export default async function AdminJoinLinkPage({
         baseUrl={env.server.NEXT_PUBLIC_APP_URL}
         locale={locale}
       />
+      {/* ADR 0044 §7: the invite route, each step counted on its own. */}
+      <section className="space-y-4 rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold">{tFunnel("title")}</h2>
+        <p className="text-sm text-muted-foreground">
+          {tFunnel("description")}
+        </p>
+        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {(
+            [
+              ["registered", funnel.registered],
+              ["applied", funnel.applied],
+              ["approved", funnel.approved],
+              ["activated", funnel.activated],
+              ["firstPaid", funnel.firstPaid],
+              ["activeNow", funnel.activeNow],
+            ] as const
+          ).map(([key, value]) => (
+            <div key={key} className="space-y-1">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                {tFunnel(key)}
+              </dt>
+              <dd className="text-2xl font-semibold tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
   );
 }

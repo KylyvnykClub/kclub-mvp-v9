@@ -6,6 +6,8 @@ import { X } from "lucide-react";
 import { createPortalSessionAction } from "@/actions/stripe";
 import { PartnerStanding } from "@/app/[locale]/(auth)/membership/_components/partner-standing";
 import type { PartnerPaymentStanding } from "@/domain/listing-hold";
+import type { ListingStandingExtras } from "@/modules/catalogue/listing-standing";
+import { ListingActions } from "@/components/company/listing-actions";
 import {
   deleteCompanyImageAction,
   removeCompanyLogoAction,
@@ -56,7 +58,11 @@ export function CompanyList({
   /** Where each company's listing payment stands (ADR 0037). */
   payments: Record<
     string,
-    { standing: PartnerPaymentStanding; holdExpiresAt: string | null }
+    {
+      standing: PartnerPaymentStanding;
+      holdExpiresAt: string | null;
+      extras: ListingStandingExtras;
+    }
   >;
   listingPrice: string;
   /** False when no Stripe price is configured. */
@@ -108,9 +114,12 @@ export function CompanyList({
       {companies.map((company) => {
         const sub = subscriptions.find((s) => s.companyId === company.id);
         const isLive = liveCompanyIds.includes(company.id);
-        // Paid, whether by the subscription or by the first month's capture.
+        // Live, whether by the subscription, the first month's capture or -
+        // ADR 0044 - a free month. Only the last is not "paid": a trial is
+        // not proof of payment, and the badge must not say it is.
         const isActive = isLive || sub?.status === "active";
         const payment = payments[company.id];
+        const inTrial = payment?.standing === "trial";
 
         return (
           <Card
@@ -130,7 +139,11 @@ export function CompanyList({
                     </Badge>
                   </CardDescription>
                 </div>
-                {isActive ? (
+                {isActive && inTrial ? (
+                  <Badge className="bg-accent/20 text-accent-ink hover:bg-accent/30">
+                    {t("trialBadge")}
+                  </Badge>
+                ) : isActive ? (
                   <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">
                     {t("paid")}
                   </Badge>
@@ -147,7 +160,15 @@ export function CompanyList({
                   <p className="text-sm text-muted-foreground">
                     {company.listingWaivedAt
                       ? t("waivedListing")
-                      : t("activeListing")}
+                      : inTrial && payment?.extras.trialEndsAt
+                        ? t("trialListing", {
+                            date: new Intl.DateTimeFormat(locale, {
+                              dateStyle: "long",
+                              timeZone: "UTC",
+                            }).format(new Date(payment.extras.trialEndsAt)),
+                            price: listingPrice,
+                          })
+                        : t("activeListing")}
                   </p>
                   {/* ADR 0040: a waived listing has no Stripe billing to
                       manage - the portal would fail for want of a customer. */}
@@ -159,6 +180,13 @@ export function CompanyList({
                     >
                       {isPending ? t("loading") : t("manageButton")}
                     </Button>
+                  )}
+                  {/* ADR 0044: the visible "Cancel auto-renewal". */}
+                  {payment && (
+                    <ListingActions
+                      companyId={company.id}
+                      extras={payment.extras}
+                    />
                   )}
                 </div>
               ) : (
@@ -175,6 +203,7 @@ export function CompanyList({
                   price={listingPrice}
                   sellable={sellable}
                   returnedFromCheckout={returnedFromCheckout}
+                  extras={payment?.extras ?? null}
                 />
               )}
 

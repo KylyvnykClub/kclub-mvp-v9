@@ -412,6 +412,19 @@ export function CompanyFields({
           />
         </Field>
 
+        {/* ADR 0044: where it applies - a US state, a Canadian province. */}
+        <Field id="administrativeLevel1" label={t("regionLabel")}>
+          <Input
+            id="administrativeLevel1"
+            maxLength={255}
+            value={values.administrativeLevel1 ?? ""}
+            onChange={(event) =>
+              set("administrativeLevel1", event.target.value)
+            }
+            placeholder={t("regionPlaceholder")}
+          />
+        </Field>
+
         {values.businessFormat !== "online_only" && (
           <CityPicker
             countryCode={values.registrationCountryCode ?? ""}

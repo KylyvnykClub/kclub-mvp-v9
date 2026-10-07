@@ -78,10 +78,19 @@ import {
   type CompanyDraftData,
   type CompanyFormIssue,
 } from "@/lib/company-form";
-import { applyInviteLinkWaiver } from "@/modules/catalogue/invite-link-waiver";
-import { applyPartnerLinkWaiver } from "@/modules/catalogue/partner-link-waiver";
-import { submitCompany } from "@/modules/catalogue/submit-company";
+import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
+import { findListingActivation } from "@/data/business-applications";
+import {
+  cancelListingRenewal,
+  productionListingCancellationDeps,
+} from "@/modules/billing/listing-cancellation";
+import {
+  LISTING_ACTIVATION_EVENT_TOPIC,
+  LISTING_ACTIVATION_SETTLE_TOPIC,
+  productionListingActivationDeps,
+  settleListingActivation,
+} from "@/modules/billing/listing-activation";
 import { logger } from "@/lib/logger";
 import { safeErrorFields } from "@/lib/safe-error";
 import { z } from "zod";
@@ -148,15 +157,13 @@ export async function registerCompanyAction(
   // Only the partner application uploads a logo with the submit; here the
   // logo is staged, and the flag is never the browser's to set.
   formData.delete("logoAttached");
-  const result = await submitCompany(db, auth.member.id, formData);
-  // ADR 0040: a member who followed the partner link and was sent here from
-  // /partner keeps the free listing.
+  // ADR 0044: the same consents and server-decided terms as /partner. The
+  // club's partner link (ADR 0040) still lists a member's business free.
+  const result = await fileWithTerms(auth.member, formData);
   if (result.success && result.companyId) {
-    await applyPartnerLinkWaiver(db, auth.member.id, result.companyId);
-    await applyInviteLinkWaiver(db, auth.member.id, result.companyId);
-    // Straight on to reserving the listing (ADR 0037): the application is not
-    // in the moderation queue until the hold exists, so a second button
-    // between the two was one more place to stop.
+    // Straight on to Stripe (ADR 0037, ADR 0044): the application is not in
+    // the moderation queue until the hold or the saved card exists, so a
+    // second button between the two was one more place to stop.
     const next = await holdCheckoutUrlOrNull(auth.member, result.companyId);
     if (next) redirect(next);
   }
@@ -504,13 +511,14 @@ export async function getCompanyAdminDetailAction(companyId: string) {
     return { success: false, error: "Not found", data: null };
   }
 
-  const [subscriptions, referralCounts, referrals, history, holds] =
+  const [subscriptions, referralCounts, referrals, history, holds, activation] =
     await Promise.all([
       listSubscriptionsByCompanyId(db, parsed.data),
       countReferralsByRecipientCompany(db, parsed.data),
       listReferralsByRecipientCompany(db, parsed.data, 10),
       searchAuditLogs(db, { target: parsed.data }),
       listListingHoldsByCompany(db, parsed.data),
+      findListingActivation(db, parsed.data),
     ]);
 
   const now = new Date();
@@ -537,6 +545,18 @@ export async function getCompanyAdminDetailAction(companyId: string) {
         createdAt: hold.createdAt,
         capturable: holdIsCapturable(hold, now),
       })),
+      // ADR 0044: a card saved rather than held - approval starts the
+      // subscription, with a free month on the invite route.
+      activation: activation
+        ? {
+            route: activation.route,
+            freeMonth: activation.freeMonth,
+            cardSaved: activation.cardSavedAt !== null,
+            startNotBefore: activation.startNotBefore,
+            publishedAt: activation.publishedAt,
+            trialEndsAt: activation.trialEndsAt,
+          }
+        : null,
     },
   };
 }
@@ -695,6 +715,50 @@ async function settleListingHoldsForDecision(
   }
 }
 
+/**
+ * Start the saved-card subscription for an approved application (ADR 0044).
+ * Never throws, like the hold settlement beside it: the decision has
+ * committed. Not due yet (an EU start date, no card) is not a failure - the
+ * card's arrival or the daily sweep starts it then.
+ */
+async function startListingActivationForDecision(
+  companyId: string,
+  staffId: string,
+): Promise<void> {
+  try {
+    const outcome = await settleListingActivation(
+      db,
+      await productionListingActivationDeps(),
+      companyId,
+      new Date(),
+    );
+    if (outcome === "started") {
+      await appendAuditEntry(db, {
+        actorType: "staff",
+        actorId: staffId,
+        action: "company.listing_activation_started",
+        subjectType: "company",
+        subjectId: companyId,
+        meta: {},
+      });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      `[listing-activation] start failed for company ${companyId}: ${message}`,
+    );
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: staffId,
+      action: "company.listing_activation_failed",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { error: message },
+    });
+    await enqueueOutbox(db, LISTING_ACTIVATION_SETTLE_TOPIC, { companyId });
+  }
+}
+
 export async function moderateCompanyAction(
   id: string,
   status: "approved" | "rejected",
@@ -751,6 +815,12 @@ export async function moderateCompanyAction(
 
   // APPROVE → capture, REJECT → release. Publication waits for the webhook.
   const payment = await settleListingHoldsForDecision(id, auth.member.id);
+  // ADR 0044: a card saved rather than held - approval starts the
+  // subscription (with the free month on the invite route) at publication.
+  const activation = await findListingActivation(db, id);
+  if (status === "approved" && activation) {
+    await startListingActivationForDecision(id, auth.member.id);
+  }
 
   // What the notice says is what was done - or, on a retry, what will be.
   const asked = (kind: ListingHoldAction["kind"]) =>
@@ -800,6 +870,7 @@ export async function moderateCompanyAction(
     reason: reason ?? null,
     paymentHeld: status === "approved" && paymentHeld,
     listingWaived: status === "approved" && Boolean(company?.listingWaivedAt),
+    cardSaved: status === "approved" && Boolean(activation?.cardSavedAt),
   });
 
   revalidatePath("/dashboard/admin/companies");
@@ -885,6 +956,36 @@ export async function hideCompanyAction(companyId: string) {
   // hold is released. A captured one is not refunded - hiding is a visibility
   // switch, and the paid month is the partner's (ADR 0037).
   await settleListingHoldsForDecision(companyId, auth.member.id);
+
+  // ADR 0044: a hidden profile must not bill forever. The renewal is
+  // cancelled at the period end - the paid month stays the partner's, and a
+  // free month ends without an invoice. Retried from the outbox if Stripe is
+  // unreachable.
+  try {
+    const cancelled = await cancelListingRenewal(
+      db,
+      await productionListingCancellationDeps(),
+      companyId,
+    );
+    if (cancelled.outcome === "cancelled") {
+      await appendAuditEntry(db, {
+        actorType: "staff",
+        actorId: auth.member.id,
+        action: "company.listing_renewal_cancelled",
+        subjectType: "company",
+        subjectId: companyId,
+        meta: { reason: "hidden", endsAt: cancelled.endsAt.toISOString() },
+      });
+    }
+  } catch (error) {
+    console.error(
+      `[listing-cancellation] renewal cancel on hide failed for ${companyId}: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+    await enqueueOutbox(db, LISTING_ACTIVATION_EVENT_TOPIC, {
+      type: "cancel_renewal",
+      companyId,
+    });
+  }
 
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");

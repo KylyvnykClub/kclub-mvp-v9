@@ -16,6 +16,7 @@ import {
 
 import type { DbClient } from "./db";
 import { ACCESS_GRANTING_SUBSCRIPTION_STATUSES } from "./billing-access";
+import { LISTING_PUBLISHABLE_STATUSES } from "@/domain/subscription-access";
 import type { PageParams } from "./pagination";
 import {
   companyHasCapturableHold,
@@ -39,7 +40,7 @@ import {
  * money and access must never disagree (ADR 0004), and two drifting copies
  * would decide publication differently.
  */
-const PUBLISHABLE_LISTING_STATUSES = ACCESS_GRANTING_SUBSCRIPTION_STATUSES;
+const PUBLISHABLE_LISTING_STATUSES = LISTING_PUBLISHABLE_STATUSES;
 
 export async function listActiveCategoryBlocks(db: DbClient) {
   const rows = await db.query.businessCategories.findMany({
@@ -937,6 +938,9 @@ function companyReadyForReview(now: Date): SQL {
   return or(
     companyHasCapturableHold(now),
     isNotNull(companies.listingWaivedAt),
+    // ADR 0044: a card saved for a free month or a deferred start. Nothing is
+    // held; the subscription starts at publication.
+    sql`EXISTS (SELECT 1 FROM "listing_activations" la WHERE la."company_id" = "companies"."id" AND la."card_saved_at" IS NOT NULL)`,
   )!;
 }
 
@@ -946,16 +950,27 @@ function companyReadyForReview(now: Date): SQL {
  * for the same aliasing reason as `companyHasCapturableHold`.
  */
 function companyListingPaid(now: Date): SQL {
-  return or(isNotNull(companies.listingWaivedAt), listingPaidByMoney(now))!;
+  return or(
+    isNotNull(companies.listingWaivedAt),
+    listingPaidByMoney(now, PUBLISHABLE_LISTING_STATUSES),
+  )!;
 }
 
-function listingPaidByMoney(now: Date): SQL {
-  const statuses = sql.join(
-    PUBLISHABLE_LISTING_STATUSES.map((status) => sql`${status}`),
+/**
+ * A listing paid for: a subscription in one of `statuses`, or a captured hold
+ * still covering its month. Publication passes the publishable set, which
+ * includes a free month (ADR 0044); the invite matrix passes money only.
+ */
+function listingPaidByMoney(
+  now: Date,
+  statuses: readonly string[] = ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+): SQL {
+  const listed = sql.join(
+    statuses.map((status) => sql`${status}`),
     sql`, `,
   );
   const at = sql`${now.toISOString()}::timestamptz`;
-  return sql`(EXISTS (SELECT 1 FROM "subscriptions" s WHERE s."company_id" = "companies"."id" AND s."status" IN (${statuses})) OR EXISTS (SELECT 1 FROM "listing_holds" lh WHERE lh."company_id" = "companies"."id" AND lh."status" = 'succeeded' AND lh."refunded_at" IS NULL AND lh."captured_at" IS NOT NULL AND lh."covers_until" > ${at}))`;
+  return sql`(EXISTS (SELECT 1 FROM "subscriptions" s WHERE s."company_id" = "companies"."id" AND s."status" IN (${listed})) OR EXISTS (SELECT 1 FROM "listing_holds" lh WHERE lh."company_id" = "companies"."id" AND lh."status" = 'succeeded' AND lh."refunded_at" IS NULL AND lh."captured_at" IS NOT NULL AND lh."covers_until" > ${at}))`;
 }
 
 function awaitingPayment(now: Date): SQL {
@@ -1170,6 +1185,9 @@ export async function setCompanyModerationStatus(
     eq(companies.id, companyId),
     ne(companies.moderationStatus, status),
   ];
+  // ADR 0044: an application its owner withdrew is closed. No approval or
+  // restore may reopen it - that would capture a hold the owner took back.
+  if (precondition) conditions.push(isNull(companies.withdrawnAt));
   if (precondition?.kind === "capturable_hold") {
     conditions.push(companyReadyForReview(precondition.now));
   } else if (precondition?.kind === "restorable") {
@@ -1413,34 +1431,6 @@ export async function waiveListingByPartnerLink(
         eq(companies.moderationStatus, "pending"),
         isNull(companies.listingWaivedAt),
         sql`EXISTS (SELECT 1 FROM "join_links" jl WHERE jl."id" = ${joinLinkId} AND jl."kind" = 'partner' AND jl."active" AND jl."revoked_at" IS NULL)`,
-      ),
-    )
-    .returning({ id: companies.id });
-  return changed.length > 0;
-}
-
-/**
- * ADR 0042: mark a freshly filed application's listing as waived by the
- * owner's partner invitation. Only a pending, not yet waived company of that
- * owner. The invitation's one-listing rule is the caller's, in the same
- * transaction (`spendInviteListingWaiver`).
- */
-export async function waiveListingByInvite(
-  db: DbClient,
-  companyId: string,
-  ownerId: string,
-  inviteLinkId: string | null,
-  now: Date,
-): Promise<boolean> {
-  const changed = await db
-    .update(companies)
-    .set({ listingWaivedAt: now, listingWaiverInviteLinkId: inviteLinkId })
-    .where(
-      and(
-        eq(companies.id, companyId),
-        eq(companies.ownerId, ownerId),
-        eq(companies.moderationStatus, "pending"),
-        isNull(companies.listingWaivedAt),
       ),
     )
     .returning({ id: companies.id });

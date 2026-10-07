@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { getCurrentMember } from "@/actions/session";
-import { createMembershipCheckoutAction } from "@/actions/stripe";
+import {
+  createMembershipCheckoutAction,
+  createVipCheckoutAction,
+} from "@/actions/stripe";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +27,7 @@ import { PartnerStanding } from "./_components/partner-standing";
 import { db } from "@/data/db";
 import { applicationIsLive, holdIsCapturable } from "@/domain/listing-hold";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
+import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { monthlyPrice } from "@/domain/pricing";
 
 export async function generateMetadata({
@@ -59,10 +63,13 @@ export default async function MembershipDuesPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ hold?: string; company?: string }>;
+  searchParams: Promise<{ hold?: string; company?: string; plan?: string }>;
 }) {
   const { locale } = await params;
-  const { hold, company: returnedCompany } = await searchParams;
+  const { hold, company: returnedCompany, plan } = await searchParams;
+  // Which plan the member picked before registering. It orders the two
+  // buttons and nothing more: both are always offered (ADR 0043).
+  const vipFirst = plan === "vip";
   // Back from Stripe for one company: only its card says "confirming".
   const returnedFor = (companyId: string) =>
     hold === "returned" &&
@@ -95,6 +102,16 @@ export default async function MembershipDuesPage({
     const { standing, holds } = application
       ? await partnerStandingFor(db, application, now)
       : { standing: null, holds: [] };
+    const extras =
+      application && standing
+        ? await listingStandingExtras(
+            db,
+            application,
+            current.member,
+            standing,
+            now,
+          )
+        : null;
     const heldUntil =
       holds.find((h) => holdIsCapturable(h, now))?.captureBefore ?? null;
 
@@ -123,6 +140,7 @@ export default async function MembershipDuesPage({
               returnedFromCheckout={
                 application ? returnedFor(application.id) : false
               }
+              extras={extras}
             />
           </CardContent>
           <CardFooter className="justify-between border-t border-border p-6 sm:p-8">
@@ -140,16 +158,19 @@ export default async function MembershipDuesPage({
   }
 
   const price = monthlyPrice("membership", locale);
+  const vipPrice = monthlyPrice("vip", locale);
 
   // No price configured means Stripe cannot be opened at all. The member is
   // told plainly and the button is not offered, rather than being handed a
   // button that throws on the one screen they are allowed to see.
-  const [sellable, owned, listingSellable, tPartner] = await Promise.all([
-    checkoutPriceIsConfigured(db, "membership"),
-    listOwnApplications(db, current.member.id),
-    checkoutPriceIsConfigured(db, "listing"),
-    getTranslations({ locale, namespace: "partnerStanding" }),
-  ]);
+  const [sellable, vipSellable, owned, listingSellable, tPartner] =
+    await Promise.all([
+      checkoutPriceIsConfigured(db, "membership"),
+      checkoutPriceIsConfigured(db, "vip"),
+      listOwnApplications(db, current.member.id),
+      checkoutPriceIsConfigured(db, "listing"),
+      getTranslations({ locale, namespace: "partnerStanding" }),
+    ]);
 
   // A member whose dues are unpaid may still have filed companies (from
   // /partner, since the dashboard is closed to them). Each listing is its own
@@ -173,7 +194,14 @@ export default async function MembershipDuesPage({
             const heldUntil =
               holds.find((h) => holdIsCapturable(h, now))?.captureBefore ??
               null;
-            return { company, standing, heldUntil };
+            const extras = await listingStandingExtras(
+              db,
+              company,
+              current.member,
+              standing,
+              now,
+            );
+            return { company, standing, heldUntil, extras };
           }),
         )
       : [];
@@ -182,9 +210,13 @@ export default async function MembershipDuesPage({
     <AuthShell
       eyebrow="KCLUB MEMBERSHIP"
       title={t("duesTitle")}
-      subtitle={t("duesSubtitle", { price })}
+      subtitle={
+        vipFirst
+          ? t("duesSubtitleVip", { vipPrice })
+          : t("duesSubtitle", { price })
+      }
     >
-      {standings.map(({ company, standing, heldUntil }) => (
+      {standings.map(({ company, standing, heldUntil, extras }) => (
         <Card
           key={company.id}
           className="mb-6 w-full border-white/10 bg-background text-foreground shadow-none"
@@ -206,6 +238,7 @@ export default async function MembershipDuesPage({
               price={monthlyPrice("listing", locale)}
               sellable={listingSellable}
               returnedFromCheckout={returnedFor(company.id)}
+              extras={extras}
             />
           </CardContent>
         </Card>
@@ -228,13 +261,10 @@ export default async function MembershipDuesPage({
             <li>{t("include2")}</li>
             <li>{t("include3")}</li>
           </ul>
-          {/* VIP is added on top of the dues (ADR 0033); the pricing page's VIP
-              button lands here, so this screen says why it asks for {price}. */}
+          {/* VIP includes membership (ADR 0043), so it is the other way in,
+              offered beside the dues rather than after them. */}
           <p className="border-t border-border pt-5 text-sm font-light leading-6 text-muted-foreground">
-            {t("vipNote", {
-              price,
-              vipPrice: monthlyPrice("vip", locale),
-            })}
+            {t("vipNote", { vipPrice })}
           </p>
           <p className="text-sm font-light leading-6 text-muted-foreground">
             {t("sponsoredNote")}
@@ -256,15 +286,36 @@ export default async function MembershipDuesPage({
         <CardFooter className="flex flex-col space-y-4 p-6 pt-0 sm:p-8 sm:pt-0">
           {/* The redirect back from Stripe grants nothing: access appears when
               the subscription is projected from Stripe's own event (FR-104). */}
-          {sellable ? (
-            <form action={createMembershipCheckoutAction} className="w-full">
-              <Button
-                type="submit"
-                className="h-12 w-full bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
-              >
-                {t("payButton", { price })}
-              </Button>
-            </form>
+          {sellable || vipSellable ? (
+            <div
+              className={`flex w-full gap-3 ${vipFirst ? "flex-col-reverse" : "flex-col"}`}
+            >
+              {sellable && (
+                <form
+                  action={createMembershipCheckoutAction}
+                  className="w-full"
+                >
+                  <Button
+                    type="submit"
+                    variant={vipFirst ? "outline" : "default"}
+                    className={payButtonClass(!vipFirst)}
+                  >
+                    {t("payButton", { price })}
+                  </Button>
+                </form>
+              )}
+              {vipSellable && (
+                <form action={createVipCheckoutAction} className="w-full">
+                  <Button
+                    type="submit"
+                    variant={vipFirst ? "default" : "outline"}
+                    className={payButtonClass(vipFirst)}
+                  >
+                    {t("vipPayButton", { vipPrice })}
+                  </Button>
+                </form>
+              )}
+            </div>
           ) : (
             <p
               role="alert"
@@ -286,6 +337,14 @@ export default async function MembershipDuesPage({
       </Card>
     </AuthShell>
   );
+}
+
+/** The chosen plan's button is the gold one; the other is outlined. */
+function payButtonClass(primary: boolean): string {
+  const base = "h-12 w-full text-xs font-black uppercase tracking-[0.16em]";
+  return primary
+    ? `${base} bg-accent text-accent-foreground hover:bg-[#b49126]`
+    : `${base} border-accent/60 text-foreground hover:bg-accent/10`;
 }
 
 /**

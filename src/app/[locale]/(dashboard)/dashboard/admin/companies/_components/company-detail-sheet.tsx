@@ -361,7 +361,11 @@ export function CompanyDetailSheet({
 
   // The same label the table row shows: a pending company with nothing held
   // on the card is awaiting payment, not waiting for a moderator (FR-113).
-  const cardHeld = detail?.holds.some((hold) => hold.capturable) ?? false;
+  // ADR 0044: a card saved for the free month or a deferred start is as ready
+  // for review as a held one; approval then starts the subscription.
+  const cardSaved = detail?.activation?.cardSaved ?? false;
+  const cardHeld =
+    (detail?.holds.some((hold) => hold.capturable) ?? false) || cardSaved;
   // ADR 0040: waived by the partner link - approvable with nothing held.
   const waived = Boolean(company?.listingWaivedAt);
   const sheetStatus =
@@ -397,6 +401,9 @@ export function CompanyDetailSheet({
               companyId={companyId}
               cardHeld={cardHeld}
               waived={waived}
+              freeMonth={
+                cardSaved ? (detail?.activation?.freeMonth ?? false) : undefined
+              }
               onModerated={() => handleOpenChange(false)}
             />
           )}

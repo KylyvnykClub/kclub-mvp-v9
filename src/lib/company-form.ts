@@ -203,6 +203,10 @@ export type CompanyErrorCode =
   | "categoryUnknown"
   | "categoryProhibited"
   | "cityCountryMismatch"
+  /** ADR 0044: a required consent box was not ticked. */
+  | "consentsRequired"
+  /** ADR 0044: the terms changed between the form and the submit. */
+  | "termsChanged"
   | "unexpected";
 
 /**

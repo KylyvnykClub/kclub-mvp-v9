@@ -101,6 +101,8 @@ export async function listOwnApplications(db: DbClient, ownerId: string) {
       moderationStatus: companies.moderationStatus,
       // ADR 0040: a waived listing reads "free", never "reserve".
       listingWaivedAt: companies.listingWaivedAt,
+      // ADR 0044: the owner withdrew - "withdrawn", not "rejected".
+      withdrawnAt: companies.withdrawnAt,
     })
     .from(companies)
     .where(eq(companies.ownerId, ownerId))

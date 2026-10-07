@@ -21,10 +21,13 @@ export async function generateMetadata({
 
 export default async function RegisterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ plan?: string }>;
 }) {
   const { locale } = await params;
+  const { plan } = await searchParams;
   setRequestLocale(locale);
 
   // Someone who arrived through Google has an address we already trust
@@ -49,6 +52,7 @@ export default async function RegisterPage({
       google={await googleEnabled()}
       googleEmail={pending?.email ?? null}
       googleName={pending?.displayName ?? null}
+      vip={plan === "vip"}
     />
   );
 }

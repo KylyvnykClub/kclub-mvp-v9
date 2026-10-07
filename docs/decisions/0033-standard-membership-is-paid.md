@@ -1,6 +1,6 @@
 # 0033. Standard membership costs $4.99 a month, and a join link waives it
 
-> **Status:** Accepted
+> **Status:** Accepted; the VIP bullet amended by [0043](0043-vip-includes-membership.md)
 > **Date:** 2026-09-09
 > **Deciders:** Client, Owner
 > **Amends:** [0004](0004-stripe-billing-as-system-of-record.md), [0009](0009-referral-data-minimisation.md)

@@ -236,9 +236,12 @@ internal identifier, a stack trace or a vendor's raw error string.
 
 |Event|Sender|Verification|Idempotency|On failure|
 |-|-|-|-|-|
-|`checkout.session.completed`|Stripe|HMAC signature with `STRIPE_WEBHOOK_SECRET`, 5-minute tolerance, verified **before** the body is parsed|`stripe_event.id` is the primary key; a duplicate insert conflicts and returns 200|Stripe retries for up to 3 days with backoff|
+|`checkout.session.completed`|Stripe|HMAC signature with `STRIPE_WEBHOOK_SECRET`, 5-minute tolerance, verified **before** the body is parsed|`stripe_event.id` is the primary key; a duplicate insert conflicts and returns 200|Stripe retries for up to 3 days with backoff. A `setup`-mode session with `kind = listing_setup` is re-read with its SetupIntent and records the card saved for a listing ([ADR 0044](decisions/0044-business-application-consents-and-invite-trial.md))|
+|`setup_intent.succeeded`|Stripe|As above, routed only with `kind = listing_setup` metadata|As above|As above; the worker re-reads the application's own setup session|
+|`customer.subscription.trial_will_end`|Stripe|As above|As above|Our reminder email before the first charge of a free month, from the subscription re-read from the API|
+|`invoice.payment_action_required` / `invoice.finalization_failed`|Stripe|As above|As above|Emails Stripe's hosted invoice page to the member (3-D Secure); a finalisation failure is logged|
 |`customer.subscription.created` / `.updated` / `.deleted`|Stripe|As above|As above|As above|
-|`invoice.paid` / `invoice.payment_failed`|Stripe|As above|As above|As above|
+|`invoice.paid` / `invoice.payment_failed`|Stripe|As above|As above|As above. `invoice.paid` with money in it records a listing's first real payment; a $0 trial invoice does not|
 |`payment_intent.amount_capturable_updated` / `.succeeded` / `.payment_failed` / `.canceled` / `.processing`|Stripe|As above, and routed only when the PaymentIntent's metadata says `kind = listing_hold`; the worker re-reads the PaymentIntent from the API|As above|As above. A partner's listing hold ([ADR 0037](decisions/0037-card-held-at-application.md)): recorded, captured on approval, cancelled on rejection, published only on `succeeded`|
 |`charge.dispute.created`|Stripe|As above|As above|Flags the account for staff review; access is not withdrawn automatically|
 |SMS delivery status|Twilio|Signature validation with the auth token, plus an allowlist check|Message SID as the key|Ignored on failure — delivery status is telemetry, not state|

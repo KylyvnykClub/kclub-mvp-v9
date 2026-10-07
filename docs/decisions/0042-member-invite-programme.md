@@ -1,6 +1,6 @@
 # 0042. Members bring people in through personal links, and the club records who brought whom
 
-> **Status:** Accepted
+> **Status:** Accepted; §5 superseded for new applications by [0044](0044-business-application-consents-and-invite-trial.md)
 > **Date:** 2026-10-05
 > **Deciders:** Launch owner
 > **Supersedes:** the "no attribution" parts of [ADR 0033](0033-standard-membership-is-paid.md) (per-person codes) and [ADR 0040](0040-partner-join-link.md) (decision 6)

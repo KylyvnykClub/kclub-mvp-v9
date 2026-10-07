@@ -34,6 +34,10 @@ import { Label } from "@/components/ui/label";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { AGE_ATTESTATION_VERSION } from "@/lib/legal-consents";
 import {
+  ApplicationConsents,
+  useApplicationConsents,
+} from "@/components/company/application-consents";
+import {
   COMPANY_FIELD_LABEL_KEYS,
   type CompanyFormIssue,
 } from "@/lib/company-form";
@@ -67,6 +71,7 @@ const COMPANY_FIELDS = [
   "servesWorldwide",
   "businessFormat",
   "city",
+  "administrativeLevel1",
   "discount",
   "specialPrivileges",
   "specialPrivilegesNote",
@@ -80,6 +85,9 @@ export function PartnerApplicationForm({
   privacyVersion,
   turnstileSiteKey,
   listingPrice,
+  invited,
+  waived,
+  residenceCountry,
 }: {
   /** True for a partner finishing an application their account already has. */
   signedIn: boolean;
@@ -87,12 +95,19 @@ export function PartnerApplicationForm({
   privacyVersion: string | null;
   turnstileSiteKey: string | null;
   listingPrice: string;
+  /** ADR 0044: on the invite route - a free month from publication. */
+  invited: boolean;
+  /** ADR 0040: the club's partner link lists this business free. */
+  waived: boolean;
+  /** A signed-in applicant's country of residence, as their account has it. */
+  residenceCountry: string | null;
 }) {
   const t = useTranslations("partnerApply");
   const tAuth = useTranslations("auth");
   const tRegister = useTranslations("register");
   const tCompany = useTranslations("company");
   const tDashboard = useTranslations("dashboard");
+  const tConsents = useTranslations("applicationConsents");
   const locale = useLocale();
 
   const [values, setValues] = useState<CompanyFormValues>({
@@ -107,6 +122,14 @@ export function PartnerApplicationForm({
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [challengeNonce, setChallengeNonce] = useState(0);
+  // Followed so the EU withdrawal right appears for an EU resident as soon
+  // as they pick the country, not after a refused submit.
+  const [country, setCountry] = useState("");
+  const applicationConsents = useApplicationConsents({
+    invited,
+    waived,
+    residenceCountry: signedIn ? residenceCountry : country || null,
+  });
 
   // Only complain about what the applicant has actually typed: an empty field
   // is not yet wrong, it is unfinished.
@@ -390,13 +413,15 @@ export function PartnerApplicationForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="country">
-                    {tRegister("countryLabel")}
+                    {tConsents("residenceLabel")}
                     <RequiredMark />
                   </Label>
                   <CountrySelect
                     id="country"
                     name="country"
-                    placeholder={tRegister("countryLabel")}
+                    value={country}
+                    onChange={setCountry}
+                    placeholder={tConsents("residenceLabel")}
                     className="h-12"
                   />
                 </div>
@@ -434,6 +459,12 @@ export function PartnerApplicationForm({
               </section>
             )}
 
+            {/* ADR 0044: under the account block, before the Stripe button. */}
+            <ApplicationConsents
+              listingPrice={listingPrice}
+              consents={applicationConsents}
+            />
+
             {COMPANY_FIELDS.map((field) => (
               <input
                 key={field}
@@ -453,11 +484,20 @@ export function PartnerApplicationForm({
             )}
 
             <Submit
-              label={t("submit")}
+              label={applicationConsents.state.submitLabel}
               pendingLabel={t("submitting")}
               pending={submitting}
-              disabled={!legalReady || (!signedIn && !passwordsUsable)}
+              disabled={
+                !legalReady ||
+                !applicationConsents.state.complete ||
+                (!signedIn && !passwordsUsable)
+              }
             />
+            {applicationConsents.state.submitNote && (
+              <p className="-mt-4 text-center text-sm text-muted-foreground">
+                {applicationConsents.state.submitNote}
+              </p>
+            )}
           </form>
         </CardContent>
 

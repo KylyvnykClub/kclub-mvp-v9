@@ -168,3 +168,23 @@ describe("FR-101: a rejection undoes the listing payment (ADR 0019)", () => {
     expect(refundIdempotencyKey(COMPANY, "sub_other")).not.toBe(first);
   });
 });
+
+describe("ADR 0044: a rejected listing in its free month stops before it bills", () => {
+  it("cancels a trialing subscription and refunds nothing, since nothing was paid", async () => {
+    const d = deps({ latestPaidInvoice: vi.fn(() => Promise.resolve(null)) });
+    const result = await refundListingForCompany(
+      dbWithSubscriptions([
+        { stripeSubscriptionId: "sub_trial", status: "trialing" },
+      ]),
+      d,
+      COMPANY,
+    );
+
+    expect(result).toEqual({
+      outcome: "cancelled_unpaid",
+      subscriptionId: "sub_trial",
+    });
+    expect(d.cancelSubscription).toHaveBeenCalledWith("sub_trial");
+    expect(d.issueRefund).not.toHaveBeenCalled();
+  });
+});

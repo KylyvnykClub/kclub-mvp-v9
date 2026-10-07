@@ -16,3 +16,15 @@ export const ACCESS_GRANTING_SUBSCRIPTION_STATUSES: readonly string[] = [
   "active",
   "past_due",
 ];
+
+/**
+ * Statuses that publish a **listing** (ADR 0044): everything that grants
+ * access, plus `trialing` - the free month an invited business gets from
+ * publication. Only listings: a trial never opens dues, VIP or a card tier,
+ * and it is never "a listing paid for with money" for the invite matrix
+ * (ADR 0042 §3), which keeps reading `ACCESS_GRANTING_SUBSCRIPTION_STATUSES`.
+ */
+export const LISTING_PUBLISHABLE_STATUSES: readonly string[] = [
+  ...ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+  "trialing",
+];

@@ -4,7 +4,10 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { getCurrentMember } from "./session";
 import { db } from "@/data/db";
-import { findStripeCustomerIdByMember } from "@/data/billing";
+import {
+  findAccessGrantingSubscription,
+  findStripeCustomerIdByMember,
+} from "@/data/billing";
 import { buildActor } from "@/domain/actor";
 import { assertCan } from "@/domain/authorization";
 import {
@@ -107,11 +110,82 @@ export async function createMembershipCheckoutAction() {
   });
 }
 
+/**
+ * Become a VIP member (FR-050). VIP includes membership (ADR 0043), so it is
+ * one subscription either way:
+ *
+ * - somebody not yet paying anything opens Checkout for the VIP price, and
+ *   that subscription alone opens the club;
+ * - somebody already paying dues has that subscription switched to the VIP
+ *   price, charged the prorated difference now. Opening a second subscription
+ *   would bill them for membership twice.
+ *
+ * The switch uses `pending_if_incomplete`, so Stripe applies the new price
+ * only once the difference is paid. Either way nothing is granted here: the
+ * plan and the card tier follow when `customer.subscription.updated` is
+ * projected, which resolves the plan from the new price (ADR 0004).
+ */
 export async function createVipCheckoutAction() {
-  await createSubscriptionCheckout({
-    plan: "vip",
-    priceId: await checkoutPriceIdForPlan(db, "vip"),
-  });
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    throw new Error("Unauthorized");
+  }
+
+  const vipPriceId = await checkoutPriceIdForPlan(db, "vip");
+  const locale = auth.member.language || "en";
+  const origin = await appOrigin();
+
+  if (await findAccessGrantingSubscription(db, auth.member.id, "vip")) {
+    redirect(`${origin}/${locale}/dashboard/profile?tab=billing`);
+  }
+
+  const dues = await findAccessGrantingSubscription(
+    db,
+    auth.member.id,
+    "membership",
+  );
+  if (!dues) {
+    await createSubscriptionCheckout({ plan: "vip", priceId: vipPriceId });
+    return;
+  }
+
+  const current = await stripe.subscriptions.retrieve(
+    dues.stripeSubscriptionId,
+  );
+  const item = current.items.data[0];
+  if (!item) {
+    throw new Error("Dues subscription has no item to switch");
+  }
+
+  const updated = await stripe.subscriptions.update(
+    current.id,
+    {
+      items: [{ id: item.id, price: vipPriceId }],
+      proration_behavior: "always_invoice",
+      payment_behavior: "pending_if_incomplete",
+      expand: ["latest_invoice"],
+    },
+    // A minute bucket, like every checkout here: a double click switches once,
+    // and a retry after an abandoned 3-D Secure step is a new request rather
+    // than a replay of the old answer.
+    {
+      idempotencyKey: `kclub.vip-switch.v1:${current.id}:${vipPriceId}:${Math.floor(Date.now() / 60_000)}`,
+    },
+  );
+
+  // The card needs the member (3-D Secure, a decline): the switch waits on the
+  // invoice, and Stripe's hosted page is where it is paid.
+  const invoice = updated.latest_invoice;
+  if (
+    updated.pending_update &&
+    invoice &&
+    typeof invoice !== "string" &&
+    invoice.hosted_invoice_url
+  ) {
+    redirect(invoice.hosted_invoice_url);
+  }
+
+  redirect(`${origin}/${locale}/dashboard/checkout/success`);
 }
 
 /**

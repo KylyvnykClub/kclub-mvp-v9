@@ -30,6 +30,7 @@ export function ModerateActions({
   companyId,
   cardHeld,
   waived = false,
+  freeMonth,
   onModerated,
 }: {
   companyId: string;
@@ -41,6 +42,11 @@ export function ModerateActions({
   cardHeld: boolean;
   /** ADR 0040: the listing is free through the partner link. */
   waived?: boolean;
+  /**
+   * ADR 0044: set when a card is saved rather than held - true for the
+   * invite route's free month, false for an EU deferred start.
+   */
+  freeMonth?: boolean;
   /** Called after a decision lands - the sheet uses it to close itself. */
   onModerated?: () => void;
 }) {
@@ -113,7 +119,13 @@ export function ModerateActions({
       <div className="min-w-[240px] space-y-3">
         <p className="text-sm">{t("approveConfirm")}</p>
         <p className="text-xs text-muted-foreground">
-          {waived ? t("approveWaived") : t("approveCapturesHold")}
+          {waived
+            ? t("approveWaived")
+            : freeMonth === true
+              ? t("approveStartsFreeMonth")
+              : freeMonth === false
+                ? t("approveStartsSubscription")
+                : t("approveCapturesHold")}
         </p>
         <div className="flex gap-2">
           <Button

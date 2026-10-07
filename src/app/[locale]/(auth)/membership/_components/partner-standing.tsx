@@ -8,6 +8,11 @@ import { useRouter } from "next/navigation";
 import { createListingHoldCheckoutAction } from "@/actions/stripe";
 import { Button } from "@/components/ui/button";
 import type { PartnerPaymentStanding } from "@/domain/listing-hold";
+import {
+  ConsentBeforePayment,
+  ListingActions,
+} from "@/components/company/listing-actions";
+import type { ListingStandingExtras } from "@/modules/catalogue/listing-standing";
 
 /**
  * Where a business partner stands, on the screen a member would see the dues
@@ -33,6 +38,7 @@ export function PartnerStanding({
   price,
   sellable,
   returnedFromCheckout,
+  extras,
 }: {
   application: PartnerApplication | null;
   /** Null when there is no application yet. */
@@ -44,9 +50,22 @@ export function PartnerStanding({
   sellable: boolean;
   /** Back from Stripe Checkout; Stripe's own event may not have arrived yet. */
   returnedFromCheckout: boolean;
+  /** ADR 0044: consents, ways out and dates. Null with no application. */
+  extras: ListingStandingExtras | null;
 }) {
   const t = useTranslations("partnerStanding");
   const locale = useLocale();
+  const date = (iso: string | null) =>
+    iso
+      ? new Intl.DateTimeFormat(locale, {
+          dateStyle: "long",
+          timeZone: "UTC",
+        }).format(new Date(iso))
+      : "";
+  const actions =
+    application && extras ? (
+      <ListingActions companyId={application.id} extras={extras} />
+    ) : null;
 
   if (!application || standing === null) {
     return (
@@ -57,6 +76,111 @@ export function PartnerStanding({
         <Button asChild className="h-12 w-full">
           <Link href={`/${locale}/partner`}>{t("startApplication")}</Link>
         </Button>
+      </div>
+    );
+  }
+
+  if (standing === "withdrawn") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("withdrawnTitle")}</Title>
+        <Body>{t("withdrawnBody", { name: application.name })}</Body>
+        <Link
+          href={`/${locale}/partner`}
+          className="inline-block text-sm font-bold uppercase tracking-[0.12em] text-foreground underline hover:text-accent-ink"
+        >
+          {t("applyAgain")}
+        </Link>
+      </div>
+    );
+  }
+
+  // ADR 0044: an application filed before consents were recorded asks for
+  // them before anything opens Stripe.
+  if (extras?.consentNeeded && sellable) {
+    return (
+      <div className="space-y-5">
+        <ConsentBeforePayment
+          companyId={application.id}
+          listingPrice={price}
+          terms={extras.consentTerms}
+        />
+        {actions}
+      </div>
+    );
+  }
+
+  if (standing === "save_card") {
+    return (
+      <div className="space-y-5">
+        <Title>{t("saveCardTitle")}</Title>
+        <Body>{t("saveCardBody", { name: application.name })}</Body>
+        {returnedFromCheckout && (
+          <p
+            role="status"
+            className="border border-border bg-muted/40 p-3 text-sm leading-6 text-foreground"
+          >
+            {t("returnedPending")} <RefreshLink label={t("refresh")} />
+          </p>
+        )}
+        <form
+          action={createListingHoldCheckoutAction.bind(null, application.id)}
+        >
+          <HoldButton
+            label={t("saveCardButton")}
+            pendingLabel={t("payOpening")}
+          />
+        </form>
+        {actions}
+      </div>
+    );
+  }
+
+  if (standing === "card_saved") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("cardSavedTitle")}</Title>
+        <Body>{t("cardSavedBody", { name: application.name })}</Body>
+        {actions}
+      </div>
+    );
+  }
+
+  if (standing === "scheduled") {
+    return (
+      <div className="space-y-4">
+        <Title>
+          {t("scheduledTitle", { date: date(extras?.startNotBefore ?? null) })}
+        </Title>
+        <Body>{t("scheduledBody", { name: application.name })}</Body>
+        {actions}
+      </div>
+    );
+  }
+
+  if (standing === "starting") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("startingTitle")}</Title>
+        <Body>{t("startingBody", { name: application.name })}</Body>
+        <RefreshLink label={t("refresh")} />
+        {actions}
+      </div>
+    );
+  }
+
+  if (standing === "trial") {
+    return (
+      <div className="space-y-4">
+        <Title>{t("trialTitle")}</Title>
+        <Body>
+          {t("trialBody", {
+            name: application.name,
+            date: date(extras?.trialEndsAt ?? null),
+            price,
+          })}
+        </Body>
+        {actions}
       </div>
     );
   }
@@ -89,6 +213,7 @@ export function PartnerStanding({
       <div className="space-y-4">
         <Title>{t("waivedTitle")}</Title>
         <Body>{t("waivedBody", { name: application.name })}</Body>
+        {actions}
       </div>
     );
   }
@@ -106,6 +231,7 @@ export function PartnerStanding({
         <Body>{t("heldBody", { name: application.name, price })}</Body>
         <Body>{t("heldOutcomes", { price })}</Body>
         {expires && <Body>{t("heldExpires", { date: expires })}</Body>}
+        {actions}
       </div>
     );
   }
@@ -118,6 +244,7 @@ export function PartnerStanding({
       <div className="space-y-4">
         <Title>{t("liveTitle")}</Title>
         <Body>{t("liveBody", { name: application.name })}</Body>
+        {actions}
       </div>
     );
   }
@@ -181,6 +308,7 @@ export function PartnerStanding({
       <p className="text-xs leading-5 text-muted-foreground">
         {t("renewalNote", { price })}
       </p>
+      {actions}
     </div>
   );
 }

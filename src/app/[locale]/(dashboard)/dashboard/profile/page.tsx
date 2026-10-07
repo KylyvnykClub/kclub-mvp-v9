@@ -12,6 +12,7 @@ import { env } from "@/env";
 import { holdIsCapturable } from "@/domain/listing-hold";
 import { monthlyPrice } from "@/domain/pricing";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
+import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
 import { companyListingIsPaid, listCompaniesByOwner } from "@/data/companies";
 import { listNotificationsForMember } from "@/data/notifications";
@@ -100,6 +101,14 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           {
             standing,
             holdExpiresAt: held?.captureBefore?.toISOString() ?? null,
+            // ADR 0044: the ways out and the dates, beside the standing.
+            extras: await listingStandingExtras(
+              db,
+              company,
+              member,
+              standing,
+              now,
+            ),
           },
         ] as const;
       }),
