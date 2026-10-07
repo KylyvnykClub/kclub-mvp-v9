@@ -71,6 +71,16 @@ const config: NextConfig = {
   },
 
   /**
+   * The sitemap lists every legal document by reading `content/legal` at
+   * request time. File tracing only bundles what an import reaches, and a
+   * directory read is not an import, so without this the sitemap's function
+   * would find the folder missing on Vercel and quietly list none of them.
+   */
+  outputFileTracingIncludes: {
+    "/sitemap.xml": ["./content/legal/**/*"],
+  },
+
+  /**
    * No persistent webpack cache in `next dev`.
    *
    * On this Windows machine the filesystem cache under `.next/cache/webpack`

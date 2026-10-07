@@ -178,7 +178,7 @@ Required external checks:
 |`GOOGLE_REDIRECT_URI`|No|Deployment decision|Only where the public origin differs from the one registered with Google. Unset, the callback URL is derived from `NEXT_PUBLIC_APP_URL`.|
 |`SENTRY_DSN`|Optional for private beta|Sentry project|If omitted, Sentry initialization is deferred and guarded.|
 |`NEXT_PUBLIC_SENTRY_DSN`|Optional for private beta|Sentry project|Must match the intended frontend Sentry project and environment.|
-|`ALLOW_PUBLIC_INDEXING`|Off until public launch|Deployment decision|Unset or `false` keeps the whole site `noindex`, which is correct for the pre-launch beta. Set to `true` in production at launch to let search engines index the marketing, catalogue and legal pages; the `(auth)`, `(dashboard)` and card routes stay `noindex` regardless. Tracked as `seo-public-pages-are-noindex`.|
+|`ALLOW_PUBLIC_INDEXING`|Unset|Override only|Unset, the production deployment (`VERCEL_ENV=production`) is indexable and every other deployment is `noindex` with a robots.txt that disallows everything (`publicIndexingAllowed` in `src/lib/seo.ts`). `false` closes production; `true` opens a non-production deployment. The `(auth)`, `(dashboard)` and card routes stay `noindex` regardless. The old default - off until someone set it - kept the launched site out of search.|
 
 ## Infrastructure Gap List
 
