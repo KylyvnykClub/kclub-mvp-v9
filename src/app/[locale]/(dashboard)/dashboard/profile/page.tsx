@@ -9,6 +9,7 @@ import { db } from "@/data/db";
 import { findProfileByMemberId } from "@/data/profiles";
 import { maskEmail } from "@/lib/email";
 import { env } from "@/env";
+import { cardFace, type CardFace } from "@/domain/card-face";
 import { holdIsCapturable } from "@/domain/listing-hold";
 import { monthlyPrice } from "@/domain/pricing";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
@@ -23,7 +24,6 @@ import {
 } from "@/data/billing";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditProfileForm } from "@/components/profile/edit-profile-form";
@@ -33,7 +33,7 @@ import { EmailForm } from "@/components/profile/email-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { NotificationList } from "./_components/notification-list";
-import { CardQr } from "./_components/card-qr";
+import { MembershipCard } from "./_components/membership-card";
 import { InviteSection } from "./_components/invite-section";
 import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
 import { ActiveSessions } from "@/components/profile/active-sessions";
@@ -52,6 +52,12 @@ const TABS = [
   "settings",
   "edit",
 ];
+
+const FACE_LABEL = {
+  member: "tierFree",
+  vip: "tierVip",
+  business: "tierBusiness",
+} as const satisfies Record<CardFace, string>;
 
 function maskPhone(phone: string) {
   if (!phone) return "";
@@ -149,6 +155,11 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       }).format(new Date(member.createdAt))
     : "";
 
+  const face = cardFace({
+    tier: card?.tier ?? "free",
+    hasLiveCompany: liveCompanyIds.length > 0,
+  });
+
   const cardIssuedAt = card?.issuedAt
     ? new Intl.DateTimeFormat(locale, {
         year: "numeric",
@@ -242,89 +253,35 @@ export default async function ProfilePage({ params, searchParams }: Props) {
               </CardContent>
             </Card>
 
-            <div className="dark flex flex-col items-center justify-center bg-zinc-950 p-6 sm:p-10">
-              <div
-                className="relative w-full max-w-[420px] overflow-hidden rounded-[20px] border border-accent/40"
-                style={{
-                  aspectRatio: "85.6/53.98",
-                  background:
-                    "linear-gradient(135deg, rgba(18,18,18,0.98) 0%, rgba(37,30,15,0.96) 100%)",
+            <div className="dark flex flex-col items-center justify-center bg-zinc-950 px-3 py-6 sm:p-10">
+              <MembershipCard
+                face={face}
+                holder={member.displayName || tDashboard("memberFallback")}
+                membershipLabel={
+                  // FR-021: the tier stays on the card - a VIP partner is both.
+                  face === "business" && card?.tier === "vip"
+                    ? `${tCard("tierBusiness")} · VIP`
+                    : tCard(FACE_LABEL[face])
+                }
+                serial={card?.serial ?? "—"}
+                token={card?.token ?? null}
+                locale={locale}
+                valid={card?.status === "valid"}
+                labels={{
+                  holder: tCard("holder"),
+                  membership: tCard("membershipType"),
+                  serial: tCard("serial"),
+                  status:
+                    card?.status === "valid"
+                      ? tCard("statusValid")
+                      : tCard("statusRevoked"),
                 }}
-              >
-                <div className="absolute inset-x-0 top-0 h-px bg-accent/70" />
-                <div className="absolute inset-0 z-10 flex flex-col justify-between p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="text-2xl font-black tracking-[0.18em] text-accent-ink">
-                      KCLUB
-                    </div>
-                    {card && (
-                      <Badge
-                        variant="outline"
-                        className="border-accent/60 bg-black/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent-ink"
-                      >
-                        {card.tier === "vip"
-                          ? tCard("tierVip")
-                          : tCard("tierFree")}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="mt-2 flex items-center justify-between opacity-90">
-                    <svg
-                      className="h-9 w-9 text-accent-ink/80"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                    >
-                      <rect x="2" y="6" width="20" height="12" rx="2" />
-                      <path d="M6 12h4m-4 0v4m4-4v4m4-4h4m-4 0v4" />
-                    </svg>
-
-                    {card && card.token && (
-                      <CardQr token={card.token} locale={locale} />
-                    )}
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="font-mono text-xl tracking-[0.2em] text-white drop-shadow-md">
-                      {card?.serial || "XXXX-XXXX-XXXX"}
-                    </div>
-                    <div className="flex items-end justify-between">
-                      <div className="space-y-1">
-                        <div className="text-[9px] uppercase tracking-[0.15em] text-white/45">
-                          {tDashboard("name")}
-                        </div>
-                        <div className="text-sm font-medium uppercase tracking-wider text-white/90">
-                          {member.displayName || tDashboard("memberFallback")}
-                        </div>
-                      </div>
-
-                      {card && (
-                        <div className="flex flex-col items-end gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                card.status === "valid"
-                                  ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"
-                                  : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
-                              }`}
-                            ></span>
-                            <span className="text-[9px] uppercase tracking-[0.15em] text-white/45">
-                              {card.status === "valid"
-                                ? tCard("statusValid")
-                                : tCard("statusRevoked")}
-                            </span>
-                          </div>
-                          <div className="font-mono text-[10px] tracking-widest text-white/45">
-                            {cardIssuedAt}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              />
+              {cardIssuedAt && (
+                <p className="mt-4 text-[10px] tracking-[0.15em] text-white/45 uppercase">
+                  {tCard("issuedAt")} {cardIssuedAt}
+                </p>
+              )}
             </div>
           </div>
         </TabsContent>

@@ -68,22 +68,22 @@
     }
   ],
   "lastSession": {
-    "date": "2026-10-07",
+    "date": "2026-10-09",
     "checklist": [
-      "Client bugs fixed: inbox badge opens the inbox, phone menu scrolls, console plan column tells Member / Not paid / Free apart",
-      "VIP is all-inclusive at $19.99 (ADR 0043): VIP pays the dues; a $4.99 payer is switched, not doubled",
-      "SEO: production is indexable by default, robots.txt tightened, sitemap lists pricing and every legal document",
-      "Client spec v1.7 implemented (ADR 0044): consent boxes recorded in full, no Checkout without payment authority, invite route saves the card and gets one free month from publication, EU 14-day withdrawal, cancel auto-renewal, new webhook events, emails, owner counters",
-      "Adversarial review of billing done; its 7 real findings fixed (double subscription guards, withdrawn approval, card projection, trial lapse, cancel key, VIP key)",
-      "Stripe Live dashboard configured with the owner: portal, emails, trial-over descriptor, webhook events, legal links",
-      "pnpm verify green (830 unit); integration tests and browser walk NOT run - Docker Desktop was off"
+      "Club card redesigned after the owner's video: brushed metal, crown, KYLYVNYK CLUB wordmark, QR on a light tile",
+      "Three card faces: member (gold), VIP member (onyx), business partner (sapphire, shown to anyone with a live listing; VIP shown alongside)",
+      "Card serial is now phone country + club-wide sequence from 10001 (UA-10001); old cards are renumbered automatically by a data-migration step in the production build, each with an audit entry",
+      "Every visible KCLUB renamed to KYLYVNYK CLUB (locales, headers, PWA name, Stripe descriptions, email sender default)",
+      "Landing catalogue cards: description hidden, Details button added",
+      "Long subscribe button label wraps on phones instead of overflowing",
+      "Fresh-agent review of the serial change done, its findings fixed; pnpm verify green (863 unit)"
     ],
-    "stoppedAt": "fix/client-feedback-oct pushed in 3 commits; PR to be opened from the compare link (gh CLI not installed).",
+    "stoppedAt": "All changes uncommitted on feat/FR-021-card-design-serial; integration tests and real-app walk not run (Docker off).",
     "nextSteps": [
-      "Start Docker Desktop with WSL integration, run pnpm test:integration (invite-programme, business-application, member-plan-filter)",
-      "Browser-walk: invited business applies with boxes, saves card 4242, approve, trial shown, cancel auto-renewal; VIP signup lands on $19.99",
-      "After deploy: check Stripe retries are 8 in 2 weeks and no customer holds both Member and VIP",
-      "Ask the owner: should the club's own partner link (ADR 0040) also become a free month instead of a permanent waiver?"
+      "Start Docker, run pnpm test:integration (cards, identity-card-tokens, registration) and pnpm db:updownup",
+      "Run pnpm db:renumber-cards --apply on the dev database and check the result before the production deploy",
+      "After the production deploy: check the build log for '[data] FR-020 card serials' and that no card still starts with KCLUB-",
+      "Check EMAIL_FROM in Vercel still says KCLUB and change the sender name there"
     ]
   }
 }

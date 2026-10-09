@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "KYLYVNYK CLUB",
-    short_name: "KCLUB",
+    short_name: "KYLYVNYK CLUB",
     description:
       "Private membership card, partner directory, and referral dashboard.",
     start_url: "/en/dashboard/profile",

@@ -286,7 +286,7 @@ export function CompanyRegistrationForm({
         <Button
           type="submit"
           disabled={pending || !applicationConsents.state.complete}
-          className="w-full"
+          className="h-auto min-h-9 w-full whitespace-normal py-2 text-center text-balance"
         >
           {pending ? t("submitting") : applicationConsents.state.submitLabel}
         </Button>

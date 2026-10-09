@@ -212,7 +212,7 @@ export async function openListingSetupCheckout(
       metadata,
       setup_intent_data: {
         metadata,
-        description: `KCLUB partner listing: ${company.name}`,
+        description: `KYLYVNYK CLUB partner listing: ${company.name}`,
       },
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,

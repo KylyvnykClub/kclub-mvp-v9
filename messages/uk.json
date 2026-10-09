@@ -1,6 +1,6 @@
 {
   "home": {
-    "brand": "KCLUB",
+    "brand": "KYLYVNYK CLUB",
     "locale": {
       "en": "Англійська",
       "ru": "Російська",
@@ -234,7 +234,7 @@
       "title": "Що кажуть учасники",
       "items": [
         {
-          "quote": "KCLUB дає нашій команді можливість знайомитися з перевіреними партнерами без нав'язливого нетворкінгу.",
+          "quote": "KYLYVNYK CLUB дає нашій команді можливість знайомитися з перевіреними партнерами без нав'язливого нетворкінгу.",
           "author": "Анна В.",
           "initials": "AV",
           "tier": "VIP"
@@ -326,7 +326,7 @@
     "cta": {
       "title": "Готові приєднатися?",
       "subline": "Створіть акаунт учасника та почніть із перевіреної цифрової клубної картки.",
-      "button": "Приєднатися до KCLUB"
+      "button": "Приєднатися до KYLYVNYK CLUB"
     },
     "footer": {
       "about": "Про нас",
@@ -361,12 +361,12 @@
     },
     "showcase": {
       "title": "Обрані партнери",
-      "subtitle": "Погляд на нашу ексклюзивну мережу перевірених бізнесів та сервісів, доступних учасникам KCLUB.",
+      "subtitle": "Погляд на нашу ексклюзивну мережу перевірених бізнесів та сервісів, доступних учасникам KYLYVNYK CLUB.",
       "topTitle": "Топ-партнери",
       "featuredTitle": "Рекомендовані",
       "fallbackCity": "Глобально",
       "fallbackCountry": "Онлайн",
-      "fallbackDescription": "Перевірений партнер KCLUB"
+      "fallbackDescription": "Перевірений партнер KYLYVNYK CLUB"
     },
     "landing": {
       "hero": {
@@ -594,6 +594,7 @@
         "results": "{count, plural, one {партнер} few {партнери} many {партнерів} other {партнера}}",
         "reset": "Скинути фільтри",
         "memberBenefit": "Перевага для учасників",
+        "moreDetails": "Детальніше",
         "emptyTitle": "Партнерів не знайдено",
         "emptyText": "Спробуйте інший запит або скиньте фільтри.",
         "emptyAction": "Показати всіх партнерів",
@@ -724,7 +725,7 @@
       "invalid_code": "Код неправильний. Перевірте застосунок-аутентифікатор і спробуйте ще раз.",
       "failed": "Не вдалося увійти. Спробуйте ще раз."
     },
-    "accessEyebrow": "Доступ KCLUB",
+    "accessEyebrow": "Доступ KYLYVNYK CLUB",
     "totpSetupTitle": "Налаштуйте 2FA",
     "totpTitle": "Двофакторний захист",
     "totpSetupSubtitle": "Відскануйте QR-код у застосунку-аутентифікаторі",
@@ -762,7 +763,7 @@
     "verifyEmailContinue": "Перейти до профілю"
   },
   "register": {
-    "title": "Приєднатися до KCLUB",
+    "title": "Приєднатися до KYLYVNYK CLUB",
     "subtitle": "Створіть обліковий запис учасника",
     "step2Title": "Підтвердіть ваш телефон",
     "step2Subtitle": "Введіть код, надісланий на ваш телефон",
@@ -951,8 +952,11 @@
     "membershipCard": "Карта учасника",
     "serial": "Номер карти",
     "tier": "Рівень",
-    "tierFree": "Стандарт",
-    "tierVip": "VIP",
+    "tierFree": "Учасник",
+    "tierVip": "VIP учасник",
+    "tierBusiness": "Бізнес-партнер",
+    "holder": "Власник картки",
+    "membershipType": "Тип членства",
     "status": "Статус",
     "statusValid": "Активна",
     "statusRevoked": "Відкликана",
@@ -981,9 +985,9 @@
     "contact": "Контакт"
   },
   "metadata": {
-    "title": "KCLUB",
+    "title": "KYLYVNYK CLUB",
     "description": "Закритий міжнародний бізнес-клуб.",
-    "registerTitle": "Реєстрація - KCLUB"
+    "registerTitle": "Реєстрація - KYLYVNYK CLUB"
   },
   "Referral": {
     "title": "Передати клієнта (Ліда)",
@@ -1068,10 +1072,10 @@
     "trialListing": "Опубліковано. Безкоштовний місяць закінчується {date}; потім списується {price} на місяць до скасування."
   },
   "catalogue": {
-    "metaTitle": "Каталог партнерів | KCLUB",
-    "metaDescription": "Відкрийте для себе перевірених партнерів та бізнеси в екосистемі KCLUB.",
+    "metaTitle": "Каталог партнерів | KYLYVNYK CLUB",
+    "metaDescription": "Відкрийте для себе перевірених партнерів та бізнеси в екосистемі KYLYVNYK CLUB.",
     "title": "Каталог партнерів",
-    "subtitle": "Знаходьте перевірені бізнеси та встановлюйте зв'язки в екосистемі KCLUB.",
+    "subtitle": "Знаходьте перевірені бізнеси та встановлюйте зв'язки в екосистемі KYLYVNYK CLUB.",
     "searchPlaceholder": "Пошук за назвою...",
     "countryPlaceholder": "Країна",
     "cityPlaceholder": "Місто",
@@ -1080,16 +1084,16 @@
     "filter": "Фільтр",
     "empty": "Партнерів поки немає.",
     "noDescription": "Опис не надано.",
-    "notFoundMetaTitle": "Партнера не знайдено | KCLUB",
-    "partnerMetaTitle": "{name} - партнер KCLUB",
-    "partnerMetaDescription": "Дізнайтеся більше про {name} у KCLUB.",
+    "notFoundMetaTitle": "Партнера не знайдено | KYLYVNYK CLUB",
+    "partnerMetaTitle": "{name} - партнер KYLYVNYK CLUB",
+    "partnerMetaDescription": "Дізнайтеся більше про {name} у KYLYVNYK CLUB.",
     "logoAlt": "Логотип {name}",
     "aboutSection": "Про компанію",
     "activitiesSection": "Види діяльності",
     "gallerySection": "Галерея",
     "contactSection": "Контактна інформація",
-    "contactsMembersOnly": "Контакти видимі лише резидентам KCLUB.",
-    "joinPrompt": "Приєднайтеся до KCLUB, щоб отримати ексклюзивні знижки партнерів та прямі контакти.",
+    "contactsMembersOnly": "Контакти видимі лише резидентам KYLYVNYK CLUB.",
+    "joinPrompt": "Приєднайтеся до KYLYVNYK CLUB, щоб отримати ексклюзивні знижки партнерів та прямі контакти.",
     "joinCta": "Приєднатися до клубу",
     "representedBy": "Компанію представляє:",
     "managerRole": "Менеджер",
@@ -1127,7 +1131,7 @@
     "coverAlt": "Фотографія {name}",
     "partnerSince": "з клубом з {year}",
     "conditionsTitle": "Умови для членів",
-    "conditionsNote": "для верифікованих членів KCLUB",
+    "conditionsNote": "для верифікованих членів KYLYVNYK CLUB",
     "conditionsLockedNote": "Доступно після верифікації",
     "businessDataSection": "Дані бізнесу",
     "subcategoriesLabel": "Підкатегорії",
@@ -1136,11 +1140,11 @@
     "verifiedBoxNote": "Реєстрація, категорія та контакти перевірені до публікації. Умови діють лише для верифікованих членів.",
     "howToSection": "Як отримати умови",
     "howToStep1Title": "Підтвердіть статус",
-    "howToStep1Note": "Умови діють для членів із активним членством KCLUB.",
+    "howToStep1Note": "Умови діють для членів із активним членством KYLYVNYK CLUB.",
     "howToStep2Title": "Зв’яжіться з партнером",
     "howToStep2Note": "Резидентам контакти партнера відкриті на цій сторінці.",
     "howToStep3Title": "Пред’явіть картку",
-    "howToStep3Note": "Партнер підтверджує членство, скануючи вашу картку KCLUB.",
+    "howToStep3Note": "Партнер підтверджує членство, скануючи вашу картку KYLYVNYK CLUB.",
     "similarEyebrow": "Та сама підкатегорія",
     "similarTitle": "Схожі партнери",
     "openCatalogue": "Відкрити каталог",
@@ -1150,7 +1154,7 @@
   },
   "company": {
     "registerTitle": "Зареєструвати компанію",
-    "registerSubtitle": "Додайте свій бізнес в екосистему KCLUB для нетворкінгу та пошуку партнерів.",
+    "registerSubtitle": "Додайте свій бізнес в екосистему KYLYVNYK CLUB для нетворкінгу та пошуку партнерів.",
     "infoSection": "Інформація про компанію",
     "successTitle": "Компанію успішно зареєстровано!",
     "reserveListing": "Перейти до налаштування оплати",
@@ -1200,7 +1204,7 @@
     "partnerSection": "Партнерські деталі",
     "partnerNote": "Ця інформація відображатиметься у публічному каталозі партнерів.",
     "discountLabel": "Знижка, що надається",
-    "discountPlaceholder": "напр. Знижка 15% для учасників KCLUB",
+    "discountPlaceholder": "напр. Знижка 15% для учасників KYLYVNYK CLUB",
     "contactEmailLabel": "Контактний email",
     "contactPhoneLabel": "Контактний телефон",
     "submitting": "Реєстрація...",
@@ -1240,7 +1244,7 @@
     "specialPrivilegesHint": "Увімкніть, якщо пропонуєте учасникам клубу щось окрім знижки — пріоритетне обслуговування, подарунок, особливу пропозицію.",
     "specialPrivilegesLabel": "Особливі привілеї",
     "specialPrivilegesNoteLabel": "Які саме (за бажанням)",
-    "specialPrivilegesNotePlaceholder": "напр. Пріоритетний запис і вітальний подарунок для учасників KCLUB",
+    "specialPrivilegesNotePlaceholder": "напр. Пріоритетний запис і вітальний подарунок для учасників KYLYVNYK CLUB",
     "specialPrivilegesOn": "Надаються",
     "logoSectionLabel": "Логотип",
     "galleryLabel": "Фотогалерея",
@@ -1315,8 +1319,8 @@
       "revoke": "Відкликати",
       "noCardsFound": "Карток не знайдено.",
       "issueNew": "Випустити нову картку",
-      "tierFree": "Стандарт",
-      "tierVip": "VIP",
+      "tierFree": "Учасник",
+      "tierVip": "VIP учасник",
       "issue": "Випустити",
       "historySection": "Історія активності",
       "noHistoryFound": "Історію активності не знайдено.",
@@ -1780,7 +1784,7 @@
     "markRead": "Прочитано",
     "markAllRead": "Прочитати все",
     "markFailed": "Не вдалося оновити. Спробуйте ще раз.",
-    "welcome": "Ласкаво просимо до KCLUB. Вашу картку учасника готово.",
+    "welcome": "Ласкаво просимо до KYLYVNYK CLUB. Вашу картку учасника готово.",
     "company_approved": "Компанію {companyName} схвалено. Оплатіть лістинг — і вона з'явиться в каталозі.",
     "company_rejected": "Компанію {companyName} не схвалено. Коментар перевіряючого:",
     "company_rejected_refund": "Якщо ви вже оплатили розміщення, підписку скасовано, а платіж повертається на вашу картку. Зазвичай банк зараховує повернення протягом 5–10 робочих днів.",
@@ -1834,7 +1838,7 @@
     "home": "На головну"
   },
   "partnerApply": {
-    "eyebrow": "KCLUB ДЛЯ БІЗНЕСУ",
+    "eyebrow": "KYLYVNYK CLUB ДЛЯ БІЗНЕСУ",
     "title": "Розмістити свій бізнес",
     "subtitle": "Одна сторінка. Розкажіть, чим ви займаєтесь і що пропонуєте учасникам клубу — відповімо за 1–3 робочі дні.",
     "priceNote": "Розміщення коштує {price} на місяць. Умови вашої заявки — безкоштовний місяць або резерв, коли починається оплата і як скасувати — повністю показано перед надсиланням.",
@@ -1897,8 +1901,8 @@
   },
   "partnerQr": {
     "title": "QR-код вашої сторінки",
-    "note": "Розмістіть його на стійці, у меню чи на візитці. Під час сканування відкриється ваша сторінка партнера KCLUB.",
-    "alt": "QR-код сторінки {name} у KCLUB",
+    "note": "Розмістіть його на стійці, у меню чи на візитці. Під час сканування відкриється ваша сторінка партнера KYLYVNYK CLUB.",
+    "alt": "QR-код сторінки {name} у KYLYVNYK CLUB",
     "languageLabel": "Мова сторінки",
     "download": "Завантажити PNG",
     "copy": "Копіювати посилання",

@@ -88,7 +88,7 @@ export const serverSchema = z
 
     // ── Email — Resend ──────────────────────────────────────
     RESEND_API_KEY: z.string().optional(),
-    EMAIL_FROM: z.string().default("KCLUB <hello@kclub.com>"),
+    EMAIL_FROM: z.string().default("KYLYVNYK CLUB <hello@kclub.com>"),
 
     // ── Object storage — Cloudflare R2 ──────────────────────
     R2_ACCOUNT_ID: z.string().optional(),

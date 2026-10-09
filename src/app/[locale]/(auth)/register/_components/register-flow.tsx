@@ -319,7 +319,7 @@ export function RegisterFlow({
 
   return (
     <AuthShell
-      eyebrow="KCLUB MEMBERSHIP"
+      eyebrow="KYLYVNYK CLUB MEMBERSHIP"
       title={t("title")}
       subtitle={t("subtitle")}
     >
