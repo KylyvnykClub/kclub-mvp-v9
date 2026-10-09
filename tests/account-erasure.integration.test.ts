@@ -62,7 +62,6 @@ async function seedMemberWithRequest(
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: [],
-    cardSerial: `KCLUB-E${String(seq).padStart(5, "0")}`,
     sessionToken: token,
   });
 

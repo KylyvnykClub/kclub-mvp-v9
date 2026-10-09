@@ -162,7 +162,7 @@ mode over all subscriptions takes minutes at 3,000 rows.
 |-|-|
 |Migration tool|`drizzle-kit generate` produces SQL; the SQL is reviewed and committed, never generated at deploy time|
 |Where migrations live|`db/migrations/NNNN_description.sql`, immutable once merged|
-|Applied when|As an explicit step **before** the new application version receives traffic, against the same database the old version is still using. In production that step is the Vercel build ([`tools/vercel-build.ts`](../tools/vercel-build.ts), run only when `VERCEL_ENV=production`); a failed migration fails the build, and a failed build is never promoted. Preview branches are migrated by [`preview.yml`](../.github/workflows/preview.yml) when the branch is created|
+|Applied when|As an explicit step **before** the new application version receives traffic, against the same database the old version is still using. In production that step is the Vercel build ([`tools/vercel-build.ts`](../tools/vercel-build.ts), run only when `VERCEL_ENV=production`); a failed migration fails the build, and a failed build is never promoted. Changes SQL cannot make — such as reading a country out of a phone number — run in the same build right after, as idempotent data migrations ([`tools/data-migrations.ts`](../tools/data-migrations.ts)). Preview branches are migrated by [`preview.yml`](../.github/workflows/preview.yml) when the branch is created|
 |Reversible?|Every migration ships with a `down.sql`, and CI proves it by applying up → down → up on a fresh branch database. Reversibility is not assumed; it is tested|
 |Zero-downtime rule|Expand, migrate, contract, across three releases. Release 1 adds the new column as nullable and starts writing both. Release 2 backfills and switches reads. Release 3 drops the old column. A pull request that adds a `NOT NULL` column without a default, renames a column, or drops one still referenced by the previous release fails review — the previous version of the application is still serving traffic during a rolling deploy|
 |Large-table changes|`CREATE INDEX CONCURRENTLY`; backfills in batches of 1,000 rows with a pause between batches, run as an Inngest job rather than inside a migration; `lock_timeout = 3s` and `statement_timeout = 30s` set for every migration session so a migration fails fast instead of blocking the site|
@@ -355,8 +355,9 @@ lag plus "did my payment work" is a bad combination.
 `subscription` and `referral`: an update asserts the version it read and fails
 with `Conflict` if another writer won. The staff console surfaces this as "this
 record changed while you were editing" rather than silently overwriting a
-colleague's decision. Where a true lock is needed — issuing a card serial,
-claiming an outbox batch — `SELECT … FOR UPDATE SKIP LOCKED` is used.
+colleague's decision. Where a true lock is needed — claiming an outbox batch —
+`SELECT … FOR UPDATE SKIP LOCKED` is used. A card serial's number needs no lock:
+it is drawn from the sequence `card_serial_seq` (FR-020).
 
 ---
 

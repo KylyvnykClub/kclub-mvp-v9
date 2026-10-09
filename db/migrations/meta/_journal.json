@@ -302,6 +302,13 @@
       "when": 1791367200000,
       "tag": "20261007100000_business_application_consents",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791540000000,
+      "tag": "20261009100000_card_serial_sequence",
+      "breakpoints": true
     }
   ]
 }

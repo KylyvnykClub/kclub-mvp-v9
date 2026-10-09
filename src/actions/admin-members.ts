@@ -208,15 +208,6 @@ export async function resetMemberPasswordAction(
   });
 }
 
-function generateSerial() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const genGroup = () =>
-    Array.from({ length: 4 }, () =>
-      chars.charAt(Math.floor(Math.random() * chars.length)),
-    ).join("");
-  return `${genGroup()}-${genGroup()}-${genGroup()}-${genGroup()}`;
-}
-
 export async function revokeCardAction(cardId: string, reason: string) {
   const session = await getCurrentMember();
   const member = requireAuthorized(session?.member, "revoke", "card");
@@ -266,7 +257,6 @@ export async function reissueCardAction(
 
   const newCard = await insertCard(db, {
     memberId,
-    serial: generateSerial(),
     tier,
   });
 

@@ -29,16 +29,12 @@ beforeAll(() => {
   process.env["BETTER_AUTH_SECRET"] ??= "integration-card-token-secret";
 });
 
-let serialSeq = 0;
-
-function nextSerial() {
-  serialSeq += 1;
-  return `KCLUB-T${String(serialSeq).padStart(5, "0")}`;
+/** A Ukrainian mobile number nobody else in the run holds. */
+function uaPhone() {
+  return `+38050${String(Math.floor(Math.random() * 1e7)).padStart(7, "0")}`;
 }
 
-async function registerWithCard(db: DbClient, serial = nextSerial()) {
-  const phone = `+15554${crypto.randomUUID().slice(0, 8)}`;
-
+async function registerWithCard(db: DbClient, phone = uaPhone()) {
   await registerMemberTx(db, {
     phone,
     email: null,
@@ -49,7 +45,6 @@ async function registerWithCard(db: DbClient, serial = nextSerial()) {
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: [],
-    cardSerial: serial,
     sessionToken: crypto.randomUUID(),
   });
 
@@ -57,7 +52,8 @@ async function registerWithCard(db: DbClient, serial = nextSerial()) {
     where: eq(members.phone, phone),
   });
 
-  return { member: member!, serial };
+  const card = await findCardByMemberId(db, member!.id);
+  return { member: member!, serial: card!.serial };
 }
 
 describe("FR-020: a card is issued automatically with the account", () => {
@@ -77,12 +73,40 @@ describe("FR-020: a card is issued automatically with the account", () => {
     expect(rows[0]?.issuedAt).toBeInstanceOf(Date);
   });
 
-  it("refuses to reuse a serial, so the human-readable number identifies one card", async () => {
+  it("prints the phone's country and a number from 10001 up, as UA-10001", async () => {
     const db = testDbClient();
-    const shared = nextSerial();
-    await registerWithCard(db, shared);
+    const { serial } = await registerWithCard(db);
 
-    await expect(registerWithCard(db, shared)).rejects.toThrow();
+    expect(serial).toMatch(/^UA-\d{5,}$/);
+    expect(Number(serial.slice(3))).toBeGreaterThanOrEqual(10001);
+  });
+
+  it("takes the country from the phone even when the residence differs", async () => {
+    const db = testDbClient();
+    const phone = `+1201555${String(Math.floor(Math.random() * 1e4)).padStart(4, "0")}`;
+    const { serial } = await registerWithCard(db, phone);
+
+    expect(serial).toMatch(/^US-\d{5,}$/);
+  });
+
+  it("draws one club-wide sequence, so no two cards share a number", async () => {
+    const db = testDbClient();
+    const first = await registerWithCard(db);
+    const second = await registerWithCard(db);
+
+    expect(Number(second.serial.slice(3))).toBeGreaterThan(
+      Number(first.serial.slice(3)),
+    );
+  });
+
+  it("refuses a duplicate serial at the database, as the backstop", async () => {
+    const db = testDbClient();
+    const { serial } = await registerWithCard(db);
+    const { member } = await registerWithCard(db);
+
+    await expect(
+      db.update(cards).set({ serial }).where(eq(cards.memberId, member.id)),
+    ).rejects.toThrow();
   });
 });
 
@@ -128,7 +152,6 @@ describe("FR-025: a reissue invalidates the previous QR token immediately", () =
     await revokeValidCardsByMemberId(db, member.id);
     await insertCard(db, {
       memberId: member.id,
-      serial: nextSerial(),
       tier: "vip",
     });
 
@@ -149,7 +172,6 @@ describe("FR-025: a reissue invalidates the previous QR token immediately", () =
     await revokeValidCardsByMemberId(db, member.id);
     await insertCard(db, {
       memberId: member.id,
-      serial: nextSerial(),
       tier: "free",
     });
 
@@ -165,7 +187,6 @@ describe("FR-025: a reissue invalidates the previous QR token immediately", () =
     await revokeValidCardsByMemberId(db, member.id);
     await insertCard(db, {
       memberId: member.id,
-      serial: nextSerial(),
       tier: "vip",
     });
 
@@ -181,14 +202,12 @@ describe("FR-025: a reissue invalidates the previous QR token immediately", () =
   it("shows the new card, not the revoked one, once a member holds both", async () => {
     const db = testDbClient();
     const { member } = await registerWithCard(db);
-    const replacementSerial = nextSerial();
-
     await revokeValidCardsByMemberId(db, member.id);
-    await insertCard(db, {
+    const replacement = await insertCard(db, {
       memberId: member.id,
-      serial: replacementSerial,
       tier: "vip",
     });
+    const replacementSerial = replacement.serial;
 
     const current = await findCardByMemberId(db, member.id);
 

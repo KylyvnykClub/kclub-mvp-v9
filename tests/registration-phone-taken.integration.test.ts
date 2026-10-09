@@ -33,7 +33,6 @@ async function register(db: DbClient, phone: string, email?: string | null) {
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: [],
-    cardSerial: `KCLUB-T${String(seq).padStart(5, "0")}`,
     sessionToken: crypto.randomUUID(),
   });
 }

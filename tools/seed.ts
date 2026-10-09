@@ -580,7 +580,8 @@ function betaPhone(i: number): string {
 }
 
 function betaCardSerial(i: number): string {
-  return `KCLUB-${String(100000 + i)}`;
+  // ZZ is no phone country, so the sequence can never draw a seeded serial.
+  return `ZZ-${String(90000 + i)}`;
 }
 
 function betaCardToken(i: number): string {

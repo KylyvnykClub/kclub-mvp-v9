@@ -182,7 +182,6 @@ async function registerThrough(
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: [],
-    cardSerial: `KCLUB-I${crypto.randomUUID().slice(0, 6)}`,
     sessionToken: crypto.randomUUID(),
   });
   const member = await db().query.members.findFirst({
