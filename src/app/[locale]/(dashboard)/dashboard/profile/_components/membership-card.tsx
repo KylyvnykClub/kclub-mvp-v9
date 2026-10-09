@@ -9,9 +9,8 @@ import type { CardFace } from "@/domain/card-face";
  * the membership and the serial, with the QR on a light tile. The serial sits
  * top right, clear of the QR, so a long membership name never runs into it.
  *
- * The three faces differ in metal, not in layout, so a doorman learns one card
- * and reads its colour: gold for a member, onyx and bright gold for VIP,
- * sapphire and platinum for a business partner.
+ * The three faces - member, VIP member, business partner - share the gold
+ * of the reference and differ only in the membership printed on them.
  *
  * Sized in container units, so the text keeps its proportion from a phone to
  * the desktop column. Text and QR have floors for legibility at arm's length
@@ -29,31 +28,14 @@ interface Metal {
   tile: string;
 }
 
-const METALS: Record<CardFace, Metal> = {
-  member: {
-    base: "linear-gradient(115deg, #2a2013 0%, #5c4727 20%, #2b2013 38%, #74592f 56%, #2e2314 74%, #4d3b21 100%)",
-    ink: "linear-gradient(180deg, #f6e2a4 0%, #d4b064 50%, #a07c3b 100%)",
-    frame: "rgba(232, 200, 130, 0.32)",
-    label: "rgba(232, 208, 156, 0.72)",
-    value: "#f6eddb",
-    tile: "#f4ecd6",
-  },
-  vip: {
-    base: "linear-gradient(120deg, #040404 0%, #1b1b1b 26%, #080808 46%, #262626 62%, #060606 100%)",
-    ink: "linear-gradient(180deg, #fff3c4 0%, #e6bf5e 48%, #b2862b 100%)",
-    frame: "rgba(230, 191, 94, 0.55)",
-    label: "rgba(230, 200, 130, 0.7)",
-    value: "#fbf3df",
-    tile: "#f7efd6",
-  },
-  business: {
-    base: "linear-gradient(120deg, #07132a 0%, #1c3a68 26%, #0a1832 46%, #29508a 62%, #0a1a35 100%)",
-    ink: "linear-gradient(180deg, #ffffff 0%, #d3dcea 50%, #8f9db4 100%)",
-    frame: "rgba(204, 218, 238, 0.4)",
-    label: "rgba(205, 218, 238, 0.72)",
-    value: "#f3f6fb",
-    tile: "#eef2f8",
-  },
+/** The reference's brushed gold. Every face wears it (the owner's call). */
+const GOLD: Metal = {
+  base: "linear-gradient(115deg, #2a2013 0%, #5c4727 20%, #2b2013 38%, #74592f 56%, #2e2314 74%, #4d3b21 100%)",
+  ink: "linear-gradient(180deg, #f6e2a4 0%, #d4b064 50%, #a07c3b 100%)",
+  frame: "rgba(232, 200, 130, 0.32)",
+  label: "rgba(232, 208, 156, 0.72)",
+  value: "#f6eddb",
+  tile: "#f4ecd6",
 };
 
 /** Brushed grain, the lathe rings and one diagonal sheen, over any metal. */
@@ -89,7 +71,7 @@ export function MembershipCard({
   valid,
   labels,
 }: MembershipCardProps) {
-  const metal = METALS[face];
+  const metal = GOLD;
   const inked: CSSProperties = {
     backgroundImage: metal.ink,
     WebkitBackgroundClip: "text",
