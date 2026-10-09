@@ -160,6 +160,18 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     hasLiveCompany: liveCompanyIds.length > 0,
   });
 
+  // A business partner's card opens their company page, so a client who scans
+  // it lands on the business; every other card opens its verification page
+  // (FR-022). With several live companies, the first one listed.
+  const appUrl = env.client.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  const liveCompany = myCompanies.find((c) => liveCompanyIds.includes(c.id));
+  const cardQrUrl =
+    face === "business" && liveCompany
+      ? `${appUrl}/${locale}/directory/${liveCompany.slug}`
+      : card?.token
+        ? `${appUrl}/${locale}/card/${card.token}`
+        : null;
+
   const cardIssuedAt = card?.issuedAt
     ? new Intl.DateTimeFormat(locale, {
         year: "numeric",
@@ -264,8 +276,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
                     : tCard(FACE_LABEL[face])
                 }
                 serial={card?.serial ?? "—"}
-                token={card?.token ?? null}
-                locale={locale}
+                qrUrl={cardQrUrl}
                 valid={card?.status === "valid"}
                 labels={{
                   holder: tCard("holder"),

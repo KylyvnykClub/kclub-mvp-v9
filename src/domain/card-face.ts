@@ -6,7 +6,8 @@
  *
  * A member with a live listing is shown the business-partner card even when
  * they also hold VIP: the owner's call, because the partner card is the one a
- * business owner presents.
+ * business owner presents. Its QR opens their company page rather than the
+ * verification page - also the owner's call; the card's token still verifies.
  */
 
 export type CardFace = "member" | "vip" | "business";

@@ -50,8 +50,8 @@ export interface MembershipCardProps {
   holder: string;
   membershipLabel: string;
   serial: string;
-  token: string | null;
-  locale: string;
+  /** What the QR opens; null draws no QR. */
+  qrUrl: string | null;
   valid: boolean;
   labels: {
     holder: string;
@@ -66,8 +66,7 @@ export function MembershipCard({
   holder,
   membershipLabel,
   serial,
-  token,
-  locale,
+  qrUrl,
   valid,
   labels,
 }: MembershipCardProps) {
@@ -158,7 +157,7 @@ export function MembershipCard({
           </div>
         </div>
 
-        {token && (
+        {qrUrl && (
           <div
             className="absolute right-[7cqw] bottom-[4.6cqw] w-[28cqw] rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]"
             style={{
@@ -167,7 +166,7 @@ export function MembershipCard({
               borderColor: metal.frame,
             }}
           >
-            <CardQr token={token} locale={locale} />
+            <CardQr url={qrUrl} />
           </div>
         )}
       </div>

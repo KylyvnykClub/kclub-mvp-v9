@@ -3,12 +3,12 @@
 import { QRCodeSVG } from "qrcode.react";
 
 /**
- * FR-021/FR-022: the card's QR. Drawn at a fixed resolution and stretched to
- * its tile, so it stays as large as the card allows on any screen width.
+ * The card's QR, for whatever address the card carries: the verification page
+ * (FR-022) or, on a business partner's card, their company page. Drawn at a
+ * fixed resolution and stretched to its tile, so it stays as large as the card
+ * allows on any screen width.
  */
-export function CardQr({ token, locale }: { token: string; locale: string }) {
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/${locale}/card/${token}`;
-
+export function CardQr({ url }: { url: string }) {
   return (
     <QRCodeSVG
       value={url}
