@@ -75,7 +75,7 @@
       "invalid_code": "That code is not right. Check your authenticator app and try again.",
       "failed": "Sign-in could not be completed. Try again."
     },
-    "accessEyebrow": "KCLUB ACCESS",
+    "accessEyebrow": "KYLYVNYK CLUB ACCESS",
     "totpSetupTitle": "Set up 2FA",
     "totpTitle": "Two-factor auth",
     "totpSetupSubtitle": "Scan this QR code with your authenticator app",
@@ -113,7 +113,7 @@
     "verifyEmailContinue": "Go to profile"
   },
   "register": {
-    "title": "Join KCLUB",
+    "title": "Join KYLYVNYK CLUB",
     "subtitle": "Create your membership account",
     "step2Title": "Verify your phone",
     "step2Subtitle": "Enter the code sent to your phone",
@@ -302,8 +302,11 @@
     "membershipCard": "Membership Card",
     "serial": "Card number",
     "tier": "Tier",
-    "tierFree": "Standard",
-    "tierVip": "VIP",
+    "tierFree": "Member",
+    "tierVip": "VIP member",
+    "tierBusiness": "Business partner",
+    "holder": "Card holder",
+    "membershipType": "Membership",
     "status": "Status",
     "statusValid": "Active",
     "statusRevoked": "Revoked",
@@ -332,12 +335,12 @@
     "contact": "Contact"
   },
   "metadata": {
-    "title": "KCLUB",
+    "title": "KYLYVNYK CLUB",
     "description": "A closed international business club.",
-    "registerTitle": "Register - KCLUB"
+    "registerTitle": "Register - KYLYVNYK CLUB"
   },
   "home": {
-    "brand": "KCLUB",
+    "brand": "KYLYVNYK CLUB",
     "locale": {
       "en": "English",
       "ru": "Russian",
@@ -571,7 +574,7 @@
       "title": "What Members Say",
       "items": [
         {
-          "quote": "KCLUB gives our team a quieter way to meet vetted partners without opening the door to random outreach.",
+          "quote": "KYLYVNYK CLUB gives our team a quieter way to meet vetted partners without opening the door to random outreach.",
           "author": "Anna V.",
           "initials": "AV",
           "tier": "VIP"
@@ -663,7 +666,7 @@
     "cta": {
       "title": "Ready to Join?",
       "subline": "Create your member account and start with a verified digital club card.",
-      "button": "Join KCLUB"
+      "button": "Join KYLYVNYK CLUB"
     },
     "footer": {
       "about": "About",
@@ -698,12 +701,12 @@
     },
     "showcase": {
       "title": "Featured Partners",
-      "subtitle": "A glimpse into our exclusive network of verified businesses and services available to KCLUB members.",
+      "subtitle": "A glimpse into our exclusive network of verified businesses and services available to KYLYVNYK CLUB members.",
       "topTitle": "Top Partners",
       "featuredTitle": "Featured",
       "fallbackCity": "Global",
       "fallbackCountry": "Online",
-      "fallbackDescription": "Verified KCLUB Partner"
+      "fallbackDescription": "Verified KYLYVNYK CLUB Partner"
     },
     "landing": {
       "hero": {
@@ -931,6 +934,7 @@
         "results": "{count, plural, one {partner} other {partners}}",
         "reset": "Reset filters",
         "memberBenefit": "Member benefit",
+        "moreDetails": "Details",
         "emptyTitle": "No partners found",
         "emptyText": "Try another search or clear the filters.",
         "emptyAction": "Show All Partners",
@@ -1068,10 +1072,10 @@
     "trialListing": "Published. The free month ends on {date}; then {price} a month is charged until you cancel."
   },
   "catalogue": {
-    "metaTitle": "Partner Catalogue | KCLUB",
-    "metaDescription": "Discover verified partners and businesses within the KCLUB ecosystem.",
+    "metaTitle": "Partner Catalogue | KYLYVNYK CLUB",
+    "metaDescription": "Discover verified partners and businesses within the KYLYVNYK CLUB ecosystem.",
     "title": "Partner Catalogue",
-    "subtitle": "Discover and connect with verified businesses within the KCLUB ecosystem.",
+    "subtitle": "Discover and connect with verified businesses within the KYLYVNYK CLUB ecosystem.",
     "searchPlaceholder": "Search by name...",
     "countryPlaceholder": "Country",
     "cityPlaceholder": "City",
@@ -1080,16 +1084,16 @@
     "filter": "Filter",
     "empty": "No partners registered yet.",
     "noDescription": "No description provided.",
-    "notFoundMetaTitle": "Partner Not Found | KCLUB",
-    "partnerMetaTitle": "{name} - KCLUB Partner",
-    "partnerMetaDescription": "Learn more about {name} on KCLUB.",
+    "notFoundMetaTitle": "Partner Not Found | KYLYVNYK CLUB",
+    "partnerMetaTitle": "{name} - KYLYVNYK CLUB Partner",
+    "partnerMetaDescription": "Learn more about {name} on KYLYVNYK CLUB.",
     "logoAlt": "{name} logo",
     "aboutSection": "About the Company",
     "activitiesSection": "Specific Activities",
     "gallerySection": "Gallery",
     "contactSection": "Contact Information",
-    "contactsMembersOnly": "Contact details are visible to KCLUB residents only.",
-    "joinPrompt": "Join KCLUB to access exclusive partner discounts and direct contacts.",
+    "contactsMembersOnly": "Contact details are visible to KYLYVNYK CLUB residents only.",
+    "joinPrompt": "Join KYLYVNYK CLUB to access exclusive partner discounts and direct contacts.",
     "joinCta": "Join the Club",
     "representedBy": "Company is represented by:",
     "managerRole": "Manager",
@@ -1127,7 +1131,7 @@
     "coverAlt": "{name} photo",
     "partnerSince": "with the club since {year}",
     "conditionsTitle": "Member terms",
-    "conditionsNote": "for verified KCLUB members",
+    "conditionsNote": "for verified KYLYVNYK CLUB members",
     "conditionsLockedNote": "Available after verification",
     "businessDataSection": "Business data",
     "subcategoriesLabel": "Subcategories",
@@ -1136,11 +1140,11 @@
     "verifiedBoxNote": "Registration, category and contacts were checked before publication. Member terms apply to verified members only.",
     "howToSection": "How to claim the terms",
     "howToStep1Title": "Verify your status",
-    "howToStep1Note": "The terms apply to members with an active KCLUB membership.",
+    "howToStep1Note": "The terms apply to members with an active KYLYVNYK CLUB membership.",
     "howToStep2Title": "Contact the partner",
     "howToStep2Note": "Residents see the contact details of the partner on this page.",
     "howToStep3Title": "Show your card",
-    "howToStep3Note": "The partner confirms your membership by scanning your KCLUB card.",
+    "howToStep3Note": "The partner confirms your membership by scanning your KYLYVNYK CLUB card.",
     "similarEyebrow": "Same subcategory",
     "similarTitle": "Similar partners",
     "openCatalogue": "Open the catalogue",
@@ -1150,7 +1154,7 @@
   },
   "company": {
     "registerTitle": "Register Company",
-    "registerSubtitle": "Add your business to the KCLUB ecosystem to network and find partners.",
+    "registerSubtitle": "Add your business to the KYLYVNYK CLUB ecosystem to network and find partners.",
     "infoSection": "Company Information",
     "successTitle": "Company registered successfully!",
     "reserveListing": "Continue to payment setup",
@@ -1200,7 +1204,7 @@
     "partnerSection": "Partner Details",
     "partnerNote": "This information will be displayed in the public Partner Catalogue.",
     "discountLabel": "Provided Discount",
-    "discountPlaceholder": "e.g. 15% discount for KCLUB members",
+    "discountPlaceholder": "e.g. 15% discount for KYLYVNYK CLUB members",
     "contactEmailLabel": "Contact Email",
     "contactPhoneLabel": "Contact Phone",
     "submitting": "Registering...",
@@ -1240,7 +1244,7 @@
     "specialPrivilegesHint": "Switch this on if you offer club members something beyond a discount — priority service, a gift, a private offer.",
     "specialPrivilegesLabel": "Special privileges",
     "specialPrivilegesNoteLabel": "Which privileges (optional)",
-    "specialPrivilegesNotePlaceholder": "e.g. Priority booking and a welcome gift for KCLUB members",
+    "specialPrivilegesNotePlaceholder": "e.g. Priority booking and a welcome gift for KYLYVNYK CLUB members",
     "specialPrivilegesOn": "Offered",
     "logoSectionLabel": "Logo",
     "galleryLabel": "Photo gallery",
@@ -1315,8 +1319,8 @@
       "revoke": "Revoke",
       "noCardsFound": "No cards found.",
       "issueNew": "Issue New Card",
-      "tierFree": "Free",
-      "tierVip": "VIP",
+      "tierFree": "Member",
+      "tierVip": "VIP member",
       "issue": "Issue",
       "historySection": "Activity history",
       "noHistoryFound": "No activity history found.",
@@ -1780,7 +1784,7 @@
     "markRead": "Mark read",
     "markAllRead": "Mark all read",
     "markFailed": "Could not update. Please try again.",
-    "welcome": "Welcome to KCLUB. Your membership card is ready.",
+    "welcome": "Welcome to KYLYVNYK CLUB. Your membership card is ready.",
     "company_approved": "{companyName} was approved. Pay for the listing and it goes live in the catalogue.",
     "company_rejected": "{companyName} was not approved. The reviewer left this note:",
     "company_rejected_refund": "If you had already paid for the listing, the subscription has been cancelled and the payment is being refunded to your card. Banks usually take 5–10 business days to show it.",
@@ -1834,7 +1838,7 @@
     "home": "Go to the home page"
   },
   "partnerApply": {
-    "eyebrow": "KCLUB PARTNERS",
+    "eyebrow": "KYLYVNYK CLUB PARTNERS",
     "title": "List your business",
     "subtitle": "One page. Tell us what you do and what you offer club members — we reply within 1–3 business days.",
     "priceNote": "A listing costs {price} a month. The terms of your application — a free month or a reservation, when payment starts and how to cancel — are shown in full before you submit.",
@@ -1897,8 +1901,8 @@
   },
   "partnerQr": {
     "title": "QR code for your page",
-    "note": "Print it on your counter, menu or business card. Scanning it opens your KCLUB partner page.",
-    "alt": "QR code for the KCLUB page of {name}",
+    "note": "Print it on your counter, menu or business card. Scanning it opens your KYLYVNYK CLUB partner page.",
+    "alt": "QR code for the KYLYVNYK CLUB page of {name}",
     "languageLabel": "Page language",
     "download": "Download PNG",
     "copy": "Copy link",

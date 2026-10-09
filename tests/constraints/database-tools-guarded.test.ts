@@ -37,6 +37,12 @@ const ALLOWLIST = new Set([
   // thing that may migrate production, and it opens no connection of its own -
   // it runs drizzle-kit, which reads the environment Vercel injected.
   "vercel-build.ts",
+  // Its data-migration step: run by vercel-build only, refuses to start
+  // unless VERCEL_ENV is production, and connects through the same
+  // DATABASE_URL_DIRECT that drizzle-kit migrate has just used.
+  "data-migrations.ts",
+  // Imports the DbClient type only; both callers above open the client.
+  "card-serial-backfill.ts",
   // Pure function over an env object; never connects.
   "check-production-env.ts",
   "gen-env-example.ts",

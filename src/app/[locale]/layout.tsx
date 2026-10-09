@@ -38,7 +38,7 @@ export async function generateMetadata({
     manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
-      title: "KCLUB",
+      title: "KYLYVNYK CLUB",
       statusBarStyle: "black-translucent",
     },
     openGraph: {

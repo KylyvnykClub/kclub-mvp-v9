@@ -17,6 +17,7 @@ import {
   ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
   type MemberPlan,
 } from "./billing-access";
+import { appendAuditEntry } from "./audit-log";
 import type { DbClient } from "./db";
 import {
   loadMemberInviteSummary,
@@ -38,6 +39,11 @@ import {
   subscriptions,
 } from "./schema";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
+import {
+  cardSerialCountry,
+  formatCardSerial,
+  type CardSerialRow,
+} from "@/lib/card-serial";
 
 const CLUB_MEMBER_ROLES = [
   "member",
@@ -419,14 +425,42 @@ export async function revokeCardById(db: DbClient, cardId: string) {
   return card ?? null;
 }
 
+/**
+ * The next card serial for a member (FR-020): their phone's country and the
+ * next number of `card_serial_seq`. A number drawn by a transaction that later
+ * rolls back is skipped, never reused - a gap is harmless, a repeat is not.
+ */
+export async function nextCardSerial(
+  db: DbClient,
+  member: { phone: string; country: string },
+): Promise<string> {
+  return formatCardSerial(
+    cardSerialCountry(member.phone, member.country),
+    await drawCardSerialNumber(db),
+  );
+}
+
+async function drawCardSerialNumber(db: DbClient): Promise<number> {
+  const result = await db.execute<{ n: string }>(
+    sql`select nextval('card_serial_seq')::text as n`,
+  );
+  return Number(result.rows[0]!.n);
+}
+
 export async function insertCard(
   db: DbClient,
   input: {
     memberId: string;
-    serial: string;
     tier: "free" | "vip";
   },
 ) {
+  const [owner] = await db
+    .select({ phone: members.phone, country: members.country })
+    .from(members)
+    .where(eq(members.id, input.memberId));
+  if (!owner) throw new Error("Member not found");
+
+  const serial = await nextCardSerial(db, owner);
   const cardId = randomUUID();
   const cardTokenHash = hashCardToken(createCardPublicTokenWithEnv(cardId));
 
@@ -435,7 +469,7 @@ export async function insertCard(
     .values({
       id: cardId,
       memberId: input.memberId,
-      serial: input.serial,
+      serial,
       token: cardTokenHash,
       tokenHash: cardTokenHash,
       tier: input.tier,
@@ -479,6 +513,51 @@ export async function updateMemberPersonalInfo(
  * index with the live rows, so normalising around them would hide a collision
  * rather than report it.
  */
+/** Every card with what its serial is made from, for `db:renumber-cards`. */
+export async function listCardSerials(db: DbClient): Promise<CardSerialRow[]> {
+  return db
+    .select({
+      cardId: cards.id,
+      serial: cards.serial,
+      issuedAt: cards.issuedAt,
+      phone: members.phone,
+      residence: members.country,
+    })
+    .from(cards)
+    .innerJoin(members, eq(members.id, cards.memberId));
+}
+
+/**
+ * Gives one card the next serial in the `UA-10001` form, with an audit entry
+ * carrying the old one, and returns it.
+ */
+export async function renumberCard(
+  db: DbClient,
+  cardId: string,
+  country: string,
+): Promise<string> {
+  return db.transaction(async (tx) => {
+    const [before] = await tx
+      .select({ serial: cards.serial, memberId: cards.memberId })
+      .from(cards)
+      .where(eq(cards.id, cardId));
+    if (!before) throw new Error("Card not found");
+
+    const serial = formatCardSerial(country, await drawCardSerialNumber(tx));
+    await tx.update(cards).set({ serial }).where(eq(cards.id, cardId));
+    // The old serial is what a member or a partner may still quote, so the
+    // record of the change is how staff find the card by it.
+    await appendAuditEntry(tx, {
+      actorType: "system",
+      action: "card.renumbered",
+      subjectType: "card",
+      subjectId: cardId,
+      meta: { before: { serial: before.serial }, after: { serial } },
+    });
+    return serial;
+  });
+}
+
 export async function listMemberPhones(db: DbClient) {
   return db
     .select({

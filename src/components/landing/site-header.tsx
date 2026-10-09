@@ -96,7 +96,11 @@ export function SiteHeader({
   return (
     <header className="sticky top-0 z-50 h-[72px] border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-[#101012]/90">
       <div className="kclub-shell flex h-full items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3" aria-label="KCLUB">
+        <Link
+          href="/"
+          className="flex items-center gap-3"
+          aria-label="KYLYVNYK CLUB"
+        >
           <Image
             src="/brand/logo/crown-gold-logo.png"
             width={40}

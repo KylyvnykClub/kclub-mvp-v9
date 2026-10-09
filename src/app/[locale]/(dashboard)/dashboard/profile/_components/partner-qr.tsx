@@ -50,7 +50,7 @@ export function PartnerQr({
     if (!canvas) return;
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = `kclub-${slug}-${locale}-qr.png`;
+    link.download = `kylyvnyk-club-${slug}-${locale}-qr.png`;
     link.click();
   };
 

@@ -35,7 +35,6 @@ async function seedMember(db: DbClient) {
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: [],
-    cardSerial: `KCLUB-R${String(seq).padStart(5, "0")}`,
     sessionToken: crypto.randomUUID(),
   });
 

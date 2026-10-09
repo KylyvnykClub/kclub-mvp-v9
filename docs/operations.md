@@ -142,6 +142,7 @@ in [delivery/production-env-readiness.md](delivery/production-env-readiness.md).
 |`pnpm test:integration`|Integration suite; needs Docker for Testcontainers|
 |`docker compose up`|The whole application locally in containers — PostgreSQL, the Neon WebSocket proxy and an Upstash stand-in — with no Neon branch, no vendor keys and no Node on the host. See the paragraph below|
 |`pnpm db:migrate`|Apply migrations. Production does not need this by hand: the Vercel build runs it (`tools/vercel-build.ts`) before the new version takes traffic, using credentials nobody has to copy|
+|`pnpm db:renumber-cards`|Give cards issued before FR-020's `UA-10001` format a serial in it; `--apply` writes, without it only reports. Production does not need this: the build runs the same step as a data migration (`tools/data-migrations.ts`)|
 |`pnpm db:mark-environment --show`|Which environment the database at `DATABASE_URL` says it is ([ADR 0026](decisions/0026-dev-database-is-a-neon-branch-rebuilt-from-migrations.md))|
 |`pnpm db:mark-environment production`|Mark production once, after its marker migration is applied. Relabelling a production-marked database as anything else is refused|
 |`pnpm db:reset:dev`|Rebuild the `dev` branch from zero: drop the schema, apply every migration, mark it `dev`, seed categories, the staff owner, the Stripe test prices and the beta dataset. `--no-beta` skips the partners; the first run on a branch not yet marked `dev` needs `--confirm-endpoint <ep-id>`. Refuses a `production` marker with no override|

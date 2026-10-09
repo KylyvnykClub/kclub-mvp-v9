@@ -19,6 +19,7 @@ import type {
   VerificationPurpose,
 } from "./schema";
 import type { InviterStanding } from "@/domain/invites";
+import { nextCardSerial } from "./members";
 import { createCardPublicTokenWithEnv, hashCardToken } from "@/lib/card-token";
 import { hashSessionToken } from "@/lib/session-token";
 
@@ -85,7 +86,6 @@ export interface RegisterMemberInput {
   userAgent: string;
   ipAddress: string;
   consents: Array<{ documentId: string; version: string }>;
-  cardSerial: string;
   sessionToken: string;
   /**
    * Who brought this member (ADR 0042), written in the same transaction so a
@@ -151,7 +151,7 @@ export async function registerMemberTx(
     await tx.insert(cards).values({
       id: cardId,
       memberId: member!.id,
-      serial: input.cardSerial,
+      serial: await nextCardSerial(tx, input),
       token: cardTokenHash,
       tokenHash: cardTokenHash,
       tier: "free",

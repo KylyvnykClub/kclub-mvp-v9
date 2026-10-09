@@ -20,6 +20,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:normalize-phones": "tsx tools/normalize-phones.ts",
+    "db:renumber-cards": "tsx tools/renumber-cards.ts",
     "db:mark-environment": "tsx tools/db-mark-environment.ts",
     "db:push": "drizzle-kit push",
     "db:reset:dev": "tsx tools/db-reset-dev.ts",

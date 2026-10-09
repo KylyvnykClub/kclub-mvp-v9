@@ -240,7 +240,7 @@ export function AdminSidebar({
     <TooltipProvider delayDuration={200}>
       <Sidebar
         collapsible="icon"
-        mobileTitle={`KCLUB — ${t("consoleLabel")}`}
+        mobileTitle={`KYLYVNYK CLUB — ${t("consoleLabel")}`}
         mobileDescription={t("navigationDescription")}
       >
         <SidebarHeader>
@@ -252,8 +252,8 @@ export function AdminSidebar({
                     K
                   </div>
                   <div className="grid flex-1 text-left leading-tight">
-                    <span className="text-sm font-black uppercase tracking-[0.18em] text-accent-ink">
-                      KCLUB
+                    <span className="truncate text-sm font-black uppercase tracking-[0.14em] text-accent-ink">
+                      KYLYVNYK CLUB
                     </span>
                     <span className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                       {t("consoleLabel")}

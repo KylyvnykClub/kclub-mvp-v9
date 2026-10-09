@@ -199,7 +199,7 @@ export function ConsentBeforePayment({
       <Button
         type="submit"
         disabled={pending || !consents.state.complete}
-        className="h-12 w-full bg-accent text-xs font-black uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
+        className="h-auto min-h-12 w-full whitespace-normal bg-accent px-4 py-3 text-center text-xs leading-snug font-black text-balance uppercase tracking-[0.16em] text-accent-foreground hover:bg-[#b49126]"
       >
         {consents.state.submitLabel}
       </Button>

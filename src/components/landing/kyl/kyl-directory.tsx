@@ -214,6 +214,7 @@ export function KylDirectory({
                 partner={partner}
                 benefitLabel={t("memberBenefit")}
                 privilegesLabel={t("specialPrivileges")}
+                detailsLabel={t("moreDetails")}
               />
             ))}
           </div>

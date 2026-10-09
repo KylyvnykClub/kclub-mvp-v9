@@ -94,7 +94,7 @@ export async function seedE2eFixtures(
       .insert(schema.cards)
       .values({
         memberId: member.id,
-        serial: "KCLUB-E2E001",
+        serial: "ZZ-99001",
         token: "placeholder",
         tier: "free",
       })

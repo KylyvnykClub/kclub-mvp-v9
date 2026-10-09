@@ -48,6 +48,9 @@ const vercelEnv = process.env["VERCEL_ENV"] ?? "unset";
 if (vercelEnv === "production") {
   console.log("[build] applying migrations before this version takes traffic");
   run("pnpm", ["exec", "drizzle-kit", "migrate"]);
+  // What SQL cannot do, after the schema it needs and still before traffic.
+  console.log("[build] applying data migrations");
+  run("pnpm", ["exec", "tsx", "tools/data-migrations.ts"]);
 } else {
   console.log(
     `[build] VERCEL_ENV=${vercelEnv}: migrations are not this build's job`,

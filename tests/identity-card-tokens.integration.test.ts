@@ -39,7 +39,6 @@ describe("identity card token storage", () => {
 
     const created = await insertCard(db, {
       memberId: member.id,
-      serial: `CARD-${crypto.randomUUID()}`,
       tier: "free",
     });
 
@@ -64,7 +63,6 @@ describe("identity card token storage", () => {
 
     const created = await insertCard(db, {
       memberId: member.id,
-      serial: `DISCLOSURE-${crypto.randomUUID()}`,
       tier: "vip",
     });
 

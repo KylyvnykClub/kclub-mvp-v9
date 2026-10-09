@@ -1581,11 +1581,39 @@
   font-size: 24px;
   font-weight: 400;
 }
-.kyl .partner-body > p:not(.card-meta) {
-  min-height: 42px;
-  margin-bottom: 18px;
-  color: var(--muted);
-  font-size: 11px;
+.kyl .partner-body h3 + .partner-benefit,
+.kyl .partner-body h3 + .partner-more {
+  margin-top: 14px;
+}
+.kyl .partner-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  color: var(--gold-bright);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.kyl .partner-more svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+.kyl .partner-card-link:hover .partner-more,
+.kyl .partner-card-link:focus-visible .partner-more {
+  border-color: var(--gold);
+  background: rgba(216, 178, 97, 0.08);
+}
+.kyl .partner-card-link:hover .partner-more svg {
+  transform: translateX(3px);
 }
 .kyl .partner-benefit {
   display: flex;
@@ -2475,10 +2503,6 @@
   .kyl .partner-body h3 {
     font-size: 22px;
   }
-  .kyl .partner-body > p:not(.card-meta) {
-    min-height: 0;
-    margin-bottom: 14px;
-  }
   .kyl .partner-benefit {
     padding-top: 12px;
   }
@@ -2961,7 +2985,6 @@
 .kyl .results-bar button,
 .kyl .results-bar p,
 .kyl .card-meta,
-.kyl .partner-body > p:not(.card-meta),
 .kyl .partner-benefit span,
 .kyl .partner-benefit strong,
 .kyl .about-copy > p:not(.lede),
@@ -2981,10 +3004,6 @@
 .kyl .partner-art > span:last-child {
   font-size: 14px;
   letter-spacing: 0;
-}
-.kyl .partner-body > p:not(.card-meta) {
-  min-height: 48px;
-  line-height: 1.6;
 }
 .kyl .partner-benefit {
   gap: 10px;
@@ -3153,10 +3172,6 @@
   .kyl .partner-art > span:last-child {
     max-width: calc(100% - 32px);
     line-height: 1.25;
-  }
-  .kyl .partner-body > p:not(.card-meta) {
-    min-height: 0;
-    font-size: 14px;
   }
   .kyl .partner-benefit {
     align-items: start;

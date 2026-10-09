@@ -113,7 +113,7 @@ export default async function MembershipDuesPage({
 
     return (
       <AuthShell
-        eyebrow="KCLUB PARTNERS"
+        eyebrow="KYLYVNYK CLUB PARTNERS"
         title={tPartner("title")}
         subtitle={tPartner("subtitle")}
       >
@@ -204,7 +204,7 @@ export default async function MembershipDuesPage({
 
   return (
     <AuthShell
-      eyebrow="KCLUB MEMBERSHIP"
+      eyebrow="KYLYVNYK CLUB MEMBERSHIP"
       title={t("duesTitle")}
       subtitle={
         vipFirst

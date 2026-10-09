@@ -65,7 +65,6 @@ async function register(
     userAgent: "test",
     ipAddress: "127.0.0.1",
     consents: options.consents ?? [],
-    cardSerial: `KCLUB-P${String(seq).padStart(5, "0")}`,
     sessionToken: crypto.randomUUID(),
   });
 

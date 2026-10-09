@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 
 import { KylReveal } from "./kyl-reveal";
 import { blockPresentation, flagSrc } from "./partner-presentation";
@@ -20,16 +20,22 @@ import type { LandingPartner } from "@/lib/landing-partner";
  * design locked it and asked the visitor to register first; the catalogue has
  * since been opened to signed-out visitors (FR-030), so the padlock would be
  * theatre over something readable one click away.
+ *
+ * The description is not printed: long ones turned the grid into a wall of
+ * text, so the card ends in a "Details" button and the text lives on the
+ * company page the whole card already links to.
  */
 export function KylPartnerCard({
   partner,
   benefitLabel,
   privilegesLabel,
+  detailsLabel,
 }: {
   partner: LandingPartner;
   benefitLabel: string;
   /** FR-117: shown when the partner offers special privileges. */
   privilegesLabel: string;
+  detailsLabel: string;
 }) {
   const { art, Icon } = blockPresentation(partner.blockKey);
   const flag = flagSrc(partner.countryCode);
@@ -69,7 +75,6 @@ export function KylPartnerCard({
         <div className="partner-body">
           {partner.category && <p className="card-meta">{partner.category}</p>}
           <h3>{partner.name}</h3>
-          {partner.description && <p>{partner.description}</p>}
           {(partner.discount || partner.specialPrivileges) && (
             <div className="partner-benefit">
               <span>{benefitLabel}</span>
@@ -81,6 +86,11 @@ export function KylPartnerCard({
               )}
             </div>
           )}
+          {/* A span, not a button: the whole card is already the link. */}
+          <span className="partner-more">
+            {detailsLabel}
+            <ArrowRight aria-hidden="true" />
+          </span>
         </div>
       </Link>
     </KylReveal>

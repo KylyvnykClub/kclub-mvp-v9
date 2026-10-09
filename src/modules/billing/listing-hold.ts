@@ -210,7 +210,7 @@ export async function openListingHoldCheckout(
         capture_method: "manual",
         setup_future_usage: "off_session",
         ...(input.receiptEmail ? { receipt_email: input.receiptEmail } : {}),
-        description: `KCLUB partner listing: ${company.name}`,
+        description: `KYLYVNYK CLUB partner listing: ${company.name}`,
         metadata,
       },
       metadata,

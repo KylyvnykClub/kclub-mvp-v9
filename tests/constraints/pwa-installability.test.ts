@@ -7,7 +7,7 @@ describe("constraint: PWA installability (FR-096)", () => {
     const webManifest = manifest();
 
     expect(webManifest.name).toBe("KYLYVNYK CLUB");
-    expect(webManifest.short_name).toBe("KCLUB");
+    expect(webManifest.short_name).toBe("KYLYVNYK CLUB");
     expect(webManifest.display).toBe("standalone");
     expect(webManifest.start_url).toBe("/en/dashboard/profile");
     expect(webManifest.icons?.length).toBeGreaterThanOrEqual(2);
