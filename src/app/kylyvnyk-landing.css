@@ -1607,12 +1607,21 @@
   height: 14px;
   transition: transform 0.2s ease;
 }
+.kyl .top-partner-copy .partner-more {
+  margin-top: auto;
+}
+.kyl .top-partner-copy strong ~ .partner-more {
+  margin-top: 16px;
+}
 .kyl .partner-card-link:hover .partner-more,
-.kyl .partner-card-link:focus-visible .partner-more {
+.kyl .partner-card-link:focus-visible .partner-more,
+.kyl .top-partner-link:hover .partner-more,
+.kyl .top-partner-link:focus-visible .partner-more {
   border-color: var(--gold);
   background: rgba(216, 178, 97, 0.08);
 }
-.kyl .partner-card-link:hover .partner-more svg {
+.kyl .partner-card-link:hover .partner-more svg,
+.kyl .top-partner-link:hover .partner-more svg {
   transform: translateX(3px);
 }
 .kyl .partner-benefit {
@@ -2788,13 +2797,6 @@
   font-size: 24px;
   line-height: 1.35;
 }
-.kyl .top-partner-copy > p:not(.top-partner-location) {
-  margin: 0 0 27px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.65;
-  letter-spacing: 0;
-}
 .kyl .top-partner-copy strong {
   align-self: flex-start;
   margin-top: auto;
@@ -3113,9 +3115,6 @@
   }
   .kyl .top-partner-copy h3 {
     font-size: 23px;
-  }
-  .kyl .top-partner-copy > p:not(.top-partner-location) {
-    margin-bottom: 20px;
   }
   .kyl .hero-club-card {
     padding: 20px 22px;

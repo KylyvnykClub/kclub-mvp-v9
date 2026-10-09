@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { KylReveal } from "./kyl-reveal";
@@ -26,7 +27,8 @@ import type { Locale } from "@/i18n/routing";
  * partner list must never do.
  *
  * The country is beside the service, not over the photograph, which is the
- * rule DESIGN_RULES.md states for this card.
+ * rule DESIGN_RULES.md states for this card. The description lives on the
+ * company page, behind the same "Details" button the catalogue cards end in.
  */
 export async function KylTopPartners({
   partners,
@@ -104,13 +106,17 @@ export async function KylTopPartners({
                       </p>
                     )}
                     <h3>{partner.name}</h3>
-                    {partner.description && <p>{partner.description}</p>}
                     {partner.discount && <strong>{partner.discount}</strong>}
                     {partner.specialPrivileges && (
                       <strong className="partner-privileges">
                         {t("specialPrivileges")}
                       </strong>
                     )}
+                    {/* A span, not a button: the whole card is already the link. */}
+                    <span className="partner-more">
+                      {t("moreDetails")}
+                      <ArrowRight aria-hidden="true" />
+                    </span>
                   </div>
                 </Link>
               </KylReveal>

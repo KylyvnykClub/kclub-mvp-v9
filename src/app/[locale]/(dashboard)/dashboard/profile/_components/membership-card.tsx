@@ -119,29 +119,24 @@ export function MembershipCard({
             <div className="text-right">
               <p className="sr-only">{labels.serial}</p>
               <p
-                className="font-mono text-[max(12px,3.8cqw)] leading-tight tracking-[0.08em] whitespace-nowrap"
-                style={{ color: metal.value }}
+                className="font-mono text-[max(11px,3.2cqw)] leading-tight tracking-[0.1em] whitespace-nowrap"
+                style={{ color: metal.label }}
               >
                 {serial}
               </p>
-              <p
-                className="mt-[0.8cqw] flex items-center justify-end gap-[1.4cqw] text-[max(9px,2.4cqw)] font-semibold tracking-[0.14em] uppercase"
-                style={{ color: metal.label }}
-              >
-                <span
-                  className={`size-[1.8cqw] rounded-full ${
-                    valid
-                      ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.7)]"
-                      : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]"
-                  }`}
-                />
-                {labels.status}
-              </p>
+              {/* Only a revoked card says so: the reference card carries no
+                  status, and a valid one needs none. */}
+              {!valid && (
+                <p className="mt-[0.8cqw] flex items-center justify-end gap-[1.4cqw] text-[max(9px,2.4cqw)] font-semibold tracking-[0.14em] text-red-300 uppercase">
+                  <span className="size-[1.8cqw] rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
+                  {labels.status}
+                </p>
+              )}
             </div>
           </div>
 
           <p
-            className="mt-[2.6cqw] font-display text-[7.6cqw] leading-none font-semibold tracking-[0.07em] whitespace-nowrap"
+            className="mt-[3.4cqw] font-display text-[8cqw] leading-none font-normal tracking-[0.08em] whitespace-nowrap"
             style={inked}
           >
             KYLYVNYK CLUB
@@ -183,8 +178,12 @@ export function MembershipCard({
 
         {token && (
           <div
-            className="absolute right-[7cqw] bottom-[7cqw] w-[30cqw] rounded-[2.4cqw] p-[2.4cqw] shadow-[0_10px_24px_-8px_rgba(0,0,0,0.6)]"
-            style={{ backgroundColor: metal.tile }}
+            className="absolute right-[7cqw] bottom-[4.6cqw] w-[28cqw] rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]"
+            style={{
+              // A cream tile with a metal rim, as in the reference.
+              backgroundImage: `linear-gradient(160deg, #ffffff40, transparent 45%), linear-gradient(${metal.tile}, ${metal.tile})`,
+              borderColor: metal.frame,
+            }}
           >
             <CardQr token={token} locale={locale} />
           </div>
