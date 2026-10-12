@@ -22,6 +22,7 @@ import {
   getCompanyAdminDetailAction,
   hideCompanyAction,
   rejectCompanyChangesAction,
+  resyncListingPaymentAction,
   revokeCompanyListingWaiverAction,
   setCompanyShowcaseAction,
   staffEditCompanyAction,
@@ -463,6 +464,42 @@ export function CompanyDetailSheet({
               );
             })}
           </ul>
+        )}
+        {/* FR-116: for a payment whose Stripe event never reached us. */}
+        {canModerate && company.moderationStatus === "approved" && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {t("resyncHint")}
+              {waived && ` ${t("resyncWaivedHint")}`}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await resyncListingPaymentAction(companyId);
+                  if (!res.success) {
+                    toast.error(t("actionFailed", { error: res.error ?? "" }));
+                    return;
+                  }
+                  if (res.outcome === "not_paid") {
+                    toast.warning(t("resyncNotPaid"));
+                  } else {
+                    toast.success(
+                      res.outcome === "paid"
+                        ? t("resyncPaid")
+                        : t("resyncPaidPending"),
+                    );
+                  }
+                  load();
+                  router.refresh();
+                })
+              }
+              disabled={isPending}
+            >
+              {t("resync")}
+            </Button>
+          </div>
         )}
         {/* ADR 0041: the console's own waiver - publish without payment,
             or take that back. A rejected company is restored first. */}

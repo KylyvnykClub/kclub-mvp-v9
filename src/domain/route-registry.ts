@@ -366,6 +366,15 @@ const staticRoutes: RouteEntry[] = [
   },
   {
     method: "POST",
+    path: "action:resyncListingPaymentAction",
+    action: "approve",
+    subject: "company",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
+    method: "POST",
     path: "action:staffEditCompanyAction",
     action: "approve",
     subject: "company",

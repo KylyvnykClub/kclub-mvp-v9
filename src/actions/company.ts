@@ -65,12 +65,14 @@ import {
   LISTING_HOLD_SETTLE_TOPIC,
   productionListingHoldDeps,
   refundCapturedListingHolds,
+  resyncListingHoldsFromStripe,
   settleListingHolds,
 } from "@/modules/billing/listing-hold";
 import { listListingHoldsByCompany } from "@/data/listing-holds";
 import {
   holdIsCapturable,
   holdIsOpen,
+  holdPaysForListing,
   type ListingHoldAction,
 } from "@/domain/listing-hold";
 import {
@@ -1118,6 +1120,86 @@ export async function revokeCompanyListingWaiverAction(companyId: string) {
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
   return { success: true };
+}
+
+/**
+ * Re-read the company's captured listing payments from Stripe and project them
+ * as their webhooks would have (FR-116). For a capture whose event never
+ * arrived: the hold is recorded from Stripe's own state and the monthly
+ * subscription starts from the saved card. It grants nothing Stripe does not
+ * report (ADR 0004), and it never captures or refunds: only an approved
+ * company is resynced, and only money Stripe has already taken is projected.
+ */
+export async function resyncListingPaymentAction(companyId: string) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "approve", "company");
+
+  if (!z.string().uuid().safeParse(companyId).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
+  const company = await findCompanyById(db, companyId);
+  if (!company) return { success: false, error: "Company not found" };
+  // A rejected or hidden company would have a newly projected capture refunded
+  // by the projection; that is a moderation decision, not a repair.
+  if (company.moderationStatus !== "approved") {
+    return { success: false, error: "resync_needs_approved" };
+  }
+
+  const now = new Date();
+  try {
+    const projected = await resyncListingHoldsFromStripe(
+      db,
+      await productionListingHoldDeps(),
+      companyId,
+      now,
+    );
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_payment_resynced",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { projected },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[listing-hold] resync failed for ${companyId}: ${message}`);
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_payment_resync_failed",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { error: message },
+    });
+    return { success: false, error: "stripe_unavailable" };
+  }
+
+  // The projection settles on its own; this is the audited, retried pass a
+  // moderator's decision gets, so a Stripe failure here is queued too.
+  await settleListingHoldsForDecision(companyId, auth.member.id);
+
+  const holds = await listListingHoldsByCompany(db, companyId);
+  const paying = holds.filter((hold) => holdPaysForListing(hold, now));
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return {
+    success: true,
+    outcome:
+      paying.length === 0
+        ? ("not_paid" as const)
+        : paying.some((hold) => hold.stripeSubscriptionId !== null)
+          ? ("paid" as const)
+          : ("paid_subscription_pending" as const),
+  };
 }
 
 const staffEditCompanySchema = z.object({

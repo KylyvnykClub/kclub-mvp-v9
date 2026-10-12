@@ -22,6 +22,7 @@ import {
   openListingHoldCheckout,
   projectListingHold,
   refundCapturedListingHolds,
+  resyncListingHoldsFromStripe,
   settleListingHolds,
   type ListingHoldDeps,
 } from "@/modules/billing/listing-hold.js";
@@ -58,6 +59,7 @@ type Call = { op: string; id: string; key?: string };
 function fakeStripe() {
   const intents = new Map<string, Stripe.PaymentIntent>();
   const calls: Call[] = [];
+  const subscriptions: Stripe.SubscriptionCreateParams[] = [];
   let sequence = 0;
 
   const unexpected = () =>
@@ -146,18 +148,34 @@ function fakeStripe() {
     },
     createSubscription: (params, key) => {
       calls.push({ op: "subscription", id: String(params.customer), key });
+      subscriptions.push(params);
       expect(params.collection_method).toBe("charge_automatically");
       expect(params.default_payment_method).toBe("pm_test");
       return Promise.resolve({ id: "sub_listing_test" });
     },
     listingPriceId: () => Promise.resolve("price_listing"),
+    listCompanyPaymentIntents: () =>
+      Promise.resolve([...intents.values()].map((i) => structuredClone(i))),
   };
+
+  /** A capture made on Stripe's side, stamped the way Stripe stamps it. */
+  function captureInStripe(id: string, at: Date) {
+    const intent = intents.get(id)!;
+    intent.status = "succeeded";
+    (intent.latest_charge as Stripe.Charge).balance_transaction = {
+      id: `txn_${id}`,
+      object: "balance_transaction",
+      created: Math.floor(at.getTime() / 1000),
+    } as Stripe.BalanceTransaction;
+  }
 
   return {
     deps,
     calls,
+    subscriptions,
     intents,
     authorise,
+    captureInStripe,
     ops: (op: string) => calls.filter((c) => c.op === op),
     lapse: (id: string) => {
       intents.get(id)!.status = "canceled";
@@ -731,5 +749,83 @@ describe("FR-119: a club member's own company goes the same way", () => {
     expect(stripe.ops("capture")).toHaveLength(1);
     await projectListingHold(db(), stripe.deps, pi, nextEvent(), NOW);
     expect(await companyListingIsPaid(db(), companyId, NOW)).toBe(true);
+  });
+});
+
+describe("FR-116: staff resync a payment whose event never arrived", () => {
+  it("FR-116: a capture Stripe confirms is recorded at its own clock and the subscription starts", async () => {
+    const stripe = fakeStripe();
+    const { memberId, companyId } = await seedPartner();
+    const pi = stripe.authorise({ companyId, memberId });
+    await setCompanyModerationStatus(db(), companyId, "approved", null);
+
+    // Captured in Stripe; not one of its events was ever projected.
+    const capturedAt = new Date(NOW.getTime() + DAY);
+    stripe.captureInStripe(pi, capturedAt);
+    expect(await companyListingIsPaid(db(), companyId, NOW)).toBe(false);
+
+    const later = new Date(NOW.getTime() + 10 * DAY);
+    const results = await resyncListingHoldsFromStripe(
+      db(),
+      stripe.deps,
+      companyId,
+      later,
+    );
+
+    expect(results).toEqual([{ paymentIntentId: pi, result: "applied" }]);
+    const [hold] = await listListingHoldsByCompany(db(), companyId);
+    expect(hold?.status).toBe("succeeded");
+    expect(hold?.capturedAt?.toISOString()).toBe(capturedAt.toISOString());
+    expect(await companyListingIsPaid(db(), companyId, later)).toBe(true);
+
+    // One subscription, billed from the end of the month the capture paid.
+    expect(stripe.ops("subscription")).toHaveLength(1);
+    expect(stripe.subscriptions[0]?.billing_cycle_anchor).toBe(
+      Math.floor(hold!.coversUntil!.getTime() / 1000),
+    );
+
+    // Pressing it again asks Stripe for nothing new.
+    await resyncListingHoldsFromStripe(db(), stripe.deps, companyId, later);
+    expect(stripe.ops("subscription")).toHaveLength(1);
+    expect(stripe.ops("capture")).toHaveLength(0);
+  });
+
+  it("FR-116: an authorisation Stripe still holds is neither captured nor recorded, even when approved", async () => {
+    const stripe = fakeStripe();
+    const { memberId, companyId } = await seedPartner();
+    stripe.authorise({ companyId, memberId });
+    await setCompanyModerationStatus(db(), companyId, "approved", null);
+
+    const results = await resyncListingHoldsFromStripe(
+      db(),
+      stripe.deps,
+      companyId,
+      NOW,
+    );
+
+    expect(results).toEqual([]);
+    expect(await listListingHoldsByCompany(db(), companyId)).toEqual([]);
+    expect(await companyListingIsPaid(db(), companyId, NOW)).toBe(false);
+    expect(stripe.ops("capture")).toHaveLength(0);
+    expect(stripe.ops("subscription")).toHaveLength(0);
+  });
+
+  it("FR-116: another company's payment returned by the search is not projected here", async () => {
+    const stripe = fakeStripe();
+    const mine = await seedPartner();
+    const theirs = await seedPartner();
+    const pi = stripe.authorise(theirs);
+    stripe.captureInStripe(pi, NOW);
+
+    const results = await resyncListingHoldsFromStripe(
+      db(),
+      stripe.deps,
+      mine.companyId,
+      NOW,
+    );
+
+    expect(results).toEqual([]);
+    expect(await listListingHoldsByCompany(db(), mine.companyId)).toEqual([]);
+    expect(await listListingHoldsByCompany(db(), theirs.companyId)).toEqual([]);
   });
 });

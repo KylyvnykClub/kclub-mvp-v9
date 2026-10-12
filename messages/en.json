@@ -1502,6 +1502,12 @@
       "waiverRevoked": "Free listing withdrawn",
       "waiverOffHint": "Publish this listing without payment, for example when the partner paid outside the listing checkout.",
       "waiverOnHint": "This listing is free: it is in the catalogue while approved, with nothing charged.",
+      "resync": "Resync payment from Stripe",
+      "resyncHint": "Partner paid but the listing shows unpaid? This reads their captured listing payments from Stripe, marks the listing paid and starts the monthly subscription from the saved card, first billed when the paid month ends. It never charges or refunds a card.",
+      "resyncPaidPending": "Stripe confirms the payment: the listing is paid. The monthly subscription could not be started yet and will be retried.",
+      "resyncWaivedHint": "This listing is free: if Stripe holds a payment, a paid monthly subscription starts - revoke the waiver afterwards.",
+      "resyncPaid": "Stripe confirms the payment: the listing is paid and the monthly subscription is set up.",
+      "resyncNotPaid": "Stripe has no captured listing payment for this company within the last month.",
       "approveStartsFreeMonth": "The card is saved, not held. Approving publishes the listing and starts the free month; $19.99 is charged a month later unless the partner cancels.",
       "approveStartsSubscription": "The card is saved, not held. Approving publishes the listing and charges the first month - not before the EU consumer's 14 days have passed."
     },
