@@ -40,11 +40,14 @@ function SubmitButton({ label }: { label: string }) {
 export function LoginForm({
   google,
   providerError,
+  vip,
 }: {
   /** Whether this deployment has a Google client (ADR 0029). */
   google: boolean;
   /** A refusal code from the Google callback, or null. */
   providerError: string | null;
+  /** Came from a VIP sign-up: the way back to it keeps the plan (ADR 0043). */
+  vip: boolean;
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
@@ -219,13 +222,13 @@ export function LoginForm({
             {google && (
               <>
                 <AuthDivider />
-                <GoogleButton />
+                <GoogleButton vip={vip} />
               </>
             )}
             <div className="text-sm text-center text-muted-foreground">
               {t("noAccount")}{" "}
               <Link
-                href={`/${locale}/register`}
+                href={`/${locale}/register${vip ? "?plan=vip" : ""}`}
                 className="font-bold text-foreground hover:text-accent-ink"
               >
                 {t("registerLink")}

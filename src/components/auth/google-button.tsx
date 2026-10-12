@@ -10,17 +10,18 @@ import { useLocale, useTranslations } from "next-intl";
  * off-site with the cookies this needs set.
  *
  * The locale rides along so the member comes back to the language they left,
+ * and so does a VIP choice made before signing up (ADR 0043),
  * and the mark is inline SVG — Google's own asset would be a third-party
  * request on the sign-in page, which is exactly what the flags in this
  * codebase already avoid.
  */
-export function GoogleButton() {
+export function GoogleButton({ vip = false }: { vip?: boolean }) {
   const t = useTranslations("auth");
   const locale = useLocale();
 
   return (
     <a
-      href={`/api/auth/google/start?locale=${locale}`}
+      href={`/api/auth/google/start?locale=${locale}${vip ? "&plan=vip" : ""}`}
       className="flex h-12 w-full items-center justify-center gap-3 rounded-md border border-input bg-background text-xs font-bold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <GoogleMark />

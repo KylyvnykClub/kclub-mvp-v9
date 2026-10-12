@@ -81,7 +81,12 @@ export default async function MembershipDuesPage({
   // anyone inside the club is sent in, so this screen never asks them to pay.
   const now = new Date();
   if (!(await awaitsPaymentOutsideClub(db, current.member, now))) {
-    redirect(`/${locale}/dashboard/profile`);
+    // Inside the club already: VIP is sold on Billing (ADR 0043).
+    redirect(
+      vipFirst
+        ? `/${locale}/dashboard/profile?tab=billing`
+        : `/${locale}/dashboard/profile`,
+    );
   }
 
   const t = await getTranslations({ locale, namespace: "membership" });
