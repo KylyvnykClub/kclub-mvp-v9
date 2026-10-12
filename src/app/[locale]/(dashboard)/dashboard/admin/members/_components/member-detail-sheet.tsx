@@ -117,7 +117,12 @@ export function MemberDetailSheet({
         memberId: member.id,
         reason,
       });
-      if (!res.success) throw new Error(res.error ?? "");
+      if (!res.success)
+        throw new Error(
+          res.error === "renewals_not_stopped"
+            ? t("deleteRenewalsFailed")
+            : (res.error ?? ""),
+        );
     }, t("memberDeleted"));
   };
 
@@ -487,19 +492,19 @@ export function MemberDetailSheet({
 
           {/* FR-046: the same 30-day erasure a member can ask for, recorded
               by staff. Uses the reason field above. */}
-          {member.status !== "pending_deletion" && (
-            <Section title={t("deleteTitle")}>
-              <p className="text-sm text-muted-foreground">{t("deleteHint")}</p>
-              <Button
-                variant="destructive"
-                className="mt-3"
-                onClick={handleDelete}
-                disabled={isPending}
-              >
-                {t("deleteButton")}
-              </Button>
-            </Section>
-          )}
+          {/* Shown while pending too: pressing again finishes a deletion
+              whose Stripe step failed. */}
+          <Section title={t("deleteTitle")}>
+            <p className="text-sm text-muted-foreground">{t("deleteHint")}</p>
+            <Button
+              variant="destructive"
+              className="mt-3"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
+              {t("deleteButton")}
+            </Button>
+          </Section>
         </>
       )}
     </div>

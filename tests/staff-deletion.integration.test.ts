@@ -34,26 +34,27 @@ function db(): DbClient {
 const NOW = new Date("2026-10-12T12:00:00.000Z");
 const STAFF = { id: crypto.randomUUID(), role: "staff_admin" };
 
-const stripeCalls: string[] = [];
+// Plain objects, not a Proxy: a Proxy answers `then` too, and a promise
+// resolving to it would never settle.
+const unexpected = (name: string) => () =>
+  Promise.reject(new Error(`unexpected Stripe call: ${name}`));
 const fakeDeps = {
   holds: () =>
-    Promise.resolve(
-      new Proxy({} as ListingHoldDeps, {
-        get: (_target, name) => () => {
-          stripeCalls.push(String(name));
-          return Promise.resolve({});
-        },
-      }),
-    ),
+    Promise.resolve({
+      createCheckoutSession: unexpected("createCheckoutSession"),
+      retrievePrice: unexpected("retrievePrice"),
+      retrievePaymentIntent: unexpected("retrievePaymentIntent"),
+      capturePaymentIntent: unexpected("capturePaymentIntent"),
+      cancelPaymentIntent: unexpected("cancelPaymentIntent"),
+      refundPaymentIntent: unexpected("refundPaymentIntent"),
+      createSubscription: unexpected("createSubscription"),
+      listingPriceId: unexpected("listingPriceId"),
+    } as unknown as ListingHoldDeps),
   cancellation: () =>
-    Promise.resolve(
-      new Proxy({} as ListingCancellationDeps, {
-        get: (_target, name) => () => {
-          stripeCalls.push(String(name));
-          return Promise.resolve({});
-        },
-      }),
-    ),
+    Promise.resolve({
+      updateSubscription: unexpected("updateSubscription"),
+      cancelSubscription: unexpected("cancelSubscription"),
+    } as ListingCancellationDeps),
 };
 
 async function seedOwnerWithCompany(extra: { listingWaivedAt?: Date } = {}) {

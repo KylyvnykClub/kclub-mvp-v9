@@ -318,20 +318,23 @@ export async function staffDeleteMemberAction(input: {
 
   const target = await findMemberAdminById(db, memberId);
   if (!target) return { success: false, error: "not_found" };
-  if (target.status === "pending_deletion" || target.deletedAt) {
-    return { success: true, alreadyApplied: true };
-  }
+  if (target.deletedAt) return { success: true, alreadyApplied: true };
 
-  const active = await listActiveSubscriptionsForDeletion(db, memberId);
-  await requestAccountDeletionTx(
-    db,
-    memberId,
-    active.map((subscription) => ({
-      subscriptionId: subscription.id,
-      decision: "cancel" as const,
-    })),
-    { staffId: staff.id, staffRole: staff.role, reason },
-  );
+  // Already pending - asked for by the member, or a staff deletion that did
+  // not finish: the request stands and only the rest is carried out, so
+  // pressing again completes it.
+  if (target.status !== "pending_deletion") {
+    const active = await listActiveSubscriptionsForDeletion(db, memberId);
+    await requestAccountDeletionTx(
+      db,
+      memberId,
+      active.map((subscription) => ({
+        subscriptionId: subscription.id,
+        decision: "cancel" as const,
+      })),
+      { staffId: staff.id, staffRole: staff.role, reason },
+    );
+  }
 
   const now = new Date();
   for (const companyId of await listUndeletedCompanyIdsByOwner(db, memberId)) {
@@ -361,7 +364,7 @@ export async function staffDeleteMemberAction(input: {
       });
     }
   } catch (error) {
-    // The deletion stands; erasure on day 30 cancels whatever still renews.
+    // The deletion stands; pressing again retries this step.
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(
       `[member-deletion] renewal stop failed for ${memberId}: ${message}`,
@@ -374,11 +377,19 @@ export async function staffDeleteMemberAction(input: {
       subjectId: memberId,
       meta: { error: message },
     });
-    return { success: true, renewalsStopped: false };
+    revalidateAfterDeletion();
+    // Told plainly, so staff press again: a renewal inside the 30 days would
+    // otherwise bill a member they deleted.
+    return { success: false, error: "renewals_not_stopped" };
   }
 
+  revalidateAfterDeletion();
+  return { success: true };
+}
+
+function revalidateAfterDeletion() {
+  revalidatePath("/");
   revalidatePath("/dashboard/admin/members");
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
-  return { success: true, renewalsStopped: true };
 }
