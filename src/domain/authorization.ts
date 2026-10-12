@@ -239,6 +239,19 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     subject: "member",
     check: (a) => staffAtLeast(a, "staff_admin"),
   },
+  // FR-046 / data-storage.md §4: staff record a deletion. The member goes
+  // through the same 30-day erasure as one who asked for it; a company is
+  // soft-deleted at once, with its moderation history kept.
+  {
+    action: "delete",
+    subject: "member",
+    check: (a) => staffAtLeast(a, "staff_admin"),
+  },
+  {
+    action: "delete",
+    subject: "company",
+    check: (a) => staffAtLeast(a, "staff_admin"),
+  },
   // Resetting a password is account takeover by another name: whoever does it
   // can then sign in as that member. Held at owner while the manual flow is the
   // only recovery path (ADR 0018), which is deliberately temporary.

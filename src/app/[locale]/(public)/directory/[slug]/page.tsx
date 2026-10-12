@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { PartnerHero } from "./_components/partner-hero";
+import { localizedDescription } from "@/lib/company-description";
 import { FilledImage } from "@/components/media/filled-image";
 import {
   PartnerBusinessData,
@@ -59,7 +60,7 @@ export async function generateMetadata(
 
   const title = t("partnerMetaTitle", { name: partner.name });
   const description =
-    partner.description?.substring(0, 160) ||
+    localizedDescription(partner, locale)?.substring(0, 160) ||
     t("partnerMetaDescription", { name: partner.name });
 
   return {
@@ -275,7 +276,7 @@ export default async function PartnerLandingPage({ params }: Props) {
         data={partnerLd({
           name: partner.name,
           slug: partner.slug,
-          description: partner.description,
+          description: localizedDescription(partner, locale),
           website: partner.website,
           logoUrl: partner.logoUrl,
           country: partner.country,
@@ -344,7 +345,7 @@ export default async function PartnerLandingPage({ params }: Props) {
               <section>
                 <SectionHeader label={tc("aboutSection")} />
                 <p className="mt-4 whitespace-pre-wrap text-base leading-7 text-foreground">
-                  {partner.description || tc("noDescription")}
+                  {localizedDescription(partner, locale) || tc("noDescription")}
                 </p>
               </section>
 
@@ -588,6 +589,7 @@ export default async function PartnerLandingPage({ params }: Props) {
               <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3">
                 {similar.map((peer) => (
                   <PartnerCard
+                    locale={locale}
                     key={peer.id}
                     partner={peer}
                     href={`/${locale}/directory/${peer.slug}`}

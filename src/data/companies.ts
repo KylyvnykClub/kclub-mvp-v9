@@ -1,3 +1,4 @@
+import type { DescriptionTranslations } from "./schema/companies";
 import {
   and,
   asc,
@@ -1058,7 +1059,8 @@ const COMPANY_ADMIN_RELATIONS = {
  * can never apply to one and not the other.
  */
 function companyAdminWhere(filters: CompanyAdminFilters): SQL | undefined {
-  const conditions: SQL[] = [];
+  // Deleted companies leave the console's list; their history stays in audit.
+  const conditions: SQL[] = [isNull(companies.deletedAt)];
 
   if (filters.query) {
     const pattern = `%${filters.query}%`;
@@ -1079,7 +1081,7 @@ function companyAdminWhere(filters: CompanyAdminFilters): SQL | undefined {
     conditions.push(eq(companies.moderationStatus, filters.status));
   }
 
-  return conditions.length > 0 ? and(...conditions) : undefined;
+  return and(...conditions);
 }
 
 /**
@@ -1214,6 +1216,8 @@ export async function setCompanyModerationStatus(
   // ADR 0044: an application its owner withdrew is closed. No approval or
   // restore may reopen it - that would capture a hold the owner took back.
   if (precondition) conditions.push(isNull(companies.withdrawnAt));
+  // A deleted company is never published again, by any path.
+  if (status === "approved") conditions.push(isNull(companies.deletedAt));
   if (precondition?.kind === "capturable_hold") {
     conditions.push(companyReadyForReview(precondition.now));
   } else if (precondition?.kind === "restorable") {
@@ -1347,6 +1351,7 @@ export async function updateCompanyFields(
   fields: Partial<{
     name: string;
     description: string | null;
+    descriptionTranslations: DescriptionTranslations;
     discount: string | null;
     contactEmail: string | null;
     contactPhone: string | null;
@@ -1363,7 +1368,8 @@ export async function updateCompanyFields(
 
 export async function listCompaniesByOwner(db: DbClient, ownerId: string) {
   return db.query.companies.findMany({
-    where: eq(companies.ownerId, ownerId),
+    // A company staff deleted is gone for its owner too (FR-046).
+    where: and(eq(companies.ownerId, ownerId), isNull(companies.deletedAt)),
     // Oldest first, so "the partner's company" is the same row on every read.
     orderBy: [asc(companies.createdAt), asc(companies.id)],
     with: {
@@ -1560,4 +1566,41 @@ export async function memberHasWaivedApprovedListing(
     )
     .limit(1);
   return row !== undefined;
+}
+
+/**
+ * Staff delete a company (FR-046): rejected and marked deleted in one
+ * statement, so it leaves the catalogue, the console and every approval path
+ * at once. Returns false when it was already deleted or does not exist.
+ */
+export async function softDeleteCompany(
+  db: DbClient,
+  companyId: string,
+  reason: string,
+  now: Date,
+): Promise<boolean> {
+  const changed = await db
+    .update(companies)
+    .set({
+      deletedAt: now,
+      moderationStatus: "rejected",
+      rejectionReason: reason,
+      showcaseType: "none",
+      updatedAt: now,
+    })
+    .where(and(eq(companies.id, companyId), isNull(companies.deletedAt)))
+    .returning({ id: companies.id });
+  return changed.length > 0;
+}
+
+/** Live (not deleted) companies a member owns, for deleting them with the member. */
+export async function listUndeletedCompanyIdsByOwner(
+  db: DbClient,
+  ownerId: string,
+): Promise<string[]> {
+  const rows = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(and(eq(companies.ownerId, ownerId), isNull(companies.deletedAt)));
+  return rows.map((row) => row.id);
 }

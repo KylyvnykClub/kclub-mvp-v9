@@ -212,6 +212,7 @@ export default async function CatalogueDirectoryPage({
             ) : (
               partners.map((partner) => (
                 <PartnerCard
+                  locale={locale}
                   key={partner.id}
                   partner={partner}
                   href={`/${locale}/directory/${partner.slug}`}

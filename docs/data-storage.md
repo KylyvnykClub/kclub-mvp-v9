@@ -2,7 +2,7 @@
 
 > **Status:** In review
 > **Owner:** KCLUB Delivery Lead
-> **Last updated:** 2026-08-19
+> **Last updated:** 2026-10-12
 > **Write when:** the first schema exists.
 
 What data the system holds, where it lives, how it changes shape over time, and
@@ -241,13 +241,17 @@ so that reading it in a diff is enough to notice.
 **User deletion request.** The full procedure, in order, and it must be run end
 to end — a deletion that stops at the primary database is not a deletion:
 
-1. Member requests deletion in the member area, or support records a request.
-   The request is logged with its timestamp; the 30-day clock starts.
+1. Member requests deletion in the member area, or staff (admin and above)
+   record a request from the console with a reason (FR-046). The request is
+   logged with its timestamp; the 30-day clock starts. A staff-recorded request
+   also stops every renewal in Stripe at once and deletes the member's
+   companies, so nothing is billed or published during the window.
 2. Sessions are revoked and sign-in is blocked immediately, so the account
    cannot be used during the window.
 3. On day 30 an Inngest job runs the erasure: anonymise the member row; delete
    sessions, trusted devices, verification records and the card's QR token;
-   delete or anonymise owned companies (unpublishing any that are live);
+   soft-delete owned companies (`companies.deleted_at`, rejected, contact
+   details cleared — which unpublishes any that are live, a waived one too);
    hard-delete any referral contact data they submitted; and hard-delete their
    inbox ([ADR 0020](decisions/0020-member-inbox.md)) — **explicitly**, because
    step 3 anonymises the member row rather than deleting it, so the

@@ -68,22 +68,22 @@
     }
   ],
   "lastSession": {
-    "date": "2026-10-09",
+    "date": "2026-10-12",
     "checklist": [
-      "Club card redesigned after the owner's video: brushed metal, crown, KYLYVNYK CLUB wordmark, QR on a light tile",
-      "Three card faces: member (gold), VIP member (onyx), business partner (sapphire, shown to anyone with a live listing; VIP shown alongside)",
-      "Card serial is now phone country + club-wide sequence from 10001 (UA-10001); old cards are renumbered automatically by a data-migration step in the production build, each with an audit entry",
-      "Every visible KCLUB renamed to KYLYVNYK CLUB (locales, headers, PWA name, Stripe descriptions, email sender default)",
-      "Landing catalogue cards: description hidden, Details button added",
-      "Long subscribe button label wraps on phones instead of overflowing",
-      "Fresh-agent review of the serial change done, its findings fixed; pnpm verify green (863 unit)"
+      "Staff can resync a captured listing payment from Stripe and start its monthly subscription (Century 21 Circle case)",
+      "Catalogue filter finds partners by registration country and city; taxonomy shown in the reader's language; 183 Ukrainian subcategory names fixed and synced on deploy",
+      "VIP choice survives sign-up, Google, password login and the landing link",
+      "Staff can delete members (30-day erasure, renewals stopped at once) and companies (soft delete, never restored)",
+      "Card faces: member platinum, VIP onyx, business gold with company name, logo and discount; same card on the company page; landing card switcher",
+      "Landing h1 names Kylyvnyk Club; titled error page; landing no longer crashes when the catalogue is closed",
+      "Partners can add their description in EN/UK/RU (ADR 0046)"
     ],
-    "stoppedAt": "All changes uncommitted on feat/FR-021-card-design-serial; integration tests and real-app walk not run (Docker off).",
+    "stoppedAt": "Seven branches pushed, none merged; integration tests and a browser walk not run (Docker Desktop was off, .env.local points at the docker database)",
     "nextSteps": [
-      "Start Docker, run pnpm test:integration (cards, identity-card-tokens, registration) and pnpm db:updownup",
-      "Run pnpm db:renumber-cards --apply on the dev database and check the result before the production deploy",
-      "After the production deploy: check the build log for '[data] FR-020 card serials' and that no card still starts with KCLUB-",
-      "Check EMAIL_FROM in Vercel still says KCLUB and change the sender name there"
+      "Start Docker, run pnpm test:integration and a browser walk on each branch",
+      "Open PRs and merge in order; feat/staff-delete-member-company before feat/company-content-locales (migrations 44 then 45)",
+      "After deploy: press Resync payment for Century 21 Circle before 2026-11-02, then revoke its waiver",
+      "Owner tasks: add sitemap to Google Search Console, confirm Stripe webhook subscribes to payment_intent.*"
     ]
   }
 }

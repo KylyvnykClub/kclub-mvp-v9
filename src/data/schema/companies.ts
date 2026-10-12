@@ -10,6 +10,11 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { baseColumns } from "./columns";
+
+/** A partner's own description per locale (ADR 0046). */
+export type DescriptionTranslations = Partial<
+  Record<"en" | "ru" | "uk", string>
+>;
 import { inviteLinks } from "./invite-links";
 import { joinLinks } from "./join-links";
 import { members } from "./members";
@@ -65,6 +70,16 @@ export const companies = pgTable("companies", {
   specializationDescription: varchar("specialization_description", {
     length: 500,
   }),
+  /**
+   * The description in the club's other languages, written by the partner
+   * (ADR 0046): `description` is what they wrote first, this holds the
+   * versions they added. Read in the visitor's locale, falling back to
+   * `description`. Never machine-translated.
+   */
+  descriptionTranslations: jsonb("description_translations")
+    .$type<DescriptionTranslations>()
+    .notNull()
+    .default({}),
   servesWorldwide: integer("serves_worldwide").notNull().default(0),
 
   // Partner / B2B specific fields
@@ -85,6 +100,12 @@ export const companies = pgTable("companies", {
     .default("pending")
     .notNull(),
   rejectionReason: text("rejection_reason"),
+  /**
+   * Deleted by staff, or with its owner's erasure (data-storage.md §4). A soft
+   * delete: the row and its moderation history stay, the company is rejected
+   * at the same moment, and it can never be approved or restored again.
+   */
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 
   // Showcase
   showcaseType: showcaseTypeEnum("showcase_type").default("none").notNull(),

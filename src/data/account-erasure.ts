@@ -169,6 +169,24 @@ export async function eraseMemberTx(
     // companies; none of it survives them (ADR 0020).
     await tx.delete(notifications).where(eq(notifications.memberId, memberId));
 
+    // Owned companies leave the catalogue for good (data-storage.md §4,
+    // step 3): soft-deleted and rejected, with the contact details - a
+    // person's phone and address as often as a business's - cleared. Without
+    // this a waived listing, which has no subscription for the Stripe
+    // cancellation to end, stayed live under an erased owner.
+    await tx
+      .update(companies)
+      .set({
+        deletedAt: sql`coalesce(${companies.deletedAt}, ${now.toISOString()}::timestamptz)`,
+        moderationStatus: "rejected",
+        rejectionReason: "Owner erased",
+        contactEmail: null,
+        contactPhone: null,
+        showcaseType: "none",
+        updatedAt: now,
+      })
+      .where(eq(companies.ownerId, memberId));
+
     // Gallery rows for owned companies (ADR 0022). Companies are anonymised
     // above rather than deleted, so the ON DELETE CASCADE on
     // company_images.company_id never fires - same trap as notifications.

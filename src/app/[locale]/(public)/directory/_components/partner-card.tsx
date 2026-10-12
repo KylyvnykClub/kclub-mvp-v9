@@ -1,4 +1,6 @@
 import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+
+import { localizedDescription } from "@/lib/company-description";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -36,8 +38,11 @@ export function PartnerCard({
   noDescription,
   detailsLabel,
   specialPrivilegesLabel,
+  locale,
 }: {
   partner: PartnerCompanyView;
+  /** Picks the partner's description in the reader's language (ADR 0046). */
+  locale: string;
   href: string;
   view: "grid" | "list";
   noDescription: string;
@@ -46,7 +51,7 @@ export function PartnerCard({
   specialPrivilegesLabel?: string;
 }) {
   const location = locationLabel(partner);
-  const description = partner.description || noDescription;
+  const description = localizedDescription(partner, locale) || noDescription;
   const initial = partner.name.charAt(0).toUpperCase();
 
   const media = (

@@ -61,6 +61,9 @@ export const COMPANY_FIELD_ORDER = [
   "taxId",
   "website",
   "description",
+  "descriptionEn",
+  "descriptionUk",
+  "descriptionRu",
   "specializationDescription",
   "discount",
   "specialPrivileges",
@@ -317,6 +320,32 @@ export function CompanyFields({
             onChange={(e) => set("description", e.target.value)}
           />
         </Field>
+
+        {/* ADR 0046: the club speaks three languages, so the description can
+            too - each version optional, written by the partner, never
+            machine-translated. Visitors read the one in their language. */}
+        <div className="space-y-3 border border-border p-4">
+          <p className="text-sm text-muted-foreground">
+            {t("descriptionTranslationsHint")}
+          </p>
+          {(
+            [
+              ["descriptionEn", "descriptionEnLabel"],
+              ["descriptionUk", "descriptionUkLabel"],
+              ["descriptionRu", "descriptionRuLabel"],
+            ] as const
+          ).map(([field, label]) => (
+            <Field key={field} id={field} label={t(label)}>
+              <Textarea
+                id={field}
+                value={values[field] ?? ""}
+                rows={3}
+                maxLength={1000}
+                onChange={(e) => set(field, e.target.value)}
+              />
+            </Field>
+          ))}
+        </div>
 
         <Field
           id="specializationDescription"

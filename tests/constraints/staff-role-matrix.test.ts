@@ -36,6 +36,23 @@ type MatrixEntry = {
 };
 
 const matrix: MatrixEntry[] = [
+  // FR-046: deleting a member or a company is an admin decision
+  {
+    action: "delete",
+    subject: "member",
+    support: false,
+    moderator: false,
+    admin: true,
+    owner: true,
+  },
+  {
+    action: "delete",
+    subject: "company",
+    support: false,
+    moderator: false,
+    admin: true,
+    owner: true,
+  },
   // Read permissions — support and above
   {
     action: "read",
@@ -283,7 +300,7 @@ describe("constraint: staff role matrix (security.md §2)", () => {
 
     it("a new action not in the matrix defaults to denied for all roles", () => {
       for (const { actor, label } of allStaff) {
-        const allowed = can(actor, "delete", "member");
+        const allowed = can(actor, "delete", "audit_log");
         expect(
           allowed,
           `${label} should be denied an unregistered action`,

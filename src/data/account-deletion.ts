@@ -10,10 +10,18 @@ export type DeletionSubscriptionChoice = {
   decision: "cancel" | "keep";
 };
 
+/** Staff recording the request for the member (data-storage.md §4). */
+export type DeletionRequestedBy = {
+  staffId: string;
+  staffRole: string;
+  reason: string;
+};
+
 export async function requestAccountDeletionTx(
   db: Db,
   memberId: string,
   choices: DeletionSubscriptionChoice[],
+  requestedBy?: DeletionRequestedBy,
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const activeSubscriptions = await listActiveSubscriptionsForDeletion(
@@ -61,12 +69,18 @@ export async function requestAccountDeletionTx(
     await deleteSessionsByMemberId(tx, memberId);
 
     await appendAuditEntry(tx, {
-      actorType: "member",
-      actorId: memberId,
+      actorType: requestedBy ? requestedBy.staffRole : "member",
+      actorId: requestedBy ? requestedBy.staffId : memberId,
       action: "member.deletion_requested",
       subjectType: "member",
       subjectId: memberId,
-      meta: { subscriptionChoices: choices },
+      meta: requestedBy
+        ? {
+            subscriptionChoices: choices,
+            by: "staff",
+            reason: requestedBy.reason,
+          }
+        : { subscriptionChoices: choices },
       ip: "unknown",
     });
   });
