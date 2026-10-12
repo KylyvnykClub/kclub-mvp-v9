@@ -112,10 +112,10 @@ export function MembershipCard({
 }: MembershipCardProps) {
   const metal = METALS[face];
   const business = face === "business" && company !== null;
-  // The company's card carries no serial: it is the company's, not a
-  // person's, and its QR opens the company page. Its corner holds the
-  // discount instead.
+  // On the company's card the corner holds the discount, so the serial
+  // moves under the QR (the owner's call).
   const shownSerial = business ? null : serial;
+  const serialUnderQr = business ? serial : null;
   const inked: CSSProperties = {
     backgroundImage: metal.ink,
     WebkitBackgroundClip: "text",
@@ -242,16 +242,31 @@ export function MembershipCard({
           </div>
         </div>
 
-        {qrUrl && (
-          <div
-            className="absolute right-[7cqw] bottom-[4.6cqw] w-[28cqw] rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]"
-            style={{
-              // A cream tile with a metal rim, as in the reference.
-              backgroundImage: `linear-gradient(160deg, #ffffff40, transparent 45%), linear-gradient(${metal.tile}, ${metal.tile})`,
-              borderColor: metal.frame,
-            }}
-          >
-            <CardQr url={qrUrl} />
+        {(qrUrl || serialUnderQr) && (
+          <div className="absolute right-[7cqw] bottom-[4.6cqw] flex flex-col items-center gap-[1.2cqw]">
+            {qrUrl && (
+              <div
+                className={`${serialUnderQr ? "w-[25cqw]" : "w-[28cqw]"} rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]`}
+                style={{
+                  // A cream tile with a metal rim, as in the reference.
+                  backgroundImage: `linear-gradient(160deg, #ffffff40, transparent 45%), linear-gradient(${metal.tile}, ${metal.tile})`,
+                  borderColor: metal.frame,
+                }}
+              >
+                <CardQr url={qrUrl} />
+              </div>
+            )}
+            {serialUnderQr && (
+              <>
+                <p className="sr-only">{labels.serial}</p>
+                <p
+                  className="font-mono text-[max(10px,2.8cqw)] leading-none tracking-[0.1em] whitespace-nowrap"
+                  style={{ color: metal.label }}
+                >
+                  {serialUnderQr}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
