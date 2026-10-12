@@ -74,7 +74,7 @@ export default async function MembershipDuesPage({
 
   const current = await getCurrentMember();
   if (!current?.member) {
-    redirect(`/${locale}/login`);
+    redirect(`/${locale}/login${vipFirst ? "?plan=vip" : ""}`);
   }
 
   // The same rule as every other gate, staff exemption included (ADR 0007):

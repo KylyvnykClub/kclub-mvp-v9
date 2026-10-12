@@ -81,13 +81,19 @@ export function LoginForm({
   );
 
   useEffect(() => {
-    // If login is fully successful and doesn't require TOTP, go to dashboard
+    // A VIP choice goes through the dues screen, which offers VIP first to an
+    // unpaid member and forwards a paid one to Billing (ADR 0043). Straight to
+    // the dashboard, its gate would bounce an unpaid member there without it.
+    const destination = vip
+      ? `/${locale}/membership?plan=vip`
+      : `/${locale}/dashboard/profile`;
+    // If login is fully successful and doesn't require TOTP, go on
     if (loginState.success && !loginState.requiresTotp) {
-      router.push(`/${locale}/dashboard/profile`);
+      router.push(destination);
     }
-    // If TOTP verification is successful, go to dashboard
+    // If TOTP verification is successful, go on
     if (totpState.success) {
-      router.push(`/${locale}/dashboard/profile`);
+      router.push(destination);
     }
   }, [
     loginState.success,
@@ -95,6 +101,7 @@ export function LoginForm({
     totpState.success,
     locale,
     router,
+    vip,
   ]);
 
   if (loginState.requiresTotp) {
