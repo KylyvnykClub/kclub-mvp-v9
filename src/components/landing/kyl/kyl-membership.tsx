@@ -2,7 +2,10 @@ import Image from "next/image";
 import { BriefcaseBusiness, Gem, UsersRound } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { KylCardSwitcher } from "./kyl-card-switcher";
 import { KylReveal } from "./kyl-reveal";
+
+import { env } from "@/env";
 
 import { Link } from "@/i18n/navigation";
 import { monthlyPrice, type PricedPlan } from "@/domain/pricing";
@@ -66,7 +69,9 @@ const PLANS = [
 
 export async function KylMembership({ member }: { member: boolean }) {
   const t = await getTranslations("home.kyl.membership");
+  const tCard = await getTranslations("card");
   const locale = await getLocale();
+  const appUrl = env.client.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
 
   return (
     <section
@@ -93,36 +98,44 @@ export async function KylMembership({ member }: { member: boolean }) {
           <div className="hero-orbit hero-orbit-outer" aria-hidden="true" />
           <div className="hero-orbit hero-orbit-inner" aria-hidden="true" />
           <div className="hero-card-back" aria-hidden="true" />
-          <article
-            className="club-card hero-club-card"
-            aria-label={t("passLabel")}
-          >
-            <div className="hero-card-grain" aria-hidden="true" />
-            <div className="hero-card-pattern" aria-hidden="true" />
-            <div className="card-top">
-              <span>Kylyvnyk Club</span>
-              <span>{t("cardKind")}</span>
-            </div>
-            <div className="hero-card-mark">
-              <Image
-                src="/brand/logo/crown-gold-logo.png"
-                alt=""
-                width={36}
-                height={34}
-              />
-            </div>
-            <div className="hero-card-title">
-              {t("cardTitleLine1")}
-              <br />
-              {t("cardTitleLine2")}
-            </div>
-            <div className="hero-card-divider" aria-hidden="true">
-              <span>✦</span>
-            </div>
-            <div className="card-bottom">
-              <span>{t("cardFooter")}</span>
-            </div>
-          </article>
+          <KylCardSwitcher
+            tabsLabel={t("cardTabsLabel")}
+            qrUrl={appUrl}
+            labels={{
+              holder: tCard("holder"),
+              membership: tCard("membershipType"),
+              serial: tCard("serial"),
+              status: tCard("statusValid"),
+              company: tCard("company"),
+              discount: tCard("discount"),
+            }}
+            samples={[
+              {
+                face: "member",
+                tab: t("member.name"),
+                holder: t("sampleHolder"),
+                membershipLabel: tCard("tierFree"),
+                company: null,
+              },
+              {
+                face: "vip",
+                tab: t("vip.name"),
+                holder: t("sampleHolder"),
+                membershipLabel: tCard("tierVip"),
+                company: null,
+              },
+              {
+                face: "business",
+                tab: t("business.name"),
+                holder: t("sampleHolder"),
+                membershipLabel: tCard("tierBusiness"),
+                company: {
+                  name: t("sampleCompany"),
+                  discount: t("sampleDiscount"),
+                },
+              },
+            ]}
+          />
         </KylReveal>
       </div>
 

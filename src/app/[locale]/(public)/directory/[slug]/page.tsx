@@ -21,6 +21,8 @@ import {
 import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { PartnerHero } from "./_components/partner-hero";
 import { localizedDescription } from "@/lib/company-description";
+import { MembershipCard } from "@/components/card/membership-card";
+import { env } from "@/env";
 import { FilledImage } from "@/components/media/filled-image";
 import {
   PartnerBusinessData,
@@ -130,6 +132,7 @@ export default async function PartnerLandingPage({ params }: Props) {
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
   const tCompany = await getTranslations("company");
+  const tCard = await getTranslations("card");
 
   const localizedCountry = partner.registrationCountryCode
     ? countryName(partner.registrationCountryCode, locale as Locale)
@@ -323,19 +326,38 @@ export default async function PartnerLandingPage({ params }: Props) {
             since={tc("partnerSince", {
               year: partner.createdAt.getFullYear(),
             })}
-            conditions={
+            card={
+              <MembershipCard
+                face="business"
+                holder={partner.name}
+                membershipLabel={tCard("tierBusiness")}
+                serial={null}
+                company={{
+                  name: partner.name,
+                  logoSrc: partner.logoUrl
+                    ? `${partner.logoUrl}?v=${partner.updatedAt.getTime()}`
+                    : null,
+                  // The discount itself is public (ADR 0034) - it is the
+                  // reason to join. How to redeem it stays behind sign-in.
+                  discount: partner.discount,
+                }}
+                qrUrl={`${env.client.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/${locale}/directory/${partner.slug}`}
+                valid
+                labels={{
+                  holder: tCard("holder"),
+                  membership: tCard("membershipType"),
+                  serial: tCard("serial"),
+                  status: tCard("statusValid"),
+                  company: tCard("company"),
+                  discount: tCard("discount"),
+                }}
+              />
+            }
+            cardNote={
               partner.discount
-                ? {
-                    title: tc("conditionsTitle"),
-                    // The discount itself is public (ADR 0034) — it is the
-                    // reason to join, and the catalogue card already shows it.
-                    // What stays behind sign-in is how to redeem it and who to
-                    // contact, below.
-                    value: partner.discount,
-                    note: isResident
-                      ? tc("conditionsNote")
-                      : tc("conditionsLockedNote"),
-                  }
+                ? isResident
+                  ? tc("conditionsNote")
+                  : tc("conditionsLockedNote")
                 : null
             }
           />
