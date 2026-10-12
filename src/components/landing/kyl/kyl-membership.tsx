@@ -47,7 +47,11 @@ const PLANS = [
     Icon: Gem,
     className: "plan-card plan-featured",
     // VIP includes membership (ADR 0043): the dues screen offers it first.
-    signedIn: "/dashboard/profile?tab=billing",
+    // Through /membership even for a paid member, which forwards them to
+    // Billing: a member whose dues are unpaid sent straight to the dashboard
+    // is bounced by its gate to /membership without the plan, and is then
+    // offered plain membership first.
+    signedIn: "/membership?plan=vip",
     signedOut: "/register?plan=vip",
   },
   {

@@ -46,6 +46,7 @@ const OAUTH_COOKIES = [
   "google_oauth_state",
   "google_oauth_verifier",
   "google_oauth_locale",
+  "google_oauth_plan",
 ] as const;
 
 export async function GET(request: NextRequest) {
@@ -59,6 +60,10 @@ export async function GET(request: NextRequest) {
   const safeLocale = (routing.locales as readonly string[]).includes(locale)
     ? locale
     : routing.defaultLocale;
+  // A VIP choice made before signing in or up (ADR 0043): a new member is
+  // sent to register with it, a known one to the dues screen, which offers
+  // VIP first or forwards a paid member to Billing.
+  const vip = request.cookies.get("google_oauth_plan")?.value === "vip";
 
   const back = (reason: string) =>
     clear(
@@ -122,7 +127,7 @@ export async function GET(request: NextRequest) {
       ? // The address is spoken for by an account that never proved it. Not a
         // sign-in, and not a new registration either.
         back("google_no_match")
-      : startRegistration(request, safeLocale, identity);
+      : startRegistration(request, safeLocale, vip, identity);
   }
 
   if (isStaffRole(normalizeRole(member.role))) {
@@ -161,7 +166,12 @@ export async function GET(request: NextRequest) {
 
   const response = clear(
     NextResponse.redirect(
-      new URL(`/${safeLocale}/dashboard/profile`, request.url),
+      new URL(
+        vip
+          ? `/${safeLocale}/membership?plan=vip`
+          : `/${safeLocale}/dashboard/profile`,
+        request.url,
+      ),
     ),
   );
 
@@ -193,6 +203,7 @@ export async function GET(request: NextRequest) {
 function startRegistration(
   request: NextRequest,
   locale: string,
+  vip: boolean,
   identity: {
     subject: string;
     email: string;
@@ -200,7 +211,9 @@ function startRegistration(
   },
 ): NextResponse {
   const response = clear(
-    NextResponse.redirect(new URL(`/${locale}/register`, request.url)),
+    NextResponse.redirect(
+      new URL(`/${locale}/register${vip ? "?plan=vip" : ""}`, request.url),
+    ),
   );
 
   response.cookies.set(

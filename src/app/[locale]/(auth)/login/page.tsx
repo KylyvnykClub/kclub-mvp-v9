@@ -20,16 +20,20 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; plan?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   // Set by the Google callback when it refuses (ADR 0029). A code, not a
   // message: the message is chosen by the client in the member's language.
-  const { error } = await searchParams;
+  const { error, plan } = await searchParams;
 
   return (
-    <LoginForm google={await googleEnabled()} providerError={error ?? null} />
+    <LoginForm
+      google={await googleEnabled()}
+      providerError={error ?? null}
+      vip={plan === "vip"}
+    />
   );
 }

@@ -445,7 +445,7 @@ export function RegisterFlow({
                     <p className="mt-1 text-muted-foreground">
                       {t("haveAccount")}{" "}
                       <Link
-                        href={`/${locale}/login`}
+                        href={`/${locale}/login${vip ? "?plan=vip" : ""}`}
                         className="font-bold text-foreground hover:text-accent-ink"
                       >
                         {t("loginLink")}
@@ -611,7 +611,7 @@ export function RegisterFlow({
               {google && !googleEmail && (
                 <>
                   <AuthDivider />
-                  <GoogleButton />
+                  <GoogleButton vip={vip} />
                 </>
               )}
             </form>
@@ -621,7 +621,7 @@ export function RegisterFlow({
           <p className="text-sm text-muted-foreground">
             {t("haveAccount")}{" "}
             <Link
-              href={`/${locale}/login`}
+              href={`/${locale}/login${vip ? "?plan=vip" : ""}`}
               className="font-bold text-foreground hover:text-accent-ink"
             >
               {t("loginLink")}

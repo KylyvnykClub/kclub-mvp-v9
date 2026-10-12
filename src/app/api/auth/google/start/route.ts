@@ -48,6 +48,9 @@ export async function GET(request: NextRequest) {
     // Where to come back to, so a member who started in Ukrainian is not
     // returned to an English screen.
     ["google_oauth_locale", readLocale(request)],
+    // The plan picked before signing up, so a VIP choice survives the round
+    // trip and the dues screen offers VIP first (ADR 0043).
+    ["google_oauth_plan", readPlan(request)],
   ] as const) {
     response.cookies.set(name, value, {
       httpOnly: true,
@@ -59,6 +62,11 @@ export async function GET(request: NextRequest) {
   }
 
   return response;
+}
+
+/** Only "vip" means anything; anything else is the default plan. */
+function readPlan(request: NextRequest): string {
+  return request.nextUrl.searchParams.get("plan") === "vip" ? "vip" : "";
 }
 
 /** The locale the member was on, or the default if the caller made one up. */

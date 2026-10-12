@@ -40,11 +40,14 @@ function SubmitButton({ label }: { label: string }) {
 export function LoginForm({
   google,
   providerError,
+  vip,
 }: {
   /** Whether this deployment has a Google client (ADR 0029). */
   google: boolean;
   /** A refusal code from the Google callback, or null. */
   providerError: string | null;
+  /** Came from a VIP sign-up: the way back to it keeps the plan (ADR 0043). */
+  vip: boolean;
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
@@ -78,13 +81,19 @@ export function LoginForm({
   );
 
   useEffect(() => {
-    // If login is fully successful and doesn't require TOTP, go to dashboard
+    // A VIP choice goes through the dues screen, which offers VIP first to an
+    // unpaid member and forwards a paid one to Billing (ADR 0043). Straight to
+    // the dashboard, its gate would bounce an unpaid member there without it.
+    const destination = vip
+      ? `/${locale}/membership?plan=vip`
+      : `/${locale}/dashboard/profile`;
+    // If login is fully successful and doesn't require TOTP, go on
     if (loginState.success && !loginState.requiresTotp) {
-      router.push(`/${locale}/dashboard/profile`);
+      router.push(destination);
     }
-    // If TOTP verification is successful, go to dashboard
+    // If TOTP verification is successful, go on
     if (totpState.success) {
-      router.push(`/${locale}/dashboard/profile`);
+      router.push(destination);
     }
   }, [
     loginState.success,
@@ -92,6 +101,7 @@ export function LoginForm({
     totpState.success,
     locale,
     router,
+    vip,
   ]);
 
   if (loginState.requiresTotp) {
@@ -219,13 +229,13 @@ export function LoginForm({
             {google && (
               <>
                 <AuthDivider />
-                <GoogleButton />
+                <GoogleButton vip={vip} />
               </>
             )}
             <div className="text-sm text-center text-muted-foreground">
               {t("noAccount")}{" "}
               <Link
-                href={`/${locale}/register`}
+                href={`/${locale}/register${vip ? "?plan=vip" : ""}`}
                 className="font-bold text-foreground hover:text-accent-ink"
               >
                 {t("registerLink")}
