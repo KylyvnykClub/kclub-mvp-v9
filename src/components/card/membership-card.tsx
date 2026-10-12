@@ -112,6 +112,10 @@ export function MembershipCard({
 }: MembershipCardProps) {
   const metal = METALS[face];
   const business = face === "business" && company !== null;
+  // The company's card carries no serial: it is the company's, not a
+  // person's, and its QR opens the company page. Its corner holds the
+  // discount instead.
+  const shownSerial = business ? null : serial;
   const inked: CSSProperties = {
     backgroundImage: metal.ink,
     WebkitBackgroundClip: "text",
@@ -139,16 +143,34 @@ export function MembershipCard({
           <div className="flex items-start justify-between">
             <Crown ink={metal.ink} face={face} />
             <div className="text-right">
-              {serial && (
+              {shownSerial && (
                 <>
                   <p className="sr-only">{labels.serial}</p>
                   <p
                     className="font-mono text-[max(11px,3.2cqw)] leading-tight tracking-[0.1em] whitespace-nowrap"
                     style={{ color: metal.label }}
                   >
-                    {serial}
+                    {shownSerial}
                   </p>
                 </>
+              )}
+              {/* The members' discount sits top right on the company's
+                  card, beside the crown: lower down it crowded the name. */}
+              {business && company.discount && (
+                <div>
+                  <p
+                    className="text-[max(9px,2.3cqw)] tracking-[0.06em]"
+                    style={{ color: metal.label }}
+                  >
+                    {labels.discount}
+                  </p>
+                  <p
+                    className="mt-[0.4cqw] max-w-[40cqw] truncate font-display text-[7cqw] leading-none"
+                    style={inked}
+                  >
+                    {company.discount}
+                  </p>
+                </div>
               )}
               {/* Only a revoked card says so: the reference card carries no
                   status, and a valid one needs none. */}
@@ -173,23 +195,6 @@ export function MembershipCard({
             style={{ backgroundImage: metal.ink }}
           />
 
-          {business && company.discount && (
-            <div className="mt-[2.6cqw] max-w-[58cqw] min-w-0">
-              <p
-                className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
-                style={{ color: metal.label }}
-              >
-                {labels.discount}
-              </p>
-              <p
-                className="mt-[0.4cqw] truncate font-display text-[6.4cqw] leading-none"
-                style={inked}
-              >
-                {company.discount}
-              </p>
-            </div>
-          )}
-
           <div className="mt-auto max-w-[58cqw] min-w-0">
             <p
               className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
@@ -201,7 +206,7 @@ export function MembershipCard({
               <div className="mt-[0.8cqw] flex min-w-0 items-center gap-[2cqw]">
                 <CompanyMark company={company} metal={metal} />
                 <p
-                  className="truncate text-[4.6cqw] leading-tight font-medium"
+                  className="line-clamp-2 min-w-0 text-[4.2cqw] leading-[1.15] font-medium break-words"
                   style={{ color: metal.value }}
                 >
                   {company.name}

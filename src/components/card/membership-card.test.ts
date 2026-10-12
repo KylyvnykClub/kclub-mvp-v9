@@ -44,6 +44,8 @@ describe("FR-021: club card faces", () => {
     // No membership line on the company's card (owner's call, 2026-10-12).
     expect(html).not.toContain("Membership");
     expect(html).not.toContain("Business partner");
+    // The company's card is not a person's: no serial on it.
+    expect(html).not.toContain("UA-10001");
   });
 
   it("FR-021: member and VIP cards keep their membership line", () => {
