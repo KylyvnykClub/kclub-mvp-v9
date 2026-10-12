@@ -22,6 +22,8 @@ import {
   getCompanyAdminDetailAction,
   hideCompanyAction,
   rejectCompanyChangesAction,
+  resyncListingPaymentAction,
+  staffDeleteCompanyAction,
   revokeCompanyListingWaiverAction,
   setCompanyShowcaseAction,
   staffEditCompanyAction,
@@ -135,11 +137,14 @@ export function CompanyDetailSheet({
   companyId,
   companyName,
   canModerate,
+  canDelete = false,
   triggerLabel,
 }: {
   companyId: string;
   companyName: string;
   canModerate: boolean;
+  /** FR-046: staff admin and above. */
+  canDelete?: boolean;
   /** Row button text; the list says "Review" for a pending company. */
   triggerLabel?: string;
 }) {
@@ -157,11 +162,15 @@ export function CompanyDetailSheet({
     description: "",
     contactEmail: "",
     contactPhone: "",
+    descriptionEn: "",
+    descriptionUk: "",
+    descriptionRu: "",
   });
   const [showcaseType, setShowcaseType] = useState<"none" | "top" | "featured">(
     "none",
   );
   const [showcaseRank, setShowcaseRank] = useState("0");
+  const [deleteReason, setDeleteReason] = useState("");
 
   const load = () => {
     startTransition(async () => {
@@ -178,6 +187,9 @@ export function CompanyDetailSheet({
         description: res.data.company.description ?? "",
         contactEmail: res.data.company.contactEmail ?? "",
         contactPhone: res.data.company.contactPhone ?? "",
+        descriptionEn: res.data.company.descriptionTranslations?.en ?? "",
+        descriptionUk: res.data.company.descriptionTranslations?.uk ?? "",
+        descriptionRu: res.data.company.descriptionTranslations?.ru ?? "",
       });
       setShowcaseType(res.data.company.showcaseType);
       setShowcaseRank(String(res.data.company.showcaseRank));
@@ -327,6 +339,26 @@ export function CompanyDetailSheet({
           disabled={!canModerate}
         />
       </div>
+      {/* ADR 0046: the partner's own versions, entered on their behalf. */}
+      {(
+        [
+          ["descriptionEn", "descriptionEnLabel"],
+          ["descriptionUk", "descriptionUkLabel"],
+          ["descriptionRu", "descriptionRuLabel"],
+        ] as const
+      ).map(([field, label]) => (
+        <div key={field} className="space-y-2">
+          <Label htmlFor={`${field}-${companyId}`}>{t(label)}</Label>
+          <Textarea
+            id={`${field}-${companyId}`}
+            rows={3}
+            maxLength={1000}
+            value={edit[field]}
+            onChange={(e) => setEdit({ ...edit, [field]: e.target.value })}
+            disabled={!canModerate}
+          />
+        </div>
+      ))}
       <div className="space-y-2">
         <Label htmlFor={`email-${companyId}`}>{t("contactEmailLabel")}</Label>
         <Input
@@ -433,6 +465,45 @@ export function CompanyDetailSheet({
         </div>
       </Section>
 
+      {/* FR-046: staff delete a company; it never comes back. */}
+      {canDelete && (
+        <Section title={t("deleteTitle")}>
+          <p className="text-sm text-muted-foreground">{t("deleteHint")}</p>
+          <Input
+            className="mt-3"
+            value={deleteReason}
+            onChange={(event) => setDeleteReason(event.target.value)}
+            placeholder={t("deleteReasonPlaceholder")}
+            aria-label={t("deleteReasonPlaceholder")}
+          />
+          <Button
+            variant="destructive"
+            size="sm"
+            className="mt-3"
+            disabled={isPending || deleteReason.trim().length < 3}
+            onClick={() => {
+              if (!window.confirm(t("deleteConfirm", { name: company.name })))
+                return;
+              startTransition(async () => {
+                const res = await staffDeleteCompanyAction({
+                  companyId,
+                  reason: deleteReason,
+                });
+                if (!res.success) {
+                  toast.error(t("actionFailed", { error: res.error ?? "" }));
+                  return;
+                }
+                toast.success(t("companyDeleted"));
+                setOpen(false);
+                router.refresh();
+              });
+            }}
+          >
+            {t("deleteButton")}
+          </Button>
+        </Section>
+      )}
+
       <Section title={t("paymentTitle")}>
         {detail.holds.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("holdNone")}</p>
@@ -463,6 +534,42 @@ export function CompanyDetailSheet({
               );
             })}
           </ul>
+        )}
+        {/* FR-116: for a payment whose Stripe event never reached us. */}
+        {canModerate && company.moderationStatus === "approved" && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {t("resyncHint")}
+              {waived && ` ${t("resyncWaivedHint")}`}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await resyncListingPaymentAction(companyId);
+                  if (!res.success) {
+                    toast.error(t("actionFailed", { error: res.error ?? "" }));
+                    return;
+                  }
+                  if (res.outcome === "not_paid") {
+                    toast.warning(t("resyncNotPaid"));
+                  } else {
+                    toast.success(
+                      res.outcome === "paid"
+                        ? t("resyncPaid")
+                        : t("resyncPaidPending"),
+                    );
+                  }
+                  load();
+                  router.refresh();
+                })
+              }
+              disabled={isPending}
+            >
+              {t("resync")}
+            </Button>
+          </div>
         )}
         {/* ADR 0041: the console's own waiver - publish without payment,
             or take that back. A rejected company is restored first. */}

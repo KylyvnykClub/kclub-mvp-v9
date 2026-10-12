@@ -50,6 +50,11 @@ export const companyDetailsSchema = z.object({
   // Owner decision 2026-09-29: an application says what the business offers
   // members and how to reach it - the catalogue card is empty without them.
   description: multiline(z.string().trim().min(20).max(1000)),
+  // ADR 0046: the same description in the club's languages, each optional,
+  // written by the partner. Shown in the visitor's language when present.
+  descriptionEn: multiline(z.string().trim().max(1000)).optional(),
+  descriptionUk: multiline(z.string().trim().max(1000)).optional(),
+  descriptionRu: multiline(z.string().trim().max(1000)).optional(),
   specializationDescription: multiline(
     z.string().min(2, "Specialization description is required").max(500),
   ),
@@ -155,6 +160,9 @@ export const COMPANY_FIELD_LABEL_KEYS: Record<string, string> = {
   website: "websiteLabel",
   logoUrl: "logoLabel",
   description: "descriptionLabel",
+  descriptionEn: "descriptionEnLabel",
+  descriptionUk: "descriptionUkLabel",
+  descriptionRu: "descriptionRuLabel",
   specializationDescription: "specializationLabel",
   businessCategoryIds: "subcategoryLabel",
   registrationCountryCode: "registrationCountryLabel",

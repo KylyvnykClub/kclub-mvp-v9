@@ -22,6 +22,7 @@ import {
 import {
   blockMemberAction,
   resetMemberPasswordAction,
+  staffDeleteMemberAction,
   revokeCardAction,
   reissueCardAction,
 } from "@/actions/admin-members";
@@ -102,6 +103,27 @@ export function MemberDetailSheet({
         toast.error(errorMessage(err));
       }
     });
+  };
+
+  const handleDelete = () => {
+    if (reason.trim().length < 3) {
+      toast.error(t("reasonRequiredDelete"));
+      return;
+    }
+    if (!window.confirm(t("deleteConfirm", { name: member.displayName ?? "" })))
+      return;
+    runAction(async () => {
+      const res = await staffDeleteMemberAction({
+        memberId: member.id,
+        reason,
+      });
+      if (!res.success)
+        throw new Error(
+          res.error === "renewals_not_stopped"
+            ? t("deleteRenewalsFailed")
+            : (res.error ?? ""),
+        );
+    }, t("memberDeleted"));
   };
 
   const isBlocked = member.status === "blocked";
@@ -466,6 +488,22 @@ export function MemberDetailSheet({
                 </Button>
               </div>
             </div>
+          </Section>
+
+          {/* FR-046: the same 30-day erasure a member can ask for, recorded
+              by staff. Uses the reason field above. */}
+          {/* Shown while pending too: pressing again finishes a deletion
+              whose Stripe step failed. */}
+          <Section title={t("deleteTitle")}>
+            <p className="text-sm text-muted-foreground">{t("deleteHint")}</p>
+            <Button
+              variant="destructive"
+              className="mt-3"
+              onClick={handleDelete}
+              disabled={isPending}
+            >
+              {t("deleteButton")}
+            </Button>
           </Section>
         </>
       )}

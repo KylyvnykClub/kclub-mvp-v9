@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { SendReferralDialog } from "./_components/send-referral-dialog";
 import { PartnerHero } from "./_components/partner-hero";
+import { localizedDescription } from "@/lib/company-description";
+import { MembershipCard } from "@/components/card/membership-card";
+import { env } from "@/env";
 import { FilledImage } from "@/components/media/filled-image";
 import {
   PartnerBusinessData,
@@ -29,7 +32,10 @@ import { HowToSteps, SectionHeader } from "./_components/partner-sections";
 import { PartnerCard } from "../_components/partner-card";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
-import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
+import {
+  listApprovedCompaniesWithSubscriptionsByOwner,
+  listLocalizedCategoryLabels,
+} from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { countryFlag, countryName } from "@/lib/countries";
 import { flagSrc } from "@/components/landing/kyl/partner-presentation";
@@ -56,7 +62,7 @@ export async function generateMetadata(
 
   const title = t("partnerMetaTitle", { name: partner.name });
   const description =
-    partner.description?.substring(0, 160) ||
+    localizedDescription(partner, locale)?.substring(0, 160) ||
     t("partnerMetaDescription", { name: partner.name });
 
   return {
@@ -126,6 +132,7 @@ export default async function PartnerLandingPage({ params }: Props) {
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
   const tCompany = await getTranslations("company");
+  const tCard = await getTranslations("card");
 
   const localizedCountry = partner.registrationCountryCode
     ? countryName(partner.registrationCountryCode, locale as Locale)
@@ -138,13 +145,31 @@ export default async function PartnerLandingPage({ params }: Props) {
     on_site_service: tCompany("businessFormatOnSite"),
   } as const;
 
-  const taxonomy = partner.categories?.[0]?.businessCategory;
+  // The taxonomy in the reader's language; the English row is the fallback
+  // for an entry the translations table does not cover.
+  const categoryIds = (partner.categories ?? [])
+    .map((c) => c.businessCategory?.id)
+    .filter((id): id is number => typeof id === "number");
+  const localizedLabels = new Map(
+    (await listLocalizedCategoryLabels(db, locale as Locale, categoryIds)).map(
+      (row) => [row.id, row],
+    ),
+  );
+  const localized = (partner.categories ?? [])
+    .map((c) =>
+      c.businessCategory
+        ? (localizedLabels.get(c.businessCategory.id) ?? c.businessCategory)
+        : null,
+    )
+    .filter((c) => c !== null);
+
+  const taxonomy = localized[0];
   const taxonomyLabel =
     [taxonomy?.category, taxonomy?.subcategory].filter(Boolean).join(" · ") ||
     null;
 
-  const subcategories = (partner.categories ?? [])
-    .map((c) => c.businessCategory?.subcategory)
+  const subcategories = localized
+    .map((c) => c.subcategory)
     .filter((s): s is string => Boolean(s));
 
   // The cover is the first uploaded photo and the gallery is the rest, so a
@@ -254,7 +279,7 @@ export default async function PartnerLandingPage({ params }: Props) {
         data={partnerLd({
           name: partner.name,
           slug: partner.slug,
-          description: partner.description,
+          description: localizedDescription(partner, locale),
           website: partner.website,
           logoUrl: partner.logoUrl,
           country: partner.country,
@@ -301,19 +326,38 @@ export default async function PartnerLandingPage({ params }: Props) {
             since={tc("partnerSince", {
               year: partner.createdAt.getFullYear(),
             })}
-            conditions={
+            card={
+              <MembershipCard
+                face="business"
+                holder={partner.name}
+                membershipLabel={tCard("tierBusiness")}
+                serial={null}
+                company={{
+                  name: partner.name,
+                  logoSrc: partner.logoUrl
+                    ? `${partner.logoUrl}?v=${partner.updatedAt.getTime()}`
+                    : null,
+                  // The discount itself is public (ADR 0034) - it is the
+                  // reason to join. How to redeem it stays behind sign-in.
+                  discount: partner.discount,
+                }}
+                qrUrl={`${env.client.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/${locale}/directory/${partner.slug}`}
+                valid
+                labels={{
+                  holder: tCard("holder"),
+                  membership: tCard("membershipType"),
+                  serial: tCard("serial"),
+                  status: tCard("statusValid"),
+                  company: tCard("company"),
+                  discount: tCard("discount"),
+                }}
+              />
+            }
+            cardNote={
               partner.discount
-                ? {
-                    title: tc("conditionsTitle"),
-                    // The discount itself is public (ADR 0034) — it is the
-                    // reason to join, and the catalogue card already shows it.
-                    // What stays behind sign-in is how to redeem it and who to
-                    // contact, below.
-                    value: partner.discount,
-                    note: isResident
-                      ? tc("conditionsNote")
-                      : tc("conditionsLockedNote"),
-                  }
+                ? isResident
+                  ? tc("conditionsNote")
+                  : tc("conditionsLockedNote")
                 : null
             }
           />
@@ -323,7 +367,7 @@ export default async function PartnerLandingPage({ params }: Props) {
               <section>
                 <SectionHeader label={tc("aboutSection")} />
                 <p className="mt-4 whitespace-pre-wrap text-base leading-7 text-foreground">
-                  {partner.description || tc("noDescription")}
+                  {localizedDescription(partner, locale) || tc("noDescription")}
                 </p>
               </section>
 
@@ -567,6 +611,7 @@ export default async function PartnerLandingPage({ params }: Props) {
               <div className="grid gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3">
                 {similar.map((peer) => (
                   <PartnerCard
+                    locale={locale}
                     key={peer.id}
                     partner={peer}
                     href={`/${locale}/directory/${peer.slug}`}

@@ -9,8 +9,11 @@ import type { CardFace } from "@/domain/card-face";
  * the membership and the serial, with the QR on a light tile. The serial sits
  * top right, clear of the QR, so a long membership name never runs into it.
  *
- * The three faces - member, VIP member, business partner - share the gold
- * of the reference and differ only in the membership printed on them.
+ * Each face has its own metal (the owner's call): a business partner keeps
+ * the reference's gold, a VIP member wears onyx with bright gold, a member
+ * brushed platinum. A business partner's card is the company's: its name and
+ * logo stand where the holder's name would, with the members' discount, and
+ * the QR opens the company page.
  *
  * Sized in container units, so the text keeps its proportion from a phone to
  * the desktop column. Text and QR have floors for legibility at arm's length
@@ -28,14 +31,34 @@ interface Metal {
   tile: string;
 }
 
-/** The reference's brushed gold. Every face wears it (the owner's call). */
-const GOLD: Metal = {
-  base: "linear-gradient(115deg, #2a2013 0%, #5c4727 20%, #2b2013 38%, #74592f 56%, #2e2314 74%, #4d3b21 100%)",
-  ink: "linear-gradient(180deg, #f6e2a4 0%, #d4b064 50%, #a07c3b 100%)",
-  frame: "rgba(232, 200, 130, 0.32)",
-  label: "rgba(232, 208, 156, 0.72)",
-  value: "#f6eddb",
-  tile: "#f4ecd6",
+const METALS: Record<CardFace, Metal> = {
+  /** Brushed platinum. */
+  member: {
+    base: "linear-gradient(115deg, #2b2e33 0%, #6b7079 20%, #33363c 38%, #8a8f98 56%, #383b41 74%, #5a5e66 100%)",
+    ink: "linear-gradient(180deg, #ffffff 0%, #d9dde3 50%, #9aa1ab 100%)",
+    frame: "rgba(222, 228, 236, 0.34)",
+    label: "rgba(226, 231, 238, 0.74)",
+    value: "#f6f7f9",
+    tile: "#eef0f3",
+  },
+  /** Onyx with bright gold. */
+  vip: {
+    base: "linear-gradient(120deg, #040404 0%, #1b1b1b 26%, #080808 46%, #262626 62%, #060606 100%)",
+    ink: "linear-gradient(180deg, #fff3c4 0%, #e6bf5e 48%, #b2862b 100%)",
+    frame: "rgba(230, 191, 94, 0.55)",
+    label: "rgba(230, 200, 130, 0.7)",
+    value: "#fbf3df",
+    tile: "#f7efd6",
+  },
+  /** The reference's brushed gold. */
+  business: {
+    base: "linear-gradient(115deg, #2a2013 0%, #5c4727 20%, #2b2013 38%, #74592f 56%, #2e2314 74%, #4d3b21 100%)",
+    ink: "linear-gradient(180deg, #f6e2a4 0%, #d4b064 50%, #a07c3b 100%)",
+    frame: "rgba(232, 200, 130, 0.32)",
+    label: "rgba(232, 208, 156, 0.72)",
+    value: "#f6eddb",
+    tile: "#f4ecd6",
+  },
 };
 
 /** Brushed grain, the lathe rings and one diagonal sheen, over any metal. */
@@ -45,11 +68,23 @@ const FINISH = [
   "repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px)",
 ].join(", ");
 
+/** What a business partner's card carries in place of a person. */
+export interface CardCompany {
+  name: string;
+  /** The logo's served path, or null for the name's initial. */
+  logoSrc: string | null;
+  /** The members' discount, as the partner wrote it. */
+  discount: string | null;
+}
+
 export interface MembershipCardProps {
   face: CardFace;
   holder: string;
   membershipLabel: string;
-  serial: string;
+  /** Null on a card that belongs to no one yet (a sample, a company page). */
+  serial: string | null;
+  /** On the business face: the company, shown instead of the holder. */
+  company?: CardCompany | null;
   /** What the QR opens; null draws no QR. */
   qrUrl: string | null;
   valid: boolean;
@@ -58,6 +93,10 @@ export interface MembershipCardProps {
     membership: string;
     serial: string;
     status: string;
+    /** The label over the company name on the business face. */
+    company?: string;
+    /** The label over the discount on the business face. */
+    discount?: string;
   };
 }
 
@@ -66,11 +105,13 @@ export function MembershipCard({
   holder,
   membershipLabel,
   serial,
+  company = null,
   qrUrl,
   valid,
   labels,
 }: MembershipCardProps) {
-  const metal = GOLD;
+  const metal = METALS[face];
+  const business = face === "business" && company !== null;
   const inked: CSSProperties = {
     backgroundImage: metal.ink,
     WebkitBackgroundClip: "text",
@@ -98,13 +139,17 @@ export function MembershipCard({
           <div className="flex items-start justify-between">
             <Crown ink={metal.ink} face={face} />
             <div className="text-right">
-              <p className="sr-only">{labels.serial}</p>
-              <p
-                className="font-mono text-[max(11px,3.2cqw)] leading-tight tracking-[0.1em] whitespace-nowrap"
-                style={{ color: metal.label }}
-              >
-                {serial}
-              </p>
+              {serial && (
+                <>
+                  <p className="sr-only">{labels.serial}</p>
+                  <p
+                    className="font-mono text-[max(11px,3.2cqw)] leading-tight tracking-[0.1em] whitespace-nowrap"
+                    style={{ color: metal.label }}
+                  >
+                    {serial}
+                  </p>
+                </>
+              )}
               {/* Only a revoked card says so: the reference card carries no
                   status, and a valid one needs none. */}
               {!valid && (
@@ -128,19 +173,48 @@ export function MembershipCard({
             style={{ backgroundImage: metal.ink }}
           />
 
+          {business && company.discount && (
+            <div className="mt-[2.6cqw] max-w-[58cqw] min-w-0">
+              <p
+                className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
+                style={{ color: metal.label }}
+              >
+                {labels.discount}
+              </p>
+              <p
+                className="mt-[0.4cqw] truncate font-display text-[6.4cqw] leading-none"
+                style={inked}
+              >
+                {company.discount}
+              </p>
+            </div>
+          )}
+
           <div className="mt-auto max-w-[58cqw] min-w-0">
             <p
               className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
               style={{ color: metal.label }}
             >
-              {labels.holder}
+              {business ? labels.company : labels.holder}
             </p>
-            <p
-              className="mt-[0.6cqw] truncate text-[4.6cqw] leading-tight font-medium"
-              style={{ color: metal.value }}
-            >
-              {holder}
-            </p>
+            {business ? (
+              <div className="mt-[0.8cqw] flex min-w-0 items-center gap-[2cqw]">
+                <CompanyMark company={company} metal={metal} />
+                <p
+                  className="truncate text-[4.6cqw] leading-tight font-medium"
+                  style={{ color: metal.value }}
+                >
+                  {company.name}
+                </p>
+              </div>
+            ) : (
+              <p
+                className="mt-[0.6cqw] truncate text-[4.6cqw] leading-tight font-medium"
+                style={{ color: metal.value }}
+              >
+                {holder}
+              </p>
+            )}
 
             <p
               className="mt-[3.2cqw] text-[max(10px,2.5cqw)] tracking-[0.06em]"
@@ -171,6 +245,35 @@ export function MembershipCard({
         )}
       </div>
     </div>
+  );
+}
+
+/** The company's logo on a small tile, or its initial when it has none. */
+function CompanyMark({
+  company,
+  metal,
+}: {
+  company: CardCompany;
+  metal: Metal;
+}) {
+  return (
+    <span
+      className="flex size-[9cqw] shrink-0 items-center justify-center overflow-hidden rounded-[1.6cqw] border"
+      style={{ borderColor: metal.frame, backgroundColor: metal.tile }}
+    >
+      {company.logoSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element -- our own served path, sized by the card
+        <img
+          src={company.logoSrc}
+          alt=""
+          className="size-full object-contain p-[0.8cqw]"
+        />
+      ) : (
+        <span className="font-display text-[4.6cqw] leading-none text-[#14110b]">
+          {company.name.slice(0, 1).toUpperCase()}
+        </span>
+      )}
+    </span>
   );
 }
 

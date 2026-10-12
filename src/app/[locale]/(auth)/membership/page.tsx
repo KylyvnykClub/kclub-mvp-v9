@@ -74,14 +74,19 @@ export default async function MembershipDuesPage({
 
   const current = await getCurrentMember();
   if (!current?.member) {
-    redirect(`/${locale}/login`);
+    redirect(`/${locale}/login${vipFirst ? "?plan=vip" : ""}`);
   }
 
   // The same rule as every other gate, staff exemption included (ADR 0007):
   // anyone inside the club is sent in, so this screen never asks them to pay.
   const now = new Date();
   if (!(await awaitsPaymentOutsideClub(db, current.member, now))) {
-    redirect(`/${locale}/dashboard/profile`);
+    // Inside the club already: VIP is sold on Billing (ADR 0043).
+    redirect(
+      vipFirst
+        ? `/${locale}/dashboard/profile?tab=billing`
+        : `/${locale}/dashboard/profile`,
+    );
   }
 
   const t = await getTranslations({ locale, namespace: "membership" });

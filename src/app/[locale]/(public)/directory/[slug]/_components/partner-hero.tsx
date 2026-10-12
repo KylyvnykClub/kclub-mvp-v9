@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { FilledImage } from "@/components/media/filled-image";
 
 /**
@@ -7,16 +9,16 @@ import { FilledImage } from "@/components/media/filled-image";
  * tokens inside resolve to the dark set without affecting the rest of the page.
  *
  * The cover is the partner's banner and the page gives it the room (ADR 0038):
- * shown whole, never cropped, filling the panel. The panel is 3:1 from `sm`
- * up - the shape the upload hint asks for, so a banner made to it fills the
- * panel edge to edge - and any other shape is filled by `FilledImage`. The
- * copy is in normal flow over it, with `min-h` as the floor, so nothing
- * overlaps at any width.
+ * shown whole, never cropped, filling the panel, whatever its shape
+ * (`FilledImage`). The copy and the card are in normal flow over it, with
+ * `min-h` as the floor, so nothing overlaps at any width.
  *
- * Only the country's flag sits on the banner, and neither the logo nor the
- * name is printed over it: the owner asked for the banner to carry the
- * partner's own image, not ours on top of it. The name stays the page's `h1`
- * for screen readers and search engines, visually hidden.
+ * The country's flag sits on the banner, and under the short description the
+ * company's own club card (FR-021): its logo, name, the members' discount and
+ * a QR to this page. The owner asked for the card here, in place of the
+ * conditions box it replaces - the card carries the same discount. The name
+ * stays the page's `h1` for screen readers and search engines, visually
+ * hidden. The panel grows past 3:1 when the card needs the room.
  */
 export function PartnerHero({
   name,
@@ -26,7 +28,8 @@ export function PartnerHero({
   location,
   taxonomy,
   since,
-  conditions,
+  card,
+  cardNote,
 }: {
   name: string;
   coverSrc: string | null;
@@ -35,7 +38,10 @@ export function PartnerHero({
   location: string | null;
   taxonomy: string | null;
   since: string;
-  conditions: { title: string; value: string; note: string } | null;
+  /** The company's business card. */
+  card: ReactNode;
+  /** How the discount is redeemed, under the card; null without one. */
+  cardNote: string | null;
 }) {
   return (
     <div className="dark relative mt-8 overflow-hidden rounded-xl border border-border bg-zinc-950 text-white">
@@ -52,7 +58,7 @@ export function PartnerHero({
         aria-hidden="true"
       />
 
-      <div className="relative flex min-h-56 flex-col gap-6 p-4 sm:aspect-[3/1] sm:min-h-72 sm:p-8">
+      <div className="relative flex min-h-56 flex-col gap-6 p-4 sm:min-h-72 sm:p-8 lg:min-h-96">
         <h1 className="sr-only">{name}</h1>
 
         {country && (
@@ -71,7 +77,7 @@ export function PartnerHero({
           </span>
         )}
 
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-7 gap-y-5">
+        <div className="mt-auto flex flex-col items-start gap-5">
           <div className="min-w-0">
             {location && (
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">
@@ -86,22 +92,12 @@ export function PartnerHero({
             )}
           </div>
 
-          {conditions && (
-            <div
-              className="flex flex-col items-end gap-1.5 rounded-lg border border-accent-ink bg-black/70 px-4 py-3.5"
-              style={{ boxShadow: "var(--glow-gold)" }}
-            >
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-ink">
-                {conditions.title}
-              </span>
-              <span className="font-mono text-2xl leading-none text-white">
-                {conditions.value}
-              </span>
-              <span className="text-right text-[11px] text-white/55">
-                {conditions.note}
-              </span>
-            </div>
-          )}
+          <div className="flex w-full max-w-[320px] flex-col gap-2">
+            {card}
+            {cardNote && (
+              <span className="text-[11px] text-white/70">{cardNote}</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

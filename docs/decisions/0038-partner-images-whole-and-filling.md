@@ -78,3 +78,11 @@ to change if the treatment changes.
   with a 3:1 banner and a free-shape logo.
 - Page weight on the catalogue shows up in the performance budget
   (requirements.md §5.1) - then serve a resized variant per surface.
+
+## Amendment (2026-10-12)
+
+The owner asked for the company's own club card on the banner, under the short
+description, in place of the "terms for members" box: the card carries the
+logo, the name, the members' discount and a QR to the page (FR-021). The
+banner is still shown whole; the panel grows past 3:1 when the card needs the
+room. The name is still the page's visually hidden `h1`.

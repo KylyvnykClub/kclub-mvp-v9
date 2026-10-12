@@ -242,6 +242,39 @@ describe("FR-031: filter the catalogue by category, country and city", () => {
     ).toEqual([local]);
   });
 
+  it("FR-031: finds a company in the country it is registered in, with no service-country rows, and by its city", async () => {
+    const db = testDbClient();
+    const registeredOnly = await seedPartner(db, {
+      registrationCountryCode: "US",
+      country: "US",
+      city: "Tampa Bay area",
+      businessFormat: "offline_only",
+      servesWorldwide: 0,
+    });
+    const elsewhere = await seedPartner(db, {
+      registrationCountryCode: "UA",
+      servesWorldwide: 0,
+      serviceCountryCodes: ["UA"],
+    });
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, [registeredOnly, elsewhere], {
+          serviceCountryCode: "US",
+        })
+      ).map((row) => row.id),
+    ).toEqual([registeredOnly]);
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, [registeredOnly, elsewhere], {
+          serviceCountryCode: "US",
+          city: "tampa bay area",
+        })
+      ).map((row) => row.id),
+    ).toEqual([registeredOnly]);
+  });
+
   it("returns an empty page rather than everything when a filter matches nothing", async () => {
     const db = testDbClient();
     const partner = await seedPartner(db, { city: "Kyiv" });

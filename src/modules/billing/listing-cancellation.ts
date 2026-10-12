@@ -1,6 +1,9 @@
 import type Stripe from "stripe";
 
-import { listSubscriptionsByCompanyId } from "@/data/billing";
+import {
+  listActiveSubscriptionsForDeletion,
+  listSubscriptionsByCompanyId,
+} from "@/data/billing";
 import type { DbClient } from "@/data/db";
 import { LISTING_PUBLISHABLE_STATUSES } from "@/domain/subscription-access";
 
@@ -108,4 +111,28 @@ export async function productionListingCancellationDeps(): Promise<ListingCancel
         { idempotencyKey },
       ),
   };
+}
+
+/**
+ * A member deleted by staff stops renewing at once (data-storage.md §4): every
+ * live subscription is set to end at its period end, so no renewal falls in
+ * the 30 days before erasure. Erasure cancels whatever is left. The local rows
+ * change only through the webhook projection (ADR 0004).
+ */
+export async function stopMemberRenewals(
+  db: DbClient,
+  stripe: ListingCancellationDeps,
+  memberId: string,
+): Promise<string[]> {
+  const live = await listActiveSubscriptionsForDeletion(db, memberId);
+  const stopped: string[] = [];
+  for (const subscription of live) {
+    if (subscription.cancelAtPeriodEnd) continue;
+    await stripe.updateSubscription(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+      proration_behavior: "none",
+    });
+    stopped.push(subscription.stripeSubscriptionId);
+  }
+  return stopped;
 }

@@ -43,6 +43,8 @@ const ALLOWLIST = new Set([
   "data-migrations.ts",
   // Imports the DbClient type only; both callers above open the client.
   "card-serial-backfill.ts",
+  // Same: takes the DbClient data-migrations.ts opened; never connects.
+  "category-translations-sync.ts",
   // Pure function over an env object; never connects.
   "check-production-env.ts",
   "gen-env-example.ts",

@@ -65,6 +65,7 @@ export default async function AdminCompaniesPage({
   }
   const canModerate =
     can(actor, "approve", "company") || can(actor, "reject", "company");
+  const canDelete = can(actor, "delete", "company");
 
   const { q, status, page } = await searchParams;
   const { data } = await getCompaniesForAdminAction({
@@ -254,6 +255,7 @@ export default async function AdminCompaniesPage({
                         companyId={company.id}
                         companyName={company.name}
                         canModerate={canModerate}
+                        canDelete={canDelete}
                         triggerLabel={
                           canModerate && isPending ? t("review") : undefined
                         }

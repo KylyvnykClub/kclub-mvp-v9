@@ -16,7 +16,11 @@ import { partnerStandingFor } from "@/modules/billing/listing-hold";
 import { findAccessGrantingSubscription } from "@/data/billing";
 import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import { companyListingIsPaid, listCompaniesByOwner } from "@/data/companies";
+import {
+  companyListingIsPaid,
+  listCompaniesByOwner,
+  listLocalizedCategoryLabels,
+} from "@/data/companies";
 import { listNotificationsForMember } from "@/data/notifications";
 import {
   listActiveSubscriptionsForDeletion,
@@ -33,7 +37,7 @@ import { EmailForm } from "@/components/profile/email-form";
 import { BillingSection } from "./_components/billing-section";
 import { CompanyList } from "./_components/company-list";
 import { NotificationList } from "./_components/notification-list";
-import { MembershipCard } from "./_components/membership-card";
+import { MembershipCard } from "@/components/card/membership-card";
 import { InviteSection } from "./_components/invite-section";
 import { AccountDeletionForm } from "@/components/profile/account-deletion-form";
 import { ActiveSessions } from "@/components/profile/active-sessions";
@@ -83,6 +87,17 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const profile = await findProfileByMemberId(db, member.id);
 
   const myCompanies = await listCompaniesByOwner(db, member.id);
+  const subcategoryLabels = Object.fromEntries(
+    (
+      await listLocalizedCategoryLabels(
+        db,
+        locale as "en" | "ru" | "uk",
+        myCompanies.flatMap((c) =>
+          c.categories.map((x) => x.businessCategoryId),
+        ),
+      )
+    ).map((row) => [row.id, row.subcategory]),
+  );
   // Live exactly when the catalogue would show it: approved AND paid.
   const now = new Date();
   const liveCompanyIds = (
@@ -171,6 +186,19 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       : card?.token
         ? `${appUrl}/${locale}/card/${card.token}`
         : null;
+
+  // FR-021: the business face is the company's - its name, logo and the
+  // members' discount, the same company the QR opens.
+  const cardCompany =
+    face === "business" && liveCompany
+      ? {
+          name: liveCompany.name,
+          logoSrc: liveCompany.logoUrl
+            ? `${liveCompany.logoUrl}?v=${liveCompany.updatedAt.getTime()}`
+            : null,
+          discount: liveCompany.discount,
+        }
+      : null;
 
   const cardIssuedAt = card?.issuedAt
     ? new Intl.DateTimeFormat(locale, {
@@ -278,10 +306,13 @@ export default async function ProfilePage({ params, searchParams }: Props) {
                 serial={card?.serial ?? "—"}
                 qrUrl={cardQrUrl}
                 valid={card?.status === "valid"}
+                company={cardCompany}
                 labels={{
                   holder: tCard("holder"),
                   membership: tCard("membershipType"),
                   serial: tCard("serial"),
+                  company: tCard("company"),
+                  discount: tCard("discount"),
                   status:
                     card?.status === "valid"
                       ? tCard("statusValid")
@@ -323,6 +354,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             listingPrice={monthlyPrice("listing", locale)}
             sellable={listingSellable}
             returnedFromCheckout={hold === "returned"}
+            subcategoryLabels={subcategoryLabels}
           />
         </TabsContent>
 

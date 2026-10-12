@@ -54,7 +54,7 @@ import {
 } from "@/data/company-drafts";
 import { getCurrentMember } from "./session";
 import { isFeatureEnabled } from "./feature-flags";
-import { buildActor } from "@/domain/actor";
+import { buildActor, normalizeRole } from "@/domain/actor";
 import { assertCan, can } from "@/domain/authorization";
 import { COMPANY_MODERATION_TOPIC } from "@/modules/moderation/outbox";
 import {
@@ -65,12 +65,14 @@ import {
   LISTING_HOLD_SETTLE_TOPIC,
   productionListingHoldDeps,
   refundCapturedListingHolds,
+  resyncListingHoldsFromStripe,
   settleListingHolds,
 } from "@/modules/billing/listing-hold";
 import { listListingHoldsByCompany } from "@/data/listing-holds";
 import {
   holdIsCapturable,
   holdIsOpen,
+  holdPaysForListing,
   type ListingHoldAction,
 } from "@/domain/listing-hold";
 import {
@@ -79,6 +81,8 @@ import {
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
+import { descriptionTranslationsFrom } from "@/modules/catalogue/submit-company";
+import { deleteCompanyForStaff } from "@/modules/catalogue/delete-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { findListingActivation } from "@/data/business-applications";
 import {
@@ -992,6 +996,49 @@ export async function hideCompanyAction(companyId: string) {
   return { success: true };
 }
 
+const staffDeleteCompanySchema = z.object({
+  companyId: z.string().uuid(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+/**
+ * FR-046: staff delete a company. It leaves the catalogue and the console at
+ * once and is never approved again; its moderation history and audit trail
+ * stay. Billing follows the hide path (deleteCompanyForStaff).
+ */
+export async function staffDeleteCompanyAction(input: {
+  companyId: string;
+  reason: string;
+}) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "delete", "company");
+
+  const parsed = staffDeleteCompanySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+
+  const company = await findCompanyById(db, parsed.data.companyId);
+  if (!company) return { success: false, error: "Company not found" };
+
+  const deleted = await deleteCompanyForStaff(
+    db,
+    parsed.data.companyId,
+    { id: auth.member.id, role: normalizeRole(auth.member.role) },
+    parsed.data.reason,
+    new Date(),
+  );
+  if (!deleted) return { success: true, alreadyApplied: true };
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return { success: true };
+}
+
 export async function unhideCompanyAction(companyId: string) {
   const auth = await getCurrentMember();
   if (!auth?.member) {
@@ -1120,12 +1167,96 @@ export async function revokeCompanyListingWaiverAction(companyId: string) {
   return { success: true };
 }
 
+/**
+ * Re-read the company's captured listing payments from Stripe and project them
+ * as their webhooks would have (FR-116). For a capture whose event never
+ * arrived: the hold is recorded from Stripe's own state and the monthly
+ * subscription starts from the saved card. It grants nothing Stripe does not
+ * report (ADR 0004), and it never captures or refunds: only an approved
+ * company is resynced, and only money Stripe has already taken is projected.
+ */
+export async function resyncListingPaymentAction(companyId: string) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "approve", "company");
+
+  if (!z.string().uuid().safeParse(companyId).success) {
+    return { success: false, error: "Invalid company id" };
+  }
+
+  const company = await findCompanyById(db, companyId);
+  if (!company) return { success: false, error: "Company not found" };
+  // A rejected or hidden company would have a newly projected capture refunded
+  // by the projection; that is a moderation decision, not a repair.
+  if (company.moderationStatus !== "approved") {
+    return { success: false, error: "resync_needs_approved" };
+  }
+
+  const now = new Date();
+  try {
+    const projected = await resyncListingHoldsFromStripe(
+      db,
+      await productionListingHoldDeps(),
+      companyId,
+      now,
+    );
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_payment_resynced",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { projected },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[listing-hold] resync failed for ${companyId}: ${message}`);
+    await appendAuditEntry(db, {
+      actorType: "staff",
+      actorId: auth.member.id,
+      action: "company.listing_payment_resync_failed",
+      subjectType: "company",
+      subjectId: companyId,
+      meta: { error: message },
+    });
+    return { success: false, error: "stripe_unavailable" };
+  }
+
+  // The projection settles on its own; this is the audited, retried pass a
+  // moderator's decision gets, so a Stripe failure here is queued too.
+  await settleListingHoldsForDecision(companyId, auth.member.id);
+
+  const holds = await listListingHoldsByCompany(db, companyId);
+  const paying = holds.filter((hold) => holdPaysForListing(hold, now));
+
+  revalidatePath("/");
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return {
+    success: true,
+    outcome:
+      paying.length === 0
+        ? ("not_paid" as const)
+        : paying.some((hold) => hold.stripeSubscriptionId !== null)
+          ? ("paid" as const)
+          : ("paid_subscription_pending" as const),
+  };
+}
+
 const staffEditCompanySchema = z.object({
   companyId: z.string().uuid(),
   discount: z.string().max(255).optional(),
   description: z.string().max(1000).optional(),
   contactEmail: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().max(50).optional(),
+  // ADR 0046: the partner's own versions, entered by staff on their behalf.
+  descriptionEn: z.string().max(1000).optional(),
+  descriptionUk: z.string().max(1000).optional(),
+  descriptionRu: z.string().max(1000).optional(),
 });
 
 export async function staffEditCompanyAction(
@@ -1135,6 +1266,9 @@ export async function staffEditCompanyAction(
     description?: string;
     contactEmail?: string;
     contactPhone?: string;
+    descriptionEn?: string;
+    descriptionUk?: string;
+    descriptionRu?: string;
   },
 ) {
   const auth = await getCurrentMember();
@@ -1150,7 +1284,15 @@ export async function staffEditCompanyAction(
     return { success: false, error: parsed.error.issues[0]?.message };
   }
 
-  const updateFields: Record<string, string | null> = {};
+  const updateFields: Parameters<typeof updateCompanyFields>[2] = {};
+  if (
+    parsed.data.descriptionEn !== undefined ||
+    parsed.data.descriptionUk !== undefined ||
+    parsed.data.descriptionRu !== undefined
+  )
+    updateFields.descriptionTranslations = descriptionTranslationsFrom(
+      parsed.data,
+    );
   if (parsed.data.discount !== undefined)
     updateFields.discount = parsed.data.discount || null;
   if (parsed.data.description !== undefined)
