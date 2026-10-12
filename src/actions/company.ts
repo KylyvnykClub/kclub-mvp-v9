@@ -54,7 +54,7 @@ import {
 } from "@/data/company-drafts";
 import { getCurrentMember } from "./session";
 import { isFeatureEnabled } from "./feature-flags";
-import { buildActor } from "@/domain/actor";
+import { buildActor, normalizeRole } from "@/domain/actor";
 import { assertCan, can } from "@/domain/authorization";
 import { COMPANY_MODERATION_TOPIC } from "@/modules/moderation/outbox";
 import {
@@ -79,6 +79,7 @@ import {
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
+import { deleteCompanyForStaff } from "@/modules/catalogue/delete-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { findListingActivation } from "@/data/business-applications";
 import {
@@ -987,6 +988,49 @@ export async function hideCompanyAction(companyId: string) {
     });
   }
 
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return { success: true };
+}
+
+const staffDeleteCompanySchema = z.object({
+  companyId: z.string().uuid(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+/**
+ * FR-046: staff delete a company. It leaves the catalogue and the console at
+ * once and is never approved again; its moderation history and audit trail
+ * stay. Billing follows the hide path (deleteCompanyForStaff).
+ */
+export async function staffDeleteCompanyAction(input: {
+  companyId: string;
+  reason: string;
+}) {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const actor = buildActor(auth.member);
+  assertCan(actor, "delete", "company");
+
+  const parsed = staffDeleteCompanySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+
+  const company = await findCompanyById(db, parsed.data.companyId);
+  if (!company) return { success: false, error: "Company not found" };
+
+  const deleted = await deleteCompanyForStaff(
+    db,
+    parsed.data.companyId,
+    { id: auth.member.id, role: normalizeRole(auth.member.role) },
+    parsed.data.reason,
+    new Date(),
+  );
+  if (!deleted) return { success: true, alreadyApplied: true };
+
+  revalidatePath("/");
   revalidatePath("/dashboard/admin/companies");
   revalidatePath("/directory");
   return { success: true };

@@ -34,6 +34,15 @@ import {
 } from "@/domain/actor";
 import { can, type Action, type Subject } from "@/domain/authorization";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { requestAccountDeletionTx } from "@/data/account-deletion";
+import { listActiveSubscriptionsForDeletion } from "@/data/billing";
+import { listUndeletedCompanyIdsByOwner } from "@/data/companies";
+import {
+  productionListingCancellationDeps,
+  stopMemberRenewals,
+} from "@/modules/billing/listing-cancellation";
+import { deleteCompanyForStaff } from "@/modules/catalogue/delete-company";
 
 function requireAuthorized(
   member: { id: string; role: CompatiblePersistedRole } | undefined,
@@ -279,4 +288,97 @@ export async function reissueCardAction(
   });
 
   return newCard;
+}
+
+const deleteMemberSchema = z.object({
+  memberId: z.uuid(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+/**
+ * FR-046 / data-storage.md §4: staff record a member's deletion. The member is
+ * treated exactly as one who asked for it - `pending_deletion`, signed out,
+ * erased by the retention job on day 30 - with every subscription marked for
+ * cancellation. Two things happen at once rather than on day 30: renewals
+ * stop in Stripe, so nobody is billed after being deleted, and the member's
+ * companies are deleted, so they leave the catalogue now.
+ */
+export async function staffDeleteMemberAction(input: {
+  memberId: string;
+  reason: string;
+}) {
+  const session = await getCurrentMember();
+  const staff = requireAuthorized(session?.member, "delete", "member");
+
+  const parsed = deleteMemberSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const { memberId, reason } = parsed.data;
+
+  if (memberId === staff.id) return { success: false, error: "not_self" };
+
+  const target = await findMemberAdminById(db, memberId);
+  if (!target) return { success: false, error: "not_found" };
+  if (target.status === "pending_deletion" || target.deletedAt) {
+    return { success: true, alreadyApplied: true };
+  }
+
+  const active = await listActiveSubscriptionsForDeletion(db, memberId);
+  await requestAccountDeletionTx(
+    db,
+    memberId,
+    active.map((subscription) => ({
+      subscriptionId: subscription.id,
+      decision: "cancel" as const,
+    })),
+    { staffId: staff.id, staffRole: staff.role, reason },
+  );
+
+  const now = new Date();
+  for (const companyId of await listUndeletedCompanyIdsByOwner(db, memberId)) {
+    await deleteCompanyForStaff(
+      db,
+      companyId,
+      staff,
+      `Owner deleted: ${reason}`,
+      now,
+    );
+  }
+
+  try {
+    const stopped = await stopMemberRenewals(
+      db,
+      await productionListingCancellationDeps(),
+      memberId,
+    );
+    if (stopped.length > 0) {
+      await appendAuditEntry(db, {
+        actorType: staff.role,
+        actorId: staff.id,
+        action: "member.renewals_stopped",
+        subjectType: "member",
+        subjectId: memberId,
+        meta: { subscriptions: stopped },
+      });
+    }
+  } catch (error) {
+    // The deletion stands; erasure on day 30 cancels whatever still renews.
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(
+      `[member-deletion] renewal stop failed for ${memberId}: ${message}`,
+    );
+    await appendAuditEntry(db, {
+      actorType: staff.role,
+      actorId: staff.id,
+      action: "member.renewals_stop_failed",
+      subjectType: "member",
+      subjectId: memberId,
+      meta: { error: message },
+    });
+    return { success: true, renewalsStopped: false };
+  }
+
+  revalidatePath("/dashboard/admin/members");
+  revalidatePath("/dashboard/admin/companies");
+  revalidatePath("/directory");
+  return { success: true, renewalsStopped: true };
 }

@@ -22,6 +22,7 @@ import {
   getCompanyAdminDetailAction,
   hideCompanyAction,
   rejectCompanyChangesAction,
+  staffDeleteCompanyAction,
   revokeCompanyListingWaiverAction,
   setCompanyShowcaseAction,
   staffEditCompanyAction,
@@ -135,11 +136,14 @@ export function CompanyDetailSheet({
   companyId,
   companyName,
   canModerate,
+  canDelete = false,
   triggerLabel,
 }: {
   companyId: string;
   companyName: string;
   canModerate: boolean;
+  /** FR-046: staff admin and above. */
+  canDelete?: boolean;
   /** Row button text; the list says "Review" for a pending company. */
   triggerLabel?: string;
 }) {
@@ -162,6 +166,7 @@ export function CompanyDetailSheet({
     "none",
   );
   const [showcaseRank, setShowcaseRank] = useState("0");
+  const [deleteReason, setDeleteReason] = useState("");
 
   const load = () => {
     startTransition(async () => {
@@ -432,6 +437,45 @@ export function CompanyDetailSheet({
           )}
         </div>
       </Section>
+
+      {/* FR-046: staff delete a company; it never comes back. */}
+      {canDelete && (
+        <Section title={t("deleteTitle")}>
+          <p className="text-sm text-muted-foreground">{t("deleteHint")}</p>
+          <Input
+            className="mt-3"
+            value={deleteReason}
+            onChange={(event) => setDeleteReason(event.target.value)}
+            placeholder={t("deleteReasonPlaceholder")}
+            aria-label={t("deleteReasonPlaceholder")}
+          />
+          <Button
+            variant="destructive"
+            size="sm"
+            className="mt-3"
+            disabled={isPending || deleteReason.trim().length < 3}
+            onClick={() => {
+              if (!window.confirm(t("deleteConfirm", { name: company.name })))
+                return;
+              startTransition(async () => {
+                const res = await staffDeleteCompanyAction({
+                  companyId,
+                  reason: deleteReason,
+                });
+                if (!res.success) {
+                  toast.error(t("actionFailed", { error: res.error ?? "" }));
+                  return;
+                }
+                toast.success(t("companyDeleted"));
+                setOpen(false);
+                router.refresh();
+              });
+            }}
+          >
+            {t("deleteButton")}
+          </Button>
+        </Section>
+      )}
 
       <Section title={t("paymentTitle")}>
         {detail.holds.length === 0 ? (

@@ -1,4 +1,4 @@
-import { and, asc, eq, ne } from "drizzle-orm";
+import { and, asc, eq, isNull, ne } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import { listMemberSubscriptionPlans } from "./billing";
@@ -105,6 +105,6 @@ export async function listOwnApplications(db: DbClient, ownerId: string) {
       withdrawnAt: companies.withdrawnAt,
     })
     .from(companies)
-    .where(eq(companies.ownerId, ownerId))
+    .where(and(eq(companies.ownerId, ownerId), isNull(companies.deletedAt)))
     .orderBy(asc(companies.createdAt), asc(companies.id));
 }

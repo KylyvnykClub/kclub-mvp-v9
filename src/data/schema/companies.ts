@@ -85,6 +85,12 @@ export const companies = pgTable("companies", {
     .default("pending")
     .notNull(),
   rejectionReason: text("rejection_reason"),
+  /**
+   * Deleted by staff, or with its owner's erasure (data-storage.md §4). A soft
+   * delete: the row and its moderation history stay, the company is rejected
+   * at the same moment, and it can never be approved or restored again.
+   */
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 
   // Showcase
   showcaseType: showcaseTypeEnum("showcase_type").default("none").notNull(),
