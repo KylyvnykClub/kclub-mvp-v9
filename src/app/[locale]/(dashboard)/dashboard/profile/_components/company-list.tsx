@@ -45,6 +45,7 @@ export function CompanyList({
   listingPrice,
   sellable,
   returnedFromCheckout,
+  subcategoryLabels,
 }: {
   companies: CompanyRow[];
   subscriptions: SubscriptionRow[];
@@ -69,6 +70,8 @@ export function CompanyList({
   sellable: boolean;
   /** Back from Stripe Checkout; its event may not have arrived yet. */
   returnedFromCheckout: boolean;
+  /** Subcategory names in the reader's language, by taxonomy id. */
+  subcategoryLabels: Record<number, string>;
 }) {
   const t = useTranslations("billing");
   const tCompany = useTranslations("company");
@@ -279,7 +282,8 @@ export function CompanyList({
                             key={c.businessCategoryId}
                             className="inline-flex border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em]"
                           >
-                            {c.businessCategory?.subcategory}
+                            {subcategoryLabels[c.businessCategoryId] ??
+                              c.businessCategory?.subcategory}
                           </span>
                         ))}
                       </dd>

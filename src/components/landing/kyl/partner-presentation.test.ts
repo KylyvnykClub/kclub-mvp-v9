@@ -41,12 +41,14 @@ describe("partnerTaxonomy", () => {
       blockKey: "Healthcare, Health & Care",
       block: "Медицина",
       category: "Стоматологія",
+      subcategory: "Імплантація",
     },
     {
       id: 2,
       blockKey: "Beauty, Fitness & Recovery",
       block: "Краса",
       category: "Фітнес",
+      subcategory: "Тренажерна зала",
     },
   ]);
 
