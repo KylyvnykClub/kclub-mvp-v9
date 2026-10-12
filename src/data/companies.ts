@@ -244,7 +244,7 @@ export type CategoryBlockRow = Awaited<
 
 /**
  * One row per taxonomy entry: its id, its English block key, and the block and
- * category as the reader sees them.
+ * category (and subcategory) as the reader sees them.
  *
  * The landing page needs all three at once. `listLocalizedCategoryTree` gives
  * the reader's language but loses the English block, which is what an icon and
@@ -265,6 +265,7 @@ export async function listLocalizedCategoryLabels(
       blockKey: businessCategories.block,
       block: sql<string>`coalesce(${businessCategoryTranslations.block}, ${businessCategories.block})`,
       category: sql<string>`coalesce(${businessCategoryTranslations.category}, ${businessCategories.category})`,
+      subcategory: sql<string>`coalesce(${businessCategoryTranslations.subcategory}, ${businessCategories.subcategory})`,
     })
     .from(businessCategories)
     .leftJoin(
@@ -614,10 +615,19 @@ async function approvedCompanyConditions(
           filters.serviceCountryCode.toUpperCase(),
         ),
       );
+    // A company is found in the country it is registered in as well as in
+    // the ones it serves: the Country and City options are built from the
+    // registration (`listPartnerLocations`), so a partner listed under a
+    // country must never vanish when that same country is picked.
     conditions = and(
       conditions,
       or(
         eq(companies.servesWorldwide, 1),
+        eq(
+          companies.registrationCountryCode,
+          filters.serviceCountryCode.toUpperCase(),
+        ),
+        ilike(companies.country, filters.serviceCountryCode),
         inArray(
           companies.id,
           serviceCompanies.map((row) => row.companyId),

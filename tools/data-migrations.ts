@@ -11,6 +11,8 @@
  *   - FR-020 card serials into the `UA-10001` form. Needs libphonenumber-js to
  *     read the country from the phone, which SQL cannot reach. A card the old
  *     version issued while this build ran is picked up by the next build.
+ *   - Classifier translations from `data/business_category_translations.csv`,
+ *     so a corrected name reaches production with the deploy that carries it.
  *
  * Production only, like the schema migrations: anywhere else this is
  * `pnpm db:renumber-cards`, behind the database-environment guard.
@@ -22,6 +24,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import type { DbClient } from "../src/data/db";
 import * as schema from "../src/data/schema";
 import { backfillCardSerials } from "./card-serial-backfill";
+import { syncCategoryTranslations } from "./category-translations-sync";
 
 async function main(): Promise<void> {
   if (process.env["VERCEL_ENV"] !== "production") {
@@ -45,6 +48,9 @@ async function main(): Promise<void> {
 
     log("FR-020 card serials");
     await backfillCardSerials(db, { apply: true, log });
+
+    log("classifier translations");
+    await syncCategoryTranslations(db, log);
   } finally {
     await pool.end();
   }

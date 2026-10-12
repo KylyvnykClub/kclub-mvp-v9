@@ -29,7 +29,10 @@ import { HowToSteps, SectionHeader } from "./_components/partner-sections";
 import { PartnerCard } from "../_components/partner-card";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
-import { listApprovedCompaniesWithSubscriptionsByOwner } from "@/data/companies";
+import {
+  listApprovedCompaniesWithSubscriptionsByOwner,
+  listLocalizedCategoryLabels,
+} from "@/data/companies";
 import { configuredCheckoutPriceId } from "@/modules/billing/prices";
 import { countryFlag, countryName } from "@/lib/countries";
 import { flagSrc } from "@/components/landing/kyl/partner-presentation";
@@ -138,13 +141,31 @@ export default async function PartnerLandingPage({ params }: Props) {
     on_site_service: tCompany("businessFormatOnSite"),
   } as const;
 
-  const taxonomy = partner.categories?.[0]?.businessCategory;
+  // The taxonomy in the reader's language; the English row is the fallback
+  // for an entry the translations table does not cover.
+  const categoryIds = (partner.categories ?? [])
+    .map((c) => c.businessCategory?.id)
+    .filter((id): id is number => typeof id === "number");
+  const localizedLabels = new Map(
+    (await listLocalizedCategoryLabels(db, locale as Locale, categoryIds)).map(
+      (row) => [row.id, row],
+    ),
+  );
+  const localized = (partner.categories ?? [])
+    .map((c) =>
+      c.businessCategory
+        ? (localizedLabels.get(c.businessCategory.id) ?? c.businessCategory)
+        : null,
+    )
+    .filter((c) => c !== null);
+
+  const taxonomy = localized[0];
   const taxonomyLabel =
     [taxonomy?.category, taxonomy?.subcategory].filter(Boolean).join(" · ") ||
     null;
 
-  const subcategories = (partner.categories ?? [])
-    .map((c) => c.businessCategory?.subcategory)
+  const subcategories = localized
+    .map((c) => c.subcategory)
     .filter((s): s is string => Boolean(s));
 
   // The cover is the first uploaded photo and the gallery is the rest, so a

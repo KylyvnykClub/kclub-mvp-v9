@@ -16,7 +16,11 @@ import { partnerStandingFor } from "@/modules/billing/listing-hold";
 import { findAccessGrantingSubscription } from "@/data/billing";
 import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { checkoutPriceIsConfigured } from "@/modules/billing/prices";
-import { companyListingIsPaid, listCompaniesByOwner } from "@/data/companies";
+import {
+  companyListingIsPaid,
+  listCompaniesByOwner,
+  listLocalizedCategoryLabels,
+} from "@/data/companies";
 import { listNotificationsForMember } from "@/data/notifications";
 import {
   listActiveSubscriptionsForDeletion,
@@ -83,6 +87,17 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const profile = await findProfileByMemberId(db, member.id);
 
   const myCompanies = await listCompaniesByOwner(db, member.id);
+  const subcategoryLabels = Object.fromEntries(
+    (
+      await listLocalizedCategoryLabels(
+        db,
+        locale as "en" | "ru" | "uk",
+        myCompanies.flatMap((c) =>
+          c.categories.map((x) => x.businessCategoryId),
+        ),
+      )
+    ).map((row) => [row.id, row.subcategory]),
+  );
   // Live exactly when the catalogue would show it: approved AND paid.
   const now = new Date();
   const liveCompanyIds = (
@@ -323,6 +338,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             listingPrice={monthlyPrice("listing", locale)}
             sellable={listingSellable}
             returnedFromCheckout={hold === "returned"}
+            subcategoryLabels={subcategoryLabels}
           />
         </TabsContent>
 
