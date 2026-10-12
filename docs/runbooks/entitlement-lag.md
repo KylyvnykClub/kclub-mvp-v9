@@ -2,7 +2,7 @@
 
 > **Status:** Draft
 > **Owner:** Tech Lead
-> **Last updated:** 2026-08-12
+> **Last updated:** 2026-10-12
 > **Alert:** Stripe entitlement projection p95 lag over 5 minutes.
 
 ## Trigger
@@ -22,6 +22,14 @@ Paid subscriptions are not becoming local access within the freshness target.
 Run the outbox drain manually with the cron bearer token. If Stripe API calls
 are failing, leave webhook ingestion enabled so events are stored and retried.
 Do not grant entitlements from redirect success pages.
+
+For one partner whose listing payment shows unpaid although Stripe captured
+it (the `payment_intent.*` event never arrived), use **Resync payment from
+Stripe** in the admin company sheet, Payment section. It re-reads the
+company's listing PaymentIntents from Stripe, records the capture at its own
+clock and starts the monthly subscription from the saved card; it grants
+nothing Stripe does not report. Then confirm the endpoint is subscribed to
+`payment_intent.*`.
 
 ## Escalation
 

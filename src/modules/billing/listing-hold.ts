@@ -99,6 +99,14 @@ export interface ListingHoldDeps {
   ) => Promise<{ id: string }>;
   /** The listing plan's Stripe Price (FR-059: the staff-set price wins). */
   listingPriceId: (db: DbClient) => Promise<string>;
+  /**
+   * Every listing-hold PaymentIntent Stripe has for one company, with
+   * `latest_charge.balance_transaction` expanded: the balance transaction is
+   * written at capture, which is the one capture clock Stripe keeps.
+   */
+  listCompanyPaymentIntents: (
+    companyId: string,
+  ) => Promise<Stripe.PaymentIntent[]>;
 }
 
 /**
@@ -526,6 +534,73 @@ async function startListingSubscription(
 }
 
 /**
+ * Staff repair for a capture whose events never reached us: ask Stripe for the
+ * company's listing-hold PaymentIntents and project each one Stripe reports as
+ * `succeeded`, exactly as its webhook would have. Nothing here trusts our own
+ * rows or the caller - the state is what Stripe reports now (ADR 0004).
+ *
+ * Only captured money is projected. An authorisation Stripe still holds is
+ * left to the moderation decision, so pressing this never captures a card;
+ * the caller refuses a company that is not approved, so it never refunds one.
+ *
+ * The capture is ordered by its own clock (the balance transaction), so the
+ * paid month and the first renewal sit where the money actually moved. With
+ * no balance transaction to read, it falls back to now - later, never earlier,
+ * than the true capture, so the partner is never billed early.
+ */
+export async function resyncListingHoldsFromStripe(
+  db: DbClient,
+  stripe: ListingHoldDeps,
+  companyId: string,
+  now: Date,
+): Promise<{ paymentIntentId: string; result: HoldProjectionResult }[]> {
+  const intents = await stripe.listCompanyPaymentIntents(companyId);
+  const results: { paymentIntentId: string; result: HoldProjectionResult }[] =
+    [];
+
+  for (const intent of intents) {
+    // The search is by metadata; re-check it rather than trust the index.
+    if (
+      intent.status !== "succeeded" ||
+      intent.metadata?.kind !== LISTING_HOLD_KIND ||
+      intent.metadata?.companyId !== companyId
+    ) {
+      continue;
+    }
+
+    const existing = await findListingHold(db, intent.id);
+    const storedClock = existing?.stripeUpdatedAt
+      ? Math.floor(existing.stripeUpdatedAt.getTime() / 1000)
+      : 0;
+    const clock = captureClock(intent) ?? Math.floor(now.getTime() / 1000);
+
+    const result = await projectListingHold(
+      db,
+      stripe,
+      intent.id,
+      Math.max(clock, storedClock),
+      now,
+    );
+    results.push({ paymentIntentId: intent.id, result });
+  }
+
+  return results;
+}
+
+function captureClock(intent: Stripe.PaymentIntent): number | null {
+  const charge =
+    intent.latest_charge && typeof intent.latest_charge !== "string"
+      ? intent.latest_charge
+      : null;
+  const transaction =
+    charge?.balance_transaction &&
+    typeof charge.balance_transaction !== "string"
+      ? charge.balance_transaction
+      : null;
+  return transaction?.created ?? null;
+}
+
+/**
  * Give back a captured first payment, for a listing rejected after it went
  * live (ADR 0037). The subscription half is `refund.ts`; this is the hold.
  * Returns what was refunded, empty when there was nothing to refund.
@@ -582,5 +657,13 @@ export async function productionListingHoldDeps(): Promise<ListingHoldDeps> {
     createSubscription: (params, idempotencyKey) =>
       stripe.subscriptions.create(params, { idempotencyKey }),
     listingPriceId: (db) => checkoutPriceIdForPlan(db, "listing"),
+    listCompanyPaymentIntents: async (companyId) => {
+      const found = await stripe.paymentIntents.search({
+        query: `metadata['kind']:'${LISTING_HOLD_KIND}' AND metadata['companyId']:'${companyId}'`,
+        expand: ["data.latest_charge.balance_transaction"],
+        limit: 100,
+      });
+      return found.data;
+    },
   };
 }
