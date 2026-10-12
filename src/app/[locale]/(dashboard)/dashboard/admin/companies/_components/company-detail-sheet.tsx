@@ -161,6 +161,9 @@ export function CompanyDetailSheet({
     description: "",
     contactEmail: "",
     contactPhone: "",
+    descriptionEn: "",
+    descriptionUk: "",
+    descriptionRu: "",
   });
   const [showcaseType, setShowcaseType] = useState<"none" | "top" | "featured">(
     "none",
@@ -183,6 +186,9 @@ export function CompanyDetailSheet({
         description: res.data.company.description ?? "",
         contactEmail: res.data.company.contactEmail ?? "",
         contactPhone: res.data.company.contactPhone ?? "",
+        descriptionEn: res.data.company.descriptionTranslations?.en ?? "",
+        descriptionUk: res.data.company.descriptionTranslations?.uk ?? "",
+        descriptionRu: res.data.company.descriptionTranslations?.ru ?? "",
       });
       setShowcaseType(res.data.company.showcaseType);
       setShowcaseRank(String(res.data.company.showcaseRank));
@@ -332,6 +338,26 @@ export function CompanyDetailSheet({
           disabled={!canModerate}
         />
       </div>
+      {/* ADR 0046: the partner's own versions, entered on their behalf. */}
+      {(
+        [
+          ["descriptionEn", "descriptionEnLabel"],
+          ["descriptionUk", "descriptionUkLabel"],
+          ["descriptionRu", "descriptionRuLabel"],
+        ] as const
+      ).map(([field, label]) => (
+        <div key={field} className="space-y-2">
+          <Label htmlFor={`${field}-${companyId}`}>{t(label)}</Label>
+          <Textarea
+            id={`${field}-${companyId}`}
+            rows={3}
+            maxLength={1000}
+            value={edit[field]}
+            onChange={(e) => setEdit({ ...edit, [field]: e.target.value })}
+            disabled={!canModerate}
+          />
+        </div>
+      ))}
       <div className="space-y-2">
         <Label htmlFor={`email-${companyId}`}>{t("contactEmailLabel")}</Label>
         <Input

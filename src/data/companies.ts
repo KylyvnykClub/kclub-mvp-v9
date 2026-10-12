@@ -1,3 +1,4 @@
+import type { DescriptionTranslations } from "./schema/companies";
 import {
   and,
   asc,
@@ -1340,6 +1341,7 @@ export async function updateCompanyFields(
   fields: Partial<{
     name: string;
     description: string | null;
+    descriptionTranslations: DescriptionTranslations;
     discount: string | null;
     contactEmail: string | null;
     contactPhone: string | null;

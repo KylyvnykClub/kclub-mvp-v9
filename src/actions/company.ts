@@ -79,6 +79,7 @@ import {
   type CompanyFormIssue,
 } from "@/lib/company-form";
 import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
+import { descriptionTranslationsFrom } from "@/modules/catalogue/submit-company";
 import { deleteCompanyForStaff } from "@/modules/catalogue/delete-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { findListingActivation } from "@/data/business-applications";
@@ -1170,6 +1171,10 @@ const staffEditCompanySchema = z.object({
   description: z.string().max(1000).optional(),
   contactEmail: z.string().email().optional().or(z.literal("")),
   contactPhone: z.string().max(50).optional(),
+  // ADR 0046: the partner's own versions, entered by staff on their behalf.
+  descriptionEn: z.string().max(1000).optional(),
+  descriptionUk: z.string().max(1000).optional(),
+  descriptionRu: z.string().max(1000).optional(),
 });
 
 export async function staffEditCompanyAction(
@@ -1179,6 +1184,9 @@ export async function staffEditCompanyAction(
     description?: string;
     contactEmail?: string;
     contactPhone?: string;
+    descriptionEn?: string;
+    descriptionUk?: string;
+    descriptionRu?: string;
   },
 ) {
   const auth = await getCurrentMember();
@@ -1194,7 +1202,15 @@ export async function staffEditCompanyAction(
     return { success: false, error: parsed.error.issues[0]?.message };
   }
 
-  const updateFields: Record<string, string | null> = {};
+  const updateFields: Parameters<typeof updateCompanyFields>[2] = {};
+  if (
+    parsed.data.descriptionEn !== undefined ||
+    parsed.data.descriptionUk !== undefined ||
+    parsed.data.descriptionRu !== undefined
+  )
+    updateFields.descriptionTranslations = descriptionTranslationsFrom(
+      parsed.data,
+    );
   if (parsed.data.discount !== undefined)
     updateFields.discount = parsed.data.discount || null;
   if (parsed.data.description !== undefined)

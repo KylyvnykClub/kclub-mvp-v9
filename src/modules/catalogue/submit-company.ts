@@ -1,3 +1,4 @@
+import type { DescriptionTranslations } from "@/data/schema/companies";
 import type { DbClient } from "@/data/db";
 import {
   companySlugExists,
@@ -113,6 +114,7 @@ export async function submitCompany(
         taxId: parsed.data.taxId,
         website: parsed.data.website,
         description: parsed.data.description,
+        descriptionTranslations: descriptionTranslationsFrom(parsed.data),
         businessCategoryId: parsed.data.businessCategoryIds[0] ?? null,
         discount: parsed.data.discount,
         specialPrivileges: parsed.data.specialPrivileges === "true",
@@ -184,4 +186,20 @@ export async function submitCompany(
     logger.error("Company registration failed", safeErrorFields(error));
     return { success: false, issue: { code: "unexpected" } };
   }
+}
+
+/**
+ * ADR 0046: the optional per-language versions, as stored. A blank one is
+ * no version at all, so the reader falls back to the original.
+ */
+export function descriptionTranslationsFrom(data: {
+  descriptionEn?: string;
+  descriptionUk?: string;
+  descriptionRu?: string;
+}): DescriptionTranslations {
+  const out: DescriptionTranslations = {};
+  if (data.descriptionEn?.trim()) out.en = data.descriptionEn.trim();
+  if (data.descriptionUk?.trim()) out.uk = data.descriptionUk.trim();
+  if (data.descriptionRu?.trim()) out.ru = data.descriptionRu.trim();
+  return out;
 }
