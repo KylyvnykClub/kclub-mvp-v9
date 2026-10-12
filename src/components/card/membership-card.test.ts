@@ -41,6 +41,15 @@ describe("FR-021: club card faces", () => {
     expect(html).toContain("−10%");
     expect(html).toContain("Company");
     expect(html).not.toContain("Olena Koval");
+    // No membership line on the company's card (owner's call, 2026-10-12).
+    expect(html).not.toContain("Membership");
+    expect(html).not.toContain("Business partner");
+  });
+
+  it("FR-021: member and VIP cards keep their membership line", () => {
+    expect(render({ face: "vip", membershipLabel: "VIP member" })).toContain(
+      "VIP member",
+    );
   });
 
   it("FR-021: member and VIP cards print the holder and no company", () => {

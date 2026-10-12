@@ -216,18 +216,24 @@ export function MembershipCard({
               </p>
             )}
 
-            <p
-              className="mt-[3.2cqw] text-[max(10px,2.5cqw)] tracking-[0.06em]"
-              style={{ color: metal.label }}
-            >
-              {labels.membership}
-            </p>
-            <p
-              className="mt-[0.6cqw] truncate font-display text-[4.4cqw] leading-tight"
-              style={inked}
-            >
-              {membershipLabel}
-            </p>
+            {/* The business card is the company's own: the owner asked for no
+                membership line on it - the gold already says what it is. */}
+            {!business && (
+              <>
+                <p
+                  className="mt-[3.2cqw] text-[max(10px,2.5cqw)] tracking-[0.06em]"
+                  style={{ color: metal.label }}
+                >
+                  {labels.membership}
+                </p>
+                <p
+                  className="mt-[0.6cqw] truncate font-display text-[4.4cqw] leading-tight"
+                  style={inked}
+                >
+                  {membershipLabel}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
