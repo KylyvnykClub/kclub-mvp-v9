@@ -112,6 +112,10 @@ export function MembershipCard({
 }: MembershipCardProps) {
   const metal = METALS[face];
   const business = face === "business" && company !== null;
+  // On the company's card the corner holds the discount, so the serial
+  // moves under the QR (the owner's call).
+  const shownSerial = business ? null : serial;
+  const serialUnderQr = business ? serial : null;
   const inked: CSSProperties = {
     backgroundImage: metal.ink,
     WebkitBackgroundClip: "text",
@@ -139,16 +143,34 @@ export function MembershipCard({
           <div className="flex items-start justify-between">
             <Crown ink={metal.ink} face={face} />
             <div className="text-right">
-              {serial && (
+              {shownSerial && (
                 <>
                   <p className="sr-only">{labels.serial}</p>
                   <p
                     className="font-mono text-[max(11px,3.2cqw)] leading-tight tracking-[0.1em] whitespace-nowrap"
                     style={{ color: metal.label }}
                   >
-                    {serial}
+                    {shownSerial}
                   </p>
                 </>
+              )}
+              {/* The members' discount sits top right on the company's
+                  card, beside the crown: lower down it crowded the name. */}
+              {business && company.discount && (
+                <div>
+                  <p
+                    className="text-[max(9px,2.3cqw)] tracking-[0.06em]"
+                    style={{ color: metal.label }}
+                  >
+                    {labels.discount}
+                  </p>
+                  <p
+                    className="mt-[0.4cqw] max-w-[40cqw] truncate font-display text-[7cqw] leading-none"
+                    style={inked}
+                  >
+                    {company.discount}
+                  </p>
+                </div>
               )}
               {/* Only a revoked card says so: the reference card carries no
                   status, and a valid one needs none. */}
@@ -173,23 +195,6 @@ export function MembershipCard({
             style={{ backgroundImage: metal.ink }}
           />
 
-          {business && company.discount && (
-            <div className="mt-[2.6cqw] max-w-[58cqw] min-w-0">
-              <p
-                className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
-                style={{ color: metal.label }}
-              >
-                {labels.discount}
-              </p>
-              <p
-                className="mt-[0.4cqw] truncate font-display text-[6.4cqw] leading-none"
-                style={inked}
-              >
-                {company.discount}
-              </p>
-            </div>
-          )}
-
           <div className="mt-auto max-w-[58cqw] min-w-0">
             <p
               className="text-[max(10px,2.5cqw)] tracking-[0.06em]"
@@ -201,7 +206,7 @@ export function MembershipCard({
               <div className="mt-[0.8cqw] flex min-w-0 items-center gap-[2cqw]">
                 <CompanyMark company={company} metal={metal} />
                 <p
-                  className="truncate text-[4.6cqw] leading-tight font-medium"
+                  className="line-clamp-2 min-w-0 text-[4.2cqw] leading-[1.15] font-medium break-words"
                   style={{ color: metal.value }}
                 >
                   {company.name}
@@ -216,31 +221,52 @@ export function MembershipCard({
               </p>
             )}
 
-            <p
-              className="mt-[3.2cqw] text-[max(10px,2.5cqw)] tracking-[0.06em]"
-              style={{ color: metal.label }}
-            >
-              {labels.membership}
-            </p>
-            <p
-              className="mt-[0.6cqw] truncate font-display text-[4.4cqw] leading-tight"
-              style={inked}
-            >
-              {membershipLabel}
-            </p>
+            {/* The business card is the company's own: the owner asked for no
+                membership line on it - the gold already says what it is. */}
+            {!business && (
+              <>
+                <p
+                  className="mt-[3.2cqw] text-[max(10px,2.5cqw)] tracking-[0.06em]"
+                  style={{ color: metal.label }}
+                >
+                  {labels.membership}
+                </p>
+                <p
+                  className="mt-[0.6cqw] truncate font-display text-[4.4cqw] leading-tight"
+                  style={inked}
+                >
+                  {membershipLabel}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
-        {qrUrl && (
-          <div
-            className="absolute right-[7cqw] bottom-[4.6cqw] w-[28cqw] rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]"
-            style={{
-              // A cream tile with a metal rim, as in the reference.
-              backgroundImage: `linear-gradient(160deg, #ffffff40, transparent 45%), linear-gradient(${metal.tile}, ${metal.tile})`,
-              borderColor: metal.frame,
-            }}
-          >
-            <CardQr url={qrUrl} />
+        {(qrUrl || serialUnderQr) && (
+          <div className="absolute right-[7cqw] bottom-[4.6cqw] flex flex-col items-center gap-[1.2cqw]">
+            {qrUrl && (
+              <div
+                className={`${serialUnderQr ? "w-[25cqw]" : "w-[28cqw]"} rounded-[3cqw] border p-[2.8cqw] shadow-[0_12px_28px_-8px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.12)]`}
+                style={{
+                  // A cream tile with a metal rim, as in the reference.
+                  backgroundImage: `linear-gradient(160deg, #ffffff40, transparent 45%), linear-gradient(${metal.tile}, ${metal.tile})`,
+                  borderColor: metal.frame,
+                }}
+              >
+                <CardQr url={qrUrl} />
+              </div>
+            )}
+            {serialUnderQr && (
+              <>
+                <p className="sr-only">{labels.serial}</p>
+                <p
+                  className="font-mono text-[max(10px,2.8cqw)] leading-none tracking-[0.1em] whitespace-nowrap"
+                  style={{ color: metal.label }}
+                >
+                  {serialUnderQr}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

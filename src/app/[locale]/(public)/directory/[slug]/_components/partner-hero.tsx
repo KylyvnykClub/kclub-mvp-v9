@@ -92,7 +92,7 @@ export function PartnerHero({
             )}
           </div>
 
-          <div className="flex w-full max-w-[320px] flex-col gap-2">
+          <div className="flex w-full max-w-[460px] flex-col gap-2">
             {card}
             {cardNote && (
               <span className="text-[11px] text-white/70">{cardNote}</span>
