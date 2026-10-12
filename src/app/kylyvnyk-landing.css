@@ -593,6 +593,74 @@
   box-shadow: 0 30px 65px rgba(0, 0, 0, 0.4);
   transform: translate(42px, 43px) rotate(8deg);
 }
+/* FR-021: the three club cards, one at a time, picked by tab. The card is
+   the product's own component; the landing only frames it. */
+.kyl .kyl-card-switch {
+  position: relative;
+  display: flex;
+  width: min(100%, 520px);
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.kyl .kyl-card-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(216, 178, 97, 0.28);
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.72);
+}
+.kyl .kyl-card-tab {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(239, 224, 190, 0.72);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    background 0.3s var(--ease),
+    color 0.3s var(--ease);
+}
+.kyl .kyl-card-tab:hover {
+  color: #f3e2b8;
+}
+.kyl .kyl-card-tab:focus-visible {
+  outline: 2px solid #d8b261;
+  outline-offset: 2px;
+}
+.kyl .kyl-card-tab[data-active] {
+  background: var(--button-gold);
+  color: #17120a;
+}
+.kyl .kyl-card-stage {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  transform: rotateY(-8deg) rotateX(4deg) rotateZ(-4deg);
+  transition: transform 0.65s var(--ease);
+}
+.kyl .kyl-card-stage:hover {
+  transform: rotateY(-2deg) rotateX(1deg) rotateZ(-1deg) translateY(-6px);
+}
+/* The landing's own reset zeroes paragraph margins; the card spaces itself
+   with utilities, which must win inside it. */
+.kyl .kyl-card-stage p {
+  margin-top: revert-layer;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kyl .kyl-card-stage,
+  .kyl .kyl-card-stage:hover {
+    transform: none;
+    transition: none;
+  }
+}
 .kyl .hero-club-card {
   width: min(100%, 540px);
   max-width: none;
