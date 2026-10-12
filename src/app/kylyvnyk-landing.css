@@ -425,6 +425,17 @@
   line-height: 1.17;
   text-wrap: balance;
 }
+.kyl .hero-title .hero-title-brand {
+  display: block;
+  margin-bottom: 18px;
+  color: #d8b261;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
 .kyl .hero-title em {
   display: block;
   color: #dfc389;
