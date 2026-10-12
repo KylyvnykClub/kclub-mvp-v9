@@ -852,6 +852,7 @@
         "signOut": "Sign Out"
       },
       "hero": {
+        "brand": "Kylyvnyk Club",
         "titleLine1": "Build connections.",
         "titleLine2": "Unlock opportunities.",
         "description": "Join an international community of ambitious people, trusted businesses, and exclusive member benefits — all in one club.",
@@ -1832,6 +1833,13 @@
     "listingCta": "Apply as a partner",
     "sponsoredTitle": "Joined through the club's link?",
     "sponsoredBody": "Membership dues are waived for as long as the club says. Nothing to pay, nothing to cancel."
+  },
+  "errorPage": {
+    "metaTitle": "Something went wrong | KYLYVNYK CLUB",
+    "title": "Something went wrong",
+    "body": "This page could not be shown. Try again, or go back to the home page.",
+    "retry": "Try again",
+    "home": "Home"
   },
   "notFound": {
     "title": "This page does not exist",

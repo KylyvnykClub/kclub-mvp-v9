@@ -31,7 +31,10 @@ export async function KylHero({ presence }: { presence: ClubPresence }) {
     <section className="hero" id="top" aria-labelledby="hero-title">
       <div className="hero-content shell">
         <div className="hero-copy">
+          {/* The club's name is the page's primary keyword, so it opens the
+              one h1 rather than living only in the title tag. */}
           <KylReveal as="h1" id="hero-title" className="hero-title">
+            <span className="hero-title-brand">{t("brand")}</span>
             {t("titleLine1")} <br />
             <span>{t("titleLine2")}</span>
           </KylReveal>

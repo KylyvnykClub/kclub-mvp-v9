@@ -47,15 +47,27 @@ export async function searchLandingPartnersAction(
 ): Promise<{ rows: LandingPartner[]; total: number }> {
   const { locale, ...filters } = filtersSchema.parse(input);
 
-  const { rows, total } = await getPartnersListAction(
-    {
-      query: filters.query || undefined,
-      serviceCountryCode: filters.country || undefined,
-      city: filters.city || undefined,
-      block: filters.block || undefined,
-    },
-    { limit: LANDING_PAGE_SIZE, offset: 0 },
-  );
+  let found: Awaited<ReturnType<typeof getPartnersListAction>>;
+  try {
+    found = await getPartnersListAction(
+      {
+        query: filters.query || undefined,
+        serviceCountryCode: filters.country || undefined,
+        city: filters.city || undefined,
+        block: filters.block || undefined,
+      },
+      { limit: LANDING_PAGE_SIZE, offset: 0 },
+    );
+  } catch (error) {
+    // The catalogue closed to visitors (`public_catalogue` off) refuses an
+    // anonymous caller. On the landing that is an empty partner grid, never
+    // a crashed home page - which is what search engines were indexing.
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return { rows: [], total: 0 };
+    }
+    throw error;
+  }
+  const { rows, total } = found;
 
   const ids = [
     ...new Set(
