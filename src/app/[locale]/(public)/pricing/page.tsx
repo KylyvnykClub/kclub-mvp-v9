@@ -29,7 +29,7 @@ export async function generateMetadata({
   return {
     title: t("title"),
     description: t("subtitle"),
-    alternates: localeAlternates("/pricing", locale),
+    alternates: localeAlternates(locale, "/pricing"),
   };
 }
 

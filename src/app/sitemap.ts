@@ -7,7 +7,7 @@ import {
   listPublicPartnersForSitemap,
 } from "@/data/companies";
 import { getAllLegalDocuments } from "@/lib/mdx";
-import { absoluteUrl, localeAlternates } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/seo";
 import {
   companyImageServePath,
   companyLogoServePath,
@@ -18,9 +18,12 @@ import { locales } from "@/i18n/routing";
  * The sitemap, as search engines read sitemaps today (sitemaps.org protocol
  * 0.9, with Google's hreflang and image extensions):
  *
- * - every indexable page, in each locale, with the full hreflang cluster
- *   (`xhtml:link`, `x-default` included), so the three languages are
- *   alternates rather than duplicates;
+ * - every indexable page, in each locale. The hreflang cluster is not
+ *   repeated here: every page already declares it in its own head
+ *   (`localeAlternates`), which Google treats as equivalent. Repeating it as
+ *   `xhtml:link` puts XHTML elements in the file, and browsers then render
+ *   the sitemap as one run of text instead of an XML tree, so it reads as
+ *   broken to anyone who opens it;
  * - `lastmod` wherever there is an honest date - a partner's own last
  *   change, the newest partner for the pages that list them, a legal
  *   document's front matter. Google uses `lastmod` only when it is
@@ -48,7 +51,6 @@ function entriesFor(
     ...(options.images && options.images.length > 0
       ? { images: options.images }
       : {}),
-    alternates: { languages: localeAlternates(locale, path).languages },
   }));
 }
 
