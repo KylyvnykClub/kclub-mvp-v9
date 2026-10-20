@@ -138,6 +138,7 @@ export class IdentityService {
      * `partner` where this is a business application (ADR 0036).
      */
     duesKind?: "paying" | "sponsored" | "partner";
+    cardTier?: "free" | "vip";
     /** Who brought this member, if anyone (ADR 0042). */
     invitation?: RegisterMemberInput["invitation"];
     userAgent: string;
@@ -190,6 +191,7 @@ export class IdentityService {
         country: params.country,
         language: params.language,
         duesKind: params.duesKind ?? "paying",
+        cardTier: params.cardTier ?? "free",
         invitation: params.invitation,
         userAgent: params.userAgent,
         ipAddress: params.ipAddress,

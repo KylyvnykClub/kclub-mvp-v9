@@ -39,8 +39,9 @@ export default async function AdminJoinLinkPage({
   }
 
   const t = await getTranslations("admin.joinLink");
-  const [memberLink, partnerLink, funnel] = await Promise.all([
+  const [memberLink, vipLink, partnerLink, funnel] = await Promise.all([
     getJoinLinkAction("member"),
+    getJoinLinkAction("vip"),
     getJoinLinkAction("partner"),
     countInviteTrialFunnel(db),
   ]);
@@ -58,6 +59,12 @@ export default async function AdminJoinLinkPage({
       <JoinLinkPanel
         kind="member"
         initialLink={shown(memberLink)}
+        baseUrl={env.server.NEXT_PUBLIC_APP_URL}
+        locale={locale}
+      />
+      <JoinLinkPanel
+        kind="vip"
+        initialLink={shown(vipLink)}
         baseUrl={env.server.NEXT_PUBLIC_APP_URL}
         locale={locale}
       />

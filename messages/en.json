@@ -1772,8 +1772,8 @@
       "colTotp": "2FA"
     },
     "joinLink": {
-      "title": "Join links",
-      "description": "The club's private links: one for members, one for business partners. Each has its own address; rotating or revoking one leaves the other alone.",
+      "title": "Join links (members, VIP and partners)",
+      "description": "The club's private links: one for members, one for VIP members, one for business partners. Each has its own address; rotating or revoking one leaves the others as they are.",
       "currentDescription": "Hand this out by hand. Rotating it makes every copy already shared stop working.",
       "noneDescription": "There is no live link right now, so every registration pays dues.",
       "noneBody": "Create one when the club next wants to let someone in free.",
@@ -1790,7 +1790,11 @@
       "partnerTitle": "Business partner link",
       "partnerPurpose": "A company that applies through it is listed free: no card hold, straight to review, and live in the catalogue after approval without payment.",
       "partnerNoneDescription": "There is no active link, so every partner pays for the listing.",
-      "partnerNoneBody": "Create a link when the club wants to list a business for free."
+      "partnerNoneBody": "Create a link when the club wants to list a business for free.",
+      "vipTitle": "VIP member link",
+      "vipPurpose": "Whoever registers through it joins free of dues with a VIP card from the start — no manual upgrade afterwards.",
+      "vipNoneDescription": "There is no active link, so nobody joins as VIP for free.",
+      "vipNoneBody": "Create a link when the club wants to admit someone as a free VIP member."
     },
     "inviteFunnel": {
       "title": "Businesses brought by members",
