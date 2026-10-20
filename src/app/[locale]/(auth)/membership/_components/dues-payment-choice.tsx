@@ -8,6 +8,7 @@ import {
   createVipCheckoutAction,
 } from "@/actions/stripe";
 import { Button } from "@/components/ui/button";
+import type { DuesOffer } from "@/domain/pricing";
 import { CLUB_CONTACT_EMAIL } from "@/lib/contact";
 
 /**
@@ -16,19 +17,17 @@ import { CLUB_CONTACT_EMAIL } from "@/lib/contact";
  * authority is ticked by the member, and only then do the buttons open Stripe.
  * Each form posts the box itself; the server records its own words for it
  * and refuses a request without it.
+ *
+ * Which plans, and which wording, is `duesOffer`'s decision (ADR 0043).
  */
 export function DuesPaymentChoice({
   price,
   vipPrice,
-  sellable,
-  vipSellable,
-  vipFirst,
+  offer,
 }: {
   price: string;
   vipPrice: string;
-  sellable: boolean;
-  vipSellable: boolean;
-  vipFirst: boolean;
+  offer: DuesOffer;
 }) {
   const t = useTranslations("membership");
   const tc = useTranslations("membershipConsent");
@@ -47,7 +46,7 @@ export function DuesPaymentChoice({
   const consentField = ticked ? (
     <>
       <input type="hidden" name="consentPayment" value="on" />
-      <input type="hidden" name="consentWording" value="member_dues" />
+      <input type="hidden" name="consentWording" value={offer.wording} />
     </>
   ) : null;
 
@@ -66,26 +65,37 @@ export function DuesPaymentChoice({
           onChange={(event) => setTicked(event.target.checked)}
           className="mt-1 size-4 shrink-0 accent-[#d8b261]"
         />
-        <span>{tc("payment", { price, vipPrice })}</span>
+        <span>
+          {offer.wording === "vip_new"
+            ? tc("paymentVipNew", { vipPrice })
+            : tc("payment", { price, vipPrice })}
+        </span>
       </label>
       {!ticked && (
         <p className="text-sm text-muted-foreground">{tc("missing")}</p>
       )}
 
-      <div
-        className={`flex w-full gap-3 ${vipFirst ? "flex-col-reverse" : "flex-col"}`}
-      >
-        {sellable && (
-          <form action={createMembershipCheckoutAction} className="w-full">
-            {consentField}
-            {button(!vipFirst, t("payButton", { price }))}
-          </form>
-        )}
-        {vipSellable && (
-          <form action={createVipCheckoutAction} className="w-full">
-            {consentField}
-            {button(vipFirst, t("vipPayButton", { vipPrice }))}
-          </form>
+      <div className="flex w-full flex-col gap-3">
+        {offer.plans.map((plan, index) =>
+          plan === "vip" ? (
+            <form
+              key={plan}
+              action={createVipCheckoutAction}
+              className="w-full"
+            >
+              {consentField}
+              {button(index === 0, t("vipPayButton", { vipPrice }))}
+            </form>
+          ) : (
+            <form
+              key={plan}
+              action={createMembershipCheckoutAction}
+              className="w-full"
+            >
+              {consentField}
+              {button(index === 0, t("payButton", { price }))}
+            </form>
+          ),
         )}
       </div>
     </div>

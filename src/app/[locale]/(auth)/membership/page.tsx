@@ -24,7 +24,7 @@ import { db } from "@/data/db";
 import { applicationIsLive, holdIsCapturable } from "@/domain/listing-hold";
 import { partnerStandingFor } from "@/modules/billing/listing-hold";
 import { listingStandingExtras } from "@/modules/catalogue/listing-standing";
-import { monthlyPrice } from "@/domain/pricing";
+import { duesOffer, monthlyPrice } from "@/domain/pricing";
 
 export async function generateMetadata({
   params,
@@ -63,8 +63,9 @@ export default async function MembershipDuesPage({
 }) {
   const { locale } = await params;
   const { hold, company: returnedCompany, plan } = await searchParams;
-  // Which plan the member picked before registering. It orders the two
-  // buttons and nothing more: both are always offered (ADR 0043).
+  // Which plan the member picked before registering. VIP chosen means VIP
+  // alone is offered, the membership plan one link away (ADR 0043, amended).
+  // It grants nothing either way.
   const vipFirst = plan === "vip";
   // Back from Stripe for one company: only its card says "confirming".
   const returnedFor = (companyId: string) =>
@@ -172,6 +173,12 @@ export default async function MembershipDuesPage({
       checkoutPriceIsConfigured(db, "listing"),
       getTranslations({ locale, namespace: "partnerStanding" }),
     ]);
+  const offer = duesOffer({
+    chosePlan: vipFirst ? "vip" : undefined,
+    sellable,
+    vipSellable,
+  });
+  const vipOnly = offer.plans.length === 1 && offer.plans[0] === "vip";
 
   // A member whose dues are unpaid may still have filed companies (from
   // /partner, since the dashboard is closed to them). Each listing is its own
@@ -247,7 +254,9 @@ export default async function MembershipDuesPage({
       <Card className="w-full border-white/10 bg-background text-foreground shadow-none">
         <CardHeader className="space-y-3 border-b border-border p-6 sm:p-8">
           <CardTitle className="text-3xl font-black uppercase leading-none tracking-[-0.02em] text-foreground">
-            {t("duesPrice", { price })}
+            {t("duesPrice", {
+              price: vipOnly ? vipPrice : price,
+            })}
           </CardTitle>
           <CardDescription className="text-sm font-light leading-6 text-muted-foreground">
             {t("cancelAnytime")}
@@ -291,9 +300,7 @@ export default async function MembershipDuesPage({
             <DuesPaymentChoice
               price={price}
               vipPrice={vipPrice}
-              sellable={sellable}
-              vipSellable={vipSellable}
-              vipFirst={vipFirst}
+              offer={offer}
             />
           ) : (
             <p
@@ -302,6 +309,14 @@ export default async function MembershipDuesPage({
             >
               {t("unavailable")}
             </p>
+          )}
+          {vipOnly && sellable && (
+            <Link
+              href={`/${locale}/membership`}
+              className="w-full text-center text-sm text-muted-foreground underline hover:text-accent-ink"
+            >
+              {t("membershipOnlyLink", { price })}
+            </Link>
           )}
           <div className="flex w-full items-center justify-between text-sm text-muted-foreground">
             <Link

@@ -1847,7 +1847,8 @@
     "businessNote": "Хотите разместить свой бизнес в каталоге? Размещение оплачивается отдельно от членства — {listingPrice} в месяц, после одобрения заявки.",
     "businessLink": "Подать заявку партнёра",
     "duesSubtitleVip": "Аккаунт создан. VIP стоит {vipPrice} в месяц и включает членство — оплатите, и клуб откроется.",
-    "vipPayButton": "Оплатить VIP — {vipPrice} в месяц"
+    "vipPayButton": "Оплатить VIP — {vipPrice} в месяц",
+    "membershipOnlyLink": "Только членство — {price} в месяц"
   },
   "pricing": {
     "title": "Тарифы и цены",

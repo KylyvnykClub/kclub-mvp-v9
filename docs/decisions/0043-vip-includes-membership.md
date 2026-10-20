@@ -31,8 +31,10 @@ holds one of the two, never both.**
   status set as everything else (FR-056's dunning window included). For
   sponsored, legacy and partner members nothing changes.
 - The dues screen offers both plans side by side. A visitor who chose VIP
-  arrives with `?plan=vip`, which puts the VIP button first and changes the
-  subtitle. The parameter orders two buttons and grants nothing.
+  arrives with `?plan=vip` and is offered **VIP alone**: one button, a payment
+  box naming only the VIP price, and a "membership only" link back to the
+  two-plan screen. If VIP cannot be sold, both plans are offered instead. The
+  parameter grants nothing (amended 2026-10-20, see below).
 - A member already paying dues who chooses VIP is **not** sent to a second
   Checkout. Their subscription's price is switched to the VIP price, the
   prorated difference is invoiced at once, and `pending_if_incomplete` means
@@ -84,3 +86,13 @@ should be cancelled by hand from the Stripe dashboard.
 The club wants a VIP price that is not "membership and more" (VIP as an add-on
 for sponsored members only, or a different price for upgraders). That is a
 pricing decision about two products, and this record treats them as one.
+
+## Amendment, 2026-10-20
+
+The client watched a VIP sign-up and saw both buttons — "Pay VIP $19.99" and
+"Pay $4.99" — under a box authorising either price. A visitor who had already
+chosen VIP read the second button as a cheaper way to the same thing, and the
+box as consent to two charges. The owner asked for VIP alone, with membership
+kept separate. `duesOffer` (`src/domain/pricing.ts`) now decides the buttons and
+the wording, and records `vip_new`, which `createVipCheckoutAction` already
+accepted from Billing. Nothing about entitlement changes.
