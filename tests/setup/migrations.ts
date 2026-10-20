@@ -17,7 +17,13 @@ export function splitSqlStatements(sql: string): string[] {
   if (sql.includes("--> statement-breakpoint")) {
     statements = sql.split("--> statement-breakpoint");
   } else {
-    const parts = sql.split("$$");
+    // Whole-line comments go first: a `;` in prose would otherwise end a
+    // statement mid-comment (20261012100000_company_deleted_at.sql has one).
+    const parts = sql
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n")
+      .split("$$");
     let current = "";
     for (let i = 0; i < parts.length; i++) {
       if (i % 2 === 1) {
