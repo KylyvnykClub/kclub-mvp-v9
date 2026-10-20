@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { KylSelect } from "./kyl-select";
 
 import { logoutAction } from "@/actions/auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { locales, type Locale } from "@/i18n/routing";
 
@@ -177,6 +178,9 @@ export function KylHeader({
             </>
           )}
           {languageSelect("desktop")}
+          {/* The reader's own light/dark choice, the same switch every other
+              page has (ADR 0050). */}
+          <ThemeToggle />
           <button
             className="menu-toggle"
             type="button"
