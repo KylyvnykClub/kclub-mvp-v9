@@ -51,7 +51,11 @@ export type Subject =
   | "staff_user"
   | "join_link"
   | "feature_flag"
-  | "plan_price";
+  | "plan_price"
+  /** A member's review of a partner (ADR 0047). */
+  | "review"
+  /** The review the member wrote themselves. */
+  | "own_review";
 
 type Rule = (actor: Actor) => boolean;
 
@@ -226,6 +230,30 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
   {
     action: "manage_reference_data",
     subject: "reference_data",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+
+  // ADR 0047: a member in the club reviews partners and edits or withdraws
+  // their own; whether they are in the club is the action's check, as it is
+  // for every other member action. Moderators decide what is published.
+  {
+    action: "create",
+    subject: "review",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+  {
+    action: "delete",
+    subject: "own_review",
+    check: (a) => a.type === "member" || a.type === "partner_owner",
+  },
+  {
+    action: "approve",
+    subject: "review",
+    check: (a) => staffAtLeast(a, "staff_moderator"),
+  },
+  {
+    action: "reject",
+    subject: "review",
     check: (a) => staffAtLeast(a, "staff_moderator"),
   },
 

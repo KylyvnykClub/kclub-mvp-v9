@@ -83,6 +83,11 @@ export interface RegisterMemberInput {
    * cookie rather than from anything the form posted.
    */
   duesKind?: "paying" | "sponsored" | "partner";
+  /**
+   * The first card's tier. `free` unless the applicant came through the VIP
+   * join link (ADR 0048), proved the same way as `duesKind`.
+   */
+  cardTier?: "free" | "vip";
   userAgent: string;
   ipAddress: string;
   consents: Array<{ documentId: string; version: string }>;
@@ -154,7 +159,7 @@ export async function registerMemberTx(
       serial: await nextCardSerial(tx, input),
       token: cardTokenHash,
       tokenHash: cardTokenHash,
-      tier: "free",
+      tier: input.cardTier ?? "free",
     });
 
     const sessionTokenHash = hashSessionToken(input.sessionToken);

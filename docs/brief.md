@@ -49,9 +49,10 @@ Leading indicators, tracked weekly from launch:
 - **A marketplace.** We do not take payment for partner services, hold funds,
   escrow, or arbitrate disputes between a member and a partner. We charge for
   membership and for listing, nothing else.
-- **A rating or review system.** Reviews on the marketing site are curated
-  testimonials, not user-generated content. Ratings invite exactly the gaming
-  and retaliation dynamics the club exists to avoid.
+- **An open rating or review system.** Rejected at scoping because ratings
+  invite gaming and retaliation. Since 2026-10-20 members may review partners,
+  but only anonymously and only once a moderator approves the text
+  ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md)).
 - **Any referral-for-reward mechanic.** No affiliate links, no commission on a
   referred client, no multi-level structure, no invite quotas. The product must
   be structurally incapable of being read as MLM — see

@@ -1273,6 +1273,7 @@
       "users": "Users",
       "companies": "Companies",
       "introductions": "Client Introductions",
+      "reviews": "Reviews",
       "support": "Support",
       "categories": "Categories",
       "staff": "Staff",
@@ -1779,8 +1780,8 @@
       "colTotp": "2FA"
     },
     "joinLink": {
-      "title": "Join links",
-      "description": "The club's private links: one for members, one for business partners. Each has its own address; rotating or revoking one leaves the other alone.",
+      "title": "Join links (members, VIP and partners)",
+      "description": "The club's private links: one for members, one for VIP members, one for business partners. Each has its own address; rotating or revoking one leaves the others as they are.",
       "currentDescription": "Hand this out by hand. Rotating it makes every copy already shared stop working.",
       "noneDescription": "There is no live link right now, so every registration pays dues.",
       "noneBody": "Create one when the club next wants to let someone in free.",
@@ -1797,7 +1798,11 @@
       "partnerTitle": "Business partner link",
       "partnerPurpose": "A company that applies through it is listed free: no card hold, straight to review, and live in the catalogue after approval without payment.",
       "partnerNoneDescription": "There is no active link, so every partner pays for the listing.",
-      "partnerNoneBody": "Create a link when the club wants to list a business for free."
+      "partnerNoneBody": "Create a link when the club wants to list a business for free.",
+      "vipTitle": "VIP member link",
+      "vipPurpose": "Whoever registers through it joins free of dues with a VIP card from the start — no manual upgrade afterwards.",
+      "vipNoneDescription": "There is no active link, so nobody joins as VIP for free.",
+      "vipNoneBody": "Create a link when the club wants to admit someone as a free VIP member."
     },
     "inviteFunnel": {
       "title": "Businesses brought by members",
@@ -1808,6 +1813,31 @@
       "activated": "Free month started",
       "firstPaid": "First real payment",
       "activeNow": "Listed now"
+    },
+    "reviews": {
+      "title": "Partner Reviews",
+      "description": "Reviews members wrote about partners. Nothing is published until it is approved; the partner never sees who wrote it.",
+      "pendingBadge": "{count} waiting",
+      "searchPlaceholder": "Company or review text",
+      "search": "Search",
+      "totalCount": "{count, plural, one {# review} other {# reviews}}",
+      "colDate": "Date",
+      "colCompany": "Partner",
+      "colReview": "Review",
+      "colAuthor": "Author",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "empty": "No reviews.",
+      "approve": "Publish",
+      "reject": "Reject",
+      "approved": "Review published",
+      "rejected": "Review rejected",
+      "actionFailed": "The review could not be updated",
+      "status": {
+        "pending": "Waiting",
+        "approved": "Published",
+        "rejected": "Rejected"
+      }
     }
   },
   "sessions": {
@@ -2048,5 +2078,39 @@
     "accept": "Accept",
     "reject": "Reject",
     "settings": "Cookie settings"
+  },
+  "reviews": {
+    "section": "Reviews",
+    "empty": "No reviews yet.",
+    "author": "Club member",
+    "average": "{average} out of 5 · {count, plural, one {# review} other {# reviews}}",
+    "ratingOutOf": "{rating} out of 5",
+    "formTitle": "Leave a review",
+    "formTitleEdit": "Your review",
+    "ratingLabel": "Your rating",
+    "bodyLabel": "Your review",
+    "bodyPlaceholder": "What was it like? At least 10 characters.",
+    "anonymousNote": "Published without your name, after a moderator reads it.",
+    "submit": "Send review",
+    "submitEdit": "Update review",
+    "delete": "Delete review",
+    "deleteConfirm": "Delete your review of this partner?",
+    "errorRating": "Choose from 1 to 5 stars.",
+    "errorBody": "Write at least 10 characters, at most 1000.",
+    "error": {
+      "unauthorized": "Sign in to leave a review.",
+      "invalid_input": "Check the stars and the text.",
+      "not_in_club": "Only members in the club can leave reviews.",
+      "not_found": "This partner is not in the catalogue.",
+      "own_company": "You cannot review your own company."
+    },
+    "ownStatus": {
+      "pending": "Your review is waiting for a moderator.",
+      "approved": "Your review is published.",
+      "rejected": "Your review was not published. You can edit it and send it again."
+    },
+    "signInLink": "Sign in",
+    "signInToReview": " to leave a review.",
+    "membersOnly": "Reviews can be left by members in the club."
   }
 }

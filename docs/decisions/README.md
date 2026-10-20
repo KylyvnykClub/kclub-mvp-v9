@@ -102,6 +102,8 @@ that the folder cannot be trusted.
 |[0044](0044-business-application-consents-and-invite-trial.md)|A business applies with explicit recorded consents; an invited business saves a card and gets one free month from publication; cancel auto-renewal and EU withdrawal in the account|Accepted; supersedes 0042 §5 for new applications|2026-10-07|
 |[0045](0045-google-tag-manager-behind-consent.md)|Google Tag Manager runs on public pages only, after the visitor accepts the cookie banner|Accepted|2026-10-07|
 |[0046](0046-partner-description-per-language.md)|A partner writes its description in each language itself; pages show the reader's language and fall back to the original|Accepted|2026-10-12|
+|[0047](0047-anonymous-moderated-partner-reviews.md)|Members review partners with 1–5 stars and a text, anonymously, published only after a moderator approves it|Accepted|2026-10-20|
+|[0048](0048-vip-join-link.md)|A third join link kind, `vip`: registration through it makes a sponsored member whose first card is VIP|Accepted|2026-10-20|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

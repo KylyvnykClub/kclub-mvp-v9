@@ -62,7 +62,7 @@ plus partner listings combined, ~$8,000 MRR). Leading indicators are in
 |Not building|Why / when|
 |-|-|
 |Member directory, member search, member-to-member messaging|Rejected permanently. The absence of a member directory is the product promise — see [decisions/0005-no-member-directory.md](decisions/0005-no-member-directory.md)|
-|Ratings and user-written reviews of partners|Rejected. Invites gaming and retaliation; contradicts a moderated, trust-based club. Testimonials on the marketing site are curated by staff|
+|Unmoderated or signed reviews of partners|Rejected. Invites gaming and retaliation, and a signed review discloses a member. Anonymous reviews published after moderation are in scope since 2026-10-20 (§4.10, [ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|
 |Any reward, commission or bonus for introducing a member or a partner|Rejected permanently. The product must be structurally unable to function as MLM; there is no referral code, no downline, no payout|
 |Taking payment for partner goods or services; escrow; dispute arbitration|Rejected. We charge for membership and for listing only. Changes the regulatory posture entirely (money transmission)|
 |Native iOS/Android applications|Deferred indefinitely. Responsive web plus PWA install covers the phone case|
@@ -182,8 +182,8 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |FR-102|The system must sell standard membership as a monthly subscription at the price configured for the `member_monthly` plan (launch price $4.99/month) through Stripe Checkout|member|M|
 |FR-103|A member whose membership dues are neither paid nor waived must reach no member surface other than the screen that asks for payment. A partner account owes no dues and sees the standing of its application there instead (FR-110). A member with unpaid dues may still file a company application on the partner page, one live application at a time (a refused one may be followed by another); the same screen then shows that listing's standing and its hold (FR-113), separately from the dues|member|M|
 |FR-104|Membership access must be projected from Stripe subscription state; a return from the Stripe redirect must never itself grant it|system|M|
-|FR-105|Registration through an active member join link must create a sponsored member, who is never asked to pay and is never shown the payment screen. A company application filed through an active partner join link must have its listing waived: it enters review without a card hold, and once approved it is published and opens the club for its partner without payment ([ADR 0040](decisions/0040-partner-join-link.md))|member|M|
-|FR-106|The `staff_owner` role must be able to read, rotate and revoke each join link (member and partner) in the console, one active link of each kind, and every such change must write an audit entry|staff_owner|M|
+|FR-105|Registration through an active member join link must create a sponsored member, who is never asked to pay and is never shown the payment screen; through an active VIP join link, the same sponsored member with a VIP first card ([ADR 0048](decisions/0048-vip-join-link.md)). A company application filed through an active partner join link must have its listing waived: it enters review without a card hold, and once approved it is published and opens the club for its partner without payment ([ADR 0040](decisions/0040-partner-join-link.md))|member|M|
+|FR-106|The `staff_owner` role must be able to read, rotate and revoke each join link (member, VIP and partner) in the console, one active link of each kind, and every such change must write an audit entry|staff_owner|M|
 |FR-107|A member who registered before membership dues were introduced must keep access permanently without paying|member|M|
 |FR-108|Membership access must follow the subscription state within 60 seconds of it changing, in both directions|system|M|
 |FR-110|An account created through the partner application must never be asked for membership dues; its access to the club must follow its paid listing (FR-044), in both directions and on the same statuses as every other entitlement ([ADR 0036](decisions/0036-payment-after-moderation.md), [ADR 0037](decisions/0037-card-held-at-application.md))|partner_owner|M|
@@ -253,6 +253,18 @@ dues and a business's listing; a club member waives a listing only.
 |FR-124|A newcomer brought through a member invite link whose inviter is a business partner or VIP member must become a sponsored member who is never asked to pay; through a club member's link they must owe dues. The first company filed by an account brought through a partner invite link must be on the invite route of [ADR 0044](decisions/0044-business-application-consents-and-invite-trial.md): the card is saved without a charge, and the listing is free for one calendar month from publication, then billed monthly until cancelled; the invitation is spent on that first application. Listings waived under the earlier rule stay waived. A partner whose own listing is waived rather than paid counts as a club member in the matrix|system|M|
 |FR-125|The cabinet must show a member how many members and how many businesses they have brought, as counts only; no endpoint may return to a member who the people they brought are|member|M|
 |FR-126|The staff console's member sheet must show who brought the member, through which kind of link and whether it was waived, and how many people the member has brought|staff_support|S|
+
+### 4.10 Partner reviews
+
+The decision is [ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md).
+A review is anonymous to everyone but staff, and nothing is published unread.
+
+|ID|Requirement|Role|Priority|
+|-|-|-|-|
+|FR-127|A member in the club must be able to leave one review of a published partner they do not own — a rating from 1 to 5 and a text of 10 to 1,000 characters. Writing again replaces it and returns it to moderation. A member outside the club, the partner's owner and a guest must be refused|member|M|
+|FR-128|A member must be able to delete their own review, and no one else's|member|S|
+|FR-129|A review must not be visible on the partner's page until a staff moderator approves it. Moderators must see the author and be able to approve or reject any review, and every decision must be audited|staff_moderator|M|
+|FR-130|A partner's page must show its approved reviews, newest first, each signed "Club member" with its rating and date, with the average rating and the count of approved reviews above them. No public read may return who wrote a review|guest|M|
 
 ---
 
@@ -385,6 +397,7 @@ before the largest surface (the staff console) is built.
 |9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
 |10 — Card hold and partner page|18|FR-113…FR-120|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
 |11 — Invite programme|19|FR-121…FR-126|Every member has invite links in the cabinet, a newcomer brought through one is recorded against the member who brought them and is waived exactly as the invite matrix says, the member sees counts and staff see who|
+|12 — Partner reviews|20|FR-127…FR-130|A member in the club reviews a partner, a moderator approves it, and the partner's page shows it signed "Club member" with the average rating|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

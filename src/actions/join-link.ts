@@ -1,5 +1,7 @@
 "use server";
 
+import type { JoinLinkKind } from "@/data/schema";
+
 import { randomBytes } from "node:crypto";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
@@ -17,7 +19,7 @@ import { z } from "zod";
 import { getCurrentMember } from "./session";
 
 /** Validated at the boundary: every export here is a public endpoint. */
-const kindSchema = z.enum(["member", "partner"]);
+const kindSchema = z.enum(["member", "partner", "vip"]);
 
 /**
  * The owner's control over the join link (FR-106, ADR 0033).
@@ -52,7 +54,7 @@ async function requestContext() {
   };
 }
 
-export async function getJoinLinkAction(kind: "member" | "partner") {
+export async function getJoinLinkAction(kind: JoinLinkKind) {
   await ownerOrThrow();
 
   const link = await findActiveJoinLink(db, kindSchema.parse(kind));
@@ -69,7 +71,7 @@ export async function getJoinLinkAction(kind: "member" | "partner") {
  * A new door, and the old one closed. 16 bytes of randomness: long enough that
  * guessing is hopeless, short enough to read down a phone.
  */
-export async function rotateJoinLinkAction(kind: "member" | "partner") {
+export async function rotateJoinLinkAction(kind: JoinLinkKind) {
   const member = await ownerOrThrow();
   const parsedKind = kindSchema.parse(kind);
   const context = await requestContext();
@@ -97,7 +99,7 @@ export async function rotateJoinLinkAction(kind: "member" | "partner") {
   return { id: link.id, secret: link.secret, createdAt: link.createdAt };
 }
 
-export async function revokeJoinLinkAction(kind: "member" | "partner") {
+export async function revokeJoinLinkAction(kind: JoinLinkKind) {
   const member = await ownerOrThrow();
   const parsedKind = kindSchema.parse(kind);
   const context = await requestContext();

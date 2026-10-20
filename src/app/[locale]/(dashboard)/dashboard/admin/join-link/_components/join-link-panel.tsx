@@ -9,6 +9,7 @@ import {
   rotateJoinLinkAction,
 } from "@/actions/join-link";
 import { Button } from "@/components/ui/button";
+import type { JoinLinkKind } from "@/data/schema";
 import {
   Card,
   CardContent,
@@ -17,6 +18,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+/** Each door's own words; the buttons are the same for all three. */
+const LABELS = {
+  member: {
+    title: "memberTitle",
+    purpose: "memberPurpose",
+    noneDescription: "noneDescription",
+    noneBody: "noneBody",
+  },
+  partner: {
+    title: "partnerTitle",
+    purpose: "partnerPurpose",
+    noneDescription: "partnerNoneDescription",
+    noneBody: "partnerNoneBody",
+  },
+  // ADR 0048: the member link with a VIP card from the start.
+  vip: {
+    title: "vipTitle",
+    purpose: "vipPurpose",
+    noneDescription: "vipNoneDescription",
+    noneBody: "vipNoneBody",
+  },
+} as const satisfies Record<JoinLinkKind, Record<string, string>>;
 
 interface JoinLink {
   secret: string;
@@ -35,7 +59,7 @@ export function JoinLinkPanel({
   baseUrl,
   locale,
 }: {
-  kind: "member" | "partner";
+  kind: JoinLinkKind;
   initialLink: JoinLink | null;
   baseUrl: string;
   locale: string;
@@ -76,16 +100,10 @@ export function JoinLinkPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {kind === "member" ? t("memberTitle") : t("partnerTitle")}
-        </CardTitle>
+        <CardTitle>{t(LABELS[kind].title)}</CardTitle>
         <CardDescription>
-          {kind === "member" ? t("memberPurpose") : t("partnerPurpose")}{" "}
-          {url
-            ? t("currentDescription")
-            : kind === "member"
-              ? t("noneDescription")
-              : t("partnerNoneDescription")}
+          {t(LABELS[kind].purpose)}{" "}
+          {url ? t("currentDescription") : t(LABELS[kind].noneDescription)}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -110,7 +128,7 @@ export function JoinLinkPanel({
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {kind === "member" ? t("noneBody") : t("partnerNoneBody")}
+            {t(LABELS[kind].noneBody)}
           </p>
         )}
       </CardContent>
