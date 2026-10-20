@@ -100,3 +100,32 @@ export function pricingDestinations(
     listing: `/${locale}/dashboard/company/new`,
   };
 }
+
+export type DuesOffer = {
+  /** The buttons on the dues screen, in the order shown. */
+  plans: ("membership" | "vip")[];
+  /** The payment box's wording, as the checkout actions accept it. */
+  wording: "member_dues" | "vip_new";
+};
+
+/**
+ * What the dues screen offers (ADR 0043, amended 2026-10-20).
+ *
+ * A visitor who chose VIP is offered VIP alone, with a box naming only the VIP
+ * price; the membership plan stays one link away. Anyone else sees both, and
+ * so does the VIP visitor when VIP cannot be sold, rather than no button at
+ * all. The choice grants nothing: access is still projected from Stripe.
+ */
+export function duesOffer(params: {
+  chosePlan: "vip" | undefined;
+  sellable: boolean;
+  vipSellable: boolean;
+}): DuesOffer {
+  if (params.chosePlan === "vip" && params.vipSellable) {
+    return { plans: ["vip"], wording: "vip_new" };
+  }
+  const plans: DuesOffer["plans"] = [];
+  if (params.sellable) plans.push("membership");
+  if (params.vipSellable) plans.push("vip");
+  return { plans, wording: "member_dues" };
+}

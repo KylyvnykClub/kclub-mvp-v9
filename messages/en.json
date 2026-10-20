@@ -1849,7 +1849,8 @@
     "businessNote": "Want your business in the catalogue? The listing is paid separately from membership — {listingPrice} a month, after the application is approved.",
     "businessLink": "Apply as a partner",
     "duesSubtitleVip": "Your account is ready. VIP costs {vipPrice} a month and includes membership — pay it and the club opens.",
-    "vipPayButton": "Pay {vipPrice} a month for VIP"
+    "vipPayButton": "Pay {vipPrice} a month for VIP",
+    "membershipOnlyLink": "Membership only — {price} a month"
   },
   "pricing": {
     "title": "Plans and prices",

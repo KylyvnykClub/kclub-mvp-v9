@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   MONTHLY_PRICE_MINOR,
+  duesOffer,
   formatPrice,
   monthlyPrice,
   pricingDestinations,
@@ -70,5 +71,25 @@ describe("FR-103: each pricing button arrives at the price it names", () => {
       vip: "/ru/dashboard/profile?tab=billing",
       listing: "/ru/dashboard/company/new",
     });
+  });
+});
+
+describe("ADR 0043: the dues screen offers what the visitor chose", () => {
+  it("offers VIP alone, with the VIP-only wording, to a visitor who chose VIP", () => {
+    expect(
+      duesOffer({ chosePlan: "vip", sellable: true, vipSellable: true }),
+    ).toEqual({ plans: ["vip"], wording: "vip_new" });
+  });
+
+  it("offers both plans to a visitor who chose nothing", () => {
+    expect(
+      duesOffer({ chosePlan: undefined, sellable: true, vipSellable: true }),
+    ).toEqual({ plans: ["membership", "vip"], wording: "member_dues" });
+  });
+
+  it("falls back to membership when VIP cannot be sold, rather than no button", () => {
+    expect(
+      duesOffer({ chosePlan: "vip", sellable: true, vipSellable: false }),
+    ).toEqual({ plans: ["membership"], wording: "member_dues" });
   });
 });
