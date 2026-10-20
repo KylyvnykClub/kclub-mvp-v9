@@ -8,8 +8,10 @@
  *      names (`.button`, `.section`, `.brand`, `.price`) cannot reach the
  *      catalogue, the dashboard or the console - the page that imports this
  *      file is the only page it styles;
- *   2. the light-theme token map is dropped. The landing is the dark page and
- *      always was; the rest of the site keeps the reader's own theme choice;
+ *   2. the light-theme token map is scoped to `html.light .kyl` (next-themes'
+ *      class) rather than `html[data-theme="light"]`. It was dropped at first;
+ *      since ADR 0050 the landing follows the reader's choice like every other
+ *      page, and the light fixes are at the bottom of the file;
  *   3. `assets/…` became `/brand/…`, and the two hand-drawn CSS flags became
  *      real flag files, because the flags now come from partner data and the
  *      prototype only drew nine countries;
@@ -47,6 +49,18 @@
   --ease: cubic-bezier(0.2, 0.75, 0.25, 1);
   --button-gold: linear-gradient(115deg, #ead7a6 0%, #bd914c 100%);
   color-scheme: dark;
+}
+/* The prototype's own light map, unchanged (ADR 0050). */
+html.light .kyl {
+  --ink: #eee8dc;
+  --ink-soft: #f8f3e9;
+  --panel: #f4eee3;
+  --panel-2: #fffaf1;
+  --text: #181512;
+  --muted: #655f57;
+  --line: rgba(119, 83, 28, 0.28);
+  --line-soft: rgba(23, 18, 12, 0.1);
+  color-scheme: light;
 }
 .kyl *,
 .kyl *::before,
@@ -4024,4 +4038,57 @@ body.kyl-menu-open {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/*
+ * ADR 0050: the light theme, reviewed section by section.
+ *
+ * The prototype's light map (top of the file) changes the surfaces and the
+ * body text; it left gold as it was, which on a light page is too pale to
+ * read. Gold *text* is darkened here. The parts that stay dark on purpose -
+ * the floating header and its menus, the hero over its photograph, the
+ * business plan card, the footer, the image panels - get the dark tokens
+ * back, so gold on them is the bright gold of the dark page.
+ */
+html.light .kyl {
+  --gold: #85601f;
+  --gold-bright: #8f6a2a;
+  --gold-dark: #6b4d17;
+}
+html.light .kyl .site-header,
+html.light .kyl .hero,
+html.light .kyl .plan-business,
+html.light .kyl .site-footer,
+html.light .kyl .mobile-menu,
+html.light .kyl .mobile-bottom-nav,
+html.light .kyl .kyl-select-panel,
+html.light .kyl .top-partner-image,
+html.light .kyl .partner-art {
+  --ink: #07080a;
+  --ink-soft: #0d0f13;
+  --panel: #111319;
+  --panel-2: #15171c;
+  --gold: #d8b261;
+  --gold-bright: #f0d486;
+  --gold-dark: #87652d;
+  --text: #f6f1e8;
+  --muted: #a6a39e;
+  --line: rgba(216, 178, 97, 0.23);
+  --line-soft: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
+}
+/* An open answer is content, not a dark card: the same light panel, gold edge. */
+html.light .kyl .faq-item.is-open {
+  background: var(--panel-2);
+}
+/* The gold-edged button outside the dark parts: a light face, dark gold text.
+   Inside them the tokens above make the same rule dark again. */
+html.light .kyl .button-secondary {
+  background:
+    linear-gradient(var(--panel-2), var(--panel-2)) padding-box,
+    var(--button-gold) border-box;
+}
+/* The discount chip on a catalogue card: its gold was a fixed light hex. */
+html.light .kyl .partner-benefit strong {
+  color: var(--gold);
 }

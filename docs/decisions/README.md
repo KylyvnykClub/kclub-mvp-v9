@@ -105,6 +105,7 @@ that the folder cannot be trusted.
 |[0047](0047-anonymous-moderated-partner-reviews.md)|Members review partners with 1–5 stars and a text, anonymously, published only after a moderator approves it|Accepted|2026-10-20|
 |[0048](0048-vip-join-link.md)|A third join link kind, `vip`: registration through it makes a sponsored member whose first card is VIP|Accepted|2026-10-20|
 |[0049](0049-partner-photo-gallery-withdrawn.md)|Partners no longer upload photos and the page shows no gallery; the logo is the banner. Stored photos are kept, not shown|Accepted|2026-10-20|
+|[0050](0050-landing-follows-the-theme-choice.md)|The landing page has the theme switch and a light theme from the prototype's own palette; header, hero, business card and footer stay dark|Accepted|2026-10-20|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 
