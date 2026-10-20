@@ -7,6 +7,7 @@ import {
   loadInviterStanding,
 } from "@/data/invite-links";
 import { findActiveJoinLinkById } from "@/data/join-links";
+import { joinLinkGrant } from "@/domain/join-link";
 import { inviteGrantsWaiver } from "@/domain/invites";
 import { env } from "@/env";
 import {
@@ -226,12 +227,17 @@ export async function registerMemberFromForm(
     );
     // And the door has to still be open: the seal says it was, half an hour
     // ago at most, but revoking a leaked link must take effect at once.
-    // Only the member link waives dues. The partner link (ADR 0040) waives a
-    // listing, and is read by the partner application instead.
+    // The member and VIP links waive dues; the VIP link also makes the first
+    // card VIP (ADR 0048). The partner link (ADR 0040) waives a listing, and
+    // is read by the partner application instead.
     const joinLink = pendingJoin
       ? await findActiveJoinLinkById(db, pendingJoin.joinLinkId)
       : null;
-    const sponsored = joinLink?.kind === "member";
+    const grant = joinLinkGrant(
+      joinLink?.kind ?? null,
+      options.duesKind === "partner" ? "partner" : "member",
+    );
+    const sponsored = grant.sponsored;
 
     // ADR 0042: a member's invite link. Proved the same way - a cookie the
     // route sealed, the link read again now - and judged by the inviter's
@@ -274,6 +280,7 @@ export async function registerMemberFromForm(
       phone: data.phone,
       email: data.email,
       duesKind,
+      cardTier: grant.cardTier,
       invitation,
       provenBy,
       code: data.code,

@@ -29,9 +29,15 @@ import { members } from "./members";
  *
  * ADR 0040 adds the second kind. A `member` link makes a sponsored member; a
  * `partner` link lets a business file its application with the listing
- * waived. Neither records who shared it.
+ * waived. ADR 0048 adds a `vip` link: a sponsored member whose first card is
+ * VIP. None records who shared it.
  */
-export const joinLinkKindEnum = pgEnum("join_link_kind", ["member", "partner"]);
+export const joinLinkKindEnum = pgEnum("join_link_kind", [
+  "member",
+  "partner",
+  /** ADR 0048: a sponsored member whose first card is VIP. */
+  "vip",
+]);
 
 export type JoinLinkKind = (typeof joinLinkKindEnum.enumValues)[number];
 
