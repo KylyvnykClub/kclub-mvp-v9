@@ -75,6 +75,7 @@ export default async function AdminMembersPage({
   }
   const canManageMembers = can(actor, "block", "member");
   const canExportMembers = can(actor, "export_data", "member");
+  const canEraseMembers = can(actor, "erase", "member");
 
   const { q, status, plan, page } = await searchParams;
   const list = await getMembersListAction({ query: q, status, plan, page });
@@ -242,6 +243,7 @@ export default async function AdminMembersPage({
                       member={m}
                       canManage={canManageMembers}
                       canExport={canExportMembers}
+                      canErase={canEraseMembers}
                     />
                   </TableCell>
                 </TableRow>

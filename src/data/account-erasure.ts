@@ -82,6 +82,24 @@ export async function findMembersDueForErasure(
 }
 
 /**
+ * When a member's deletion was asked for, or null when it never was. A staff
+ * owner erasing early needs the request to exist: "erase now" closes one, it
+ * does not open one.
+ */
+export async function findDeletionRequestedAt(
+  db: DbClient,
+  memberId: string,
+): Promise<Date | null> {
+  const [row] = await db
+    .select({ requestedAt: accountDeletionRequests.requestedAt })
+    .from(accountDeletionRequests)
+    .where(eq(accountDeletionRequests.memberId, memberId))
+    .orderBy(accountDeletionRequests.requestedAt)
+    .limit(1);
+  return row?.requestedAt ?? null;
+}
+
+/**
  * Erase one member.
  *
  * Everything here is inside one transaction: a half-erased member is worse

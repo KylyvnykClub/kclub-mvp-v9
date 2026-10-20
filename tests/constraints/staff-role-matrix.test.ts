@@ -186,6 +186,15 @@ const matrix: MatrixEntry[] = [
     admin: true,
     owner: true,
   },
+  // Owner only: erasing early is irreversible (FR-046).
+  {
+    action: "erase",
+    subject: "member",
+    support: false,
+    moderator: false,
+    admin: false,
+    owner: true,
+  },
   // Owner only: a reset hands whoever performs it the member's account (ADR 0018).
   {
     action: "reset_password",

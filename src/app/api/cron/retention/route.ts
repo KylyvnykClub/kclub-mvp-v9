@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { db } from "@/data/db";
-import { appendAuditEntry } from "@/data/audit-log";
-import {
-  eraseMemberTx,
-  findMembersDueForErasure,
-} from "@/data/account-erasure";
+import { findMembersDueForErasure } from "@/data/account-erasure";
 import {
   COMPANY_DRAFT_RETENTION_DAYS,
   deleteExpiredCompanyDrafts,
@@ -14,19 +9,13 @@ import {
 import { deleteExpiredNotifications } from "@/data/notifications";
 import { deleteExpiredConsentRecords } from "@/data/business-applications";
 import { deleteProcessedOutboxRows } from "@/data/outbox";
-import { listOwnedCompanyIds } from "@/data/companies";
-import { listCompanyImageRefsByOwner } from "@/data/company-images";
 import { env } from "@/env";
-import { eraseStripeCustomerForMember } from "@/modules/billing/erasure";
-import { authorizeCronRequest } from "@/modules/platform";
-import { deleteAvatar } from "@/modules/platform/avatar-storage";
-import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
 import {
-  deleteCompanyImage,
-  deleteCompanyLogo,
-} from "@/modules/platform/company-image-storage";
-
-const stripe = new Stripe(env.server.STRIPE_SECRET_KEY);
+  eraseMember,
+  productionMemberErasureDeps,
+} from "@/modules/identity/erase-member";
+import { authorizeCronRequest } from "@/modules/platform";
+import { deleteDraftMedia } from "@/modules/platform/draft-media-storage";
 
 export interface RetentionResult {
   companyDraftsDeleted: number;
@@ -91,57 +80,16 @@ export async function GET(req: Request) {
   let accountsErased = 0;
   let accountErasuresFailed = 0;
 
+  const erasureDeps = await productionMemberErasureDeps();
   for (const { memberId, requestedAt } of due) {
     try {
-      // data-storage.md §4 step 4, before the database half: a member with
-      // no Stripe Customer at all makes this a no-op.
-      await eraseStripeCustomerForMember(
-        db,
-        {
-          cancelSubscription: (id) => stripe.subscriptions.cancel(id),
-          deleteCustomer: (id) => stripe.customers.del(id),
-        },
+      await eraseMember(db, erasureDeps, {
         memberId,
-      );
-
-      // Collected before eraseMemberTx deletes the rows - afterwards the R2
-      // keys would no longer be derivable (ADR 0022).
-      const galleryRefs = await listCompanyImageRefsByOwner(db, memberId);
-      const ownedCompanyIds = await listOwnedCompanyIds(db, memberId);
-
-      await eraseMemberTx(db, memberId, now);
-      accountsErased += 1;
-
-      // Best-effort and outside the block above on purpose: an R2 object
-      // nobody references anymore, orphaned by a delete that failed or by R2
-      // not being configured in this environment, is not worth blocking or
-      // retrying the rest of this member's erasure over (ADR 0021-0023).
-      try {
-        await deleteAvatar(memberId);
-        for (const ref of galleryRefs) {
-          await deleteCompanyImage(ref.companyId, ref.imageId);
-        }
-        for (const companyId of ownedCompanyIds) {
-          await deleteCompanyLogo(companyId);
-        }
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
-        console.error(`[retention] media object deletion failed: ${message}`);
-      }
-
-      // data-storage.md §4 step 8: the audit log records that an erasure
-      // occurred, by internal id only - never by anything it just destroyed.
-      await appendAuditEntry(db, {
-        actorType: "system",
-        action: "member.erased",
-        subjectType: "member",
-        subjectId: memberId,
-        meta: {
-          requestedAt: requestedAt.toISOString(),
-          erasedAt: now.toISOString(),
-        },
+        requestedAt,
+        now,
+        trigger: { actorType: "system" },
       });
+      accountsErased += 1;
     } catch (error) {
       accountErasuresFailed += 1;
       const message = error instanceof Error ? error.message : "Unknown error";

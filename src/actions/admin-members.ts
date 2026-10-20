@@ -36,6 +36,11 @@ import { can, type Action, type Subject } from "@/domain/authorization";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requestAccountDeletionTx } from "@/data/account-deletion";
+import { findDeletionRequestedAt } from "@/data/account-erasure";
+import {
+  eraseMember,
+  productionMemberErasureDeps,
+} from "@/modules/identity/erase-member";
 import { listActiveSubscriptionsForDeletion } from "@/data/billing";
 import { listUndeletedCompanyIdsByOwner } from "@/data/companies";
 import {
@@ -140,6 +145,9 @@ export async function blockMemberAction(
   }
 
   const before = await findMemberAdminById(db, memberId);
+  if (before?.status === "pending_deletion") {
+    throw new Error("Member is pending deletion");
+  }
   const updated = await setMemberStatus(
     db,
     memberId,
@@ -381,6 +389,60 @@ export async function staffDeleteMemberAction(input: {
     // Told plainly, so staff press again: a renewal inside the 30 days would
     // otherwise bill a member they deleted.
     return { success: false, error: "renewals_not_stopped" };
+  }
+
+  revalidateAfterDeletion();
+  return { success: true };
+}
+
+const eraseMemberSchema = z.object({
+  memberId: z.uuid(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+/**
+ * FR-046 / FR-009: a staff owner erases a member now rather than on day 30.
+ *
+ * Only a member whose deletion is already recorded: the delete action is what
+ * stops renewals and takes the companies out. Any subscription still active
+ * is cancelled by the erasure itself, before the Stripe Customer is deleted.
+ * The erasure is the retention job's, through the same function.
+ */
+export async function staffEraseMemberNowAction(input: {
+  memberId: string;
+  reason: string;
+}) {
+  const session = await getCurrentMember();
+  const staff = requireAuthorized(session?.member, "erase", "member");
+
+  const parsed = eraseMemberSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const { memberId, reason } = parsed.data;
+
+  if (memberId === staff.id) return { success: false, error: "not_self" };
+
+  const target = await findMemberAdminById(db, memberId);
+  if (!target) return { success: false, error: "not_found" };
+  if (target.deletedAt) return { success: true, alreadyApplied: true };
+
+  const requestedAt = await findDeletionRequestedAt(db, memberId);
+  if (target.status !== "pending_deletion" || !requestedAt) {
+    return { success: false, error: "not_pending_deletion" };
+  }
+
+  try {
+    await eraseMember(db, await productionMemberErasureDeps(), {
+      memberId,
+      requestedAt,
+      now: new Date(),
+      trigger: { actorType: staff.role, actorId: staff.id, reason },
+    });
+  } catch (error) {
+    // Nothing was erased: Stripe goes first, and the request stays open for
+    // the next press or for day 30.
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[member-erasure] early erasure failed: ${message}`);
+    return { success: false, error: "erasure_failed" };
   }
 
   revalidateAfterDeletion();

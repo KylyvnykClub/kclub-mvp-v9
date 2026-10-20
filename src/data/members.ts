@@ -8,6 +8,7 @@ import {
   ilike,
   inArray,
   isNull,
+  ne,
   or,
   sql,
   type SQL,
@@ -218,7 +219,13 @@ const MEMBER_ADMIN_RELATIONS = {
  * the rows it returned.
  */
 function memberAdminWhere(filters: MemberAdminFilters): SQL {
-  const conditions: SQL[] = [inArray(members.role, CLUB_MEMBER_ROLES)];
+  const conditions: SQL[] = [
+    inArray(members.role, CLUB_MEMBER_ROLES),
+    // An erased member identifies nobody and can be acted on no further, so
+    // the console no longer lists them (FR-046). The row stays for the
+    // payment records that reference it (data-storage.md §4).
+    isNull(members.deletedAt),
+  ];
 
   if (filters.query) {
     const pattern = `%${filters.query}%`;
@@ -388,7 +395,13 @@ export async function setMemberStatus(
     .update(members)
     .set({ status })
     .where(
-      and(eq(members.id, memberId), inArray(members.role, CLUB_MEMBER_ROLES)),
+      and(
+        eq(members.id, memberId),
+        inArray(members.role, CLUB_MEMBER_ROLES),
+        // A deletion is not undone by blocking and unblocking: the request
+        // would stand while the status said "active" (FR-009).
+        ne(members.status, "pending_deletion"),
+      ),
     )
     .returning();
 
