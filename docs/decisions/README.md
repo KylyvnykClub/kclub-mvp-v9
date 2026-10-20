@@ -77,7 +77,7 @@ that the folder cannot be trusted.
 |[0019](0019-payment-before-moderation.md)|Take payment for a listing before moderation, not after|Superseded by 0036|2026-08-26|
 |[0020](0020-member-inbox.md)|Give every member an in-product inbox, and demote email to a delivery channel|Accepted|2026-08-27|
 |[0021](0021-member-avatar-upload.md)|Member avatars are uploaded through a server-side re-encode pipeline into R2|Accepted|2026-08-28|
-|[0022](0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Accepted|2026-08-29|
+|[0022](0022-company-photo-gallery.md)|Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline|Withdrawn from the interface by [0049](0049-partner-photo-gallery-withdrawn.md)|2026-08-29|
 |[0023](0023-company-logo-upload.md)|Company logos move onto the upload pipeline, superseding ADR 0013|Accepted|2026-08-29|
 |[0024](0024-onboarding-media-staging.md)|Onboarding media is staged under the applicant's draft and promoted on submission|Accepted|2026-08-29|
 |[0025](0025-city-lookup-from-countrystatecity.md)|The onboarding city picker reads city names from the CountryStateCity API|Accepted|2026-08-29|
@@ -104,6 +104,7 @@ that the folder cannot be trusted.
 |[0046](0046-partner-description-per-language.md)|A partner writes its description in each language itself; pages show the reader's language and fall back to the original|Accepted|2026-10-12|
 |[0047](0047-anonymous-moderated-partner-reviews.md)|Members review partners with 1–5 stars and a text, anonymously, published only after a moderator approves it|Accepted|2026-10-20|
 |[0048](0048-vip-join-link.md)|A third join link kind, `vip`: registration through it makes a sponsored member whose first card is VIP|Accepted|2026-10-20|
+|[0049](0049-partner-photo-gallery-withdrawn.md)|Partners no longer upload photos and the page shows no gallery; the logo is the banner. Stored photos are kept, not shown|Accepted|2026-10-20|
 
 Summarised in [architecture.md](../architecture.md#6-architectural-decisions).
 

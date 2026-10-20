@@ -2,25 +2,20 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { X } from "lucide-react";
 
 import {
-  deleteDraftImageAction,
   removeDraftLogoAction,
-  uploadDraftImageAction,
   uploadDraftLogoAction,
 } from "@/actions/company-draft-media";
 import { Label } from "@/components/ui/label";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { uploadImageSafely } from "@/lib/client-image-upload";
-import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 import { DRAFT_LOGO_SLOT, draftMediaServePath } from "@/lib/draft-media-path";
 import { FILE_INPUT_CLASS } from "./company-fields";
-import { FilledImage } from "@/components/media/filled-image";
 import { useImageCrop } from "@/components/media/image-crop-dialog";
 
 /**
- * Logo and photos staged under the applicant's draft prefix (ADR 0024).
+ * The logo staged under the applicant's draft prefix (ADR 0024).
  *
  * Only usable by someone who already has an account, because the staging
  * prefix is their member id. The public partner application therefore does
@@ -28,7 +23,6 @@ import { useImageCrop } from "@/components/media/image-crop-dialog";
  */
 
 const IMAGE_ERROR_KEYS: Record<string, string> = {
-  gallery_full: "galleryErrorFull",
   too_large: "avatarErrorTooLarge",
   unreadable: "avatarErrorUnreadable",
   unsupported_format: "avatarErrorUnsupportedFormat",
@@ -142,123 +136,6 @@ export function DraftLogoField({
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-export function DraftGalleryField({
-  imageIds,
-  onChange,
-}: {
-  imageIds: string[];
-  onChange: (ids: string[]) => void;
-}) {
-  const t = useTranslations("dashboard");
-  const [busy, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const { frame, cropDialog } = useImageCrop();
-
-  const report = (code: string | undefined) =>
-    setError(
-      code ? t(IMAGE_ERROR_KEYS[code] ?? "avatarErrorProcessingFailed") : null,
-    );
-
-  return (
-    <div className="space-y-3">
-      {cropDialog}
-      <div className="flex items-baseline justify-between">
-        <Label htmlFor="draftImage">{t("galleryLabel")}</Label>
-        <p className="text-xs text-muted-foreground">
-          {t("galleryCount", {
-            count: imageIds.length,
-            max: COMPANY_GALLERY_MAX_IMAGES,
-          })}
-        </p>
-      </div>
-      {error && (
-        <p role="alert" className="text-sm text-red-500">
-          {error}
-        </p>
-      )}
-      {imageIds.length > 0 && (
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {imageIds.map((id) => (
-            <li key={id} className="group relative aspect-square">
-              <FilledImage
-                src={draftMediaServePath(id)}
-                alt=""
-                className="size-full rounded-sm"
-              />
-              <button
-                type="button"
-                disabled={busy}
-                aria-label={t("galleryDelete")}
-                onClick={() =>
-                  startTransition(async () => {
-                    const result = await deleteDraftImageAction(id);
-                    report(result.success ? undefined : result.error);
-                    if (result.success)
-                      onChange(imageIds.filter((x) => x !== id));
-                  })
-                }
-                className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
-              >
-                <X className="size-3.5" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {imageIds.length < COMPANY_GALLERY_MAX_IMAGES && (
-        <div className="space-y-1">
-          <input
-            id="draftImage"
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={busy}
-            className={FILE_INPUT_CLASS}
-            onChange={(e) => {
-              void (async () => {
-                const picked = e.currentTarget.files?.[0];
-                if (!picked) return;
-                // The first photo is the page's banner (ADR 0038).
-                const file = await frame(
-                  picked,
-                  imageIds.length === 0 ? "banner" : "photo",
-                );
-                if (!file) {
-                  if (fileRef.current) fileRef.current.value = "";
-                  return;
-                }
-                startTransition(async () => {
-                  const formData = new FormData();
-                  formData.set("image", file);
-                  const guarded = await uploadImageSafely(file, () =>
-                    uploadDraftImageAction(formData),
-                  );
-                  if (fileRef.current) fileRef.current.value = "";
-                  if (!guarded.ok) {
-                    report(guarded.code);
-                    return;
-                  }
-                  const result = guarded.result;
-                  report(result.success ? undefined : result.error);
-                  if (result.success && result.imageId) {
-                    onChange([...imageIds, result.imageId]);
-                  }
-                });
-              })();
-            }}
-          />
-          <p className="text-xs text-muted-foreground">
-            {busy
-              ? t("galleryUploading")
-              : t("galleryHint", { max: COMPANY_GALLERY_MAX_IMAGES })}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

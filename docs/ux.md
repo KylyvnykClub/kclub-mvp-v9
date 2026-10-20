@@ -231,9 +231,10 @@ member to nominate a business, which is also how the catalogue grows.
    ([ADR 0025](decisions/0025-city-lookup-from-countrystatecity.md)); service
    countries are added one at a time from a type-ahead, with "worldwide" and
    "same as the country of registration" as shortcuts. For a signed-in
-   applicant the whole form is drafted a second after typing stops, and photos
-   are staged with the draft and become the company's on submission
-   ([ADR 0024](decisions/0024-onboarding-media-staging.md)).
+   applicant the whole form is drafted a second after typing stops, and the logo
+   is staged with the draft and becomes the company's on submission
+   ([ADR 0024](decisions/0024-onboarding-media-staging.md)). There are no
+   photos to add ([ADR 0049](decisions/0049-partner-photo-gallery-withdrawn.md)).
 2. Submits, and is taken to the standing screen, which asks for one thing:
    **reserve $19.99 on the card** — card, Apple Pay or Google Pay, on Stripe
    Checkout ([ADR 0037](decisions/0037-card-held-at-application.md)). The
@@ -357,7 +358,7 @@ re-announced to screen readers on submit.
 |Design tool and file|Figma — _(link to be added when the file exists)_|
 |Token source of truth|The codebase: `src/styles/tokens.css` as CSS custom properties. Figma variables mirror it. When they disagree, the code wins and Figma is corrected — one direction, decided now|
 |Icon set|Lucide, 1.5 px stroke, 20/24 px sizes only|
-|Illustration / imagery|Photography for partner covers, supplied by partners and re-encoded on upload. No stock illustration, no 3D renders — real businesses photograph better than any illustration style at this price point|
+|Illustration / imagery|Partner logos, supplied by partners and re-encoded on upload; the logo is also the page banner ([ADR 0049](decisions/0049-partner-photo-gallery-withdrawn.md)). No stock illustration, no 3D renders — real businesses photograph better than any illustration style at this price point|
 
 ### Tokens
 

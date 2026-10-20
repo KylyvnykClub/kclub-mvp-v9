@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { X } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { FILE_INPUT_CLASS } from "@/components/company/company-fields";
 import { useImageCrop } from "@/components/media/image-crop-dialog";
-import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 
 /**
- * Logo and photos on the public partner application (FR-109).
+ * The logo on the public partner application (FR-109).
  *
  * The dashboard form stages media under the applicant's draft prefix, which is
  * their member id (ADR 0024). A business filling this page in has no member id
@@ -26,10 +24,9 @@ import { COMPANY_GALLERY_MAX_IMAGES } from "@/lib/company-image-path";
 
 export type PartnerMedia = {
   logo: File | null;
-  images: File[];
 };
 
-export const EMPTY_PARTNER_MEDIA: PartnerMedia = { logo: null, images: [] };
+export const EMPTY_PARTNER_MEDIA: PartnerMedia = { logo: null };
 
 export function PartnerMediaField({
   media,
@@ -83,76 +80,6 @@ export function PartnerMediaField({
             <p className="text-xs text-muted-foreground">{t("logoHint")}</p>
           </div>
         </div>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <Label htmlFor="partnerImage">{t("galleryLabel")}</Label>
-          <p className="text-xs text-muted-foreground">
-            {t("galleryCount", {
-              count: media.images.length,
-              max: COMPANY_GALLERY_MAX_IMAGES,
-            })}
-          </p>
-        </div>
-
-        {media.images.length > 0 && (
-          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-            {media.images.map((file, index) => (
-              <li
-                key={`${file.name}-${index}`}
-                className="group relative aspect-square"
-              >
-                <LocalPreview
-                  file={file}
-                  className="size-full bg-muted object-contain"
-                />
-                <button
-                  type="button"
-                  aria-label={t("galleryDelete")}
-                  onClick={() =>
-                    onChange({
-                      ...media,
-                      images: media.images.filter((_, i) => i !== index),
-                    })
-                  }
-                  className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
-                >
-                  <X className="size-3.5" aria-hidden="true" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {media.images.length < COMPANY_GALLERY_MAX_IMAGES && (
-          <div className="space-y-1">
-            <input
-              id="partnerImage"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className={FILE_INPUT_CLASS}
-              onChange={(e) => {
-                void (async () => {
-                  const input = e.currentTarget;
-                  const file = input.files?.[0];
-                  if (!file) return;
-                  // The first photo is the page's banner (ADR 0038).
-                  const framed = await frame(
-                    file,
-                    media.images.length === 0 ? "banner" : "photo",
-                  );
-                  input.value = "";
-                  if (framed)
-                    onChange({ ...media, images: [...media.images, framed] });
-                })();
-              }}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("galleryHint", { max: COMPANY_GALLERY_MAX_IMAGES })}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

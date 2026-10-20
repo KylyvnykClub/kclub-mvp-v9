@@ -23,7 +23,6 @@ import { PartnerHero } from "./_components/partner-hero";
 import { localizedDescription } from "@/lib/company-description";
 import { MembershipCard } from "@/components/card/membership-card";
 import { env } from "@/env";
-import { FilledImage } from "@/components/media/filled-image";
 import {
   PartnerBusinessData,
   type BusinessDataRow,
@@ -204,10 +203,10 @@ export default async function PartnerLandingPage({ params }: Props) {
     .map((c) => c.subcategory)
     .filter((s): s is string => Boolean(s));
 
-  // The cover is the first uploaded photo and the gallery is the rest, so a
-  // partner's opening image is never shown twice on the same page.
-  const coverImage = partner.images[0] ?? null;
-  const galleryImages = partner.images.slice(1);
+  // The photo gallery is withdrawn (ADR 0049): the banner is the logo, shown
+  // whole on a blurred copy of itself. Photos already uploaded are kept in
+  // storage and no longer shown.
+  const coverSrc = partner.logoUrl;
 
   const serviceCountryLabels = partner.serviceCountries.map((item) => ({
     code: item.countryCode,
@@ -344,7 +343,7 @@ export default async function PartnerLandingPage({ params }: Props) {
         <div className="kclub-shell">
           <PartnerHero
             name={partner.name}
-            coverSrc={coverImage ? `/api/company-image/${coverImage.id}` : null}
+            coverSrc={coverSrc}
             coverAlt={tc("coverAlt", { name: partner.name })}
             country={heroCountry}
             location={
@@ -452,23 +451,6 @@ export default async function PartnerLandingPage({ params }: Props) {
                         </span>
                       ))
                     )}
-                  </div>
-                </section>
-              )}
-
-              {galleryImages.length > 0 && (
-                <section>
-                  <SectionHeader label={tc("gallerySection")} />
-                  <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-3">
-                    {galleryImages.map((image) => (
-                      <FilledImage
-                        key={image.id}
-                        src={`/api/company-image/${image.id}`}
-                        alt=""
-                        loading="lazy"
-                        className="aspect-[4/3] w-full rounded-md border border-border"
-                      />
-                    ))}
                   </div>
                 </section>
               )}
