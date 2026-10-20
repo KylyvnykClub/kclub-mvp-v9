@@ -23,6 +23,7 @@ import {
   blockMemberAction,
   resetMemberPasswordAction,
   staffDeleteMemberAction,
+  staffEraseMemberNowAction,
   revokeCardAction,
   reissueCardAction,
 } from "@/actions/admin-members";
@@ -59,14 +60,20 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+/** What a staff owner types to erase early; not translated, so it reads the same to all. */
+const ERASE_WORD = "ERASE";
+
 export function MemberDetailSheet({
   member,
   canExport,
   canManage,
+  canErase,
 }: {
   member: MemberAdminDirectoryView;
   canExport: boolean;
   canManage: boolean;
+  /** Staff owner only (FR-046): erase without waiting for day 30. */
+  canErase: boolean;
 }) {
   const t = useTranslations("admin.members");
   const tCard = useTranslations("card");
@@ -126,7 +133,28 @@ export function MemberDetailSheet({
     }, t("memberDeleted"));
   };
 
+  const handleEraseNow = () => {
+    if (reason.trim().length < 3) {
+      toast.error(t("reasonRequiredDelete"));
+      return;
+    }
+    // Typed, not clicked: this one cannot be taken back.
+    const typed = window.prompt(t("eraseConfirm", { word: ERASE_WORD }));
+    if (typed?.trim().toUpperCase() !== ERASE_WORD) return;
+    runAction(async () => {
+      const res = await staffEraseMemberNowAction({
+        memberId: member.id,
+        reason,
+      });
+      if (!res.success)
+        throw new Error(
+          res.error === "erasure_failed" ? t("eraseFailed") : (res.error ?? ""),
+        );
+    }, t("memberErased"));
+  };
+
   const isBlocked = member.status === "blocked";
+  const isPendingDeletion = member.status === "pending_deletion";
 
   const statusLabel = t(
     member.status === "blocked"
@@ -402,14 +430,18 @@ export function MemberDetailSheet({
                   placeholder={t("reasonPlaceholder")}
                 />
               </div>
-              <Button
-                variant={isBlocked ? "default" : "destructive"}
-                className="w-full"
-                onClick={handleBlockToggle}
-                disabled={isPending}
-              >
-                {isBlocked ? t("unblock") : t("block")}
-              </Button>
+              {/* A pending deletion is not blocked or unblocked: either would
+                  overwrite the status while the request stands. */}
+              {!isPendingDeletion && (
+                <Button
+                  variant={isBlocked ? "default" : "destructive"}
+                  className="w-full"
+                  onClick={handleBlockToggle}
+                  disabled={isPending}
+                >
+                  {isBlocked ? t("unblock") : t("block")}
+                </Button>
+              )}
 
               {/* ADR 0018: the only account recovery there is. The reason field
                   above is where the identity proof accepted gets recorded, since
@@ -504,6 +536,20 @@ export function MemberDetailSheet({
             >
               {t("deleteButton")}
             </Button>
+            {canErase && isPendingDeletion && (
+              <div className="mt-4 space-y-2 border-t border-border pt-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("eraseHint")}
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={handleEraseNow}
+                  disabled={isPending}
+                >
+                  {t("eraseButton")}
+                </Button>
+              </div>
+            )}
           </Section>
         </>
       )}

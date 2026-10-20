@@ -7,6 +7,7 @@ export type Action =
   | "create"
   | "update"
   | "delete"
+  | "erase"
   | "publish"
   | "unpublish"
   | "approve"
@@ -251,6 +252,13 @@ const rules: Array<{ action: Action; subject: Subject; check: Rule }> = [
     action: "delete",
     subject: "company",
     check: (a) => staffAtLeast(a, "staff_admin"),
+  },
+  // Erasing before day 30 is irreversible and takes away the window in which
+  // a deletion recorded by mistake can still be noticed, so it is the owner's.
+  {
+    action: "erase",
+    subject: "member",
+    check: (a) => staffAtLeast(a, "staff_owner"),
   },
   // Resetting a password is account takeover by another name: whoever does it
   // can then sign in as that member. Held at owner while the manual flow is the

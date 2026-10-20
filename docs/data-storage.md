@@ -248,7 +248,9 @@ to end — a deletion that stops at the primary database is not a deletion:
    companies, so nothing is billed or published during the window.
 2. Sessions are revoked and sign-in is blocked immediately, so the account
    cannot be used during the window.
-3. On day 30 an Inngest job runs the erasure: anonymise the member row; delete
+3. On day 30 the daily retention cron (`/api/cron/retention`) runs the
+   erasure — or a staff owner runs the same function earlier with "Erase now"
+   (FR-046), audited with their id and reason: anonymise the member row; delete
    sessions, trusted devices, verification records and the card's QR token;
    soft-delete owned companies (`companies.deleted_at`, rejected, contact
    details cleared — which unpublishes any that are live, a waived one too);

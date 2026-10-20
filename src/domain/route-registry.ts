@@ -552,6 +552,15 @@ const staticRoutes: RouteEntry[] = [
   },
   {
     method: "POST",
+    path: "action:staffEraseMemberNowAction",
+    action: "erase",
+    subject: "member",
+    mutating: true,
+    staffOnly: true,
+    audited: true,
+  },
+  {
+    method: "POST",
     path: "action:staffDeleteCompanyAction",
     action: "delete",
     subject: "company",
