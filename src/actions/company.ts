@@ -1257,6 +1257,8 @@ const staffEditCompanySchema = z.object({
   descriptionEn: z.string().max(1000).optional(),
   descriptionUk: z.string().max(1000).optional(),
   descriptionRu: z.string().max(1000).optional(),
+  // FR-031: a partner that serves the whole world is listed in every country.
+  servesWorldwide: z.boolean().optional(),
 });
 
 export async function staffEditCompanyAction(
@@ -1269,6 +1271,7 @@ export async function staffEditCompanyAction(
     descriptionEn?: string;
     descriptionUk?: string;
     descriptionRu?: string;
+    servesWorldwide?: boolean;
   },
 ) {
   const auth = await getCurrentMember();
@@ -1301,6 +1304,8 @@ export async function staffEditCompanyAction(
     updateFields.contactEmail = parsed.data.contactEmail || null;
   if (parsed.data.contactPhone !== undefined)
     updateFields.contactPhone = parsed.data.contactPhone || null;
+  if (parsed.data.servesWorldwide !== undefined)
+    updateFields.servesWorldwide = parsed.data.servesWorldwide ? 1 : 0;
 
   await updateCompanyFields(db, companyId, updateFields);
 

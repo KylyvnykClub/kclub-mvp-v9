@@ -675,8 +675,13 @@ async function approvedCompanyConditions(
     );
   }
 
+  // A partner serving the whole world is in every city too (FR-031); the
+  // ordering below puts it after the partners actually located there.
   if (filters?.city) {
-    conditions = and(conditions, ilike(companies.city, filters.city));
+    conditions = and(
+      conditions,
+      or(ilike(companies.city, filters.city), eq(companies.servesWorldwide, 1)),
+    );
   }
 
   if (filters?.query) {
@@ -698,6 +703,32 @@ async function approvedCompanyConditions(
   return conditions;
 }
 
+/**
+ * Local partners first, worldwide partners last (FR-031).
+ *
+ * Only once a place is chosen: without one there is nothing to be local to.
+ * Rank 0 is registered in the chosen country (and city, when one is chosen),
+ * rank 1 serves that country from elsewhere, rank 2 serves the whole world.
+ * In SQL rather than after the fetch, so paging keeps the order.
+ */
+function localityOrder(filters?: PartnerFilters) {
+  const code = filters?.serviceCountryCode?.toUpperCase();
+  if (!code && !filters?.city) return [];
+
+  const local = and(
+    code ? eq(companies.registrationCountryCode, code) : undefined,
+    filters?.city ? ilike(companies.city, filters.city) : undefined,
+  );
+
+  return [
+    asc(sql`CASE
+      WHEN ${local} THEN 0
+      WHEN ${companies.servesWorldwide} = 1 THEN 2
+      ELSE 1
+    END`),
+  ];
+}
+
 export async function listApprovedCompaniesByIds(
   db: DbClient,
   ids: string[],
@@ -707,14 +738,17 @@ export async function listApprovedCompaniesByIds(
   const conditions = await approvedCompanyConditions(db, ids, filters);
   if (conditions === null) return [];
 
-  const orderBy = filters?.query
-    ? [
-        desc(sql`
+  const orderBy = [
+    ...localityOrder(filters),
+    ...(filters?.query
+      ? [
+          desc(sql`
           ts_rank("companies"."search_vector", websearch_to_tsquery('simple', ${filters.query}))
           + similarity(lower("companies"."name"), lower(${filters.query})) * 0.3
         `),
-      ]
-    : [asc(companies.name)];
+        ]
+      : [asc(companies.name)]),
+  ];
 
   // Unpaged when no page is asked for, because every existing caller - the
   // tests and the billing checks - reads the whole set.
@@ -1358,6 +1392,7 @@ export async function updateCompanyFields(
     website: string | null;
     country: string | null;
     city: string | null;
+    servesWorldwide: 0 | 1;
   }>,
 ): Promise<void> {
   await db

@@ -220,6 +220,7 @@ export default async function CatalogueDirectoryPage({
                   noDescription={t("noDescription")}
                   detailsLabel={t("details")}
                   specialPrivilegesLabel={t("specialPrivilegesBadge")}
+                  worldwideLabel={t("worldwideBadge")}
                 />
               ))
             )}

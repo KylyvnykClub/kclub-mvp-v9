@@ -165,6 +165,7 @@ export function CompanyDetailSheet({
     descriptionEn: "",
     descriptionUk: "",
     descriptionRu: "",
+    servesWorldwide: false,
   });
   const [showcaseType, setShowcaseType] = useState<"none" | "top" | "featured">(
     "none",
@@ -190,6 +191,7 @@ export function CompanyDetailSheet({
         descriptionEn: res.data.company.descriptionTranslations?.en ?? "",
         descriptionUk: res.data.company.descriptionTranslations?.uk ?? "",
         descriptionRu: res.data.company.descriptionTranslations?.ru ?? "",
+        servesWorldwide: res.data.company.servesWorldwide === 1,
       });
       setShowcaseType(res.data.company.showcaseType);
       setShowcaseRank(String(res.data.company.showcaseRank));
@@ -378,6 +380,18 @@ export function CompanyDetailSheet({
           disabled={!canModerate}
         />
       </div>
+      {/* FR-031: listed in every country, after the local partners. */}
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={edit.servesWorldwide}
+          onChange={(e) =>
+            setEdit({ ...edit, servesWorldwide: e.target.checked })
+          }
+          disabled={!canModerate}
+        />
+        {t("servesWorldwideLabel")}
+      </label>
       {canModerate && (
         <Button
           onClick={() =>

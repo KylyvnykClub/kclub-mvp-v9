@@ -619,6 +619,7 @@ export default async function PartnerLandingPage({ params }: Props) {
                     noDescription={tc("noDescription")}
                     detailsLabel={tc("details")}
                     specialPrivilegesLabel={tc("specialPrivilegesBadge")}
+                    worldwideLabel={tc("worldwideBadge")}
                   />
                 ))}
               </div>

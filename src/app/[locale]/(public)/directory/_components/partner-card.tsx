@@ -38,6 +38,7 @@ export function PartnerCard({
   noDescription,
   detailsLabel,
   specialPrivilegesLabel,
+  worldwideLabel,
   locale,
 }: {
   partner: PartnerCompanyView;
@@ -49,8 +50,15 @@ export function PartnerCard({
   detailsLabel: string;
   /** FR-117. Omitted by a caller that has no room for it. */
   specialPrivilegesLabel?: string;
+  /** FR-031: says why a partner from elsewhere is in this country's list. */
+  worldwideLabel?: string;
 }) {
-  const location = locationLabel(partner);
+  const location = [
+    locationLabel(partner),
+    partner.servesWorldwide === 1 ? worldwideLabel : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const description = localizedDescription(partner, locale) || noDescription;
   const initial = partner.name.charAt(0).toUpperCase();
 
