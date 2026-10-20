@@ -29,6 +29,15 @@ import {
   type BusinessDataRow,
 } from "./_components/partner-business-data";
 import { HowToSteps, SectionHeader } from "./_components/partner-sections";
+import { PartnerReviews } from "./_components/partner-reviews";
+import { ReviewForm } from "./_components/review-form";
+import {
+  approvedReviewSummary,
+  findOwnReview,
+  listApprovedReviews,
+} from "@/data/company-reviews";
+import { awaitsPaymentOutsideClub } from "@/data/membership-access";
+import { reviewEligibility } from "@/domain/reviews";
 import { PartnerCard } from "../_components/partner-card";
 import { db } from "@/data/db";
 import { findActiveSubscriptionByPrice } from "@/data/billing";
@@ -128,6 +137,29 @@ export default async function PartnerLandingPage({ params }: Props) {
       }
     }
   }
+
+  // FR-130 / ADR 0047: approved reviews for everyone, the form for a member
+  // in the club who does not own this partner.
+  const now = new Date();
+  const [reviewSummary, reviews, ownReview, inClub] = await Promise.all([
+    approvedReviewSummary(db, partner.id),
+    listApprovedReviews(db, partner.id),
+    session?.member
+      ? findOwnReview(db, partner.id, session.member.id)
+      : Promise.resolve(null),
+    session?.member
+      ? session.member.status === "active" &&
+        awaitsPaymentOutsideClub(db, session.member, now).then(
+          (awaits) => !awaits,
+        )
+      : Promise.resolve(false),
+  ]);
+  // The page only renders for a visible partner, so visibility is given.
+  const reviewViewer = reviewEligibility({
+    viewer: session?.member ? { id: session.member.id, inClub } : null,
+    company: { ownerId: partner.ownerId, visible: true },
+  });
+  const tReviews = await getTranslations("reviews");
 
   const tr = await getTranslations("Referral");
   const tc = await getTranslations("catalogue");
@@ -445,6 +477,44 @@ export default async function PartnerLandingPage({ params }: Props) {
                 <SectionHeader label={tc("howToSection")} />
                 <HowToSteps steps={howToSteps} />
               </section>
+
+              <PartnerReviews
+                summary={reviewSummary}
+                reviews={reviews}
+                locale={locale}
+                labels={{
+                  section: tReviews("section"),
+                  empty: tReviews("empty"),
+                  author: tReviews("author"),
+                  average: tReviews("average", {
+                    average: (reviewSummary.average ?? 0).toLocaleString(
+                      locale,
+                      { maximumFractionDigits: 1 },
+                    ),
+                    count: reviewSummary.count,
+                  }),
+                  ratingOutOf: (rating) => tReviews("ratingOutOf", { rating }),
+                }}
+                form={
+                  reviewViewer === "reviewer" ? (
+                    <ReviewForm companyId={partner.id} own={ownReview} />
+                  ) : reviewViewer === "guest" ? (
+                    <p className="text-sm text-muted-foreground">
+                      <Link
+                        href={`/${locale}/login`}
+                        className="font-bold text-foreground underline hover:text-accent-ink"
+                      >
+                        {tReviews("signInLink")}
+                      </Link>
+                      {tReviews("signInToReview")}
+                    </p>
+                  ) : reviewViewer === "not_in_club" ? (
+                    <p className="text-sm text-muted-foreground">
+                      {tReviews("membersOnly")}
+                    </p>
+                  ) : null
+                }
+              />
             </div>
 
             <aside className="flex flex-col gap-4 lg:sticky lg:top-24">

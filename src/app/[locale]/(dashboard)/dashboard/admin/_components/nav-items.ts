@@ -10,11 +10,13 @@ import {
   ScrollText,
   KeyRound,
   FileText,
+  Star,
 } from "lucide-react";
 import type { Actor } from "@/domain/actor";
 import { can } from "@/domain/authorization";
 
-export type AdminNavBadgeKey = "pendingCompanies" | "pendingReferrals";
+export type AdminNavBadgeKey =
+  "pendingCompanies" | "pendingReferrals" | "pendingReviews";
 
 /** Sidebar section. `null` renders without a group label. */
 export type AdminNavGroupKey = "management" | "platform" | null;
@@ -63,6 +65,14 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: Handshake,
     show: (a) => can(a, "approve", "referral") || can(a, "reject", "referral"),
     badge: "pendingReferrals",
+    group: "management",
+  },
+  {
+    key: "reviews",
+    href: "/reviews",
+    icon: Star,
+    show: (a) => can(a, "approve", "review") || can(a, "reject", "review"),
+    badge: "pendingReviews",
     group: "management",
   },
   {

@@ -5,6 +5,7 @@ import { setRequestLocale } from "next-intl/server";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getCurrentMember } from "@/actions/session";
 import { getSupportMetricsAction } from "@/actions/admin-support";
+import { countPendingReviewsAction } from "@/actions/reviews";
 import { buildActor, staffAtLeast } from "@/domain/actor";
 import { AdminSidebar } from "./_components/admin-sidebar";
 import { AdminTopbar } from "./_components/admin-topbar";
@@ -29,6 +30,7 @@ export default async function AdminLayout({ children, params }: Props) {
   }
 
   const metrics = await getSupportMetricsAction();
+  const pendingReviews = await countPendingReviewsAction();
 
   // The collapsed/expanded choice survives reloads the way the sidebar
   // primitive persists it: a plain (non-sensitive) cookie.
@@ -44,6 +46,7 @@ export default async function AdminLayout({ children, params }: Props) {
         counts={{
           pendingCompanies: metrics.pendingCompanies,
           pendingReferrals: metrics.pendingReferrals,
+          pendingReviews,
         }}
       />
       <SidebarInset className="min-w-0 overflow-x-clip">
