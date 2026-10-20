@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm";
 
 import type { DbClient } from "./db";
 import {
@@ -6,6 +6,7 @@ import {
   cards,
   companies,
   companyImages,
+  companyReviews,
   invitations,
   inviteLinks,
   members,
@@ -186,6 +187,23 @@ export async function eraseMemberTx(
     // The inbox describes things that happened to this person and names their
     // companies; none of it survives them (ADR 0020).
     await tx.delete(notifications).where(eq(notifications.memberId, memberId));
+
+    // ADR 0047: a review is personal data even unsigned - its text can name
+    // the person who wrote it. Reviews of the member's own companies go too.
+    await tx
+      .delete(companyReviews)
+      .where(eq(companyReviews.memberId, memberId));
+    await tx
+      .delete(companyReviews)
+      .where(
+        inArray(
+          companyReviews.companyId,
+          tx
+            .select({ id: companies.id })
+            .from(companies)
+            .where(eq(companies.ownerId, memberId)),
+        ),
+      );
 
     // Owned companies leave the catalogue for good (data-storage.md §4,
     // step 3): soft-deleted and rejected, with the contact details - a

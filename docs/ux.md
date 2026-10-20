@@ -106,7 +106,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Membership dues (`/{locale}/membership`)|Pay the $4.99 monthly dues and get in|member|The only screen a member reaches while their dues are unpaid — everything else under `(dashboard)` redirects here (FR-103). It sits outside the member area, because a screen inside the gated layout would redirect to itself. Price, what membership includes, one button to Stripe Checkout, a note that VIP is added on top of membership (ADR 0033), a link to Pricing, sign out. A member without a company is offered the partner application, because the listing is paid for separately. One who has filed a company also sees its listing standing and the $19.99 hold above the dues card. Never shown to a sponsored or legacy-free member|
 |My card|Show membership|member|Default landing. Large QR, tier, serial, name-visibility toggle|
 |Catalogue|Find a trusted business|member|Search, category/country/city filters, results|
-|Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element|
+|Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element. Below the how-to steps, the reviews block (FR-130): average stars and count, approved reviews signed "Club member", and the form for a member in the club — a guest is asked to sign in, an owner sees no form ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|
 |VIP upgrade|Understand and buy VIP|member|Honest about what VIP does and does not add|
 |My subscription|Manage or cancel|member|Renewal date, price, link to the Stripe portal|
 |My companies|See status of businesses I submitted|member|One card per company with its state and next action|

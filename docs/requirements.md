@@ -62,7 +62,7 @@ plus partner listings combined, ~$8,000 MRR). Leading indicators are in
 |Not building|Why / when|
 |-|-|
 |Member directory, member search, member-to-member messaging|Rejected permanently. The absence of a member directory is the product promise — see [decisions/0005-no-member-directory.md](decisions/0005-no-member-directory.md)|
-|Ratings and user-written reviews of partners|Rejected. Invites gaming and retaliation; contradicts a moderated, trust-based club. Testimonials on the marketing site are curated by staff|
+|Unmoderated or signed reviews of partners|Rejected. Invites gaming and retaliation, and a signed review discloses a member. Anonymous reviews published after moderation are in scope since 2026-10-20 (§4.10, [ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|
 |Any reward, commission or bonus for introducing a member or a partner|Rejected permanently. The product must be structurally unable to function as MLM; there is no referral code, no downline, no payout|
 |Taking payment for partner goods or services; escrow; dispute arbitration|Rejected. We charge for membership and for listing only. Changes the regulatory posture entirely (money transmission)|
 |Native iOS/Android applications|Deferred indefinitely. Responsive web plus PWA install covers the phone case|
@@ -254,6 +254,18 @@ dues and a business's listing; a club member waives a listing only.
 |FR-125|The cabinet must show a member how many members and how many businesses they have brought, as counts only; no endpoint may return to a member who the people they brought are|member|M|
 |FR-126|The staff console's member sheet must show who brought the member, through which kind of link and whether it was waived, and how many people the member has brought|staff_support|S|
 
+### 4.10 Partner reviews
+
+The decision is [ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md).
+A review is anonymous to everyone but staff, and nothing is published unread.
+
+|ID|Requirement|Role|Priority|
+|-|-|-|-|
+|FR-127|A member in the club must be able to leave one review of a published partner they do not own — a rating from 1 to 5 and a text of 10 to 1,000 characters. Writing again replaces it and returns it to moderation. A member outside the club, the partner's owner and a guest must be refused|member|M|
+|FR-128|A member must be able to delete their own review, and no one else's|member|S|
+|FR-129|A review must not be visible on the partner's page until a staff moderator approves it. Moderators must see the author and be able to approve or reject any review, and every decision must be audited|staff_moderator|M|
+|FR-130|A partner's page must show its approved reviews, newest first, each signed "Club member" with its rating and date, with the average rating and the count of approved reviews above them. No public read may return who wrote a review|guest|M|
+
 ---
 
 ## 5. Non-functional requirements
@@ -385,6 +397,7 @@ before the largest surface (the staff console) is built.
 |9 — Partner funnel|17|FR-109…FR-112|A business reaches the application from the landing page, files it on one page without joining the club, is charged nothing until a moderator approves it, and a refused registration can be corrected and resubmitted|
 |10 — Card hold and partner page|18|FR-113…FR-120|A partner's card is held at application, an approval captures it and publishes the listing only once Stripe confirms the payment, a rejection releases it, and a published partner's page, logo and QR code work for a visitor who has never signed in|
 |11 — Invite programme|19|FR-121…FR-126|Every member has invite links in the cabinet, a newcomer brought through one is recorded against the member who brought them and is waived exactly as the invite matrix says, the member sees counts and staff see who|
+|12 — Partner reviews|20|FR-127…FR-130|A member in the club reviews a partner, a moderator approves it, and the partner's page shows it signed "Club member" with the average rating|
 
 Phases overlap deliberately: frontend work on a phase starts while the previous
 phase's backend is being verified.

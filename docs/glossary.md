@@ -59,6 +59,7 @@ variation.
 |Catalogue|The member-only, searchable set of published partners|`catalogue` module|—|"Directory" — rejected, because a directory implies listing people, which we never do. "Marketplace" — rejected, we sell nothing on a partner's behalf|
 |Service country|A country a partner says it serves besides the one it is registered in. The catalogue finds the partner under it, after the partners registered there (FR-031)|`serviceCountries`|`company_service_countries`|The registration country, which is a legal fact, not a service area|
 |Worldwide partner|A partner that serves every country. Found under any country and any city, always after the local partners (FR-031). Set by the partner at application or by staff|`servesWorldwide`|`companies.serves_worldwide`|"Online" — a business format; an online partner may still serve only one country|
+|Review|A member's rating (1–5) and text about a partner, shown only once a moderator approves it and signed "Club member" ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|`companyReviews`, `reviewEligibility`|`company_reviews`|"Testimonial" — curated by staff for the marketing site, not written by a member. "Feedback" — too vague|
 |Showcase|The curated set of partners visible on the public site|`showcase`|`company.showcase_rank`|The catalogue. The showcase is a marketing surface; the catalogue is the product|
 |Referral|A warm introduction of a **client** from one partner company to another. The user-facing English name is "Client referral"|`Referral`|`referral`|**"Business Introduction"** — a different feature entirely (see the next row). "Lead" — rejected, it frames a person as a commodity. "Invitation" — that is a member bringing in another member ([ADR 0042](decisions/0042-member-invite-programme.md)), a different feature|
 |Business Introduction|The legal pack's name for introducing two **participants** to each other and exchanging their own contact details, plus networking events. Listed in Club Rules §3.2 as a VIP benefit separate from client referrals, and governed by its own Business Introduction Rules|— (not implemented)|—|Client referral, which moves a **third party's** data and is not covered by those Rules. Confusing the two is the error in [legal-alignment.md C-02](legal-alignment.md#c-02-business-introductions-and-client-referrals-are-two-different-features-and-only-one-is-designed)|
@@ -110,6 +111,7 @@ variation.
 |Catalogue|Каталог партнёров|Каталог партнерів|Always with "партнёров" — "каталог" alone is ambiguous|
 |Worldwide partner|Весь мир|Увесь світ|The badge on the card and the staff checkbox; never "глобальный"|
 |Service country|Страна обслуживания|Країна обслуговування||
+|Review|Отзыв|Відгук|Signed "Участник клуба" / "Учасник клубу", never by name|
 |Discount|Скидка|Знижка||
 |Client referral|Рекомендация клиента|Рекомендація клієнта|Never "лид" or "заявка". The legal pack uses this exact wording in Club Rules §3.2|
 |Business Introduction|Business Introduction|Business Introduction|Left untranslated in all three languages, as the legal pack does|
