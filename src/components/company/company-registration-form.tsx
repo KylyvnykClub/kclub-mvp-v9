@@ -30,8 +30,7 @@ import {
   SectionHeading,
   type CompanyFormValues,
 } from "./company-fields";
-import { DraftGalleryField, DraftLogoField } from "./company-draft-media";
-import { parseDraftImageIds } from "@/lib/draft-media-path";
+import { DraftLogoField } from "./company-draft-media";
 import {
   ApplicationConsents,
   useApplicationConsents,
@@ -216,7 +215,6 @@ export function CompanyRegistrationForm({
   }
 
   const issue = state?.issue ?? null;
-  const stagedImageIds = parseDraftImageIds(values.galleryImageIds);
 
   return (
     // Submitted by hand rather than through `action`: React 19 resets a form
@@ -254,16 +252,6 @@ export function CompanyRegistrationForm({
             setValues((current) => ({
               ...current,
               logoStaged: staged ? "true" : "",
-            }))
-          }
-        />
-
-        <DraftGalleryField
-          imageIds={stagedImageIds}
-          onChange={(ids) =>
-            setValues((current) => ({
-              ...current,
-              galleryImageIds: ids.join(","),
             }))
           }
         />

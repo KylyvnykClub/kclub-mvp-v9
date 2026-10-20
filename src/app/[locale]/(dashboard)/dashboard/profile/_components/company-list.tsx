@@ -2,16 +2,13 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { X } from "lucide-react";
 import { createPortalSessionAction } from "@/actions/stripe";
 import { PartnerStanding } from "@/app/[locale]/(auth)/membership/_components/partner-standing";
 import type { PartnerPaymentStanding } from "@/domain/listing-hold";
 import type { ListingStandingExtras } from "@/modules/catalogue/listing-standing";
 import { ListingActions } from "@/components/company/listing-actions";
 import {
-  deleteCompanyImageAction,
   removeCompanyLogoAction,
-  uploadCompanyImageAction,
   uploadCompanyLogoAction,
 } from "@/actions/company-images";
 import { uploadImageSafely } from "@/lib/client-image-upload";
@@ -27,13 +24,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/lib/countries";
-import {
-  COMPANY_GALLERY_MAX_IMAGES,
-  companyImageServePath,
-} from "@/lib/company-image-path";
 import type { Locale } from "@/i18n/routing";
 import { PartnerQr } from "./partner-qr";
-import { FilledImage } from "@/components/media/filled-image";
 import { useImageCrop } from "@/components/media/image-crop-dialog";
 
 export function CompanyList({
@@ -375,23 +367,17 @@ export function CompanyList({
               )}
 
               {company.moderationStatus !== "rejected" && (
-                <>
-                  <LogoSection
-                    companyId={company.id}
-                    // Versioned so a replaced logo is refetched rather than
-                    // served from the browser's copy of the old one.
-                    logoUrl={
-                      company.logoUrl
-                        ? `${company.logoUrl}?v=${company.updatedAt.getTime()}`
-                        : null
-                    }
-                    name={company.name}
-                  />
-                  <GallerySection
-                    companyId={company.id}
-                    images={company.images}
-                  />
-                </>
+                <LogoSection
+                  companyId={company.id}
+                  // Versioned so a replaced logo is refetched rather than
+                  // served from the browser's copy of the old one.
+                  logoUrl={
+                    company.logoUrl
+                      ? `${company.logoUrl}?v=${company.updatedAt.getTime()}`
+                      : null
+                  }
+                  name={company.name}
+                />
               )}
             </CardContent>
           </Card>
@@ -510,130 +496,6 @@ function LogoSection({
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function GallerySection({
-  companyId,
-  images,
-}: {
-  companyId: string;
-  images: { id: string }[];
-}) {
-  const t = useTranslations("dashboard");
-  const [busy, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const { frame, cropDialog } = useImageCrop();
-
-  const errorKeys: Record<string, string> = {
-    gallery_full: "galleryErrorFull",
-    too_large: "avatarErrorTooLarge",
-    unreadable: "avatarErrorUnreadable",
-    unsupported_format: "avatarErrorUnsupportedFormat",
-    processing_failed: "avatarErrorProcessingFailed",
-    upload_failed: "avatarErrorUploadFailed",
-  };
-
-  const report = (code: string | undefined) =>
-    setError(code ? t(errorKeys[code] ?? "avatarErrorProcessingFailed") : null);
-
-  const upload = (file: File) => {
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.set("image", file);
-      const guarded = await uploadImageSafely(file, () =>
-        uploadCompanyImageAction(companyId, formData),
-      );
-      if (fileRef.current) fileRef.current.value = "";
-      if (!guarded.ok) {
-        report(guarded.code);
-        return;
-      }
-      report(guarded.result.success ? undefined : guarded.result.error);
-    });
-  };
-
-  const remove = (imageId: string) => {
-    startTransition(async () => {
-      const result = await deleteCompanyImageAction(imageId);
-      report(result.success ? undefined : result.error);
-    });
-  };
-
-  return (
-    <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
-      {cropDialog}
-      <div className="flex items-baseline justify-between">
-        <p className="text-sm font-medium">{t("galleryLabel")}</p>
-        <p className="text-xs text-muted-foreground">
-          {t("galleryCount", {
-            count: images.length,
-            max: COMPANY_GALLERY_MAX_IMAGES,
-          })}
-        </p>
-      </div>
-
-      {error && (
-        <p role="alert" className="text-sm text-red-500">
-          {error}
-        </p>
-      )}
-
-      {images.length > 0 && (
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {images.map((image) => (
-            <li key={image.id} className="group relative aspect-square">
-              <FilledImage
-                src={companyImageServePath(image.id)}
-                alt=""
-                className="size-full rounded-sm"
-              />
-              <button
-                type="button"
-                onClick={() => remove(image.id)}
-                disabled={busy}
-                aria-label={t("galleryDelete")}
-                className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
-              >
-                <X className="size-3.5" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {images.length < COMPANY_GALLERY_MAX_IMAGES && (
-        <div className="space-y-1">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={busy}
-            aria-label={t("galleryAdd")}
-            onChange={(e) => {
-              void (async () => {
-                const picked = e.currentTarget.files?.[0];
-                if (!picked) return;
-                // The first photo is the page's banner (ADR 0038).
-                const file = await frame(
-                  picked,
-                  images.length === 0 ? "banner" : "photo",
-                );
-                if (file) upload(file);
-                else if (fileRef.current) fileRef.current.value = "";
-              })();
-            }}
-            className="block w-full max-w-xs text-sm text-muted-foreground file:mr-3 file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:tracking-[0.1em]"
-          />
-          <p className="text-xs text-muted-foreground">
-            {busy
-              ? t("galleryUploading")
-              : t("galleryHint", { max: COMPANY_GALLERY_MAX_IMAGES })}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

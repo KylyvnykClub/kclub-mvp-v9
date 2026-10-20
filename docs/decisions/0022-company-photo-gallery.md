@@ -1,6 +1,6 @@
 # 0022. Companies get a KCLUB-hosted photo gallery through the avatar upload pipeline
 
-> **Status:** Accepted
+> **Status:** Accepted — withdrawn from the interface 2026-10-20 by [ADR 0049](0049-partner-photo-gallery-withdrawn.md)
 > **Date:** 2026-08-29
 > **Deciders:** Launch owner (via session)
 

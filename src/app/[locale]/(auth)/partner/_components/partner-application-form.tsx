@@ -182,7 +182,6 @@ export function PartnerApplicationForm({
       // from here afterwards would race the navigation this action's response
       // triggers.
       if (media.logo) formData.set("logoFile", media.logo);
-      for (const image of media.images) formData.append("galleryFile", image);
 
       const result = await registerPartnerAction(previous, formData);
 
