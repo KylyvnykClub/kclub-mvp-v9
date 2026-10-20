@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { countryName } from "@/lib/countries";
 import type { Locale } from "@/i18n/routing";
 import { PartnerQr } from "./partner-qr";
+import { CompanyEditForm } from "./company-edit-form";
 import { useImageCrop } from "@/components/media/image-crop-dialog";
 
 export function CompanyList({
@@ -379,6 +380,12 @@ export function CompanyList({
                   name={company.name}
                 />
               )}
+
+              {/* ADR 0051: every field, the offer through moderation. */}
+              {(company.moderationStatus === "approved" ||
+                company.moderationStatus === "pending") && (
+                <EditSection company={company} />
+              )}
             </CardContent>
           </Card>
         );
@@ -496,6 +503,32 @@ function LogoSection({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function EditSection({ company }: { company: CompanyRow }) {
+  const t = useTranslations("companyEdit");
+  const [open, setOpen] = useState(false);
+  const waiting =
+    company.pendingChanges !== null &&
+    typeof company.pendingChanges === "object" &&
+    Object.keys(company.pendingChanges).length > 0;
+
+  return (
+    <div className="mt-6 space-y-3 border-t border-border/50 pt-6">
+      {waiting && (
+        <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+          {t("pendingNotice")}
+        </p>
+      )}
+      {open ? (
+        <CompanyEditForm company={company} onDone={() => setOpen(false)} />
+      ) : (
+        <Button type="button" variant="outline" onClick={() => setOpen(true)}>
+          {t("edit")}
+        </Button>
+      )}
     </div>
   );
 }

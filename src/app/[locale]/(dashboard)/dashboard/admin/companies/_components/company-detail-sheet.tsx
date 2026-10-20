@@ -30,6 +30,7 @@ import {
   unhideCompanyAction,
   waiveCompanyListingAction,
 } from "@/actions/company";
+import { COMPANY_FIELD_LABEL_KEYS } from "@/lib/company-form";
 import { AdminDetailSheet } from "../../_components/admin-detail-sheet";
 import { ModerateActions } from "./moderate-actions";
 import { StatusBadge, type StatusTone } from "../../_components/status-badge";
@@ -90,12 +91,17 @@ const REFERRAL_STATUS_KEYS = {
   expired: "refStatusExpired",
 } as const;
 
-const PENDING_CHANGE_LABEL_KEYS = {
-  name: "colCompany",
-  description: "descriptionLabel",
-  discount: "discountLabel",
-  businessCategoryId: "categoryLabel",
-} as const;
+/**
+ * ADR 0051: a partner may propose a change to any field, so each is labelled
+ * with the application form's own label (the `company` namespace).
+ * `businessCategoryId` is derived from the list and not shown on its own.
+ */
+const PENDING_CHANGE_LABEL_KEYS: Record<string, string> = {
+  ...COMPANY_FIELD_LABEL_KEYS,
+  descriptionTranslations: "descriptionLabel",
+  country: "registrationCountryLabel",
+};
+const HIDDEN_PENDING_FIELDS = new Set(["businessCategoryId"]);
 
 /**
  * pendingChanges is jsonb, so what comes back is unknown. Strings and numbers
@@ -108,6 +114,7 @@ function formatChangeValue(value: unknown): string {
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
+  if (Array.isArray(value)) return value.map(String).join(", ") || "-";
   return JSON.stringify(value);
 }
 
@@ -150,6 +157,7 @@ export function CompanyDetailSheet({
 }) {
   const t = useTranslations("admin.companies");
   const tCommon = useTranslations("common");
+  const tCompany = useTranslations("company");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<CompanyDetail | null>(null);
@@ -235,6 +243,24 @@ export function CompanyDetailSheet({
     string,
     unknown
   > | null;
+  const pendingEntries = Object.entries(pendingChanges ?? {}).filter(
+    ([field]) => !HIDDEN_PENDING_FIELDS.has(field),
+  );
+  /** The live value of a field as the moderator should read it. */
+  const currentValueOf = (field: string): unknown => {
+    if (!company) return null;
+    if (field === "businessCategoryIds")
+      return company.categories.map((c) => c.businessCategory.subcategory);
+    if (field === "serviceCountryCodes")
+      return company.serviceCountries.map((c) => c.countryCode);
+    return (company as unknown as Record<string, unknown>)[field];
+  };
+  const proposedValueOf = (field: string, value: unknown): unknown =>
+    field === "businessCategoryIds" && Array.isArray(value)
+      ? value.map(
+          (id: number) => detail?.pendingCategoryNames[id] ?? String(id),
+        )
+      : value;
 
   const loading = (
     <p className="text-sm text-muted-foreground">{tCommon("loading")}</p>
@@ -625,34 +651,29 @@ export function CompanyDetailSheet({
       </Section>
 
       <Section title={t("pendingChangesTitle")}>
-        {!pendingChanges || Object.keys(pendingChanges).length === 0 ? (
+        {pendingEntries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {t("noPendingChanges")}
           </p>
         ) : (
           <div className="space-y-3">
-            {Object.entries(pendingChanges).map(([field, value]) => (
+            {pendingEntries.map(([field, value]) => (
               <div
                 key={field}
                 className="rounded-md border border-border p-3 text-sm"
               >
                 <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-                  {field in PENDING_CHANGE_LABEL_KEYS
-                    ? t(
-                        PENDING_CHANGE_LABEL_KEYS[
-                          field as keyof typeof PENDING_CHANGE_LABEL_KEYS
-                        ],
-                      )
+                  {PENDING_CHANGE_LABEL_KEYS[field]
+                    ? tCompany(PENDING_CHANGE_LABEL_KEYS[field])
                     : field}
                 </p>
                 <p className="mt-1 text-muted-foreground line-through">
                   {t("currentValue")}:{" "}
-                  {formatChangeValue(
-                    (company as unknown as Record<string, unknown>)[field],
-                  )}
+                  {formatChangeValue(currentValueOf(field))}
                 </p>
                 <p className="text-foreground">
-                  {t("proposedValue")}: {formatChangeValue(value)}
+                  {t("proposedValue")}:{" "}
+                  {formatChangeValue(proposedValueOf(field, value))}
                 </p>
               </div>
             ))}
