@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { DbClient } from "@/data/db.js";
 import {
+  countApprovedCompaniesByIds,
   createBusinessCategory,
   findApprovedCompanyBySlug,
   insertCompany,
@@ -273,6 +274,83 @@ describe("FR-031: filter the catalogue by category, country and city", () => {
         })
       ).map((row) => row.id),
     ).toEqual([registeredOnly]);
+  });
+
+  it("FR-031: a worldwide partner is in every country and every city, always after the local ones", async () => {
+    const db = testDbClient();
+    // Named so that alphabetical order alone would put it first.
+    const worldwide = await seedPartner(db, {
+      name: "AAA Online Fitness",
+      registrationCountryCode: "US",
+      country: "US",
+      city: null,
+      businessFormat: "online_only",
+      servesWorldwide: 1,
+    });
+    const local = await seedPartner(db, {
+      name: "ZZZ Kyiv Accounting",
+      registrationCountryCode: "UA",
+      country: "UA",
+      city: "Kyiv",
+      servesWorldwide: 0,
+    });
+    const servesFromAbroad = await seedPartner(db, {
+      name: "MMM Warsaw Studio",
+      registrationCountryCode: "PL",
+      country: "PL",
+      city: "Warsaw",
+      servesWorldwide: 0,
+      serviceCountryCodes: ["UA"],
+    });
+    const ids = [worldwide, local, servesFromAbroad];
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, ids, { serviceCountryCode: "UA" })
+      ).map((row) => row.id),
+    ).toEqual([local, servesFromAbroad, worldwide]);
+
+    expect(
+      (
+        await listApprovedCompaniesByIds(db, ids, {
+          serviceCountryCode: "UA",
+          city: "kyiv",
+        })
+      ).map((row) => row.id),
+    ).toEqual([local, worldwide]);
+
+    // Paging keeps the order, so the worldwide partner is on the last page.
+    expect(
+      (
+        await listApprovedCompaniesByIds(
+          db,
+          ids,
+          { serviceCountryCode: "UA" },
+          { limit: 2, offset: 0 },
+        )
+      ).map((row) => row.id),
+    ).toEqual([local, servesFromAbroad]);
+    expect(
+      await countApprovedCompaniesByIds(db, ids, {
+        serviceCountryCode: "UA",
+        city: "Kyiv",
+      }),
+    ).toBe(2);
+  });
+
+  it("FR-031: without a chosen place there is nothing to be local to, so the order is by name", async () => {
+    const db = testDbClient();
+    const worldwide = await seedPartner(db, {
+      name: "AAA Online",
+      servesWorldwide: 1,
+    });
+    const local = await seedPartner(db, { name: "BBB Local" });
+
+    expect(
+      (await listApprovedCompaniesByIds(db, [local, worldwide])).map(
+        (row) => row.id,
+      ),
+    ).toEqual([worldwide, local]);
   });
 
   it("returns an empty page rather than everything when a filter matches nothing", async () => {

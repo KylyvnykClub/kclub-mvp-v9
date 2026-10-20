@@ -1157,6 +1157,7 @@
     "similarTitle": "Похожие партнёры",
     "openCatalogue": "Открыть каталог",
     "specialPrivilegesBadge": "Особые привилегии",
+    "worldwideBadge": "Весь мир",
     "specialPrivilegesSection": "Особые привилегии для участников",
     "specialPrivilegesDefault": "Партнёр предоставляет участникам клуба особые привилегии. Уточните детали при обращении."
   },
@@ -1453,6 +1454,7 @@
       "descriptionLabel": "Описание",
       "contactEmailLabel": "Контактный email",
       "contactPhoneLabel": "Контактный телефон",
+      "servesWorldwideLabel": "Работает по всему миру — показывается в каждой стране, после местных партнёров",
       "profileHint": "Правка от сотрудника публикуется сразу и не проходит модерацию.",
       "saved": "Компания обновлена",
       "moderationCurrent": "Текущий статус",

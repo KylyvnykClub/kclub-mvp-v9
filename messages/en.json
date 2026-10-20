@@ -1157,6 +1157,7 @@
     "similarTitle": "Similar partners",
     "openCatalogue": "Open the catalogue",
     "specialPrivilegesBadge": "Special privileges",
+    "worldwideBadge": "Worldwide",
     "specialPrivilegesSection": "Special privileges for members",
     "specialPrivilegesDefault": "This partner offers club members special privileges. Ask about them when you get in touch."
   },
@@ -1453,6 +1454,7 @@
       "descriptionLabel": "Description",
       "contactEmailLabel": "Contact email",
       "contactPhoneLabel": "Contact phone",
+      "servesWorldwideLabel": "Serves the whole world — shown in every country, after local partners",
       "profileHint": "A staff edit publishes immediately and does not go through moderation.",
       "saved": "Company updated",
       "moderationCurrent": "Current status",

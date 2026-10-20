@@ -138,7 +138,7 @@ Priority: **M** = must have · **S** = should have · **C** = could have
 |ID|Requirement|Role|Priority|
 |-|-|-|-|
 |FR-030|The catalogue must be readable without an account while the `public_catalogue` flag is on ([ADR 0034](decisions/0034-the-catalogue-is-public.md)): a signed-out visitor sees the partner list, the discounts and the detail pages, but never a partner's contact details or gallery photos. With the flag off, an unauthenticated request must receive the sign-in page, not a partial listing|guest|M|
-|FR-031|The system must let a member filter the catalogue by category, country and city, and combine those filters|member|M|
+|FR-031|The system must let a member filter the catalogue by category, country and city, and combine those filters. A partner that serves worldwide matches every country and every city, and once a country or city is chosen it is listed after every partner registered there and every partner serving that country from elsewhere|member|M|
 |FR-032|The system must let a member search partner names and descriptions, returning results ranked by relevance, in any of the three supported languages|member|M|
 |FR-033|A partner detail page must show the discount offered, its conditions, the category, location, contact details and the partner's own description. Contact details are shown to a signed-in member only; the discount itself is public (FR-030)|member|M|
 |FR-034|The system must show at most 3 partners in the "Top" block and at most 3 in the "Featured" block, ordered by a rank set by staff|member|M|
