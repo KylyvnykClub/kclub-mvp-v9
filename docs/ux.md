@@ -109,7 +109,7 @@ a translation table of its own; it now offers all of them, searchable.
 |Partner detail|Decide to contact them, and see the discount|member|Discount terms are the most prominent element. Below the how-to steps, the reviews block (FR-130): average stars and count, approved reviews signed "Club member", and the form for a member in the club — a guest is asked to sign in, an owner sees no form ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|
 |VIP upgrade|Understand and buy VIP|member|Honest about what VIP does and does not add|
 |My subscription|Manage or cancel|member|Renewal date, price, link to the Stripe portal|
-|My companies|See status of businesses I submitted|member|One card per company with its state and next action|
+|My companies|See status of businesses I submitted, and edit them|member|One card per company with its state and next action. "Edit company" opens the application form prefilled; on an approved company a notice says the changes wait for a moderator, and contacts change at once ([ADR 0051](decisions/0051-partners-edit-every-field.md))|
 |Submit a company — 4 steps|Apply to the catalogue|member|Draft saved per step; progress always visible|
 |Company under review|Know where it is|partner_owner|Shows submission time and expected decision window|
 |Company rejected|Understand why and fix it|partner_owner|Reason shown in full; resubmit from the same data|

@@ -26,11 +26,11 @@ import {
   listShowcaseCompanies,
   listSimilarApprovedCompanies,
   applyCompanyPendingChanges,
+  listSubcategoryNames,
   clearCompanyPendingChanges,
   findCompanyById,
   listCompaniesWithPendingChanges,
   setCompanyModerationStatus,
-  setCompanyPendingChanges,
   setCompanyShowcase,
   updateCompanyFields,
   revokeListingWaiver,
@@ -82,6 +82,10 @@ import {
 } from "@/lib/company-form";
 import { fileWithTerms } from "@/modules/catalogue/file-with-terms";
 import { descriptionTranslationsFrom } from "@/modules/catalogue/submit-company";
+import {
+  editOwnCompany,
+  type EditCompanyResult,
+} from "@/modules/catalogue/edit-company";
 import { deleteCompanyForStaff } from "@/modules/catalogue/delete-company";
 import { holdCheckoutUrlOrNull } from "@/modules/billing/listing-hold-checkout";
 import { findListingActivation } from "@/data/business-applications";
@@ -526,11 +530,24 @@ export async function getCompanyAdminDetailAction(companyId: string) {
     ]);
 
   const now = new Date();
+  // ADR 0051: a proposed category change shown by name, not by id.
+  // jsonb, so read defensively: only numbers are category ids.
+  const proposedIds: unknown =
+    company.pendingChanges && typeof company.pendingChanges === "object"
+      ? (company.pendingChanges as Record<string, unknown>).businessCategoryIds
+      : undefined;
+  const pendingCategoryNames = await listSubcategoryNames(
+    db,
+    Array.isArray(proposedIds)
+      ? proposedIds.filter((id): id is number => typeof id === "number")
+      : [],
+  );
 
   return {
     success: true,
     data: {
       company,
+      pendingCategoryNames,
       subscriptions,
       referralCounts,
       referrals,
@@ -1323,81 +1340,34 @@ export async function staffEditCompanyAction(
   return { success: true };
 }
 
-const ownerEditSchema = z.object({
-  companyId: z.string().uuid(),
-  name: z.string().min(2).max(255).optional(),
-  businessCategoryIds: z.preprocess((val): unknown[] | undefined => {
-    if (Array.isArray(val)) return val as unknown[];
-    if (typeof val === "string" && val.trim())
-      return val.split(",").filter(Boolean);
-    return undefined;
-  }, z.array(z.coerce.number().int().positive()).min(1).max(7).optional()),
-  description: z.string().max(1000).optional(),
-  discount: z.string().max(255).optional(),
-});
+/** What the cabinet's edit form reports back (ADR 0051). */
+export type CompanyEditState = EditCompanyResult;
 
-/** The owner-edit form still reports a message rather than a code (FR-042). */
-export type CompanyEditState = { success: boolean; error?: string };
-
+/**
+ * A partner edits their own company from the cabinet (FR-045, ADR 0051).
+ * The ownership check is the lookup by owner inside `editOwnCompany`.
+ */
 export async function ownerEditCompanyAction(
   _prevState: CompanyEditState | null,
   formData: FormData,
 ): Promise<CompanyEditState> {
+  const auth = await getCurrentMember();
+  if (!auth?.member) {
+    return { success: false, issue: { code: "invalidField" } };
+  }
+  assertCan(buildActor(auth.member), "update", "own_company");
+
   try {
-    const auth = await getCurrentMember();
-    if (!auth?.member) {
-      return { success: false, error: "Unauthorized" };
+    const result = await editOwnCompany(db, auth.member.id, formData);
+    if (result.success && result.outcome !== "unchanged") {
+      revalidatePath("/dashboard/profile");
+      revalidatePath("/dashboard/admin/companies");
+      revalidatePath("/directory");
     }
-
-    const actor = buildActor(auth.member);
-    assertCan(actor, "update", "own_company");
-
-    const data = Object.fromEntries(formData.entries());
-    const parsed = ownerEditSchema.safeParse(data);
-    if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message };
-    }
-
-    const company = await findCompanyById(db, parsed.data.companyId);
-    if (!company || company.ownerId !== auth.member.id) {
-      return { success: false, error: "Not found" };
-    }
-
-    if (company.moderationStatus !== "approved") {
-      return { success: false, error: "Can only edit approved companies" };
-    }
-
-    const changes: Record<string, unknown> = {};
-    if (parsed.data.name !== undefined && parsed.data.name !== company.name) {
-      changes.name = parsed.data.name;
-    }
-    if (parsed.data.businessCategoryIds !== undefined) {
-      changes.businessCategoryIds = parsed.data.businessCategoryIds;
-    }
-    if (
-      parsed.data.description !== undefined &&
-      parsed.data.description !== (company.description ?? "")
-    ) {
-      changes.description = parsed.data.description;
-    }
-    if (
-      parsed.data.discount !== undefined &&
-      parsed.data.discount !== (company.discount ?? "")
-    ) {
-      changes.discount = parsed.data.discount;
-    }
-
-    if (Object.keys(changes).length === 0) {
-      return { success: true };
-    }
-
-    await setCompanyPendingChanges(db, parsed.data.companyId, changes);
-
-    return { success: true };
+    return result;
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred";
-    return { success: false, error: message };
+    logger.error("Owner company edit failed", safeErrorFields(error));
+    return { success: false, issue: { code: "unexpected" } };
   }
 }
 

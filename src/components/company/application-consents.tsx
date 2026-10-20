@@ -100,7 +100,12 @@ export function useApplicationConsents(input: {
     wording,
     complete,
     submitLabel: t(SUBMIT_KEY[wording ?? "none"]),
-    submitNote: wording === "invite" ? t("submitInviteNote") : null,
+    submitNote:
+      wording === "invite"
+        ? t("submitInviteNote")
+        : wording === "public_hold"
+          ? t("submitPublicNote")
+          : null,
   };
 
   return { state, terms, ticked, toggle };

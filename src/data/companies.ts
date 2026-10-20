@@ -1081,6 +1081,7 @@ export interface CompanyAdminFilters {
 
 const COMPANY_ADMIN_RELATIONS = {
   categories: { with: { businessCategory: true } },
+  serviceCountries: true,
   owner: {
     columns: {
       id: true,
@@ -1290,17 +1291,57 @@ export async function setCompanyShowcase(
     .where(eq(companies.id, companyId));
 }
 
-export interface PendingChanges {
-  name?: string;
+/**
+ * The company columns a partner may change about their own company (FR-045,
+ * ADR 0051). Contacts and the website apply at once; everything else waits in
+ * `pending_changes` for a moderator. Slug, logo, moderation and billing state
+ * are never here.
+ */
+export const OWNER_EDITABLE_COLUMNS = [
+  "name",
+  "legalName",
+  "taxId",
+  "website",
+  "description",
+  "descriptionTranslations",
+  "specializationDescription",
+  "discount",
+  "specialPrivileges",
+  "specialPrivilegesNote",
+  "contactEmail",
+  "contactPhone",
+  "country",
+  "city",
+  "registrationCountryCode",
+  "businessFormat",
+  "administrativeLevel1",
+  "administrativeLevel2",
+  "servesWorldwide",
+  "businessCategoryId",
+] as const;
+
+export type OwnerEditableColumn = (typeof OWNER_EDITABLE_COLUMNS)[number];
+
+export type OwnerEditableValues = Pick<
+  typeof companies.$inferInsert,
+  OwnerEditableColumn
+>;
+
+/**
+ * A partner's proposed edit, as it waits for a moderator. Only what differs
+ * from the live company is kept. The two list fields replace their join rows
+ * whole. Rows written before ADR 0051 used the same keys (name, description,
+ * discount, businessCategoryIds), so they still apply.
+ */
+export type PendingChanges = Partial<OwnerEditableValues> & {
   businessCategoryIds?: number[];
-  description?: string;
-  discount?: string;
-}
+  serviceCountryCodes?: string[];
+};
 
 export async function setCompanyPendingChanges(
   db: DbClient,
   companyId: string,
-  changes: PendingChanges,
+  changes: PendingChanges | null,
 ): Promise<void> {
   await db
     .update(companies)
@@ -1308,6 +1349,55 @@ export async function setCompanyPendingChanges(
     .where(eq(companies.id, companyId));
 }
 
+/**
+ * Write an owner edit to the live company: columns, then the two join tables.
+ * One transaction, so a company is never half-edited.
+ */
+export async function applyOwnerEdit(
+  db: DbClient,
+  companyId: string,
+  changes: PendingChanges,
+  options: { clearPending: boolean },
+): Promise<void> {
+  const columns: Record<string, unknown> = { updatedAt: new Date() };
+  for (const column of OWNER_EDITABLE_COLUMNS) {
+    if (changes[column] !== undefined) columns[column] = changes[column];
+  }
+  if (options.clearPending) columns.pendingChanges = null;
+
+  await db.transaction(async (tx) => {
+    await tx.update(companies).set(columns).where(eq(companies.id, companyId));
+
+    if (changes.businessCategoryIds !== undefined) {
+      await tx
+        .delete(companyCategories)
+        .where(eq(companyCategories.companyId, companyId));
+      const ids = [...new Set(changes.businessCategoryIds)];
+      if (ids.length > 0) {
+        await tx.insert(companyCategories).values(
+          ids.map((businessCategoryId) => ({
+            companyId,
+            businessCategoryId,
+          })),
+        );
+      }
+    }
+
+    if (changes.serviceCountryCodes !== undefined) {
+      await tx
+        .delete(companyServiceCountries)
+        .where(eq(companyServiceCountries.companyId, companyId));
+      const codes = [...new Set(changes.serviceCountryCodes)];
+      if (codes.length > 0) {
+        await tx
+          .insert(companyServiceCountries)
+          .values(codes.map((countryCode) => ({ companyId, countryCode })));
+      }
+    }
+  });
+}
+
+/** A moderator accepts the waiting edit (FR-045). */
 export async function applyCompanyPendingChanges(
   db: DbClient,
   companyId: string,
@@ -1317,32 +1407,25 @@ export async function applyCompanyPendingChanges(
   });
   if (!company?.pendingChanges) return;
 
-  const changes = company.pendingChanges as PendingChanges;
-  const updates: Record<string, unknown> = {
-    pendingChanges: null,
-    updatedAt: new Date(),
-  };
+  await applyOwnerEdit(db, companyId, company.pendingChanges, {
+    clearPending: true,
+  });
+}
 
-  if (changes.name !== undefined) updates.name = changes.name;
-  if (changes.description !== undefined)
-    updates.description = changes.description;
-  if (changes.discount !== undefined) updates.discount = changes.discount;
-
-  await db.update(companies).set(updates).where(eq(companies.id, companyId));
-
-  if (changes.businessCategoryIds !== undefined) {
-    await db
-      .delete(companyCategories)
-      .where(eq(companyCategories.companyId, companyId));
-    if (changes.businessCategoryIds.length > 0) {
-      await db.insert(companyCategories).values(
-        changes.businessCategoryIds.map((businessCategoryId) => ({
-          companyId,
-          businessCategoryId,
-        })),
-      );
-    }
-  }
+/** Subcategory names by id, for showing a proposed category change to staff. */
+export async function listSubcategoryNames(
+  db: DbClient,
+  ids: number[],
+): Promise<Record<number, string>> {
+  if (ids.length === 0) return {};
+  const rows = await db
+    .select({
+      id: businessCategories.id,
+      subcategory: businessCategories.subcategory,
+    })
+    .from(businessCategories)
+    .where(inArray(businessCategories.id, ids));
+  return Object.fromEntries(rows.map((row) => [row.id, row.subcategory]));
 }
 
 export async function clearCompanyPendingChanges(
@@ -1436,6 +1519,18 @@ export async function findCompanyByOwner(
 ) {
   return db.query.companies.findFirst({
     where: and(eq(companies.id, companyId), eq(companies.ownerId, ownerId)),
+  });
+}
+
+/** One company the caller owns, with what an edit compares against (ADR 0051). */
+export async function findOwnCompanyForEdit(
+  db: DbClient,
+  companyId: string,
+  ownerId: string,
+) {
+  return db.query.companies.findFirst({
+    where: and(eq(companies.id, companyId), eq(companies.ownerId, ownerId)),
+    with: { categories: true, serviceCountries: true },
   });
 }
 

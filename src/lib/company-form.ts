@@ -297,3 +297,35 @@ export const companyDraftDataSchema = registerCompanySchema.partial().extend({
 });
 
 export type CompanyDraftData = z.infer<typeof companyDraftDataSchema>;
+
+/**
+ * A partner editing their own company (ADR 0051): every field of the
+ * application except the media, which have their own controls in the cabinet.
+ * The location rules are the application's, restated because a refined
+ * object's shape does not carry its refinements.
+ */
+export const editCompanySchema = companyDetailsSchema
+  .omit({ logoUrl: true })
+  .extend(companyLocationSchema.shape)
+  .extend({ companyId: z.uuid() })
+  .superRefine((value, context) => {
+    if (
+      value.servesWorldwide === "false" &&
+      !value.serviceCountryCodes.trim()
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Select a service country",
+        path: ["serviceCountryCodes"],
+      });
+    }
+    if (value.businessFormat !== "online_only" && !value.city?.trim()) {
+      context.addIssue({
+        code: "custom",
+        message: "City is required",
+        path: ["city"],
+      });
+    }
+  });
+
+export type EditCompanyInput = z.infer<typeof editCompanySchema>;

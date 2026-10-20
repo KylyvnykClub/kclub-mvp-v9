@@ -2031,7 +2031,8 @@
     "missing": "Tick the three required boxes to continue.",
     "submitInvite": "Subscribe: first month from publication free, then $19.99/mo",
     "submitInviteNote": "Right now your card is only saved — nothing is charged.",
-    "submitPublic": "Apply and reserve $19.99",
+    "submitPublic": "Apply · $19.99/mo",
+    "submitPublicNote": "Right now $19.99 is reserved on your card. It is charged once the application is approved.",
     "submitDeferred": "Apply and save card — nothing is charged now",
     "residenceLabel": "Country of residence (billing address)",
     "startWaived": "Your listing is free: you are applying through the club's partner link. Nothing is charged and no card is asked for. It is published once approved.",
@@ -2112,5 +2113,19 @@
     "signInLink": "Sign in",
     "signInToReview": " to leave a review.",
     "membersOnly": "Reviews can be left by members in the club."
+  },
+  "companyEdit": {
+    "edit": "Edit company",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "close": "Close",
+    "hintApproved": "Your page stays as it is until a moderator approves the changes. Contacts and website change at once.",
+    "hintPending": "Your application is still being reviewed, so changes apply straight away.",
+    "pendingNotice": "Your changes are waiting for a moderator. The page shows the previous version until then.",
+    "outcome": {
+      "unchanged": "Nothing changed.",
+      "applied": "Saved.",
+      "pending": "Sent to moderation. Contacts and website are already updated."
+    }
   }
 }
