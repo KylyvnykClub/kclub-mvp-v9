@@ -28,6 +28,7 @@ import {
   businessCategoryTranslations,
   companyCategories,
   companyImages,
+  companyReviews,
   companyServiceCountries,
   cities,
   companies,
@@ -1590,6 +1591,12 @@ export async function softDeleteCompany(
     })
     .where(and(eq(companies.id, companyId), isNull(companies.deletedAt)))
     .returning({ id: companies.id });
+  // ADR 0047: reviews of a company that is gone are read by nobody again.
+  if (changed.length > 0) {
+    await db
+      .delete(companyReviews)
+      .where(eq(companyReviews.companyId, companyId));
+  }
   return changed.length > 0;
 }
 

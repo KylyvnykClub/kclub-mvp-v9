@@ -33,3 +33,4 @@ export * from "./invite-links";
 export * from "./plan-prices";
 export * from "./account-deletion-requests";
 export * from "./database-environment";
+export * from "./company-reviews";

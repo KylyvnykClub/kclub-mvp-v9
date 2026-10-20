@@ -125,6 +125,7 @@ nobody and is not personal data.
 |`audit_log`|What a staff user or the system changed|N:1 actor|2,000 → 150,000/year|
 |`outbox`|Committed intent to do something outside the transaction|—|drained continuously|
 |`notifications`|One thing the system did to a member, as the member reads it|N:1 member|5,000 → 200,000/year|
+|`company_reviews`|A member's rating and text about a partner, moderated before it is shown ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|N:1 company, N:1 member, one per pair|0 → 5,000/year|
 
 **Conventions applied to every table:** `id` is a UUIDv7 (time-ordered, so
 b-tree inserts stay local and an id does not leak a sequence count);
@@ -222,6 +223,7 @@ security control first and a cost control second.
 |`invite_links`|Life of the owning member's account; a rotated link is retained|Deleted explicitly in the erasure job (the member row is anonymised, so the cascade never fires). Holds a random code and nothing personal ([ADR 0042](decisions/0042-member-invite-programme.md))|Resolving a code; knowing which link brought whom|
 |`invitations` (who brought whom)|Life of the invitee's account|Deleted explicitly with the invitee in the erasure job; `inviter_member_id` is nulled there when the inviter is erased. One row per invitee, one level, no reward ([ADR 0042](decisions/0042-member-invite-programme.md))|Where members come from; which waivers were granted and why|
 |`companies.listing_waiver_invite_link_id`|Life of the company|Deleted with the company; nulled if the link row is deleted|Which listings an invite link waived|
+|Partner reviews (`company_reviews`)|Life of the author's account and of the company|Deleted explicitly in `eraseMemberTx`, both the member's own reviews and those of companies they own (the member row is anonymised, so the cascade never fires), and with the company in `softDeleteCompany`. The text can identify its author even unsigned ([ADR 0047](decisions/0047-anonymous-moderated-partner-reviews.md))|What members say about a partner|
 |Audit log|7 years|Never deleted from the application|[security.md §7](security.md#7-auditing-and-access-control)|
 |Member inbox (`notifications`)|180 days from creation, read or unread alike|Hard delete by the retention sweep. On member erasure, deleted **explicitly** — the anonymise-not-delete rule above means the `ON DELETE CASCADE` on `member_id` never fires|An inbox is a record of recent events ([decisions/0020](decisions/0020-member-inbox.md))|
 |Member avatar (R2 `media/avatars/{memberId}.webp`)|While the account exists, same 30-day clock as the rest of the member's data|Hard delete of the R2 object, best-effort, in the day-30 erasure job|New personal data needs a retention period and a deletion path before it ships ([ADR 0021](decisions/0021-member-avatar-upload.md)); one object per member means there is nothing to sweep|

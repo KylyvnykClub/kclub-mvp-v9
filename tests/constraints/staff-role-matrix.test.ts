@@ -152,6 +152,23 @@ const matrix: MatrixEntry[] = [
     admin: true,
     owner: true,
   },
+  // ADR 0047: moderators decide which reviews are published.
+  {
+    action: "approve",
+    subject: "review",
+    support: false,
+    moderator: true,
+    admin: true,
+    owner: true,
+  },
+  {
+    action: "reject",
+    subject: "review",
+    support: false,
+    moderator: true,
+    admin: true,
+    owner: true,
+  },
   {
     action: "block",
     subject: "referral",
