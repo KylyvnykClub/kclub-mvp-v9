@@ -1,24 +1,22 @@
 {
-  "crons": [
+  "redirects": [
     {
-      "path": "/api/cron/outbox-drain",
-      "schedule": "50 0 * * *"
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "kylyvnyk.club" }],
+      "destination": "https://kylyvnyk.com/:path*",
+      "statusCode": 301
     },
     {
-      "path": "/api/cron/subscription-lapse",
-      "schedule": "35 0 * * *"
-    },
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.kylyvnyk.club" }],
+      "destination": "https://kylyvnyk.com/:path*",
+      "statusCode": 301
+    }
+  ],
+  "headers": [
     {
-      "path": "/api/cron/billing-reconciliation",
-      "schedule": "17 2 * * *"
-    },
-    {
-      "path": "/api/cron/retention",
-      "schedule": "41 3 * * *"
-    },
-    {
-      "path": "/api/cron/referrals",
-      "schedule": "11 1 * * *"
+      "source": "/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
   ]
 }
